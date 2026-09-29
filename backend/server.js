@@ -354,6 +354,38 @@ app.post("/api/voice/turn", async (req,res) => {
   } catch(e) { res.status(502).json({ok:false,error:e.message}); }
 });
 
+app.post("/api/analyze-screen", async (req,res) => {
+  if(!openai) return res.status(503).json({ok:false,error:"OPENAI_API_KEY manquante."});
+  try{
+    const model=normalizeModel(req.body.model);
+    if(model!=="CRYPTO") return res.status(400).json({ok:false,error:"Screen observer réservé au modèle CRYPTO."});
+    const imageDataUrl=String(req.body.imageDataUrl||"");
+    if(!/^data:image\/(png|jpe?g|webp);base64,/i.test(imageDataUrl)) return res.status(400).json({ok:false,error:"Image invalide. Utilise une capture PNG/JPEG/WebP."});
+    if(imageDataUrl.length>12000000) return res.status(413).json({ok:false,error:"Capture trop volumineuse."});
+    const context=String(req.body.context||"");
+    const historicalContext=await loadHistoricalContext();
+    const snapshot=await buildOptimizationSnapshot(model);
+    const response=await openai.responses.create({
+      model:MODEL,
+      reasoning:{effort:"high"},
+      input:[
+        {role:"system",content:BASE_SYSTEM+"\nLIVE SCREEN OBSERVATION MODE: Analyze only what is actually visible in the supplied KCEX screen capture. Do not invent prices, positions, orders, liquidity, or market structure that cannot be read. Separate visible facts from interpretation and hypothesis. Use the CRYPTO model only. This is read-only observation; never instruct automatic execution."},
+        {role:"user",content:[
+          {type:"input_text",text:JSON.stringify({
+            model,
+            context,
+            historicalContext:historicalContext.models?.[model]||{},
+            optimizationSnapshot:snapshot,
+            task:"Inspect this current KCEX screen. Extract visible instrument, direction/position if shown, entry/mark/P&L/leverage if shown, visible chart structure, and any immediately visible market context. Then relate only the visible evidence to the Crypto model: market direction -> manipulated Key Open/sweep -> aligned HTF POI -> entry -> high RR. Clearly list missing information and do not infer hidden account state."
+          })},
+          {type:"input_image",image_url:imageDataUrl,detail:"high"}
+        ]}
+      ]
+    });
+    res.json({ok:true,model,text:response.output_text});
+  }catch(e){res.status(502).json({ok:false,error:e.message});}
+});
+
 app.get("/api/tradovate/status",(req,res)=>res.json(tradovateStatus()));
 app.get("/api/tradovate/events",(req,res)=>res.json(liveEvents.slice(-100)));
 app.get("/api/tradovate/snapshot",(req,res)=>res.json(tradovateStatus()));
