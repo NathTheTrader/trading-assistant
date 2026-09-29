@@ -546,7 +546,7 @@ function refreshPatterns(){
  $("patternInsights").innerHTML=insights.map(x=>'<div class="decision">'+esc(x)+'</div>').join("");
 }
 async function saveBotUrl(){
- const v=$("botApiUrl").value.trim().replace(/\\/$/,""); if(v){localStorage.setItem("botApiUrl",v); location.reload();}
+ const v=$("botApiUrl").value.trim().replace(/\/$/,""); if(v){localStorage.setItem("botApiUrl",v); location.reload();}
 }
 async function testBotConnection(){
  if(!BOT_API){$("backendStatus").textContent="NON CONFIGURÉ";return;}
