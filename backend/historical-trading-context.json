@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "scope": "Historical trading context reconstructed only from verified prior conversation records. This is NOT a complete trade-by-trade export.",
+  "lastUpdated": "2026-09-29",
+  "models": {
+    "NQ": {
+      "instruments": ["NQ", "MNQ", "MES", "MGC", "ES"],
+      "documentedRiskReferenceUSD": 100,
+      "documentedMaxTradesPerDay": 2,
+      "documentedRRStyle": "high RR; discussions commonly referenced approximately 1:10 to 1:12",
+      "documentedLossReview": {
+        "lossesDiscussed": 21,
+        "estimatedAvoidableDuringLearning": 10,
+        "note": "These counts came from a retrospective discussion and must not be treated as a complete database or exact audited statistics."
+      },
+      "model": ["HTF bias", "POI", "liquidity/manipulation", "Fibonacci retracement", "Rejection Block", "limit entry"],
+      "researchMethod": ["TradingView Replay", "FXReplay"],
+      "concepts": ["FVG", "OB", "PD array", "liquidity", "sweep", "MSS", "CHOCH", "BOS", "displacement", "SMT", "10H Key Open"],
+      "fibLevels": [0.5, 0.62, 0.705, 0.79]
+    },
+    "CRYPTO": {
+      "instruments": ["BTC", "ETH", "BNB", "SOL", "XRP", "HYPE", "FLOKI"],
+      "documentedRiskReferenceUSD": 100,
+      "model": ["market direction", "manipulated/swept Key Open", "aligned HTF POI", "entry", "let trade play out in high RR"],
+      "secondaryConcepts": ["OTE", "Fibonacci"],
+      "platformContext": ["KCEX discussed", "Kraken discussed", "MEXC discussed", "Bybit discussed"],
+      "importantSeparation": "Do not import NQ execution rules into Crypto automatically."
+    }
+  },
+  "dataIntegrityRule": "The AI must label this file as conversation-derived historical context, not as a complete trade journal. Exact trade statistics must come from imported journal records."
+}
