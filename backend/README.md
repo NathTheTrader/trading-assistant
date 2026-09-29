@@ -1,31 +1,49 @@
 # Trading Assistant Bot — Backend
 
-This is the server-side core for the Trading Assistant.
+Server-side core for the Trading Assistant.
 
 Modes:
 - READ ONLY
-- No order placement
+- No order placement/cancellation/modification
 - No account credentials in the frontend
-- Trade history is stored server-side
-- AI analysis uses the Responses API
+- NQ/Futures and Crypto are strictly separated
+- AI uses the Responses API
+- Voice uses server-side transcription + TTS
+- Obsidian journal is imported to private backend storage
+- Historical screenshot analysis is optional and read-only
 
-Endpoints:
+Core endpoints:
 - GET /health
-- GET /api/trades?model=NQ
+- GET /api/trades?model=NQ|CRYPTO
 - POST /api/trades
 - POST /api/analyze-trade
 - POST /api/chat
-- GET /api/patterns?model=NQ
+- GET /api/patterns?model=NQ|CRYPTO
+- GET /api/history/ai-context?model=NQ|CRYPTO
+- GET /api/optimization/daily?model=NQ|CRYPTO
+- POST /api/coach/question
+- POST /api/voice/turn
+- GET /api/learning?model=NQ|CRYPTO
 
-Required environment:
-OPENAI_API_KEY
+Obsidian:
+- GET /api/obsidian/status?model=NQ|CRYPTO
+- POST /api/obsidian/import — multipart field `file`, ZIP of the Obsidian vault
+- POST /api/obsidian/analyze-images — starts the historical screenshot analysis queue
+- GET /api/obsidian/job — progress for the screenshot analysis queue
 
-Do not commit real API keys or personal trading history to the public GitHub repository.
+Required:
+- OPENAI_API_KEY
 
-Next integrations:
-1. Tradovate read-only account events.
-2. Authorized KCEX read-only integration.
-3. Persistent database.
-4. News/calendar ingestion through an authorized source.
-5. Screenshot/image analysis attached to trade records.
-6. Live event stream to the frontend.
+Optional:
+- TRADOVATE_* credentials for the read-only Tradovate connector
+- OBSIDIAN_DIR=./data/obsidian
+- LEARNING_FILE=./data/ai-learning.json
+- OPENAI_TRANSCRIBE_MODEL=gpt-4o-transcribe
+- OPENAI_TTS_MODEL=gpt-4o-mini-tts
+- OPENAI_TTS_VOICE=alloy
+
+Important:
+- Do not commit real API keys.
+- Do not commit the user's raw Obsidian journal, screenshots, or account credentials to the public GitHub repository.
+- The Obsidian ZIP is uploaded through the authenticated/private backend and stored server-side.
+- KCEX remains screen-observation/read-only unless an authorized official integration is available.
