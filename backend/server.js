@@ -509,7 +509,7 @@ async function askVoiceCoach({model,userText,previousTurns=[]}) {
 app.get("/api/history/ai-context", async (req,res) => {
   const model=normalizeModel(req.query.model);
   const data=await buildAIHistory(model);
-  res.json({model,sampleSize:data.allTradesCount,dateRange:data.snapshot.dateRange,historicalContext:data.historicalContext,snapshot:data.snapshot});
+  res.json({model,sampleSize:data.allTradesCount,dateRange:data.snapshot.dateRange,historicalContext:(await loadHistoricalContext()).models?.[model]||{},snapshot:data.snapshot,obsidian:data.obsidian});
 });
 
 app.get("/api/optimization/daily", async (req,res) => {
