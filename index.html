@@ -323,7 +323,7 @@ function setSiteMode(mode){
   document.body.classList.remove("nq-mode","crypto-mode");
   document.body.classList.add(mode==="CRYPTO"?"crypto-mode":"nq-mode");
   ["NQ","CRYPTO"].forEach(m=>{const b=$("mode"+m);if(b){const on=m===mode;b.classList.toggle("active",on);b.setAttribute("aria-pressed",String(on));}});
-  updateModelUI(); updateBotMode(); applyModeVisibility(); renderJournal(); refreshPatterns(); resetJournalForm();
+  updateModelUI(); updateBotMode(); applyModeVisibility(); renderJournal(); refreshPatterns(); resetJournalForm(); refreshAIDataAccess();
 }
 async function botFetch(path,options={}){
   if(!BOT_API) throw new Error("BOT_API_NOT_CONFIGURED");
