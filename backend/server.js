@@ -4,6 +4,7 @@ import cors from "cors";
 import OpenAI from "openai";
 import fs from "node:fs/promises";
 import path from "node:path";
+import WebSocket from "ws";
 
 const app = express();
 app.use(cors({ origin: process.env.FRONTEND_ORIGIN || true }));
@@ -34,6 +35,72 @@ Do not promise profitability or predict a guaranteed outcome.
 When reviewing a trade, separate: setup quality, execution quality, market context, news risk, and trader behavior.
 When detecting a recurring pattern, state the evidence, sample size, win/loss breakdown when available, and what should be tested next.
 `;
+
+const TRADOVATE_API = process.env.TRADOVATE_API_URL || "https://live.tradovateapi.com/v1";
+const TRADOVATE_WS = process.env.TRADOVATE_WS_URL || "wss://live.tradovateapi.com/v1/websocket";
+const tradovate = {
+  ws: null, connected: false, token: null, expirationTime: null, userId: null,
+  accounts: [], lastMessageAt: null, requestId: 0, reconnectTimer: null
+};
+const liveEvents = [];
+function emitLive(event) {
+  liveEvents.push({ timestamp:new Date().toISOString(), ...event });
+  if (liveEvents.length > 500) liveEvents.shift();
+}
+async function tradovateAuth() {
+  const required=["TRADOVATE_USERNAME","TRADOVATE_PASSWORD","TRADOVATE_APP_ID","TRADOVATE_CID","TRADOVATE_SEC"];
+  const missing=required.filter(k=>!process.env[k]);
+  if(missing.length) throw new Error("Missing Tradovate configuration: "+missing.join(", "));
+  const response=await fetch(TRADOVATE_API+"/auth/accesstokenrequest",{
+    method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},
+    body:JSON.stringify({
+      name:process.env.TRADOVATE_USERNAME,password:process.env.TRADOVATE_PASSWORD,
+      appId:process.env.TRADOVATE_APP_ID,appVersion:process.env.TRADOVATE_APP_VERSION||"1.0.0",
+      cid:Number(process.env.TRADOVATE_CID),sec:process.env.TRADOVATE_SEC
+    })
+  });
+  const data=await response.json();
+  if(!response.ok||!data.accessToken) throw new Error(data.errorText||"Tradovate authentication failed");
+  tradovate.token=data.accessToken; tradovate.expirationTime=data.expirationTime||null; tradovate.userId=data.userId||null;
+  emitLive({type:"authenticated",userId:tradovate.userId});
+}
+function tvSend(endpoint,body="") {
+  if(!tradovate.ws) throw new Error("Tradovate WebSocket disconnected");
+  const id=tradovate.requestId++;
+  tradovate.ws.send(endpoint+"\\n"+id+"\\n\\n"+(typeof body==="string"?body:JSON.stringify(body)));
+}
+async function connectTradovate() {
+  if(!tradovate.token || (tradovate.expirationTime && Date.parse(tradovate.expirationTime)<Date.now()+300000)) await tradovateAuth();
+  if(tradovate.ws && tradovate.connected) return;
+  await new Promise((resolve,reject)=>{
+    const ws=new WebSocket(TRADOVATE_WS); tradovate.ws=ws; let settled=false;
+    ws.on("open",()=>tvSend("authorize",tradovate.token));
+    ws.on("message",raw=>{
+      tradovate.lastMessageAt=new Date().toISOString();
+      let msg; try{msg=JSON.parse(raw.toString())}catch{return}
+      emitLive({type:"message",message:msg});
+      if(msg?.s===200 && msg?.i===0){tradovate.connected=true;if(!settled){settled=true;resolve();}
+        tvSend("user/syncrequest",{splitResponses:true,users:[Number(tradovate.userId)],entityTypes:["account","position","order","fill","cashBalance","contract"]});
+      }
+      const d=msg?.d;if(!d)return;
+      for(const key of ["accounts","positions","orders","fills","cashBalances","contracts"]) if(Array.isArray(d[key])){
+        if(key==="accounts") tradovate.accounts=d[key];
+        emitLive({type:"entity_update",entity:key,items:d[key]});
+        if(key==="fills") for(const fill of d[key]) emitLive({type:"trade_fill",fill});
+      }
+    });
+    ws.on("error",err=>{emitLive({type:"error",error:err.message});if(!settled){settled=true;reject(err)}});
+    ws.on("close",()=>{tradovate.connected=false;emitLive({type:"disconnected"});});
+  });
+}
+async function renewTradovate() {
+  if(!tradovate.token) return tradovateAuth();
+  const response=await fetch(TRADOVATE_API+"/auth/renewaccesstoken",{headers:{Authorization:"Bearer "+tradovate.token}});
+  const data=await response.json();
+  if(!response.ok||!data.accessToken) throw new Error(data.errorText||"Tradovate token renewal failed");
+  tradovate.token=data.accessToken;tradovate.expirationTime=data.expirationTime||null;
+}
+function tradovateStatus(){return {configured:Boolean(process.env.TRADOVATE_USERNAME&&process.env.TRADOVATE_PASSWORD&&process.env.TRADOVATE_APP_ID&&process.env.TRADOVATE_CID&&process.env.TRADOVATE_SEC),connected:tradovate.connected,userId:tradovate.userId,accounts:tradovate.accounts.map(a=>({id:a.id,name:a.name,active:a.active})),expirationTime:tradovate.expirationTime,lastMessageAt:tradovate.lastMessageAt};}
 
 async function loadProfile() {
   try { return JSON.parse(await fs.readFile(PROFILE_FILE, "utf8")); }
@@ -94,6 +161,11 @@ async function askAI({task, trade, history=[]}) {
   });
   return { ok:true, text:response.output_text, model:MODEL };
 }
+
+app.get("/api/tradovate/status",(req,res)=>res.json(tradovateStatus()));
+app.get("/api/tradovate/events",(req,res)=>res.json(liveEvents.slice(-100)));
+app.post("/api/tradovate/connect",async(req,res)=>{try{await connectTradovate();res.json(tradovateStatus())}catch(e){res.status(502).json({ok:false,error:e.message,status:tradovateStatus()})}});
+app.post("/api/tradovate/renew",async(req,res)=>{try{await renewTradovate();res.json(tradovateStatus())}catch(e){res.status(502).json({ok:false,error:e.message})}});
 
 app.get("/health", (req,res) => res.json({
   ok:true,
