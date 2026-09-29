@@ -111,6 +111,19 @@ textarea{width:100%;min-height:105px;resize:vertical}.full{grid-column:1/-1}
 .mode-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
 body.crypto-mode{--accent:#4da3ff;--accentSoft:rgba(77,163,255,.13);--red:#4da3ff;--red2:#2563eb}
 body.nq-mode{--accent:#ff3158;--accentSoft:rgba(255,49,88,.12)}
+
+/* FINAL COMPACT TRADING WORKSPACE */
+.side{width:205px;flex-basis:205px;padding:16px 10px}
+.brand{padding:2px 7px 16px}.mode-switch{margin:0 5px 12px}
+.main{max-width:1600px;padding:18px 20px 34px}.topbar{margin-bottom:14px}
+h1{font-size:24px}.grid{gap:9px}.card,.section,.model-card{padding:13px;border-radius:12px}
+.layout{gap:9px;margin-top:9px}.hero{padding:16px;margin-bottom:10px;border-radius:13px}
+.section h2{margin-bottom:10px}.row{padding:8px 10px}.actions{margin-top:9px;gap:6px}
+.chat-shell{height:calc(100vh - 205px);min-height:440px}.chat-input{margin-top:8px}
+.table th,.table td{padding:8px}.trade-pop{top:65px}
+.ta-voice-fab{right:16px!important;bottom:16px!important;padding:10px 13px!important}
+@media(max-width:1050px){.side{width:185px;flex-basis:185px}.main{padding:15px}.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.side{width:100%;padding:8px}.main{padding:12px}.chat-shell{height:60vh}}
 </style>
 </head>
 <body>
@@ -128,7 +141,7 @@ body.nq-mode{--accent:#ff3158;--accentSoft:rgba(255,49,88,.12)}
     <button onclick="show('chat',this)"><span class="nav-icon">◇</span>Assistant IA</button>
     <button onclick="show('review',this)"><span class="nav-icon">✓</span>Revue de trade</button>
     <button onclick="show('journal',this)"><span class="nav-icon">▤</span>Journal</button><button onclick="show('patterns',this)"><span class="nav-icon">⌁</span>Patterns IA</button>
-    <button onclick="chooseModel()"><span class="nav-icon">⇄</span>Choisir le modèle</button>
+    
     <button onclick="show('settings',this)"><span class="nav-icon">⚙</span>Paramètres</button>
   </nav>
   <div class="side-bottom">
@@ -192,7 +205,7 @@ body.nq-mode{--accent:#ff3158;--accentSoft:rgba(255,49,88,.12)}
 </section>
 
 <section id="chat" class="hidden">
-  <div class="topbar"><div><div class="eyebrow">Assistant central</div><h1>Assistant IA <span class="pill" id="chatModelPill"></span></h1><div class="sub">Contexte du modèle actif : <span id="chatModeText"></span>. Le moteur IA réel sera branché au backend.</div></div><div class="status">● CHAT PRÊT</div></div>
+  <div class="topbar"><div><div class="eyebrow">Assistant central</div><h1>Assistant IA <span class="pill" id="chatModelPill"></span></h1><div class="sub">Contexte du modèle actif : <span id="chatModeText"></span>. Mémoire historique, journal et données live restent séparés par modèle.</div></div><div class="status">● CHAT PRÊT</div></div>
   <div class="section chat-shell">
     <div id="chatMessages" class="chat-messages">
       <div class="bubble ai"><b>TRADING ASSISTANT</b><div class="sub" style="margin-top:5px">Je suis prêt. Sélectionne NQ ou Crypto et parle-moi d'un setup, d'un trade ou de ton journal.</div></div>
@@ -240,7 +253,7 @@ body.nq-mode{--accent:#ff3158;--accentSoft:rgba(255,49,88,.12)}
   </div>
   <div id="kcexAIOutput" class="ai-box" style="margin-top:10px">Aucune capture analysée.</div>
 </div>
-  <div class="section" style="margin-top:14px"><h2>État des intégrations</h2><div id="tvLastEvent" class="ai-box" style="margin-bottom:12px">Aucun événement live.</div><div id="tvAI" class="ai-box" style="margin-bottom:12px">Aucune analyse live.</div><div class="rows"><div class="row"><span>Flux compte Tradovate</span><span class="neutral">À connecter</span></div><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div><div class="row"><span>Analyse IA des screenshots</span><span class="neutral">Étape suivante</span></div></div></div>
+  <div class="section" style="margin-top:14px"><h2>État des intégrations</h2><div id="tvLastEvent" class="ai-box" style="margin-bottom:12px">Aucun événement live.</div><div id="tvAI" class="ai-box" style="margin-bottom:12px">Aucune analyse live.</div><div class="rows"><div class="row"><span>Flux compte Tradovate</span><span class="neutral">À connecter</span></div><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div><div class="row"><span>Analyse IA des screenshots</span><span class="yes">DISPONIBLE</span></div></div></div>
 </section>
 
 <section id="review" class="hidden">
@@ -320,7 +333,17 @@ body.nq-mode{--accent:#ff3158;--accentSoft:rgba(255,49,88,.12)}
       <div class="row"><span>Stockage actuel</span><span class="neutral">Navigateur local</span></div>
     </div></div>
   </div>
-  <div class="section" style="margin-top:14px"><h2>Modèle actif</h2><div id="settingsModel" class="tag">AUCUN</div><div id="settingsModelDesc" class="sub"></div><div class="actions"><button class="secondary" onclick="chooseModel()">Changer de modèle</button><button class="danger" onclick="clearLocalData()">Effacer les données locales</button></div></div>
+  <div class="section" style="margin-top:12px">
+  <h2>Obsidian — mémoire historique IA</h2>
+  <div id="obsidianStatusBox" class="ai-box">Aucun journal Obsidian importé sur le backend.</div>
+  <div class="actions">
+    <input id="obsidianZip" type="file" accept=".zip,application/zip" style="flex:1">
+    <button class="primary" type="button" onclick="importObsidianJournal()">IMPORTER LE ZIP</button>
+    <button class="secondary" type="button" onclick="analyzeObsidianImages()">ANALYSER LES SCREENSHOTS</button>
+  </div>
+  <div id="obsidianProgress" class="sub" style="margin-top:8px">Les screenshots restent sur le backend. L'analyse visuelle est lecture seule.</div>
+</div>
+<div class="section" style="margin-top:14px"><h2>Modèle actif</h2><div id="settingsModel" class="tag">AUCUN</div><div id="settingsModelDesc" class="sub"></div><div class="actions"><button class="secondary" onclick="chooseModel()">Changer de modèle</button><button class="danger" onclick="clearLocalData()">Effacer les données locales</button></div></div>
 </section>
 </main>
 </div>
@@ -342,7 +365,7 @@ function setSiteMode(mode){
   document.body.classList.remove("nq-mode","crypto-mode");
   document.body.classList.add(mode==="CRYPTO"?"crypto-mode":"nq-mode");
   ["NQ","CRYPTO"].forEach(m=>{const b=$("mode"+m);if(b){const on=m===mode;b.classList.toggle("active",on);b.setAttribute("aria-pressed",String(on));}});
-  updateModelUI(); updateBotMode(); applyModeVisibility(); renderJournal(); refreshPatterns(); resetJournalForm(); refreshAIDataAccess();
+  updateModelUI(); updateBotMode(); applyModeVisibility(); renderJournal(); refreshPatterns(); resetJournalForm(); refreshAIDataAccess(); refreshObsidianStatus();
 }
 async function botFetch(path,options={}){
   if(!BOT_API) throw new Error("BOT_API_NOT_CONFIGURED");
@@ -528,7 +551,7 @@ function renderStats(){
  const all=getJournal(),arr=VALID_MODES.has(activeModel)?all.filter(x=>x.model===activeModel):all; $("trades").textContent=arr.length;
  if(arr[0]){$("dashScore").textContent=arr[0].score??"—";$("lastGrade").textContent=arr[0].grade||"—";$("latest").innerHTML='<b>'+esc(arr[0].model||"TRADE")+' — '+esc(arr[0].grade||"—")+' — '+esc(arr[0].decision||"JOURNAL")+'</b><div class="sub" style="margin-top:8px">'+esc(arr[0].notes||arr[0].context||"Aucune note.")+'</div>'}
 }
-async function refreshAIDataAccess(){const el=document.getElementById("aiDataAccess");if(!el)return;const api=String(localStorage.getItem("botApiUrl")||"").replace(/\/$/,"");if(!api){el.textContent="Backend non configuré — aucune donnée serveur n’est accessible à l’IA.";return}try{const r=await fetch(api+"/api/history/ai-context?model="+encodeURIComponent(activeModel));const d=await r.json();el.innerHTML="<b>"+activeModel+"</b> · "+(d.sampleSize||0)+" trades serveur<br><span class='sub'>Historique détaillé récent + statistiques sur l’historique complet + contexte historique vérifié. NQ/Futures et Crypto restent séparés.</span>"}catch(e){el.textContent="Backend hors ligne.";}}
+async function refreshAIDataAccess(){const el=document.getElementById("aiDataAccess");if(!el)return;const api=String(localStorage.getItem("botApiUrl")||"").replace(/\/$/,"");if(!api){el.textContent="Backend non configuré — aucune donnée serveur n’est accessible à l’IA.";return}try{const r=await fetch(api+"/api/history/ai-context?model="+encodeURIComponent(activeModel));const d=await r.json();el.innerHTML="<b>"+activeModel+"</b> · "+(d.sampleSize||0)+" trades serveur<br><span class='sub'>Mémoire historique + journal + contexte vérifié. Obsidian est importé séparément et reste cloisonné par modèle.</span>"}catch(e){el.textContent="Backend hors ligne.";}}
 function refreshPatterns(){
  const arr=getJournal(),scope=activeModel==="NQ"||activeModel==="CRYPTO"?activeModel:null,data=scope?arr.filter(x=>x.model===scope):arr;
  $("patTrades").textContent=data.length;
@@ -544,6 +567,47 @@ function refreshPatterns(){
  } else insights.push("Il faut davantage de trades enregistrés avant de produire des observations fiables. L'IA ne doit pas transformer quelques trades en règle générale.");
  $("patCount").textContent=insights.length;
  $("patternInsights").innerHTML=insights.map(x=>'<div class="decision">'+esc(x)+'</div>').join("");
+}
+async function refreshObsidianStatus(){
+  const box=$("obsidianStatusBox"),progress=$("obsidianProgress");
+  if(!box||!BOT_API){if(box)box.textContent="Configure d'abord le backend IA.";return;}
+  try{
+    const r=await botFetch("/api/obsidian/status?model="+encodeURIComponent(activeModel||"NQ"));
+    if(!r.imported){box.innerHTML="<b>OBSIDIAN</b> · non importé<br><span class='sub'>Importe ton ZIP une fois. L'IA pourra ensuite utiliser les fiches et les screenshots.</span>";return;}
+    box.innerHTML="<b>OBSIDIAN ACTIF</b> · "+(r.tradeRecords||0)+" fiches · "+(r.imageFiles||0)+" images<br><span class='sub'>"+(r.modelTradeRecords||0)+" fiches pour "+esc(activeModel)+" · "+(r.imageAnalyses||0)+" images déjà analysées.</span>";
+    const j=r.job||{}; if(progress) progress.textContent=j.running?("Analyse visuelle en cours : "+j.processed+"/"+j.total+" images."):(j.phase==="complete"?"Analyse visuelle terminée.":j.error?"Erreur : "+j.error:"Prêt à analyser.");
+  }catch(e){if(box)box.innerHTML="<span class='neutral'>Backend hors ligne.</span>";}
+}
+async function importObsidianJournal(){
+  if(!BOT_API){alert("Configure d'abord l'URL du backend dans Paramètres.");return;}
+  const file=$("obsidianZip")?.files?.[0]; if(!file){alert("Sélectionne ton ZIP Obsidian.");return;}
+  const progress=$("obsidianProgress"); progress.textContent="Import du journal Obsidian en cours…";
+  try{
+    const form=new FormData();form.append("file",file,file.name);
+    const r=await fetch(BOT_API+"/api/obsidian/import",{method:"POST",body:form});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.error||"Import impossible");
+    progress.textContent="Import terminé : "+d.status.tradeRecords+" fiches et "+d.status.imageFiles+" images.";
+    await refreshObsidianStatus(); await refreshAIDataAccess();
+  }catch(e){progress.textContent="Import échoué : "+e.message;}
+}
+async function analyzeObsidianImages(){
+  if(!BOT_API){alert("Configure d'abord le backend.");return;}
+  const progress=$("obsidianProgress");progress.textContent="Démarrage de l'analyse visuelle…";
+  try{
+    const r=await botFetch("/api/obsidian/analyze-images",{method:"POST",body:JSON.stringify({model:activeModel})});
+    progress.textContent=r.started?"Analyse visuelle démarrée.":"Analyse déjà en cours.";
+    pollObsidianJob();
+  }catch(e){progress.textContent="Analyse impossible : "+e.message;}
+}
+async function pollObsidianJob(){
+  if(!BOT_API)return;
+  try{
+    const r=await botFetch("/api/obsidian/job");
+    const p=$("obsidianProgress");
+    if(p&&r.running){p.textContent="Analyse visuelle : "+r.processed+"/"+r.total+" images.";setTimeout(pollObsidianJob,5000);}
+    else {if(p)p.textContent=r.error?"Erreur : "+r.error:(r.phase==="complete"?"Analyse visuelle terminée.":"Prêt.");refreshObsidianStatus();}
+  }catch(e){}
 }
 async function saveBotUrl(){
  const v=$("botApiUrl").value.trim().replace(/\/$/,""); if(v){localStorage.setItem("botApiUrl",v); location.reload();}
@@ -640,7 +704,7 @@ function toggleKCEXAuto(){
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");location.reload()}}
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if(!VALID_MODES.has(siteMode))siteMode="NQ"; setSiteMode(siteMode); $("models").classList.add("hidden"); $("dash").classList.remove("hidden"); updateModelUI(); document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode)));
-renderJournal();resetJournalForm();refreshPatterns();refreshAIDataAccess();
+renderJournal();resetJournalForm();refreshPatterns();refreshAIDataAccess();refreshObsidianStatus();
 $("jDate").addEventListener("change",updateJournalDate);$("jBefore").addEventListener("change",()=>previewJournalImage($("jBefore"),"jBeforePreview"));$("jAfter").addEventListener("change",()=>previewJournalImage($("jAfter"),"jAfterPreview"));
 </script>
 <script src="./voice-coach.js"></script>
