@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import OpenAI, { toFile } from "openai";
+import OpenAI from "openai";
 import fs from "node:fs/promises";
 import path from "node:path";
 import WebSocket from "ws";
@@ -17,8 +17,40 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 90 
 
 const PORT = Number(process.env.PORT || 3000);
 const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), "data", "trades.json");
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
-const MODEL = process.env.OPENAI_MODEL || "gpt-5.6-sol";
+const openrouter = process.env.OPENROUTER_API_KEY ? new OpenAI({
+  apiKey: process.env.OPENROUTER_API_KEY,
+  baseURL: "https://openrouter.ai/api/v1",
+  defaultHeaders: {
+    "HTTP-Referer": process.env.FRONTEND_ORIGIN || "https://naththetrader.github.io",
+    "X-Title": "Trading Assistant"
+  }
+}) : null;
+const MODEL = process.env.OPENROUTER_MODEL || "openrouter/free";
+
+function convertAIContent(content) {
+  if (!Array.isArray(content)) return content;
+  return content.map(item => {
+    if (item?.type === "input_text") return { type:"text", text:String(item.text || "") };
+    if (item?.type === "input_image") return { type:"image_url", image_url:{ url:String(item.image_url || "") } };
+    return item;
+  });
+}
+function convertAIInput(input) {
+  if (!Array.isArray(input)) return [{ role:"user", content:String(input || "") }];
+  return input.map(message => ({ role:message?.role || "user", content:convertAIContent(message?.content) }));
+}
+const openai = openrouter ? {
+  responses: {
+    create: async ({model,input,reasoning}) => {
+      const r = await openrouter.chat.completions.create({
+        model:model || MODEL,
+        messages:convertAIInput(input),
+        ...(reasoning ? {reasoning} : {})
+      });
+      return { output_text:r.choices?.[0]?.message?.content || "", raw:r };
+    }
+  }
+} : null;
 const PROFILE_FILE = process.env.PROFILE_FILE || path.join(process.cwd(), "trader-profile.json");
 const HISTORICAL_CONTEXT_FILE = process.env.HISTORICAL_CONTEXT_FILE || path.join(process.cwd(), "historical-trading-context.json");
 const OBSIDIAN_DIR = process.env.OBSIDIAN_DIR || path.join(process.cwd(), "data", "obsidian");
@@ -440,7 +472,7 @@ function cleanTrade(t={}) {
 
 async function askAI({task, trade, history=[]}) {
   if (!openai) {
-    return { ok:false, error:"OPENAI_API_KEY manquante. Le moteur est prêt mais aucune clé serveur n'est configurée." };
+    return { ok:false, error:"OPENROUTER_API_KEY manquante. Le moteur est prêt mais aucune clé serveur n'est configurée." };
   }
   const profile = await loadProfile();
   const model = normalizeModel(trade?.model || (String(task || "").toUpperCase().includes("CRYPTO") ? "CRYPTO" : "NQ"));
@@ -559,7 +591,7 @@ If sample size is insufficient, say so.`,
 });
 
 app.post("/api/coach/question", async (req,res) => {
-  if(!openai) return res.status(503).json({ok:false,error:"OPENAI_API_KEY manquante."});
+  if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
   const model=normalizeModel(req.body.model);
   const snapshot=await buildOptimizationSnapshot(model);
   const response=await openai.responses.create({
@@ -573,34 +605,12 @@ app.post("/api/coach/question", async (req,res) => {
 });
 
 app.post("/api/voice/turn", async (req,res) => {
-  if(!openai) return res.status(503).json({ok:false,error:"OPENAI_API_KEY manquante."});
-  try {
-    const model=normalizeModel(req.body.model);
-    const audioBase64=String(req.body.audioBase64||"");
-    if(!audioBase64) return res.status(400).json({ok:false,error:"Audio manquant."});
-    const buffer=Buffer.from(audioBase64,"base64");
-    const mime=String(req.body.mimeType||"audio/webm").split(";")[0];
-    const ext=mime.includes("mp4")||mime.includes("m4a")?"m4a":mime.includes("wav")?"wav":"webm";
-    const transcription=await openai.audio.transcriptions.create({
-      file:await toFile(buffer,"voice."+ext),
-      model:process.env.OPENAI_TRANSCRIBE_MODEL||"gpt-4o-transcribe",
-      response_format:"text"
-    });
-    const transcript=String(transcription||"").trim();
-    const previousTurns=Array.isArray(req.body.previousTurns)?req.body.previousTurns:[];
-    const reply=await askVoiceCoach({model,userText:transcript,previousTurns});
-    const speech=await openai.audio.speech.create({
-      model:process.env.OPENAI_TTS_MODEL||"gpt-4o-mini-tts",
-      voice:process.env.OPENAI_TTS_VOICE||"alloy",
-      input:reply,response_format:"mp3"
-    });
-    await saveLearningEntry(model,"voice-coach",reply,{transcript});
-    res.json({ok:true,model,transcript,reply,audioBase64:Buffer.from(await speech.arrayBuffer()).toString("base64")});
-  } catch(e) { res.status(502).json({ok:false,error:e.message}); }
+  if(!openrouter) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
+  return res.status(501).json({ok:false,error:"Le coach vocal nécessite un moteur audio dédié. Le moteur IA texte/images OpenRouter Free est actif; aucune facturation OpenAI n'est utilisée."});
 });
 
 app.post("/api/analyze-screen", async (req,res) => {
-  if(!openai) return res.status(503).json({ok:false,error:"OPENAI_API_KEY manquante."});
+  if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
   try{
     const model=normalizeModel(req.body.model);
     if(model!=="CRYPTO") return res.status(400).json({ok:false,error:"Screen observer réservé au modèle CRYPTO."});
@@ -659,7 +669,7 @@ app.post("/api/obsidian/import", upload.single("file"), async (req,res) => {
   }
 });
 app.post("/api/obsidian/analyze-images", async (req,res) => {
-  if(!openai) return res.status(503).json({ok:false,error:"OPENAI_API_KEY manquante."});
+  if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
   const status=await loadObsidianStatus();
   if(!status.imported) return res.status(400).json({ok:false,error:"Import Obsidian requis avant l'analyse visuelle."});
   if(obsidianJob.running) return res.json({ok:true,started:false,job:obsidianJob});
@@ -672,7 +682,7 @@ app.get("/health", (req,res) => res.json({
   ok:true,
   service:"trading-assistant-bot",
   mode:"READ_ONLY",
-  ai:!!openai,
+  ai:!!openrouter,
   model:MODEL,
   timestamp:new Date().toISOString()
 }));
