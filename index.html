@@ -221,6 +221,25 @@ body.nq-mode{--accent:#ff3158;--accentSoft:rgba(255,49,88,.12)}
     </div></div><div id="botCryptoPanel" class="hidden"><div class="ai-box"><b>MODÈLE CRYPTO</b><div class="sub" style="margin-top:8px">Direction du marché → Key Open manipulé / sweep → POI HTF aligné → entrée → laisser le trade jouer en high RR. OTE / Fib secondaire.</div></div><textarea id="cryptoBotContext" placeholder="Décris le setup Crypto : direction du marché, Key Open, sweep/manipulation, POI HTF, zone d'entrée et contexte."></textarea></div><div class="actions"><button class="primary" onclick="runBotTest()">LANCER L'ANALYSE</button><button class="secondary" onclick="showTradePopup({model:'NQ',instrument:'NQ',direction:'LONG',risk:'$100'})">SIMULER UN TRADE DÉTECTÉ</button></div></div>
     <div class="section"><h2>Sortie du bot</h2><div id="botOutput"><div class="empty">Aucun trade analysé.</div></div></div>
   </div>
+  <div class="section" data-mode="CRYPTO" style="margin-top:14px">
+  <h2>KCEX — Observateur Crypto</h2>
+  <div class="ai-box">
+    <b>Lecture seule par partage d'écran</b>
+    <div class="sub" style="margin-top:7px">Ouvre KCEX dans un autre onglet, puis partage uniquement l'onglet KCEX. L'IA pourra analyser une capture de ce qui est visible : prix, position, P&amp;L, carnet/chart et contexte. Aucun mot de passe n'est lu et aucun ordre n'est envoyé.</div>
+  </div>
+  <div class="actions">
+    <button class="primary" type="button" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button>
+    <button class="secondary" type="button" onclick="startKCEXScreenShare()">PARTAGER L'ÉCRAN KCEX</button>
+    <button class="secondary" type="button" onclick="stopKCEXScreenShare()">ARRÊTER</button>
+    <button class="secondary" type="button" onclick="analyzeKCEXScreen()">ANALYSER MAINTENANT</button>
+    <button class="secondary" type="button" onclick="toggleKCEXAuto()">AUTO 15s</button>
+  </div>
+  <div id="kcexScreenStatus" class="sub" style="margin-top:10px">Pas de partage actif.</div>
+  <div class="photo-box" style="margin-top:10px">
+    <video id="kcexScreenPreview" autoplay muted playsinline style="display:none;width:100%;max-height:420px;object-fit:contain;border-radius:8px;background:#07090d"></video>
+  </div>
+  <div id="kcexAIOutput" class="ai-box" style="margin-top:10px">Aucune capture analysée.</div>
+</div>
   <div class="section" style="margin-top:14px"><h2>État des intégrations</h2><div id="tvLastEvent" class="ai-box" style="margin-bottom:12px">Aucun événement live.</div><div id="tvAI" class="ai-box" style="margin-bottom:12px">Aucune analyse live.</div><div class="rows"><div class="row"><span>Flux compte Tradovate</span><span class="neutral">À connecter</span></div><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div><div class="row"><span>Analyse IA des screenshots</span><span class="neutral">Étape suivante</span></div></div></div>
 </section>
 
@@ -309,7 +328,7 @@ body.nq-mode{--accent:#ff3158;--accentSoft:rgba(255,49,88,.12)}
 <script>
 const nqDesc="HTF bias → POI → liquidité / manipulation → retracement Fibonacci → Rejection Block → entrée limite.";
 const cryptoDesc="Direction du marché → Key Open manipulé / sweep → POI HTF aligné → entrée → high RR. OTE / Fib secondaire.";
-const BOT_API=(localStorage.getItem("botApiUrl")||"").replace(/\\/$/,"");
+const BOT_API=(localStorage.getItem("botApiUrl")||"").replace(/\/$/,"");
 let activeModel=localStorage.getItem("activeModel")||"";
 let siteMode=localStorage.getItem("siteMode")||"NQ";
 const $=id=>document.getElementById(id);
@@ -548,6 +567,76 @@ function renderTradovateSnapshot(r){
 function renderTradovateStatus(r){const ok=!!r.connected;if($("tvLiveStatus")){$("tvLiveStatus").textContent=ok?"● LIVE":"● DÉCONNECTÉ";$("tvLiveStatus").className=ok?"status green":"status"}if($("tvBotState")){$("tvBotState").textContent=ok?"LIVE":"EN ATTENTE";$("tvBotState").className="value small "+(ok?"green":"orange")}if($("tvConnectionText"))$("tvConnectionText").textContent=ok?"Flux actif":"Non connecté";if($("tvDetails"))$("tvDetails").innerHTML='<div class="row"><span>Utilisateur</span><span>'+esc(r.userId||"—")+'</span></div><div class="row"><span>Comptes</span><span>'+esc((r.accounts||[]).map(a=>a.name||a.id).join(", ")||"—")+'</span></div>'}
 async function refreshTradovateEvents(){if(!BOT_API)return;try{const r=await botFetch("/api/tradovate/events"),ev=(r||[]).slice(-1)[0],ai=(r||[]).filter(x=>x.type==="trade_ai_analysis").slice(-1)[0];if(ev&&$("tvLastEvent"))$("tvLastEvent").innerHTML='<b>'+esc(ev.type||"event")+'</b><div class="sub">'+esc(ev.timestamp||"")+'</div>';if(ai&&$("tvAI"))$("tvAI").innerHTML='<b>TRADING ASSISTANT</b><div class="sub" style="margin-top:8px">'+esc(ai.analysis||"")+'</div>'}catch(e){}}
 setInterval(()=>{if(activeModel==="NQ"&&BOT_API)refreshTradovateUI()},5000);
+let kcexScreenStream=null;
+let kcexAutoTimer=null;
+let kcexAnalyzing=false;
+
+function setKCEXStatus(text){const el=$("kcexScreenStatus");if(el)el.textContent=text;}
+function stopKCEXAuto(){if(kcexAutoTimer){clearInterval(kcexAutoTimer);kcexAutoTimer=null;}}
+function stopKCEXScreenShare(){
+  stopKCEXAuto();
+  if(kcexScreenStream){kcexScreenStream.getTracks().forEach(t=>t.stop());kcexScreenStream=null;}
+  const video=$("kcexScreenPreview");if(video){video.srcObject=null;video.style.display="none";}
+  setKCEXStatus("Partage KCEX arrêté.");
+}
+async function startKCEXScreenShare(){
+  if(!navigator.mediaDevices?.getDisplayMedia){setKCEXStatus("Le partage d'écran n'est pas disponible dans ce navigateur.");return;}
+  try{
+    stopKCEXAuto();
+    if(kcexScreenStream) stopKCEXScreenShare();
+    kcexScreenStream=await navigator.mediaDevices.getDisplayMedia({
+      video:{displaySurface:"browser"},
+      audio:false,
+      selfBrowserSurface:"exclude",
+      surfaceSwitching:"include",
+      monitorTypeSurfaces:"include"
+    });
+    const video=$("kcexScreenPreview");
+    video.srcObject=kcexScreenStream;
+    video.style.display="block";
+    await video.play().catch(()=>{});
+    const track=kcexScreenStream.getVideoTracks()[0];
+    track.addEventListener("ended",()=>stopKCEXScreenShare(),{once:true});
+    setKCEXStatus("KCEX partagé. Sélectionne l'onglet KCEX dans la fenêtre de permission.");
+  }catch(e){setKCEXStatus("Partage annulé ou refusé : "+(e.message||e.name));}
+}
+function captureKCEXFrame(){
+  const video=$("kcexScreenPreview");
+  if(!video||!kcexScreenStream||video.readyState<2||!video.videoWidth)return "";
+  const canvas=document.createElement("canvas");
+  const max=1800,scale=Math.min(1,max/video.videoWidth);
+  canvas.width=Math.round(video.videoWidth*scale);canvas.height=Math.round(video.videoHeight*scale);
+  canvas.getContext("2d").drawImage(video,0,0,canvas.width,canvas.height);
+  return canvas.toDataURL("image/jpeg",.78);
+}
+async function analyzeKCEXScreen(){
+  if(kcexAnalyzing)return;
+  const imageDataUrl=captureKCEXFrame();
+  if(!imageDataUrl){setKCEXStatus("Partage KCEX actif requis avant l'analyse.");return;}
+  if(!BOT_API){setKCEXStatus("Backend non configuré. Ajoute l'URL du backend dans Paramètres.");return;}
+  kcexAnalyzing=true;
+  const out=$("kcexAIOutput");if(out)out.innerHTML="<b>TRADING ASSISTANT</b><div class='sub' style='margin-top:8px'>Analyse de l'écran KCEX en cours…</div>";
+  try{
+    const r=await botFetch("/api/analyze-screen",{method:"POST",body:JSON.stringify({
+      model:"CRYPTO",
+      imageDataUrl,
+      context:$("cryptoBotContext")?.value?.trim()||"Observation live de l'interface KCEX. Décrire uniquement ce qui est visible et pertinent pour le modèle Crypto."
+    })});
+    if(out)out.innerHTML="<b>TRADING ASSISTANT — CRYPTO</b><div class='sub' style='margin-top:8px'>"+esc(r.text||"Analyse terminée.")+"</div>";
+    setKCEXStatus("Dernière capture analysée : "+new Date().toLocaleTimeString("fr-CA"));
+  }catch(e){
+    if(out)out.innerHTML="<div class='decision bad'>Analyse impossible</div><div class='sub' style='margin-top:8px'>"+esc(e.message||"Erreur backend")+"</div>";
+    setKCEXStatus("Erreur d'analyse backend.");
+  }finally{kcexAnalyzing=false;}
+}
+function toggleKCEXAuto(){
+  if(kcexAutoTimer){stopKCEXAuto();setKCEXStatus("Analyse automatique arrêtée.");return;}
+  if(!kcexScreenStream){setKCEXStatus("Partage KCEX requis avant l'auto 15s.");return;}
+  analyzeKCEXScreen();
+  kcexAutoTimer=setInterval(()=>analyzeKCEXScreen(),15000);
+  setKCEXStatus("Analyse automatique active : une capture toutes les 15 secondes.");
+}
+
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");location.reload()}}
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if(!VALID_MODES.has(siteMode))siteMode="NQ"; setSiteMode(siteMode); $("models").classList.add("hidden"); $("dash").classList.remove("hidden"); updateModelUI(); document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode)));
