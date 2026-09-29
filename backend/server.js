@@ -70,7 +70,7 @@ async function tradovateAuth() {
 function tvSend(endpoint,body="") {
   if(!tradovate.ws) throw new Error("Tradovate WebSocket disconnected");
   const id=tradovate.requestId++;
-  tradovate.ws.send(endpoint+"\\n"+id+"\\n\\n"+(typeof body==="string"?body:JSON.stringify(body)));
+  tradovate.ws.send(endpoint+"\n"+id+"\n\n"+(typeof body==="string"?body:JSON.stringify(body)));
 }
 async function connectTradovate() {
   if(!tradovate.token || (tradovate.expirationTime && Date.parse(tradovate.expirationTime)<Date.now()+300000)) await tradovateAuth();
@@ -80,25 +80,47 @@ async function connectTradovate() {
     ws.on("open",()=>{tvSend("authorize",tradovate.token); tradovate.heartbeat=setInterval(()=>{try{if(tradovate.ws&&tradovate.ws.readyState===1)tradovate.ws.send("[]")}catch{}},2500)});
     ws.on("message",raw=>{
       tradovate.lastMessageAt=new Date().toISOString();
-      let msg; try{msg=JSON.parse(raw.toString())}catch{return}
-      emitLive({type:"message",message:msg});
-      if(msg?.s===200 && msg?.i===0){tradovate.connected=true;if(!settled){settled=true;resolve();}
-        tvSend("user/syncrequest",{splitResponses:true,users:[Number(tradovate.userId)],entityTypes:["account","position","order","fill","cashBalance","contract"]});
-      }
-      const d=msg?.d;if(!d)return;
-      for(const key of ["accounts","positions","orders","fills","cashBalances","contracts"]) if(Array.isArray(d[key])){
-        if(key==="accounts") tradovate.accounts=d[key]; if(key==="positions") tradovate.positions=d[key]; if(key==="orders") tradovate.orders=d[key]; if(key==="fills") d[key].forEach(x=>upsertById(tradovate.fills,x)); if(key==="contracts") for(const contract of d[key]) tradovate.contracts.set(Number(contract.id),contract);
-        emitLive({type:"entity_update",entity:key,count:d[key].length});
-        if(key==="fills") for(const fill of d[key]) { const fillKey=String(fill.id??(String(fill.orderId)+":"+String(fill.timestamp)+":"+String(fill.price)+":"+String(fill.action))); if(tradovate.fillIds.has(fillKey)) continue; tradovate.fillIds.add(fillKey);
-          const detected=parseFill(fill);
-          const trades=await loadTrades(); if(!trades.some(t=>t.id===detected.id)){trades.push(detected); await saveTrades(trades);}
-          emitLive({type:"trade_fill",fill,trade:detected});
-          if(openai) {
-            askAI({
-              task:"A live Tradovate fill was detected. Analyze it as an observational event only. Do not claim the fill proves setup quality. Identify missing evidence required to judge the NQ model and list the next data that should be attached.",
-              trade:detected, history:trades
-            }).then(ai=>emitLive({type:"trade_ai_analysis",tradeId:detected.id,analysis:ai.text||ai.error})).catch(e=>emitLive({type:"trade_ai_error",error:e.message}));
+      const rawText=raw.toString();
+      if(rawText==="o"||rawText==="h") return;
+      if(rawText==="c") { emitLive({type:"server_close_frame"}); return; }
+      let frames=[];
+      try { frames=rawText.startsWith("a[") ? JSON.parse(rawText.slice(1)) : [JSON.parse(rawText)]; } catch { return; }
+      for(const msg of (Array.isArray(frames)?frames:[frames])) {
+        emitLive({type:"message",message:msg});
+        if(msg?.s===200 && msg?.i===0){
+          tradovate.connected=true;
+          if(!settled){settled=true;resolve();}
+          tvSend("user/syncrequest",{splitResponses:true,users:[Number(tradovate.userId)],entityTypes:["account","position","order","fill","cashBalance","contract"]});
+        }
+        const d=msg?.d;if(!d) continue;
+        if(d.entityType && d.entity){
+          const entity=d.entity;
+          const type=String(d.entityType).toLowerCase();
+          if(type==="fill") d.eventType==="Deleted"?null:upsertById(tradovate.fills,entity);
+          if(type==="position") upsertById(tradovate.positions,entity);
+          if(type==="order") upsertById(tradovate.orders,entity);
+          if(type==="account" && d.eventType!=="Deleted") upsertById(tradovate.accounts,entity);
+          if(type==="contract") tradovate.contracts.set(Number(entity.id),entity);
+          emitLive({type:"entity_event",entityType:d.entityType,eventType:d.eventType});
+          if(type==="fill" && d.eventType!=="Deleted"){
+            const fill=entity; const fillKey=String(fill.id??(String(fill.orderId)+":"+String(fill.timestamp)+":"+String(fill.price)+":"+String(fill.action)));
+            if(!tradovate.fillIds.has(fillKey)){
+              tradovate.fillIds.add(fillKey);
+              const detected=parseFill(fill); const trades=await loadTrades();
+              if(!trades.some(t=>t.id===detected.id)){trades.push(detected);await saveTrades(trades);}
+              emitLive({type:"trade_fill",fill,trade:detected});
+              if(openai) askAI({task:"A live Tradovate fill was detected. Analyze it observationally only. Do not claim the fill proves setup quality. Identify missing evidence needed to judge the NQ model and list the next data that should be attached.",trade:detected,history:trades.filter(t=>t.model==="NQ")}).then(ai=>emitLive({type:"trade_ai_analysis",tradeId:detected.id,analysis:ai.text||ai.error})).catch(e=>emitLive({type:"trade_ai_error",error:e.message}));
+            }
           }
+          continue;
+        }
+        for(const key of ["accounts","positions","orders","fills","cashBalances","contracts"]) if(Array.isArray(d[key])){
+          if(key==="accounts") tradovate.accounts=d[key];
+          if(key==="positions") tradovate.positions=d[key];
+          if(key==="orders") tradovate.orders=d[key];
+          if(key==="fills") d[key].forEach(x=>upsertById(tradovate.fills,x));
+          if(key==="contracts") for(const contract of d[key]) tradovate.contracts.set(Number(contract.id),contract);
+          emitLive({type:"entity_update",entity:key,count:d[key].length});
         }
       }
     });
