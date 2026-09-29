@@ -312,7 +312,7 @@ const BOT_API=(localStorage.getItem("botApiUrl")||"").replace(/\\/$/,"");
 let activeModel=localStorage.getItem("activeModel")||"";
 let siteMode=localStorage.getItem("siteMode")||"NQ";
 const $=id=>document.getElementById(id);
-function setSiteMode(mode){siteMode=mode;localStorage.setItem("siteMode",mode);document.body.classList.toggle("crypto-mode",mode==="CRYPTO");document.body.classList.toggle("nq-mode",mode==="NQ");$("modeNQ")?.classList.toggle("active",mode==="NQ");$("modeCrypto")?.classList.toggle("active",mode==="CRYPTO");if($("modeBannerText"))$("modeBannerText").textContent=mode==="NQ"?"NQ / FUTURES — environnement NQ uniquement":"CRYPTO — environnement crypto uniquement";activeModel=mode;localStorage.setItem("activeModel",mode);updateModelUI();}
+function setSiteMode(mode){mode=String(mode||"NQ").toUpperCase();if(mode!=="NQ"&&mode!=="CRYPTO")mode="NQ";siteMode=mode;activeModel=mode;localStorage.setItem("siteMode",mode);localStorage.setItem("activeModel",mode);document.body.classList.toggle("crypto-mode",mode==="CRYPTO");document.body.classList.toggle("nq-mode",mode==="NQ");$("modeNQ")?.classList.toggle("active",mode==="NQ");$("modeCrypto")?.classList.toggle("active",mode==="CRYPTO");if($("modeBannerText"))$("modeBannerText").textContent=mode==="NQ"?"NQ / FUTURES — environnement NQ uniquement":"CRYPTO — environnement crypto uniquement";updateModelUI();applyModeVisibility();}
 async function botFetch(path,options={}){
   if(!BOT_API) throw new Error("BOT_API_NOT_CONFIGURED");
   const res=await fetch(BOT_API+path,{headers:{"Content-Type":"application/json"},...options});
@@ -325,7 +325,7 @@ async function syncTradeToBot(trade){
   catch(e){ return false; }
 }
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
-function selectModel(m){activeModel=m;localStorage.setItem("activeModel",m);updateModelUI();show("dash",$("navDash"))}
+function selectModel(m){setSiteMode(m);show("dash",$("navDash"))}
 function chooseModel(){document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));$("models").classList.remove("hidden");document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"))}
 function updateModelUI(){
  if(!activeModel)return;
@@ -336,8 +336,17 @@ function updateModelUI(){
  const desc=activeModel==="NQ"?nqDesc:cryptoDesc;$("modelDescription").textContent=desc;$("settingsModelDesc").textContent=desc;
  renderStats();
 }
+function applyModeVisibility(){
+  const isNQ=siteMode==="NQ";
+  document.querySelectorAll('[data-mode]').forEach(el=>{
+    const m=el.getAttribute("data-mode");
+    el.classList.toggle("hidden",m!=="ALL"&&m!==siteMode);
+  });
+  if($("bot"))$("bot").classList.toggle("hidden",!isNQ);
+  if($("cryptoBot"))$("cryptoBot").classList.toggle("hidden",isNQ);
+}
 function show(id,btn){
- if(!activeModel&&id!=="settings"){chooseModel();return}
+ if(!activeModel&&id!=="settings"){setSiteMode(siteMode||"NQ");}
  document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));$(id).classList.remove("hidden");
  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
  if(btn)btn.classList.add("active");
@@ -484,7 +493,7 @@ async function refreshTradovateEvents(){if(!BOT_API)return;try{const r=await bot
 setInterval(()=>{if(activeModel==="NQ"&&BOT_API)refreshTradovateUI()},5000);
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");location.reload()}}
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
-setSiteMode(siteMode);$("models").classList.add("hidden");$("dash").classList.remove("hidden");updateModelUI();
+setSiteMode(siteMode);applyModeVisibility();$("models").classList.add("hidden");$("dash").classList.remove("hidden");updateModelUI();
 renderJournal();resetJournalForm();refreshPatterns();
 $("jDate").addEventListener("change",updateJournalDate);$("jBefore").addEventListener("change",()=>previewJournalImage($("jBefore"),"jBeforePreview"));$("jAfter").addEventListener("change",()=>previewJournalImage($("jAfter"),"jAfterPreview"));
 </script>
