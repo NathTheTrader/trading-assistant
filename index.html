@@ -211,7 +211,7 @@ body.nq-mode{--accent:#ff3158;--accentSoft:rgba(255,49,88,.12)}
     <div class="card"><div class="label">État du bot</div><div id="tvBotState" class="value small green">PRÊT</div><div class="sub">En attente du flux</div></div>
   </div>
   <div class="layout">
-    <div class="section"><h2>Tester la checklist NQ</h2><div class="form">
+    <div class="section"><h2 id="botChecklistTitle">Tester le modèle NQ</h2><div class="form">
       <label>Timing / Session <input id="btiming" type="checkbox" checked></label><label>Haute probabilité <input id="bhigh" type="checkbox" checked></label>
       <label>Perte récente <input id="bloss" type="checkbox"></label><label>Bon sans Key Open <input id="bko" type="checkbox" checked></label>
       <label>Setup backtesté <input id="bbacktest" type="checkbox" checked></label><label>Liquidité près du SL <input id="bliq" type="checkbox"></label>
@@ -403,10 +403,21 @@ function scoreFrom(prefix){
  const grade=score>=27?"A+":score>=23?"A":score>=20?"A-":score>=16?"B+":score>=12?"B":score>=8?"B-":score>=4?"C+":"C";
  return{score,killer,grade};
 }
-function runBotTest(){
- const r=scoreFrom("b");const decision=r.killer?"PAS DE TRADE":"TRADE VALIDE";const note=$("bnotes").value||"Analyse basée sur la checklist NQ.";
- $("botOutput").innerHTML='<div class="score"><div class="circle" style="border-color:'+(r.killer?'var(--red)':'var(--green)')+'">'+r.score+'</div><div><div class="'+(r.killer?'red':'grade')+'">'+r.grade+'</div><div class="sub">'+decision+'</div></div></div><div class="decision '+(r.killer?'bad':'')+'">'+(r.killer?'🔴 PAS DE TRADE — un killer est actif':'🟢 TRADE VALIDE — checklist NQ')+'</div><div class="sub" style="margin-top:12px">'+esc(note)+'</div>';
- const arr=getJournal();arr.unshift({id:Date.now(),dateISO:new Date().toISOString().slice(0,10),date:new Date().toISOString().slice(0,10),model:"NQ",market:"FUTURES",instrument:"NQ",score:r.score,grade:r.grade,decision,notes:note,context:note});localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));renderJournal();renderStats();
+async function runBotTest(){
+  if(activeModel==="CRYPTO"){
+    const context=$("bnotes").value.trim();
+    if(!context){$("botOutput").innerHTML='<div class="empty">Décris le setup Crypto : direction du marché → Key Open manipulé/sweep → POI HTF → entrée → high RR.</div>';return}
+    $("botOutput").innerHTML='<div class="empty">Le bot Crypto analyse le contexte…</div>';
+    if(!BOT_API){$("botOutput").innerHTML='<div class="decision">Analyse locale prête. Configure le backend pour l’analyse IA réelle.</div><div class="sub" style="margin-top:10px">'+esc(context)+'</div>';return}
+    try{
+      const r=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade:{model:"CRYPTO",instrument:"CRYPTO",direction:"",risk:100,result:"OPEN",context,setupPattern:"Key Open → sweep → HTF POI → high RR",timestamp:new Date().toISOString()}})});
+      $("botOutput").innerHTML='<div class="ai-box"><b>TRADING ASSISTANT — CRYPTO</b><div class="sub" style="margin-top:9px">'+esc(r.text||"Analyse terminée.")+'</div></div>';
+    }catch(e){$("botOutput").innerHTML='<div class="decision bad">Backend indisponible.</div>'}
+    return;
+  }
+  const r=scoreFrom("b");const decision=r.killer?"PAS DE TRADE":"TRADE VALIDE";const note=$("bnotes").value||"Analyse basée sur la checklist NQ.";
+  $("botOutput").innerHTML='<div class="score"><div class="circle" style="border-color:'+(r.killer?'var(--red)':'var(--green)')+'">'+r.score+'</div><div><div class="'+(r.killer?'red':'grade')+'">'+r.grade+'</div><div class="sub">'+decision+'</div></div></div><div class="decision '+(r.killer?'bad':'')+'">'+(r.killer?'🔴 PAS DE TRADE — un killer est actif':'🟢 TRADE VALIDE — checklist NQ')+'</div><div class="sub" style="margin-top:12px">'+esc(note)+'</div>';
+  const arr=getJournal();arr.unshift({id:Date.now(),dateISO:new Date().toISOString().slice(0,10),date:new Date().toISOString().slice(0,10),model:"NQ",market:"FUTURES",instrument:"NQ",score:r.score,grade:r.grade,decision,notes:note,context:note});localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));renderJournal();renderStats();
 }
 function analyze(){
  const r=scoreFrom("");const decision=r.killer?"PAS DE TRADE":"TRADE VALIDE",notes=$("notes").value;
