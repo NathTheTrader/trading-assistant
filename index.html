@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trading Assistant</title>
+<style>
+:root{--bg:#080a0f;--panel:#10141c;--panel2:#151a23;--line:#242b38;--text:#f3f5f8;--muted:#8d97a8;--green:#35e39b;--red:#ff5f6d;--orange:#ffbd5a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}.app{display:flex;min-height:100vh}.side{width:230px;border-right:1px solid var(--line);padding:24px 16px;background:#0b0e14}.logo{font-weight:800;font-size:18px;margin:0 8px 28px}.logo span{color:var(--green)}nav button{display:block;width:100%;text-align:left;background:none;border:0;color:var(--muted);padding:12px;border-radius:9px;font-size:14px;cursor:pointer;margin:3px 0}nav button.active,nav button:hover{background:var(--panel2);color:#fff}.main{flex:1;padding:28px;max-width:1450px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.top h1{font-size:25px;margin:0}.sub{color:var(--muted);font-size:13px;margin-top:5px}.status,.pill{border:1px solid #294235;background:#0d1b15;color:var(--green);padding:7px 10px;border-radius:999px;font-size:11px;font-weight:700}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card,.section,.model-card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:18px}.label{font-size:12px;color:var(--muted)}.value{font-size:25px;font-weight:750;margin-top:7px}.green{color:var(--green)}.red{color:var(--red)}.orange{color:var(--orange)}.layout{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin-top:16px}.section h2{font-size:16px;margin:0 0 16px}.rows{display:grid;gap:7px}.row{display:flex;justify-content:space-between;align-items:center;background:#0c1017;border:1px solid #1d2430;padding:10px 12px;border-radius:8px;font-size:13px}.yes{color:var(--green);font-weight:700}.no{color:var(--red);font-weight:700}.neutral{color:var(--orange);font-weight:700}.score{display:flex;align-items:center;gap:18px;margin:18px 0}.circle{width:92px;height:92px;border-radius:50%;border:7px solid var(--green);display:grid;place-items:center;font-size:22px;font-weight:800}.grade{font-size:28px;font-weight:800;color:var(--green)}.decision{margin-top:10px;background:#0d2119;border:1px solid #245b43;padding:13px;border-radius:9px;color:var(--green);font-weight:800;text-align:center}.decision.bad{background:#211013;border-color:#5b242b;color:var(--red)}button.primary{background:var(--green);color:#06100b;border:0;padding:11px 15px;border-radius:8px;font-weight:800;cursor:pointer}button.secondary{background:var(--panel2);color:#fff;border:1px solid var(--line);padding:10px 13px;border-radius:8px;cursor:pointer}input,textarea{background:#0b0f15;color:#fff;border:1px solid var(--line);border-radius:7px;padding:9px}textarea{width:100%;min-height:110px;resize:vertical}.form{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.form label{display:flex;justify-content:space-between;align-items:center;background:#0c1017;border:1px solid #1d2430;padding:10px;border-radius:8px;font-size:13px}.form input{width:18px;height:18px}.full{grid-column:1/-1}.actions{display:flex;gap:8px;margin-top:12px}.table{width:100%;border-collapse:collapse;font-size:13px}.table th,.table td{text-align:left;padding:11px;border-bottom:1px solid var(--line)}.table th{color:var(--muted)}.hidden{display:none}.model-select{display:grid;grid-template-columns:1fr 1fr;gap:16px}.model-card{cursor:pointer;transition:.15s}.model-card:hover{border-color:var(--green);transform:translateY(-1px)}.model-card h2{margin:0 0 8px}.model-card p{color:var(--muted);line-height:1.6;font-size:13px}.tag{display:inline-block;margin-bottom:12px;padding:5px 8px;border-radius:6px;background:var(--panel2);color:var(--green);font-size:11px;font-weight:800}@media(max-width:900px){.side{display:none}.main{padding:18px}.grid{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}}@media(max-width:600px){.grid,.form,.model-select{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side"><div class="logo">TRADING <span>ASSISTANT</span></div><nav>
+<button id="navDash" onclick="show('dash',this)">Dashboard</button>
+<button onclick="show('review',this)">Trade Review</button>
+<button onclick="show('journal',this)">Journal</button>
+<button onclick="chooseModel()">Choose Model</button>
+<button onclick="show('settings',this)">Settings</button>
+</nav></aside>
+<main class="main">
+<section id="models">
+<div class="top"><div><h1>Choose Your Model</h1><div class="sub">NQ et Crypto restent complètement séparés.</div></div><div class="status">● SYSTEM READY</div></div>
+<div class="model-select">
+<div class="model-card" onclick="selectModel('NQ')"><div class="tag">INDEX FUTURES</div><h2>NQ MODEL</h2><p>HTF bias → POI → liquidity/manipulation → Fibonacci retracement → Rejection Block → limit entry.</p></div>
+<div class="model-card" onclick="selectModel('CRYPTO')"><div class="tag">CRYPTO</div><h2>CRYPTO MODEL</h2><p>Direction du marché → Key Open manipulé/sweep → POI HTF aligné → entrée → laisser le trade play out en high RR. OTE/Fib secondaire.</p></div>
+</div></section>
+
+<section id="dash" class="hidden">
+<div class="top"><div><h1>Dashboard <span id="modelPill" class="pill"></span></h1><div class="sub">Checklist + journal local</div></div><div class="status">● SYSTEM READY</div></div>
+<div class="grid"><div class="card"><div class="label">Trades enregistrés</div><div class="value" id="trades">0</div></div><div class="card"><div class="label">Dernier score</div><div class="value green" id="dashScore">—</div></div><div class="card"><div class="label">Risk / trade</div><div class="value">$100</div></div><div class="card"><div class="label">Dernier grade</div><div class="value green" id="lastGrade">—</div></div></div>
+<div class="layout"><div class="section"><h2>Latest Review</h2><div id="latest">Aucune review.</div></div><div class="section"><h2>Modèle actif</h2><div id="modelDescription" class="sub"></div></div></div>
+</section>
+
+<section id="review" class="hidden">
+<div class="top"><div><h1>Trade Review <span id="reviewModel" class="pill"></span></h1><div class="sub">Analyse les conditions avant de prendre le trade.</div></div></div>
+<div class="section"><div class="form">
+<label>Timing / Session <input id="timing" type="checkbox" checked></label>
+<label>High Probability <input id="high" type="checkbox" checked></label>
+<label>Recent Loss <input id="loss" type="checkbox"></label>
+<label>Good Without KO <input id="ko" type="checkbox" checked></label>
+<label>Setup Backtest <input id="backtest" type="checkbox" checked></label>
+<label>Liquidity Near SL <input id="liq" type="checkbox"></label>
+<label>Tilt <input id="tilt" type="checkbox"></label>
+<label>Trade To Recover <input id="revenge" type="checkbox"></label>
+<div class="full"><textarea id="notes" placeholder="Notes du setup : sweep → impulse → retracement → RB → fill..."></textarea></div>
+</div><div class="actions"><button class="primary" onclick="analyze()">ANALYSE DU TRADE</button><button class="secondary" onclick="resetReview()">RESET</button></div></div>
+<div class="section" style="margin-top:16px"><h2>Résultat</h2><div id="result">Aucune analyse.</div></div>
+</section>
+
+<section id="journal" class="hidden"><div class="top"><div><h1>Journal</h1><div class="sub">Reviews sauvegardées dans ce navigateur.</div></div></div><div class="section"><table class="table"><thead><tr><th>Date</th><th>Model</th><th>Score</th><th>Grade</th><th>Decision</th><th>Notes</th></tr></thead><tbody id="journalBody"></tbody></table></div></section>
+
+<section id="settings" class="hidden"><div class="top"><div><h1>Settings</h1><div class="sub">V1 — aucune connexion de compte réel.</div></div></div><div class="section"><div class="rows"><div class="row"><span>Tradovate / NQ</span><span class="neutral">À connecter</span></div><div class="row"><span>KCEX</span><span class="neutral">À connecter via méthode autorisée</span></div><div class="row"><span>Notifications</span><span class="neutral">Plus tard</span></div></div></div></section>
+</main></div>
+<script>
+const nqDesc="HTF bias → POI → liquidity/manipulation → Fibonacci retracement → Rejection Block → limit entry.";
+const cryptoDesc="Direction du marché → Key Open manipulé/sweep → POI HTF aligné → entrée → high RR. OTE/Fib secondaire.";
+let activeModel=localStorage.getItem("activeModel")||"";
+const $=id=>document.getElementById(id);
+function selectModel(m){activeModel=m;localStorage.setItem("activeModel",m);updateModelUI();show("dash",$("navDash"))}
+function chooseModel(){document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));$("models").classList.remove("hidden");document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"))}
+function updateModelUI(){if(!activeModel)return;$("modelPill").textContent=activeModel+" MODEL";$("reviewModel").textContent=activeModel+" MODEL";$("modelDescription").textContent=activeModel==="NQ"?nqDesc:cryptoDesc;renderStats()}
+function show(id,btn){if(!activeModel&&id!=="settings"){chooseModel();return}document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));$(id).classList.remove("hidden");document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active")}
+function calc(){const g=id=>$(id).checked;const score=(g("timing")?5:-5)+(g("high")?15:-15)+(g("loss")?-10:0)+(g("ko")?10:-10);const killer=!g("backtest")||g("liq")||g("tilt")||g("revenge");const grade=score>=27?"A+":score>=23?"A":score>=20?"A-":score>=16?"B+":score>=12?"B":score>=8?"B-":score>=4?"C+":"C";return{score,killer,grade}}
+function analyze(){const r=calc();const decision=r.killer?"NO TRADE":"TRADE VALID";const notes=$("notes").value;const arr=JSON.parse(localStorage.getItem("journal")||"[]");arr.unshift({date:new Date().toLocaleString("fr-CA"),model:activeModel,score:r.score,grade:r.grade,decision,notes});localStorage.setItem("journal",JSON.stringify(arr.slice(0,100)));$("result").innerHTML='<div class="score"><div class="circle" style="border-color:'+(r.killer?'var(--red)':'var(--green)')+'">'+r.score+'</div><div><div class="'+(r.killer?'red':'grade')+'">'+r.grade+'</div><div class="sub">'+decision+'</div></div></div><div class="decision '+(r.killer?'bad':'')+'">'+(r.killer?'🔴 NO TRADE — killer actif':'🟢 TRADE VALID')+'</div>';renderJournal();renderStats()}
+function resetReview(){["loss","liq","tilt","revenge"].forEach(id=>$(id).checked=false);["timing","high","ko","backtest"].forEach(id=>$(id).checked=true);$("notes").value="";$("result").textContent="Aucune analyse."}
+function renderJournal(){const arr=JSON.parse(localStorage.getItem("journal")||"[]");$("journalBody").innerHTML=arr.map(x=>'<tr><td>'+x.date+'</td><td>'+x.model+'</td><td>'+x.score+'</td><td>'+x.grade+'</td><td class="'+(x.decision==="TRADE VALID"?'yes':'no')+'">'+x.decision+'</td><td>'+escapeHtml(x.notes||"")+'</td></tr>').join("")}
+function renderStats(){const arr=JSON.parse(localStorage.getItem("journal")||"[]");$("trades").textContent=arr.length;if(arr[0]){$("dashScore").textContent=arr[0].score;$("lastGrade").textContent=arr[0].grade;$("latest").innerHTML='<b>'+arr[0].model+' — '+arr[0].grade+' — '+arr[0].decision+'</b><div class="sub" style="margin-top:8px">'+escapeHtml(arr[0].notes||"Aucune note.")+'</div>'}}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+if(activeModel){$("models").classList.add("hidden");$("dash").classList.remove("hidden");updateModelUI()}else{$("dash").classList.add("hidden")}renderJournal();
+</script>
+</body></html>
