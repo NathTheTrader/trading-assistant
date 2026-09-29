@@ -40,9 +40,12 @@ const TRADOVATE_API = process.env.TRADOVATE_API_URL || "https://live.tradovateap
 const TRADOVATE_WS = process.env.TRADOVATE_WS_URL || "wss://live.tradovateapi.com/v1/websocket";
 const tradovate = {
   ws: null, connected: false, token: null, expirationTime: null, userId: null,
-  accounts: [], lastMessageAt: null, requestId: 0, reconnectTimer: null
+  accounts: [], positions: [], orders: [], fills: [], contracts: new Map(), lastMessageAt: null, requestId: 0, reconnectTimer: null, heartbeat: null, fillIds: new Set(), reconnecting: false
 };
 const liveEvents = [];
+function upsertById(list,item){const id=item?.id??item?.contractId??item?.orderId;if(id==null){list.push(item);return;}const i=list.findIndex(x=>(x?.id??x?.contractId??x?.orderId)===id);if(i>=0)list[i]=item;else list.push(item);if(list.length>1000)list.splice(0,list.length-1000);}
+function contractName(id){const c=tradovate.contracts.get(Number(id));return c?.name||c?.symbol||(id?String(id):"NQ");}
+function parseFill(fill){const action=String(fill.action??fill.buySell??"").toUpperCase();return cleanTrade({id:"tradovate-fill-"+(fill.id??fill.orderId??Date.now()),timestamp:fill.timestamp||new Date().toISOString(),model:"NQ",instrument:contractName(fill.contractId),direction:/BUY|B|LONG/.test(action)?"LONG":"SHORT",entry:fill.price??null,risk:100,result:"OPEN",context:"Tradovate fill détecté automatiquement en lecture seule.",tags:["tradovate","live-fill"],brokerData:{fillId:fill.id??null,orderId:fill.orderId??null,contractId:fill.contractId??null,qty:fill.qty??null,action}});}
 function emitLive(event) {
   liveEvents.push({ timestamp:new Date().toISOString(), ...event });
   if (liveEvents.length > 500) liveEvents.shift();
@@ -84,10 +87,11 @@ async function connectTradovate() {
       }
       const d=msg?.d;if(!d)return;
       for(const key of ["accounts","positions","orders","fills","cashBalances","contracts"]) if(Array.isArray(d[key])){
-        if(key==="accounts") tradovate.accounts=d[key];
-        emitLive({type:"entity_update",entity:key,items:d[key]});
-        if(key==="fills") for(const fill of d[key]) {
-          const detected=cleanTrade({
+        if(key==="accounts") tradovate.accounts=d[key]; if(key==="positions") tradovate.positions=d[key]; if(key==="orders") tradovate.orders=d[key]; if(key==="fills") d[key].forEach(x=>upsertById(tradovate.fills,x)); if(key==="contracts") for(const contract of d[key]) tradovate.contracts.set(Number(contract.id),contract);
+        emitLive({type:"entity_update",entity:key,count:d[key].length});
+        if(key==="fills") for(const fill of d[key]) { const fillKey=String(fill.id??(String(fill.orderId)+":"+String(fill.timestamp)+":"+String(fill.price)+":"+String(fill.action))); if(tradovate.fillIds.has(fillKey)) continue; tradovate.fillIds.add(fillKey);
+          const detected=parseFill(fill);
+          /* 
             timestamp: fill.timestamp || new Date().toISOString(),
             model: "NQ",
             instrument: fill.contractId ? String(fill.contractId) : "NQ",
@@ -97,8 +101,8 @@ async function connectTradovate() {
             result: "OPEN",
             context: "Tradovate fill détecté automatiquement en READ ONLY.",
             tags: ["tradovate","live-fill"]
-          });
-          const trades=await loadTrades(); trades.push(detected); await saveTrades(trades);
+          }); */
+          const trades=await loadTrades(); if(!trades.some(t=>t.id===detected.id)){trades.push(detected); await saveTrades(trades);}
           emitLive({type:"trade_fill",fill,trade:detected});
           if(openai) {
             askAI({
@@ -120,7 +124,7 @@ async function renewTradovate() {
   if(!response.ok||!data.accessToken) throw new Error(data.errorText||"Tradovate token renewal failed");
   tradovate.token=data.accessToken;tradovate.expirationTime=data.expirationTime||null;
 }
-function tradovateStatus(){return {configured:Boolean(process.env.TRADOVATE_USERNAME&&process.env.TRADOVATE_PASSWORD&&process.env.TRADOVATE_APP_ID&&process.env.TRADOVATE_CID&&process.env.TRADOVATE_SEC),connected:tradovate.connected,userId:tradovate.userId,accounts:tradovate.accounts.map(a=>({id:a.id,name:a.name,active:a.active})),expirationTime:tradovate.expirationTime,lastMessageAt:tradovate.lastMessageAt};}
+function tradovateStatus(){return {configured:Boolean(process.env.TRADOVATE_USERNAME&&process.env.TRADOVATE_PASSWORD&&process.env.TRADOVATE_APP_ID&&process.env.TRADOVATE_CID&&process.env.TRADOVATE_SEC),connected:tradovate.connected,userId:tradovate.userId,accounts:tradovate.accounts.map(a=>({id:a.id,name:a.name,active:a.active})),positions:tradovate.positions.map(p=>({...p,instrument:contractName(p.contractId)})),orders:tradovate.orders.slice(-100),recentFills:tradovate.fills.slice(-100).map(f=>({...f,instrument:contractName(f.contractId)})),expirationTime:tradovate.expirationTime,lastMessageAt:tradovate.lastMessageAt};}
 
 async function loadProfile() {
   try { return JSON.parse(await fs.readFile(PROFILE_FILE, "utf8")); }
@@ -184,6 +188,7 @@ async function askAI({task, trade, history=[]}) {
 
 app.get("/api/tradovate/status",(req,res)=>res.json(tradovateStatus()));
 app.get("/api/tradovate/events",(req,res)=>res.json(liveEvents.slice(-100)));
+app.get("/api/tradovate/snapshot",(req,res)=>res.json(tradovateStatus()));
 app.post("/api/tradovate/connect",async(req,res)=>{try{await connectTradovate();res.json(tradovateStatus())}catch(e){res.status(502).json({ok:false,error:e.message,status:tradovateStatus()})}});
 app.post("/api/tradovate/renew",async(req,res)=>{try{await renewTradovate();res.json(tradovateStatus())}catch(e){res.status(502).json({ok:false,error:e.message})}});
 
