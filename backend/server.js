@@ -118,7 +118,7 @@ async function connectTradovate() {
   await new Promise((resolve,reject)=>{
     const ws=new WebSocket(TRADOVATE_WS); tradovate.ws=ws; let settled=false;
     ws.on("open",()=>{tvSend("authorize",tradovate.token); tradovate.heartbeat=setInterval(()=>{try{if(tradovate.ws&&tradovate.ws.readyState===1)tradovate.ws.send("[]")}catch{}},2500)});
-    ws.on("message",raw=>{
+    ws.on("message",async raw=>{
       tradovate.lastMessageAt=new Date().toISOString();
       const rawText=raw.toString();
       if(rawText==="o"||rawText==="h") return;
