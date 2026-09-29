@@ -210,11 +210,15 @@ async function askAI({task, trade, history=[]}) {
     return { ok:false, error:"OPENAI_API_KEY manquante. Le moteur est prêt mais aucune clé serveur n'est configurée." };
   }
   const profile = await loadProfile();
+  const model = normalizeModel(trade?.model || (String(task || "").toUpperCase().includes("CRYPTO") ? "CRYPTO" : "NQ"));
+  const historicalContext = await loadHistoricalContext();
   const payload = {
     traderProfile: profile,
+    model,
+    historicalContext: historicalContext.models?.[model] || {},
     task,
     currentTrade: trade || null,
-    recentHistory: history.slice(-250)
+    recentHistory: history.slice(-500)
   };
   const response = await openai.responses.create({
     model: MODEL,
