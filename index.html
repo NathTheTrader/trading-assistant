@@ -280,7 +280,7 @@ textarea{width:100%;min-height:105px;resize:vertical}.full{grid-column:1/-1}
 <section id="settings" class="hidden">
   <div class="topbar"><div><div class="eyebrow">Configuration</div><h1>Paramètres</h1><div class="sub">Les connexions réelles restent séparées de l'interface et utilisent des permissions contrôlées.</div></div></div>
   <div class="layout">
-    <div class="section"><h2>Connexions de comptes</h2><div class="rows">
+    <div class="section"><h2>Serveur du bot</h2><div class="rows"><div class="row"><span>Backend IA</span><span class="neutral" id="backendStatus">NON CONFIGURÉ</span></div></div><div class="actions"><input id="botApiUrl" placeholder="https://ton-backend.example.com" style="flex:1"><button class="secondary" onclick="saveBotUrl()">ENREGISTRER</button><button class="secondary" onclick="testBotConnection()">TESTER</button></div><div class="sub" style="margin-top:8px">L'URL pointe vers ton serveur. Aucune clé API OpenAI ne doit être placée ici.</div></div><div class="section"><h2>Connexions de comptes</h2><div class="rows">
       <div class="row"><span>Tradovate — Futures</span><span class="neutral">À connecter</span></div>
       <div class="row"><span>KCEX — Crypto</span><span class="neutral">Autorisation / méthode officielle requise</span></div>
     </div><div class="divider"></div><div class="sub">Le site GitHub Pages reste l'interface. Les clés/API et connexions sensibles devront être gérées par le backend, jamais stockées directement dans le navigateur.</div></div>
@@ -298,8 +298,20 @@ textarea{width:100%;min-height:105px;resize:vertical}.full{grid-column:1/-1}
 <script>
 const nqDesc="HTF bias → POI → liquidité / manipulation → retracement Fibonacci → Rejection Block → entrée limite.";
 const cryptoDesc="Direction du marché → Key Open manipulé / sweep → POI HTF aligné → entrée → high RR. OTE / Fib secondaire.";
+const BOT_API=(localStorage.getItem("botApiUrl")||"").replace(/\\/$/,"");
 let activeModel=localStorage.getItem("activeModel")||"";
 const $=id=>document.getElementById(id);
+async function botFetch(path,options={}){
+  if(!BOT_API) throw new Error("BOT_API_NOT_CONFIGURED");
+  const res=await fetch(BOT_API+path,{headers:{"Content-Type":"application/json"},...options});
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data.error||"Backend error");
+  return data;
+}
+async function syncTradeToBot(trade){
+  try{ await botFetch("/api/trades",{method:"POST",body:JSON.stringify(trade)}); return true; }
+  catch(e){ return false; }
+}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 function selectModel(m){activeModel=m;localStorage.setItem("activeModel",m);updateModelUI();show("dash",$("navDash"))}
 function chooseModel(){document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));$("models").classList.remove("hidden");document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"))}
@@ -320,11 +332,25 @@ function show(id,btn){
  if(id==="journal")renderJournal();if(id==="patterns")refreshPatterns();
  if(id==="dash")renderStats();
 }
-function sendChat(){
+async function sendChat(){
  const input=$("chatInput"),msg=input.value.trim();if(!msg)return;
- const box=$("chatMessages");box.insertAdjacentHTML("beforeend",'<div class="bubble me"><b>TOI</b><div style="margin-top:5px">'+esc(msg)+'</div></div>');
- box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>TRADING ASSISTANT</b><div class="sub" style="margin-top:5px">'+getJournalAwareReply(msg)+'</div></div>');
+ const box=$("chatMessages");
+ box.insertAdjacentHTML("beforeend",'<div class="bubble me"><b>TOI</b><div style="margin-top:5px">'+esc(msg)+'</div></div>');
  input.value="";box.scrollTop=box.scrollHeight;
+ if(BOT_API){
+   box.insertAdjacentHTML("beforeend",'<div id="aiThinking" class="bubble ai"><b>TRADING ASSISTANT</b><div class="sub" style="margin-top:5px">Analyse de ton historique…</div></div>');
+   try{
+     const r=await botFetch("/api/chat",{method:"POST",body:JSON.stringify({message:msg,model:activeModel})});
+     $("aiThinking")?.remove();
+     box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>TRADING ASSISTANT</b><div class="sub" style="margin-top:5px">'+esc(r.text||"Aucune réponse.")+'</div></div>');
+   }catch(e){
+     $("aiThinking")?.remove();
+     box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>TRADING ASSISTANT</b><div class="sub" style="margin-top:5px">Backend indisponible. Analyse locale : '+getJournalAwareReply(msg)+'</div></div>');
+   }
+ }else{
+   box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>TRADING ASSISTANT</b><div class="sub" style="margin-top:5px">'+getJournalAwareReply(msg)+'</div></div>');
+ }
+ box.scrollTop=box.scrollHeight;
 }
 function getJournalAwareReply(msg){
  const arr=getJournal(),scope=activeModel==="NQ"||activeModel==="CRYPTO"?activeModel:null,data=scope?arr.filter(x=>x.model===scope):arr;
@@ -358,8 +384,15 @@ function showTradePopup(data={}){
  $("tradePopup").classList.add("show");$("popModel").textContent=data.model||activeModel||"NQ";$("popInstrument").textContent=data.instrument||"NQ";$("popDirection").textContent=data.direction||"LONG";$("popRisk").textContent=data.risk||"$100";$("popAnalysis").textContent="⏳ EN ATTENTE D'ANALYSE";$("popAnalysis").className="decision bad";
 }
 function closeTradePopup(){$("tradePopup").classList.remove("show")}
-function analyzePopupTrade(){
- $("popAnalysis").textContent="🟡 ANALYSE PRÊTE — en simulation";$("popAnalysis").className="decision";$("popupAlert").textContent="Simulation uniquement. Le moteur réel utilisera les données autorisées du compte et le modèle actif.";
+async function analyzePopupTrade(){
+ const trade={model:$("popModel").textContent,instrument:$("popInstrument").textContent,direction:$("popDirection").textContent,risk:$("popRisk").textContent,timestamp:new Date().toISOString()};
+ if(!BOT_API){$("popAnalysis").textContent="🟡 ANALYSE PRÊTE — backend non configuré";$("popAnalysis").className="decision";return;}
+ $("popAnalysis").textContent="⏳ LE BOT RÉFLÉCHIT…";$("popAnalysis").className="decision bad";
+ try{
+   const r=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade})});
+   $("popAnalysis").textContent=r.text||"Analyse terminée."; $("popAnalysis").className="decision";
+   await syncTradeToBot(trade);
+ }catch(e){$("popAnalysis").textContent="⚠️ Backend indisponible."; $("popAnalysis").className="decision bad";}
 }
 function journalPopupTrade(){
  const d=new Date().toISOString().slice(0,10),arr=getJournal();arr.unshift({id:Date.now(),dateISO:d,date:d,model:$("popModel").textContent,market:$("popModel").textContent==="CRYPTO"?"CRYPTO":"FUTURES",instrument:$("popInstrument").textContent,session:"",result:"",grade:"",R:"",pnl:"",context:"Trade détecté automatiquement.",errors:"",lesson:"",score:null,decision:null,notes:"Trade détecté automatiquement."});
@@ -378,7 +411,7 @@ async function prepareAIJournal(){
 async function saveJournalEntry(){
  const d=$("jDate").value||new Date().toISOString().slice(0,10),market=$("jMarket").value,before=await compressImage($("jBefore").files&&$("jBefore").files[0]),after=await compressImage($("jAfter").files&&$("jAfter").files[0]);
  const entry={id:Date.now(),dateISO:d,date:d,model:market==="FUTURES"?"NQ":"CRYPTO",market,instrument:$("jInstrument").value,session:$("jSession").value,result:$("jResult").value,grade:$("jGrade").value,R:$("jR").value,pnl:$("jPnL").value,context:$("jContext").value,errors:$("jErrors").value,lesson:$("jLesson").value,aiOpinion:$("jAI").value,photoBefore:before,photoAfter:after,score:null,decision:null,notes:$("jContext").value};
- const arr=getJournal();arr.unshift(entry);localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));renderJournal();renderStats();resetJournalForm();
+ const arr=getJournal();arr.unshift(entry);localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));renderJournal();renderStats();resetJournalForm();syncTradeToBot(entry);
 }
 function formatJournalDate(v){if(!v)return"—";return new Date(v+"T12:00:00").toLocaleDateString("fr-CA",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}
 function updateJournalDate(){$("jDateDisplay").textContent=formatJournalDate($("jDate").value)}
@@ -425,7 +458,15 @@ function refreshPatterns(){
  $("patCount").textContent=insights.length;
  $("patternInsights").innerHTML=insights.map(x=>'<div class="decision">'+esc(x)+'</div>').join("");
 }
-function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");location.reload()}}
+async function saveBotUrl(){
+ const v=$("botApiUrl").value.trim().replace(/\\/$/,""); if(v){localStorage.setItem("botApiUrl",v); location.reload();}
+}
+async function testBotConnection(){
+ if(!BOT_API){$("backendStatus").textContent="NON CONFIGURÉ";return;}
+ try{const r=await botFetch("/health");$("backendStatus").textContent=r.ai?"IA CONNECTÉE":"SERVEUR CONNECTÉ — CLÉ IA MANQUANTE";$("backendStatus").className=r.ai?"yes":"neutral";}catch(e){$("backendStatus").textContent="HORS LIGNE";$("backendStatus").className="no";}
+}
+function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");location.reload()}}
+if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if(activeModel){$("models").classList.add("hidden");$("dash").classList.remove("hidden");updateModelUI()}else{$("dash").classList.add("hidden")}
 renderJournal();resetJournalForm();refreshPatterns();
 $("jDate").addEventListener("change",updateJournalDate);$("jBefore").addEventListener("change",()=>previewJournalImage($("jBefore"),"jBeforePreview"));$("jAfter").addEventListener("change",()=>previewJournalImage($("jAfter"),"jAfterPreview"));
