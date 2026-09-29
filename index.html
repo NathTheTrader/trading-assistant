@@ -532,7 +532,17 @@ async function testBotConnection(){
  try{const r=await botFetch("/health");$("backendStatus").textContent=r.ai?"IA CONNECTÉE":"SERVEUR CONNECTÉ — CLÉ IA MANQUANTE";$("backendStatus").className=r.ai?"yes":"neutral";}catch(e){$("backendStatus").textContent="HORS LIGNE";$("backendStatus").className="no";}
 }
 async function connectTradovateUI(){if(!BOT_API){$("tvConnectionText").textContent="Backend non configuré";return}try{const r=await botFetch("/api/tradovate/connect",{method:"POST"});renderTradovateStatus(r);refreshTradovateEvents()}catch(e){$("tvConnectionText").textContent=e.message}}
-async function refreshTradovateUI(){if(!BOT_API)return;try{const r=await botFetch("/api/tradovate/status");renderTradovateStatus(r);refreshTradovateEvents()}catch(e){$("tvConnectionText").textContent="Backend hors ligne"}}
+async function refreshTradovateUI(){if(!BOT_API)return;try{const r=await botFetch("/api/tradovate/snapshot");renderTradovateStatus(r);renderTradovateSnapshot(r);refreshTradovateEvents()}catch(e){$("tvConnectionText").textContent="Backend hors ligne"}}
+function renderTradovateSnapshot(r){
+  const p=(r.positions||[]).filter(x=>Number(x.netPos||0)!==0);
+  const fills=(r.recentFills||[]).slice(-5).reverse();
+  if($("tvDetails"))$("tvDetails").innerHTML=[
+    '<div class="row"><span>Utilisateur</span><span>'+esc(r.userId||"—")+'</span></div>',
+    '<div class="row"><span>Comptes</span><span>'+esc((r.accounts||[]).map(a=>a.name||a.id).join(", ")||"—")+'</span></div>',
+    '<div class="row"><span>Position NQ</span><span>'+esc(p.length?p.map(x=>(x.instrument||"NQ")+" "+(Number(x.netPos)>0?"LONG ":"SHORT ")+Math.abs(Number(x.netPos))).join(" · "):"Aucune")+'</span></div>',
+    '<div class="row"><span>Dernier fill</span><span>'+esc(fills[0]?(fills[0].instrument+" @ "+(fills[0].price??"—")):"—")+'</span></div>'
+  ].join("");
+}
 function renderTradovateStatus(r){const ok=!!r.connected;if($("tvLiveStatus")){$("tvLiveStatus").textContent=ok?"● LIVE":"● DÉCONNECTÉ";$("tvLiveStatus").className=ok?"status green":"status"}if($("tvBotState")){$("tvBotState").textContent=ok?"LIVE":"EN ATTENTE";$("tvBotState").className="value small "+(ok?"green":"orange")}if($("tvConnectionText"))$("tvConnectionText").textContent=ok?"Flux actif":"Non connecté";if($("tvDetails"))$("tvDetails").innerHTML='<div class="row"><span>Utilisateur</span><span>'+esc(r.userId||"—")+'</span></div><div class="row"><span>Comptes</span><span>'+esc((r.accounts||[]).map(a=>a.name||a.id).join(", ")||"—")+'</span></div>'}
 async function refreshTradovateEvents(){if(!BOT_API)return;try{const r=await botFetch("/api/tradovate/events"),ev=(r||[]).slice(-1)[0],ai=(r||[]).filter(x=>x.type==="trade_ai_analysis").slice(-1)[0];if(ev&&$("tvLastEvent"))$("tvLastEvent").innerHTML='<b>'+esc(ev.type||"event")+'</b><div class="sub">'+esc(ev.timestamp||"")+'</div>';if(ai&&$("tvAI"))$("tvAI").innerHTML='<b>TRADING ASSISTANT</b><div class="sub" style="margin-top:8px">'+esc(ai.analysis||"")+'</div>'}catch(e){}}
 setInterval(()=>{if(activeModel==="NQ"&&BOT_API)refreshTradovateUI()},5000);
