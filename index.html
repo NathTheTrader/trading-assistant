@@ -7,6 +7,7 @@
 <title>Trading Assistant — NQ & Crypto</title>
 <style>
 :root{
+  --accent:var(--red);--accentSoft:rgba(255,49,88,.12);
   --bg:#07090d;--bg2:#0b0e14;--panel:#10141c;--panel2:#151a23;--panel3:#0d1118;
   --line:#242b38;--line2:#303949;--text:#f5f7fb;--muted:#8f9aaa;
   --red:#ff3158;--red2:#e11d48;--red3:#7f102b;--redSoft:rgba(255,49,88,.12);
@@ -22,13 +23,13 @@ button{cursor:pointer}
 .side{position:sticky;top:0;width:250px;height:100vh;flex:0 0 250px;background:linear-gradient(180deg,#0b0d13 0%,#090b10 100%);border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;z-index:20}
 .brand{display:flex;align-items:center;gap:11px;padding:4px 9px 25px}
 .brand-mark{width:35px;height:35px;border-radius:11px;background:linear-gradient(135deg,var(--red),#9f1239);display:grid;place-items:center;font-weight:950;box-shadow:0 8px 28px rgba(255,49,88,.22)}
-.brand-title{font-weight:900;letter-spacing:.5px;font-size:14px}.brand-title span{color:var(--red)}
+.brand-title{font-weight:900;letter-spacing:.5px;font-size:14px}.brand-title span{color:var(--accent)}
 .brand-sub{font-size:9px;color:var(--muted);margin-top:2px;letter-spacing:1.2px}
 .nav-title{font-size:9px;color:#596373;font-weight:800;letter-spacing:1.5px;padding:0 11px 8px}
 nav{display:grid;gap:4px}
 nav button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:transparent;border:1px solid transparent;color:var(--muted);padding:11px 12px;border-radius:11px;font-size:13px;font-weight:650;transition:.16s}
 nav button:hover{background:#11151e;color:#fff;border-color:#1e2531}
-nav button.active{background:linear-gradient(90deg,rgba(255,49,88,.15),rgba(255,49,88,.05));color:#fff;border-color:rgba(255,49,88,.25);box-shadow:inset 3px 0 0 var(--red)}
+nav button.active{background:linear-gradient(90deg,var(--accentSoft),transparent);color:#fff;border-color:color-mix(in srgb,var(--accent) 30%,transparent);box-shadow:inset 3px 0 0 var(--accent)}
 .nav-icon{width:18px;text-align:center;opacity:.9}
 .side-bottom{margin-top:auto;padding:12px 8px 2px}
 .connection-mini{border:1px solid var(--line);background:linear-gradient(145deg,#11151e,#0b0f15);border-radius:13px;padding:12px}
@@ -37,7 +38,7 @@ nav button.active{background:linear-gradient(90deg,rgba(255,49,88,.15),rgba(255,
 .mini-sub{font-size:10px;color:var(--muted);line-height:1.5;margin-top:7px}
 .main{width:min(1500px,100%);margin:0 auto;padding:28px 30px 50px}
 .topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:22px}
-.eyebrow{font-size:10px;color:var(--red);font-weight:900;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:7px}
+.eyebrow{font-size:10px;color:var(--accent);font-weight:900;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:7px}
 h1{font-size:28px;line-height:1.1;margin:0;font-weight:900;letter-spacing:-.7px}
 .sub{color:var(--muted);font-size:12px;line-height:1.55}
 .top-actions{display:flex;gap:8px;align-items:center}
@@ -55,7 +56,7 @@ h1{font-size:28px;line-height:1.1;margin:0;font-weight:900;letter-spacing:-.7px}
 .rows{display:grid;gap:7px}.row{display:flex;justify-content:space-between;align-items:center;gap:15px;background:#0c1017;border:1px solid #1d2430;padding:11px 12px;border-radius:10px;font-size:12px}
 .yes{color:var(--green);font-weight:800}.no{color:var(--red);font-weight:800}.neutral{color:var(--orange);font-weight:800}
 .divider{height:1px;background:var(--line);margin:16px 0}
-button.primary{background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;border:0;padding:11px 15px;border-radius:10px;font-weight:850;box-shadow:0 8px 22px rgba(225,29,72,.18);transition:.16s}
+button.primary{background:linear-gradient(135deg,var(--accent),var(--accent));color:#fff;border:0;padding:11px 15px;border-radius:10px;font-weight:850;box-shadow:0 8px 22px rgba(225,29,72,.18);transition:.16s}
 button.primary:hover{transform:translateY(-1px);filter:brightness(1.08)}
 button.secondary{background:#151a23;color:#e9edf4;border:1px solid var(--line2);padding:10px 13px;border-radius:10px;font-weight:700;transition:.16s}
 button.secondary:hover{border-color:#4a5568;background:#1a202b}
@@ -92,7 +93,7 @@ textarea{width:100%;min-height:105px;resize:vertical}.full{grid-column:1/-1}
 .trade-pop.show{display:block;animation:popIn .22s ease-out}
 @keyframes popIn{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
 .trade-pop-head{display:flex;justify-content:space-between;align-items:center;padding:15px 16px;background:linear-gradient(90deg,rgba(255,49,88,.14),transparent);border-bottom:1px solid var(--line)}
-.trade-pop-title{font-size:15px;font-weight:950;letter-spacing:.3px}.close-pop{background:none;border:0;color:#7f8999;font-size:22px;cursor:pointer}.close-pop:hover{color:#fff}
+.trade-pop-title{color:var(--accent);font-size:15px;font-weight:950;letter-spacing:.3px}.close-pop{background:none;border:0;color:#7f8999;font-size:22px;cursor:pointer}.close-pop:hover{color:#fff}
 .trade-pop-body{padding:16px}.trade-pop-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.trade-pop-item{background:#090d13;border:1px solid #1d2430;border-radius:9px;padding:9px}.trade-pop-item span{display:block;color:#717b8b;font-size:9px;font-weight:800;letter-spacing:.8px}.trade-pop-item b{display:block;margin-top:4px;font-size:13px}
 .trade-pop-actions{display:flex;gap:8px}.trade-pop-actions button{flex:1}
 .chat-shell{display:flex;flex-direction:column;height:570px}.chat-messages{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px}.bubble{max-width:78%;padding:11px 13px;border-radius:12px;border:1px solid var(--line);font-size:12px;line-height:1.55}.bubble.ai{align-self:flex-start;background:#151a23}.bubble.me{align-self:flex-end;background:rgba(255,49,88,.08);border-color:rgba(255,49,88,.2)}.bubble b{font-size:10px}.chat-input{display:flex;gap:8px;margin-top:12px}.chat-input input{flex:1}
@@ -102,6 +103,14 @@ textarea{width:100%;min-height:105px;resize:vertical}.full{grid-column:1/-1}
 .mobile-menu{display:none}
 @media(max-width:1050px){.side{width:215px;flex-basis:215px}.main{padding:22px}.grid{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}}
 @media(max-width:760px){.app{display:block}.side{position:sticky;width:100%;height:auto;display:block;padding:10px;border-right:0;border-bottom:1px solid var(--line)}.brand{padding:3px 8px 10px}.nav-title,.side-bottom{display:none}nav{display:flex;overflow:auto;padding-bottom:2px}nav button{flex:0 0 auto;width:auto;padding:9px 10px}.nav-icon{display:none}.main{padding:18px 14px 35px}.topbar{margin-bottom:17px}h1{font-size:23px}.top-actions{display:none}.hero{display:block}.hero-actions{margin-top:14px}.grid,.form,.model-select,.photo-grid{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.trade-pop{right:12px;top:78px}.bubble{max-width:90%}}
+
+.mode-switch{margin:0 8px 18px;padding:4px;background:#0b0f15;border:1px solid var(--line);border-radius:12px;display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.mode-switch button{border:0;background:transparent;color:var(--muted);padding:9px 5px;border-radius:8px;font-size:10px;font-weight:900;letter-spacing:.6px}
+.mode-switch button.active{background:var(--accentSoft);color:#fff;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 28%,transparent)}
+.mode-banner{display:flex;align-items:center;gap:10px;padding:10px 13px;border:1px solid color-mix(in srgb,var(--accent) 28%,transparent);background:var(--accentSoft);border-radius:10px;margin-bottom:14px;font-size:11px;font-weight:800}
+.mode-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+body.crypto-mode{--accent:#4da3ff;--accentSoft:rgba(77,163,255,.13);--red:#4da3ff;--red2:#2563eb}
+body.nq-mode{--accent:#ff3158;--accentSoft:rgba(255,49,88,.12)}
 </style>
 </head>
 <body>
@@ -111,6 +120,7 @@ textarea{width:100%;min-height:105px;resize:vertical}.full{grid-column:1/-1}
     <div class="brand-mark">T</div>
     <div><div class="brand-title">TRADING <span>ASSISTANT</span></div><div class="brand-sub">NQ • CRYPTO • JOURNAL</div></div>
   </div>
+  <div class="mode-switch" aria-label="Mode du site"><button id="modeNQ" onclick="setSiteMode('NQ')">NQ / FUTURES</button><button id="modeCrypto" onclick="setSiteMode('CRYPTO')">CRYPTO</button></div>
   <div class="nav-title">ESPACE DE TRADING</div>
   <nav>
     <button id="navDash" onclick="show('dash',this)"><span class="nav-icon">⌂</span>Tableau de bord</button>
@@ -300,7 +310,9 @@ const nqDesc="HTF bias → POI → liquidité / manipulation → retracement Fib
 const cryptoDesc="Direction du marché → Key Open manipulé / sweep → POI HTF aligné → entrée → high RR. OTE / Fib secondaire.";
 const BOT_API=(localStorage.getItem("botApiUrl")||"").replace(/\\/$/,"");
 let activeModel=localStorage.getItem("activeModel")||"";
+let siteMode=localStorage.getItem("siteMode")||"NQ";
 const $=id=>document.getElementById(id);
+function setSiteMode(mode){siteMode=mode;localStorage.setItem("siteMode",mode);document.body.classList.toggle("crypto-mode",mode==="CRYPTO");document.body.classList.toggle("nq-mode",mode==="NQ");$("modeNQ")?.classList.toggle("active",mode==="NQ");$("modeCrypto")?.classList.toggle("active",mode==="CRYPTO");if($("modeBannerText"))$("modeBannerText").textContent=mode==="NQ"?"NQ / FUTURES — environnement NQ uniquement":"CRYPTO — environnement crypto uniquement";activeModel=mode;localStorage.setItem("activeModel",mode);updateModelUI();}
 async function botFetch(path,options={}){
   if(!BOT_API) throw new Error("BOT_API_NOT_CONFIGURED");
   const res=await fetch(BOT_API+path,{headers:{"Content-Type":"application/json"},...options});
@@ -467,7 +479,7 @@ async function testBotConnection(){
 }
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");location.reload()}}
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
-if(activeModel){$("models").classList.add("hidden");$("dash").classList.remove("hidden");updateModelUI()}else{$("dash").classList.add("hidden")}
+setSiteMode(siteMode);$("models").classList.add("hidden");$("dash").classList.remove("hidden");updateModelUI();
 renderJournal();resetJournalForm();refreshPatterns();
 $("jDate").addEventListener("change",updateJournalDate);$("jBefore").addEventListener("change",()=>previewJournalImage($("jBefore"),"jBeforePreview"));$("jAfter").addEventListener("change",()=>previewJournalImage($("jAfter"),"jAfterPreview"));
 </script>
