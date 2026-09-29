@@ -5,10 +5,15 @@ import OpenAI, { toFile } from "openai";
 import fs from "node:fs/promises";
 import path from "node:path";
 import WebSocket from "ws";
+import multer from "multer";
+import AdmZip from "adm-zip";
+import { createHash } from "node:crypto";
+import os from "node:os";
 
 const app = express();
 app.use(cors({ origin: process.env.FRONTEND_ORIGIN || true }));
 app.use(express.json({ limit: "15mb" }));
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 90 * 1024 * 1024 } });
 
 const PORT = Number(process.env.PORT || 3000);
 const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), "data", "trades.json");
@@ -16,6 +21,10 @@ const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPE
 const MODEL = process.env.OPENAI_MODEL || "gpt-5.6-sol";
 const PROFILE_FILE = process.env.PROFILE_FILE || path.join(process.cwd(), "trader-profile.json");
 const HISTORICAL_CONTEXT_FILE = process.env.HISTORICAL_CONTEXT_FILE || path.join(process.cwd(), "historical-trading-context.json");
+const OBSIDIAN_DIR = process.env.OBSIDIAN_DIR || path.join(process.cwd(), "data", "obsidian");
+const OBSIDIAN_TRADES_FILE = path.join(OBSIDIAN_DIR, "trades.json");
+const OBSIDIAN_STATUS_FILE = path.join(OBSIDIAN_DIR, "status.json");
+let obsidianJob = { running:false, phase:"idle", total:0, processed:0, analyzedImages:0, error:null, startedAt:null, finishedAt:null };
 
 const BASE_SYSTEM = `
 You are TRADING ASSISTANT, the trader's analytical operating system and performance coach.
@@ -167,6 +176,188 @@ async function renewTradovate() {
 }
 function tradovateStatus(){return {configured:Boolean(process.env.TRADOVATE_USERNAME&&process.env.TRADOVATE_PASSWORD&&process.env.TRADOVATE_APP_ID&&process.env.TRADOVATE_CID&&process.env.TRADOVATE_SEC),connected:tradovate.connected,userId:tradovate.userId,accounts:tradovate.accounts.map(a=>({id:a.id,name:a.name,active:a.active})),positions:tradovate.positions.map(p=>({...p,instrument:contractName(p.contractId)})),orders:tradovate.orders.slice(-100),recentFills:tradovate.fills.slice(-100).map(f=>({...f,instrument:contractName(f.contractId)})),expirationTime:tradovate.expirationTime,lastMessageAt:tradovate.lastMessageAt};}
 
+function parseObsidianModel(rel) {
+  if (rel.startsWith("CRYPTO/")) return "CRYPTO";
+  if (rel.startsWith("FUNDED NEW EDGE/") || rel.startsWith("BACKTEST/") || rel.startsWith("Journal/") || rel.startsWith("WEEKLY RECAP/")) return "NQ";
+  return "OTHER";
+}
+function parseObsidianType(rel) {
+  if (rel.startsWith("CRYPTO/") || rel.startsWith("FUNDED NEW EDGE/")) return "LIVE";
+  if (rel.startsWith("BACKTEST/")) return "BACKTEST";
+  if (rel.startsWith("Journal/")) return "JOURNAL";
+  if (rel.startsWith("WEEKLY RECAP/")) return "WEEKLY";
+  return "OTHER";
+}
+function firstMatch(text, patterns) {
+  for (const re of patterns) { const m=text.match(re); if(m) return String(m[1]||"").trim(); }
+  return "";
+}
+function normalizeOutcome(value, fileName="") {
+  const s=String(value||"").toUpperCase().trim();
+  if(/^WIN$/.test(s)) return "WIN";
+  if(/^LOSS$/.test(s)) return "LOSS";
+  if(/^BE$/.test(s)) return "BE";
+  if(/\bWIN\b/.test(s) && !/\bLOSS\b/.test(s)) return "WIN";
+  if(/\bLOSS\b/.test(s) && !/\bWIN\b/.test(s)) return "LOSS";
+  if(/\bBE\b/.test(s) && !/\bWIN\b|\bLOSS\b/.test(s)) return "BE";
+  const n=String(fileName).toUpperCase();
+  if(/\bLOSS\b/.test(n) && !/\bWIN\b/.test(n)) return "LOSS";
+  if(/\bWIN\b/.test(n) && !/\bLOSS\b/.test(n)) return "WIN";
+  if(/\bBE\b/.test(n) && !/\bWIN\b|\bLOSS\b/.test(n)) return "BE";
+  return "MIXED/UNSPECIFIED";
+}
+function parseObsidianTrade(rel, text) {
+  const fileName=path.basename(rel);
+  const model=parseObsidianModel(rel);
+  const type=parseObsidianType(rel);
+  const instrument=firstMatch(text,[/-\\s*(?:ES\\s*\\/\\s*NQ|CRYPTO)\\s*:\\s*([^\\n]+)/i]) ||
+    ["MNQ","NQ","MES","ES","MGC","BTC","ETH","BNB","SOL","XRP","HYPE","FLOKI"].find(x=>fileName.toUpperCase().includes(x)) || "";
+  const session=firstMatch(text,[/-\\s*London\\s*\\/\\s*NY AM\\s*\\/\\s*NY PM\\s*:\\s*([^\\n]+)/i]);
+  const resultRaw=firstMatch(text,[/WIN;LOSS;BE\\s*;\\s*([^\\n]+)/i]);
+  const grade=firstMatch(text,[/##\\s*Grade;\\s*([^\\n]+)/i]).replace(/^##\\s*Résultat;.*$/i,"").trim();
+  const rr=firstMatch(text,[
+    /-\\s*R\\s*:\\s*([^\\n]+)/i,
+    /(?:^|\\s)(\\d+(?:[.,]\\d+)?)\\s*RR\\b/i
+  ]);
+  const pnl=firstMatch(text,[
+    /-\\s*\\$\\s*:\\s*([^\\n]+)/i,
+    /([+-]\\d+(?:[.,]\\d+)?)\\s*(?:US\\$?|\\$)\\b/i
+  ]);
+  const direction=/\\bLONG\\b/i.test(fileName)?"LONG":(/\\bSHORT\\b/i.test(fileName)?"SHORT":"");
+  const embeds=[...text.matchAll(/!\\[\\[([^\\]]+)\\]\\]/g)].map(m=>m[1]);
+  const context=firstMatch(text,[/##\\s*Contexte;\\s*\\n([\\s\\S]*?)(?=\\n---|\\n##\\s*Ce que j'ai bien fait;|\\n##\\s*Erreurs;|\\n##\\s*Leçon du jour;|$)/i]).trim();
+  const errors=firstMatch(text,[/##\\s*Erreurs;\\s*\\n([\\s\\S]*?)(?=\\n---|\\n##\\s*Leçon du jour;|$)/i]).trim();
+  const lesson=firstMatch(text,[/##\\s*Leçon du jour;\\s*\\n([\\s\\S]*?)(?=\\n---|$)/i]).trim();
+  return {
+    id:"obsidian-"+createHash("sha1").update(rel).digest("hex").slice(0,16),
+    model,type,sourcePath:rel,fileName,instrument,session,
+    outcome:normalizeOutcome(resultRaw,fileName),resultRaw,grade,rr,pnl,direction,
+    context:context.slice(0,6000),errors:errors.slice(0,3000),lesson:lesson.slice(0,3000),
+    images:embeds.slice(0,20),imageAnalyses:[]
+  };
+}
+async function loadObsidianTrades() {
+  try { return JSON.parse(await fs.readFile(OBSIDIAN_TRADES_FILE,"utf8")); } catch { return []; }
+}
+async function loadObsidianStatus() {
+  try { return JSON.parse(await fs.readFile(OBSIDIAN_STATUS_FILE,"utf8")); } catch { return {imported:false,markdownFiles:0,imageFiles:0,tradeRecords:0,updatedAt:null}; }
+}
+async function saveObsidian(trades,status) {
+  await fs.mkdir(OBSIDIAN_DIR,{recursive:true});
+  await fs.writeFile(OBSIDIAN_TRADES_FILE,JSON.stringify(trades,null,2));
+  await fs.writeFile(OBSIDIAN_STATUS_FILE,JSON.stringify(status,null,2));
+}
+function safeZipTarget(root,entryName) {
+  const clean=entryName.replace(/\\/g,"/");
+  if(!clean || clean.includes("\0") || clean.split("/").includes("..")) return null;
+  const target=path.resolve(root,clean);
+  if(target!==root && !target.startsWith(root+path.sep)) return null;
+  return target;
+}
+async function importObsidianZip(buffer) {
+  const zip=new AdmZip(buffer);
+  const tmp=await fs.mkdtemp(path.join(os.tmpdir(),"trading-assistant-obsidian-"));
+  const root=path.resolve(tmp);
+  let markdownFiles=0,imageFiles=0;
+  try {
+    for(const entry of zip.getEntries()) {
+      if(entry.isDirectory) continue;
+      const target=safeZipTarget(root,entry.entryName);
+      if(!target) continue;
+      await fs.mkdir(path.dirname(target),{recursive:true});
+      await fs.writeFile(target,entry.getData());
+    }
+    const found=[];
+    async function walk(dir) {
+      for(const name of await fs.readdir(dir)) {
+        const full=path.join(dir,name);
+        const st=await fs.stat(full);
+        if(st.isDirectory()) await walk(full);
+        else found.push(full);
+      }
+    }
+    await walk(root);
+    const all=found.filter(x=>!x.split(path.sep).includes(".obsidian"));
+    const imageMap=new Map();
+    const imageRoot=path.join(OBSIDIAN_DIR,"images");
+    await fs.mkdir(imageRoot,{recursive:true});
+    for(const full of all) {
+      const ext=path.extname(full).toLowerCase();
+      if(![".png",".jpg",".jpeg",".webp"].includes(ext)) continue;
+      imageFiles++;
+      const data=await fs.readFile(full);
+      const base=path.basename(full).replace(/[^a-zA-Z0-9._-]/g,"_");
+      const key=createHash("sha1").update(data).digest("hex").slice(0,12)+"-"+base;
+      const target=path.join(imageRoot,key);
+      await fs.writeFile(target,data);
+      imageMap.set(path.basename(full).toLowerCase(),target);
+    }
+    for(const full of all) {
+      if(path.extname(full).toLowerCase()!==".md") continue;
+      const rel=path.relative(root,full).replace(/\\/g,"/");
+      const text=await fs.readFile(full,"utf8");
+      const model=parseObsidianModel(rel);
+      if(model==="OTHER") continue;
+      markdownFiles++;
+      const record=parseObsidianTrade(rel,text);
+      record.imageFiles=record.images.map(name=>imageMap.get(path.basename(name).toLowerCase())).filter(Boolean);
+      found.push(record);
+    }
+    const trades=found.filter(x=>x && typeof x==="object" && x.id && x.model).sort((a,b)=>String(a.sourcePath).localeCompare(String(b.sourcePath)));
+    const status={imported:true,markdownFiles,imageFiles,tradeRecords:trades.length,updatedAt:new Date().toISOString(),source:"Obsidian ZIP"};
+    await saveObsidian(trades,status);
+    return status;
+  } finally {
+    await fs.rm(root,{recursive:true,force:true}).catch(()=>{});
+  }
+}
+async function obsidianImageAnalysisLoop() {
+  if(!openai || obsidianJob.running) return;
+  const trades=await loadObsidianTrades();
+  const items=[];
+  for(const trade of trades) {
+    for(const file of (trade.imageFiles||[])) {
+      const already=trade.imageAnalyses?.some(x=>x.file===file);
+      if(!already) items.push({trade,file});
+    }
+  }
+  obsidianJob={...obsidianJob,running:true,phase:"analyzing",total:items.length,processed:0,analyzedImages:0,error:null,startedAt:new Date().toISOString(),finishedAt:null};
+  await fs.mkdir(OBSIDIAN_DIR,{recursive:true});
+  try {
+    for(let i=0;i<items.length;i+=4) {
+      const batch=items.slice(i,i+4);
+      const content=[{type:"input_text",text:JSON.stringify({
+        task:"Analyze these historical trading screenshots for visual evidence only. Do not infer hidden data. For each image, identify chart-visible instrument/timeframe if readable, visible direction/structure, liquidity/sweep, Key Open, FVG/OB/RB, Fib/OTE, entry/SL/TP if visible, and execution quality. Separate FACTS, INTERPRETATION, UNKNOWN. Do not use final P&L as proof of setup quality.",
+        modelSeparation:"NQ and CRYPTO remain separate.",
+        images:batch.map((x,n)=>({index:n+1,file:path.basename(x.file),model:x.trade.model,instrument:x.trade.instrument,outcome:x.trade.outcome,context:x.trade.context.slice(0,1200)}))
+      })}];
+      for(const [n,x] of batch.entries()) {
+        const data=await fs.readFile(x.file);
+        const mime=path.extname(x.file).toLowerCase()===".png"?"image/png":path.extname(x.file).toLowerCase()===".webp"?"image/webp":"image/jpeg";
+        content.push({type:"input_image",image_url:"data:"+mime+";base64,"+data.toString("base64"),detail:"high"});
+        content.push({type:"input_text",text:"IMAGE_INDEX="+(n+1)+" FILE="+path.basename(x.file)});
+      }
+      const response=await openai.responses.create({
+        model:MODEL,reasoning:{effort:"high"},
+        input:[
+          {role:"system",content:BASE_SYSTEM+"\\nHISTORICAL SCREENSHOT REVIEW: inspect only visible evidence and keep NQ/CRYPTO separated."},
+          {role:"user",content}
+        ]
+      });
+      const analysis=response.output_text||"";
+      for(const x of batch) {
+        const trade=trades.find(t=>t.id===x.trade.id);
+        if(trade) (trade.imageAnalyses ||= []).push({file:x.file,analysis,analyzedAt:new Date().toISOString()});
+      }
+      obsidianJob.processed=Math.min(items.length,i+batch.length);
+      obsidianJob.analyzedImages+=batch.length;
+      await fs.writeFile(OBSIDIAN_TRADES_FILE,JSON.stringify(trades,null,2));
+    }
+    obsidianJob={...obsidianJob,running:false,phase:"complete",finishedAt:new Date().toISOString()};
+  } catch(e) {
+    obsidianJob={...obsidianJob,running:false,phase:"error",error:e.message,finishedAt:new Date().toISOString()};
+  }
+}
 async function loadProfile() {
   try { return JSON.parse(await fs.readFile(PROFILE_FILE, "utf8")); }
   catch { return {}; }
@@ -212,13 +403,16 @@ async function askAI({task, trade, history=[]}) {
   const profile = await loadProfile();
   const model = normalizeModel(trade?.model || (String(task || "").toUpperCase().includes("CRYPTO") ? "CRYPTO" : "NQ"));
   const historicalContext = await loadHistoricalContext();
+  const obsidianStatus = await loadObsidianStatus();
+  const obsidianTrades = (await loadObsidianTrades()).filter(t=>t.model===model);
   const payload = {
     traderProfile: profile,
     model,
     historicalContext: historicalContext.models?.[model] || {},
     task,
     currentTrade: trade || null,
-    recentHistory: history.slice(-500)
+    recentHistory: history.slice(-500),
+    obsidian: { status: obsidianStatus, tradeRecords: obsidianTrades.slice(-250) }
   };
   const response = await openai.responses.create({
     model: MODEL,
@@ -239,6 +433,7 @@ function normalizeModel(value) {
 async function buildOptimizationSnapshot(model) {
   const all = await loadTrades();
   const trades = all.filter(t => t.model === model);
+  const imported = (await loadObsidianTrades()).filter(t => t.model === model);
   const wins = trades.filter(t => /WIN/i.test(String(t.result || ""))).length;
   const losses = trades.filter(t => /LOSS/i.test(String(t.result || ""))).length;
   const breakeven = trades.filter(t => /BE|BREAK/i.test(String(t.result || ""))).length;
@@ -262,19 +457,23 @@ async function buildOptimizationSnapshot(model) {
   }
   return {
     model, sampleSize:trades.length, wins, losses, breakeven,
+    importedSampleSize:imported.length,
+    importedOutcomes:Object.entries(imported.reduce((a,t)=>{a[t.outcome]=(a[t.outcome]||0)+1;return a},{})).sort((a,b)=>b[1]-a[1]),
     winRate:trades.length?wins/trades.length:null, avgR, totalR,
     dateRange:trades.length?[trades[0].timestamp,trades[trades.length-1].timestamp]:null,
     monthly,
     instruments:freq(instruments), sessions:freq(sessions),
     recurringErrors:freq(errors), recurringLessons:freq(lessons), recurringSetups:freq(setups),
-    recentTrades:trades.slice(-40)
+    recentTrades:trades.slice(-40),
+    importedRecentTrades:imported.slice(-40)
   };
 }
 
 async function buildAIHistory(model) {
   const trades=(await loadTrades()).filter(t=>t.model===model);
   const snapshot=await buildOptimizationSnapshot(model);
-  return {model,snapshot,allTradesCount:trades.length,recentDetailedTrades:trades.slice(-200)};
+  const obsidianTrades=(await loadObsidianTrades()).filter(t=>t.model===model);
+  return {model,snapshot,allTradesCount:trades.length,recentDetailedTrades:trades.slice(-200),obsidian:{status:await loadObsidianStatus(),tradeRecords:obsidianTrades.slice(-250)}};
 }
 
 async function askVoiceCoach({model,userText,previousTurns=[]}) {
@@ -391,6 +590,32 @@ app.get("/api/tradovate/events",(req,res)=>res.json(liveEvents.slice(-100)));
 app.get("/api/tradovate/snapshot",(req,res)=>res.json(tradovateStatus()));
 app.post("/api/tradovate/connect",async(req,res)=>{try{await connectTradovate();res.json(tradovateStatus())}catch(e){res.status(502).json({ok:false,error:e.message,status:tradovateStatus()})}});
 app.post("/api/tradovate/renew",async(req,res)=>{try{await renewTradovate();res.json(tradovateStatus())}catch(e){res.status(502).json({ok:false,error:e.message})}});
+
+app.get("/api/obsidian/status", async (req,res) => {
+  const status=await loadObsidianStatus();
+  const trades=await loadObsidianTrades();
+  const model=normalizeModel(req.query.model);
+  const scoped=trades.filter(t=>t.model===model);
+  res.json({...status,model,modelTradeRecords:scoped.length,imageAnalyses:scoped.reduce((n,t)=>n+(t.imageAnalyses?.length||0),0),job:obsidianJob});
+});
+app.post("/api/obsidian/import", upload.single("file"), async (req,res) => {
+  if(!req.file) return res.status(400).json({ok:false,error:"ZIP Obsidian manquant."});
+  try {
+    const status=await importObsidianZip(req.file.buffer);
+    res.json({ok:true,status});
+  } catch(e) {
+    res.status(400).json({ok:false,error:e.message});
+  }
+});
+app.post("/api/obsidian/analyze-images", async (req,res) => {
+  if(!openai) return res.status(503).json({ok:false,error:"OPENAI_API_KEY manquante."});
+  const status=await loadObsidianStatus();
+  if(!status.imported) return res.status(400).json({ok:false,error:"Import Obsidian requis avant l'analyse visuelle."});
+  if(obsidianJob.running) return res.json({ok:true,started:false,job:obsidianJob});
+  obsidianImageAnalysisLoop().catch(()=>{});
+  res.json({ok:true,started:true,job:obsidianJob});
+});
+app.get("/api/obsidian/job", (req,res)=>res.json(obsidianJob));
 
 app.get("/health", (req,res) => res.json({
   ok:true,
