@@ -47,3 +47,5 @@ Important:
 - Do not commit the user's raw Obsidian journal, screenshots, or account credentials to the public GitHub repository.
 - The Obsidian ZIP is uploaded through the authenticated/private backend and stored server-side.
 - KCEX remains screen-observation/read-only unless an authorized official integration is available.
+
+<!-- CI validation branch -->
