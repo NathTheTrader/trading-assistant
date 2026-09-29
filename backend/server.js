@@ -177,6 +177,15 @@ async function renewTradovate() {
 }
 function tradovateStatus(){return {configured:Boolean(process.env.TRADOVATE_USERNAME&&process.env.TRADOVATE_PASSWORD&&process.env.TRADOVATE_APP_ID&&process.env.TRADOVATE_CID&&process.env.TRADOVATE_SEC),connected:tradovate.connected,userId:tradovate.userId,accounts:tradovate.accounts.map(a=>({id:a.id,name:a.name,active:a.active})),positions:tradovate.positions.map(p=>({...p,instrument:contractName(p.contractId)})),orders:tradovate.orders.slice(-100),recentFills:tradovate.fills.slice(-100).map(f=>({...f,instrument:contractName(f.contractId)})),expirationTime:tradovate.expirationTime,lastMessageAt:tradovate.lastMessageAt};}
 
+function normalizeObsidianPath(rel) {
+  const markers=["CRYPTO/","FUNDED NEW EDGE/","BACKTEST/","Journal/","WEEKLY RECAP/"];
+  const lower=rel.toLowerCase();
+  for(const marker of markers){
+    const i=lower.indexOf(marker.toLowerCase());
+    if(i>=0) return rel.slice(i);
+  }
+  return rel;
+}
 function parseObsidianModel(rel) {
   if (rel.startsWith("CRYPTO/")) return "CRYPTO";
   if (rel.startsWith("FUNDED NEW EDGE/") || rel.startsWith("BACKTEST/") || rel.startsWith("Journal/") || rel.startsWith("WEEKLY RECAP/")) return "NQ";
