@@ -187,15 +187,17 @@ function normalizeObsidianPath(rel) {
   return rel;
 }
 function parseObsidianModel(rel) {
-  if (rel.startsWith("CRYPTO/")) return "CRYPTO";
-  if (rel.startsWith("FUNDED NEW EDGE/") || rel.startsWith("BACKTEST/") || rel.startsWith("Journal/") || rel.startsWith("WEEKLY RECAP/")) return "NQ";
+  const normalized=normalizeObsidianPath(String(rel).replace(/\\/g,"/"));
+  if (normalized.startsWith("CRYPTO/")) return "CRYPTO";
+  if (normalized.startsWith("FUNDED NEW EDGE/") || normalized.startsWith("BACKTEST/") || normalized.startsWith("Journal/") || normalized.startsWith("WEEKLY RECAP/")) return "NQ";
   return "OTHER";
 }
 function parseObsidianType(rel) {
-  if (rel.startsWith("CRYPTO/") || rel.startsWith("FUNDED NEW EDGE/")) return "LIVE";
-  if (rel.startsWith("BACKTEST/")) return "BACKTEST";
-  if (rel.startsWith("Journal/")) return "JOURNAL";
-  if (rel.startsWith("WEEKLY RECAP/")) return "WEEKLY";
+  const normalized=normalizeObsidianPath(String(rel).replace(/\\/g,"/"));
+  if (normalized.startsWith("CRYPTO/") || normalized.startsWith("FUNDED NEW EDGE/")) return "LIVE";
+  if (normalized.startsWith("BACKTEST/")) return "BACKTEST";
+  if (normalized.startsWith("Journal/")) return "JOURNAL";
+  if (normalized.startsWith("WEEKLY RECAP/")) return "WEEKLY";
   return "OTHER";
 }
 function firstMatch(text, patterns) {
@@ -316,7 +318,8 @@ async function importObsidianZip(buffer) {
     }
     for(const full of all) {
       if(path.extname(full).toLowerCase()!==".md") continue;
-      const rel=path.relative(root,full).replace(/\\/g,"/");
+      const relRaw=path.relative(root,full).replace(/\\/g,"/");
+      const rel=normalizeObsidianPath(relRaw);
       const text=await fs.readFile(full,"utf8");
       const model=parseObsidianModel(rel);
       if(model==="OTHER") continue;
