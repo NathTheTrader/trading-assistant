@@ -15,6 +15,7 @@ const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), "data", "tra
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 const MODEL = process.env.OPENAI_MODEL || "gpt-5.6-sol";
 const PROFILE_FILE = process.env.PROFILE_FILE || path.join(process.cwd(), "trader-profile.json");
+const HISTORICAL_CONTEXT_FILE = process.env.HISTORICAL_CONTEXT_FILE || path.join(process.cwd(), "historical-trading-context.json");
 
 const BASE_SYSTEM = `
 You are TRADING ASSISTANT, the trader's analytical operating system and performance coach.
@@ -170,7 +171,7 @@ async function loadProfile() {
   try { return JSON.parse(await fs.readFile(PROFILE_FILE, "utf8")); }
   catch { return {}; }
 }
-async function loadTrades() {
+async function loadHistoricalContext() {\n  try { return JSON.parse(await fs.readFile(HISTORICAL_CONTEXT_FILE, "utf8")); }\n  catch { return {}; }\n}\n\nasync function loadTrades() {
   try { return JSON.parse(await fs.readFile(DATA_FILE, "utf8")); }
   catch { return []; }
 }
@@ -284,6 +285,12 @@ async function askVoiceCoach({model,userText,previousTurns=[]}) {
   });
   return response.output_text;
 }
+
+app.get("/api/history/ai-context", async (req,res) => {
+  const model=normalizeModel(req.query.model);
+  const data=await buildAIHistory(model);
+  res.json({model,sampleSize:data.allTradesCount,dateRange:data.snapshot.dateRange,historicalContext:data.historicalContext,snapshot:data.snapshot});
+});
 
 app.get("/api/optimization/daily", async (req,res) => {
   const model=normalizeModel(req.query.model);
