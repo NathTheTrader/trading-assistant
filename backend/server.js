@@ -24,6 +24,7 @@ const HISTORICAL_CONTEXT_FILE = process.env.HISTORICAL_CONTEXT_FILE || path.join
 const OBSIDIAN_DIR = process.env.OBSIDIAN_DIR || path.join(process.cwd(), "data", "obsidian");
 const OBSIDIAN_TRADES_FILE = path.join(OBSIDIAN_DIR, "trades.json");
 const OBSIDIAN_STATUS_FILE = path.join(OBSIDIAN_DIR, "status.json");
+const LEARNING_FILE = process.env.LEARNING_FILE || path.join(process.cwd(), "data", "ai-learning.json");
 let obsidianJob = { running:false, phase:"idle", total:0, processed:0, analyzedImages:0, error:null, startedAt:null, finishedAt:null };
 
 const BASE_SYSTEM = `
@@ -370,6 +371,18 @@ async function obsidianImageAnalysisLoop() {
     obsidianJob={...obsidianJob,running:false,phase:"error",error:e.message,finishedAt:new Date().toISOString()};
   }
 }
+async function loadLearning() {
+  try { return JSON.parse(await fs.readFile(LEARNING_FILE,"utf8")); }
+  catch { return {version:1,entries:[]}; }
+}
+async function saveLearningEntry(model,type,content,meta={}) {
+  const data=await loadLearning();
+  data.entries.push({id:crypto.randomUUID(),timestamp:new Date().toISOString(),model,type,content:String(content||"").slice(0,12000),meta});
+  data.entries=data.entries.slice(-200);
+  await fs.mkdir(path.dirname(LEARNING_FILE),{recursive:true});
+  await fs.writeFile(LEARNING_FILE,JSON.stringify(data,null,2));
+  return data.entries[data.entries.length-1];
+}
 async function loadProfile() {
   try { return JSON.parse(await fs.readFile(PROFILE_FILE, "utf8")); }
   catch { return {}; }
@@ -422,6 +435,7 @@ async function askAI({task, trade, history=[]}) {
   const historicalContext = await loadHistoricalContext();
   const obsidianStatus = await loadObsidianStatus();
   const obsidianTrades = (await loadObsidianTrades()).filter(t=>t.model===model);
+  const learning = (await loadLearning()).entries.filter(x=>x.model===model).slice(-40);
   const payload = {
     traderProfile: profile,
     model,
@@ -429,7 +443,8 @@ async function askAI({task, trade, history=[]}) {
     task,
     currentTrade: trade || null,
     recentHistory: history.slice(-500),
-    obsidian: { status: obsidianStatus, tradeRecords: obsidianTrades.slice(-250) }
+    obsidian: { status: obsidianStatus, tradeRecords: obsidianTrades.slice(-250) },
+    learningMemory: learning
   };
   const response = await openai.responses.create({
     model: MODEL,
@@ -527,7 +542,8 @@ ONE QUESTION I SHOULD ANSWER
 If sample size is insufficient, say so.`,
     trade:null,history:(await loadTrades()).filter(t=>t.model===model).slice(-500)
   });
-  res.json({...result,model,snapshot});
+  if(result.ok) await saveLearningEntry(model,"daily-review",result.text,{sampleSize:snapshot.sampleSize,importedSampleSize:snapshot.importedSampleSize});
+  res.json({...result,model,snapshot,learning:(await loadLearning()).entries.filter(x=>x.model===model).slice(-40)});
 });
 
 app.post("/api/coach/question", async (req,res) => {
@@ -566,6 +582,7 @@ app.post("/api/voice/turn", async (req,res) => {
       voice:process.env.OPENAI_TTS_VOICE||"alloy",
       input:reply,response_format:"mp3"
     });
+    await saveLearningEntry(model,"voice-coach",reply,{transcript});
     res.json({ok:true,model,transcript,reply,audioBase64:Buffer.from(await speech.arrayBuffer()).toString("base64")});
   } catch(e) { res.status(502).json({ok:false,error:e.message}); }
 });
@@ -608,6 +625,11 @@ app.get("/api/tradovate/snapshot",(req,res)=>res.json(tradovateStatus()));
 app.post("/api/tradovate/connect",async(req,res)=>{try{await connectTradovate();res.json(tradovateStatus())}catch(e){res.status(502).json({ok:false,error:e.message,status:tradovateStatus()})}});
 app.post("/api/tradovate/renew",async(req,res)=>{try{await renewTradovate();res.json(tradovateStatus())}catch(e){res.status(502).json({ok:false,error:e.message})}});
 
+app.get("/api/learning", async (req,res) => {
+  const model=normalizeModel(req.query.model);
+  const data=await loadLearning();
+  res.json({model,entries:data.entries.filter(x=>x.model===model).slice(-100)});
+});
 app.get("/api/obsidian/status", async (req,res) => {
   const status=await loadObsidianStatus();
   const trades=await loadObsidianTrades();
