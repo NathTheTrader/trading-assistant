@@ -117,7 +117,7 @@ textarea{width:100%;min-height:105px;resize:vertical}.full{grid-column:1/-1}
     <button onclick="show('bot',this)"><span class="nav-icon">◉</span>Bot NQ</button>
     <button onclick="show('chat',this)"><span class="nav-icon">◇</span>Assistant IA</button>
     <button onclick="show('review',this)"><span class="nav-icon">✓</span>Revue de trade</button>
-    <button onclick="show('journal',this)"><span class="nav-icon">▤</span>Journal</button>
+    <button onclick="show('journal',this)"><span class="nav-icon">▤</span>Journal</button><button onclick="show('patterns',this)"><span class="nav-icon">⌁</span>Patterns IA</button>
     <button onclick="chooseModel()"><span class="nav-icon">⇄</span>Choisir le modèle</button>
     <button onclick="show('settings',this)"><span class="nav-icon">⚙</span>Paramètres</button>
   </nav>
@@ -254,6 +254,29 @@ textarea{width:100%;min-height:105px;resize:vertical}.full{grid-column:1/-1}
   <div class="section" style="margin-top:14px"><h2>Analyse du journal</h2><div class="sub">Le futur moteur IA pourra comparer NQ et Crypto séparément et rechercher les erreurs récurrentes, les grades et les contextes associés à tes résultats.</div><div class="actions"><button class="secondary" onclick="askJournalAI()">ANALYSER MON JOURNAL</button></div><div id="journalAI" style="margin-top:12px"></div></div>
 </section>
 
+<section id="patterns" class="hidden">
+  <div class="topbar"><div><div class="eyebrow">Mémoire du trader</div><h1>Patterns IA</h1><div class="sub">Le moteur va relier chaque trade à son heure, son contexte, ses screenshots, les news et son résultat pour rechercher des répétitions.</div></div><div class="status">● APPRENTISSAGE</div></div>
+  <div class="grid">
+    <div class="card"><div class="label">Trades analysés</div><div class="value" id="patTrades">0</div><div class="sub">Base disponible pour l'IA</div></div>
+    <div class="card"><div class="label">Patterns détectés</div><div class="value red" id="patCount">0</div><div class="sub">Règles à confirmer</div></div>
+    <div class="card"><div class="label">Trades avec news</div><div class="value" id="patNews">0</div><div class="sub">Calendrier associé</div></div>
+    <div class="card"><div class="label">Répétitions</div><div class="value orange" id="patRepeat">0</div><div class="sub">Comportements similaires</div></div>
+  </div>
+  <div class="layout">
+    <div class="section"><h2>Ce que l'IA cherchera automatiquement</h2><div class="rows">
+      <div class="row"><span>Heure / session du trade</span><span class="neutral">À corréler</span></div>
+      <div class="row"><span>Direction + instrument + modèle</span><span class="neutral">À corréler</span></div>
+      <div class="row"><span>Pattern du setup / contexte</span><span class="neutral">À apprendre</span></div>
+      <div class="row"><span>Screenshot AVANT / APRÈS</span><span class="neutral">Vision IA</span></div>
+      <div class="row"><span>News économiques proches du trade</span><span class="neutral">Forex Factory</span></div>
+      <div class="row"><span>Résultat / R / P&L</span><span class="neutral">À mesurer</span></div>
+    </div></div>
+    <div class="section"><h2>Détection de répétitions</h2><div id="patternInsights"><div class="empty">Pas assez de données pour détecter un comportement répétitif.</div></div></div>
+  </div>
+  <div class="section" style="margin-top:14px"><h2>Base d'observation</h2><div class="sub">L'objectif n'est pas de modifier automatiquement ton modèle. L'IA doit d'abord observer, mesurer et te montrer les régularités. Exemple : « tu prends souvent ce type d'entrée 2 minutes avant une news importante » ou « ce contexte apparaît régulièrement dans tes pertes ». Toute conclusion sera basée sur les données enregistrées.</div><div class="actions"><button class="secondary" onclick="refreshPatterns()">ACTUALISER L'ANALYSE</button></div></div>
+  <div class="section" style="margin-top:14px"><h2>News économiques</h2><div class="ai-box"><div class="sub">Le backend pourra récupérer les événements autorisés du calendrier et les rattacher au timestamp exact du trade. Forex Factory affiche notamment l'heure, la devise, l'impact et les valeurs actual/forecast/previous dans son calendrier. citeturn0search0</div><div class="sub" style="margin-top:8px">Important : l'intégration devra respecter les conditions de Forex Factory; leur site indique que la copie, republication ou redistribution de leurs données nécessite une autorisation préalable. citeturn0search13</div></div></div>
+</section>
+
 <section id="settings" class="hidden">
   <div class="topbar"><div><div class="eyebrow">Configuration</div><h1>Paramètres</h1><div class="sub">Les connexions réelles restent séparées de l'interface et utilisent des permissions contrôlées.</div></div></div>
   <div class="layout">
@@ -294,7 +317,7 @@ function show(id,btn){
  document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));$(id).classList.remove("hidden");
  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
  if(btn)btn.classList.add("active");
- if(id==="journal")renderJournal();
+ if(id==="journal")renderJournal();if(id==="patterns")refreshPatterns();
  if(id==="dash")renderStats();
 }
 function sendChat(){
@@ -386,9 +409,25 @@ function renderStats(){
  const arr=getJournal();$("trades").textContent=arr.length;
  if(arr[0]){$("dashScore").textContent=arr[0].score??"—";$("lastGrade").textContent=arr[0].grade||"—";$("latest").innerHTML='<b>'+esc(arr[0].model||"TRADE")+' — '+esc(arr[0].grade||"—")+' — '+esc(arr[0].decision||"JOURNAL")+'</b><div class="sub" style="margin-top:8px">'+esc(arr[0].notes||arr[0].context||"Aucune note.")+'</div>'}
 }
+function refreshPatterns(){
+ const arr=getJournal(),scope=activeModel==="NQ"||activeModel==="CRYPTO"?activeModel:null,data=scope?arr.filter(x=>x.model===scope):arr;
+ $("patTrades").textContent=data.length;
+ const newsCount=data.filter(x=>x.news&&x.news.length).length;$("patNews").textContent=newsCount;
+ const signatures={};data.forEach(x=>{const sig=[x.model||"",x.instrument||"",x.session||"",x.setupPattern||""].join("|");if(sig.replace(/\|/g,""))signatures[sig]=(signatures[sig]||0)+1});
+ const repeats=Object.values(signatures).filter(n=>n>=2).length;$("patRepeat").textContent=repeats;
+ const insights=[];
+ if(data.length>=10){
+   const loss=data.filter(x=>String(x.result||"").toUpperCase().includes("LOSS"));
+   const win=data.filter(x=>String(x.result||"").toUpperCase().includes("WIN"));
+   if(loss.length&&win.length)insights.push("La base contient "+win.length+" WIN et "+loss.length+" LOSS. Le moteur complet pourra comparer les caractéristiques communes de chaque groupe.");
+   if(repeats)insights.push(repeats+" combinaison(s) de modèle / instrument / session apparaissent plusieurs fois. Elles seront candidates à une analyse de pattern.");
+ } else insights.push("Il faut davantage de trades enregistrés avant de produire des observations fiables. L'IA ne doit pas transformer quelques trades en règle générale.");
+ $("patCount").textContent=insights.length;
+ $("patternInsights").innerHTML=insights.map(x=>'<div class="decision">'+esc(x)+'</div>').join("");
+}
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");location.reload()}}
 if(activeModel){$("models").classList.add("hidden");$("dash").classList.remove("hidden");updateModelUI()}else{$("dash").classList.add("hidden")}
-renderJournal();resetJournalForm();
+renderJournal();resetJournalForm();refreshPatterns();
 $("jDate").addEventListener("change",updateJournalDate);$("jBefore").addEventListener("change",()=>previewJournalImage($("jBefore"),"jBeforePreview"));$("jAfter").addEventListener("change",()=>previewJournalImage($("jAfter"),"jAfterPreview"));
 </script>
 </body>
