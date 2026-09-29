@@ -340,6 +340,8 @@ function updateBotMode(){
   const crypto=siteMode==="CRYPTO";
   const title=document.querySelector("#bot h1");
   if(title) title.innerHTML=crypto?'Bot Crypto <span class="pill">MODÈLE CRYPTO</span>':'Bot NQ <span class="pill">MODÈLE NQ</span>';
+  const checklist=document.querySelector("#botChecklistTitle");
+  if(checklist) checklist.textContent=crypto?"Analyser un setup Crypto":"Tester le modèle NQ";
   const eyebrow=document.querySelector("#bot .eyebrow");
   if(eyebrow) eyebrow.textContent=crypto?"Bot live crypto contrôlé":"Bot live NQ contrôlé";
   const sub=document.querySelector("#bot .topbar .sub");
