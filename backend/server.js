@@ -192,6 +192,17 @@ function firstMatch(text, patterns) {
   for (const re of patterns) { const m=text.match(re); if(m) return String(m[1]||"").trim(); }
   return "";
 }
+function sectionBody(text, heading, nextHeadings=[]) {
+  const lower=text.toLowerCase(), start=lower.indexOf(heading.toLowerCase());
+  if(start<0) return "";
+  const from=text.slice(start+heading.length).replace(/^\s*\n/,"");
+  let end=from.length;
+  for(const h of nextHeadings){
+    const i=from.toLowerCase().indexOf(h.toLowerCase());
+    if(i>=0 && i<end) end=i;
+  }
+  return from.slice(0,end).replace(/^---\s*/,"").trim();
+}
 function normalizeOutcome(value, fileName="") {
   const s=String(value||"").toUpperCase().trim();
   if(/^WIN$/.test(s)) return "WIN";
@@ -210,24 +221,25 @@ function parseObsidianTrade(rel, text) {
   const fileName=path.basename(rel);
   const model=parseObsidianModel(rel);
   const type=parseObsidianType(rel);
-  const instrument=firstMatch(text,[/-\s*(?:ES\s*\/\s*NQ|CRYPTO)\s*:\s*([^\n]+)/i]) ||
-    ["MNQ","NQ","MES","ES","MGC","BTC","ETH","BNB","SOL","XRP","HYPE","FLOKI"].find(x=>fileName.toUpperCase().includes(x)) || "";
+  const instrument=firstMatch(text,[
+    /-\s*(?:ES\s*\/\s*NQ|CRYPTO)\s*:\s*([^\n]+)/i
+  ]) || ["MNQ","NQ","MES","ES","MGC","BTC","ETH","BNB","SOL","XRP","HYPE","FLOKI"].find(x=>fileName.toUpperCase().includes(x)) || "";
   const session=firstMatch(text,[/-\s*London\s*\/\s*NY AM\s*\/\s*NY PM\s*:\s*([^\n]+)/i]);
   const resultRaw=firstMatch(text,[/WIN;LOSS;BE\s*;\s*([^\n]+)/i]);
-  const grade=firstMatch(text,[/##\s*Grade;\s*([^\n]+)/i]).replace(/^##\s*Résultat;.*$/i,"").trim();
+  const grade=firstMatch(text,[/##\s*Grade;\s*([^\n]+)/i]);
   const rr=firstMatch(text,[
     /-\s*R\s*:\s*([^\n]+)/i,
-    /(?:^|\s)(\\d+(?:[.,]\\d+)?)\s*RR\b/i
+    /(?:^|\s)(\d+(?:[.,]\d+)?)\s*RR\b/i
   ]);
   const pnl=firstMatch(text,[
-    /-\s*\\$\s*:\s*([^\n]+)/i,
-    /([+-]\\d+(?:[.,]\\d+)?)\s*(?:US\\$?|\\$)\b/i
+    /-\s*\$\s*:\s*([^\n]+)/i,
+    /([+-]\d+(?:[.,]\d+)?)\s*(?:US\$?|\$)\b/i
   ]);
   const direction=/\bLONG\b/i.test(fileName)?"LONG":(/\bSHORT\b/i.test(fileName)?"SHORT":"");
-  const embeds=[...text.matchAll(/!\\[\\[([^\\]]+)\\]\\]/g)].map(m=>m[1]);
-  const context=firstMatch(text,[/##\s*Contexte;\s*\n([\s\\S]*?)(?=\n---|\n##\s*Ce que j'ai bien fait;|\n##\s*Erreurs;|\n##\s*Leçon du jour;|$)/i]).trim();
-  const errors=firstMatch(text,[/##\s*Erreurs;\s*\n([\s\\S]*?)(?=\n---|\n##\s*Leçon du jour;|$)/i]).trim();
-  const lesson=firstMatch(text,[/##\s*Leçon du jour;\s*\n([\s\\S]*?)(?=\n---|$)/i]).trim();
+  const embeds=[...text.matchAll(/!\[\[([^\]]+)\]\]/g)].map(m=>m[1]);
+  const context=sectionBody(text,"## Contexte;",["## Ce que j'ai bien fait;","## Erreurs;","## Leçon du jour;"]);
+  const errors=sectionBody(text,"## Erreurs;",["## Leçon du jour;"]);
+  const lesson=sectionBody(text,"## Leçon du jour;",[]);
   return {
     id:"obsidian-"+createHash("sha1").update(rel).digest("hex").slice(0,16),
     model,type,sourcePath:rel,fileName,instrument,session,
@@ -248,7 +260,7 @@ async function saveObsidian(trades,status) {
   await fs.writeFile(OBSIDIAN_STATUS_FILE,JSON.stringify(status,null,2));
 }
 function safeZipTarget(root,entryName) {
-  const clean=entryName.replace(/\/g,"/");
+  const clean=entryName.replace(/\\/g,"/");
   if(!clean || clean.includes("\0") || clean.split("/").includes("..")) return null;
   const target=path.resolve(root,clean);
   if(target!==root && !target.startsWith(root+path.sep)) return null;
