@@ -232,26 +232,54 @@ function normalizeModel(value) {
 }
 
 async function buildOptimizationSnapshot(model) {
-  const trades = (await loadTrades()).filter(t => t.model === model);
+  const all = await loadTrades();
+  const trades = all.filter(t => t.model === model);
   const wins = trades.filter(t => /WIN/i.test(String(t.result || ""))).length;
   const losses = trades.filter(t => /LOSS/i.test(String(t.result || ""))).length;
+  const breakeven = trades.filter(t => /BE|BREAK/i.test(String(t.result || ""))).length;
   const rVals = trades.map(t => Number(t.R)).filter(Number.isFinite);
   const avgR = rVals.length ? rVals.reduce((a,b)=>a+b,0) / rVals.length : null;
+  const totalR = rVals.length ? rVals.reduce((a,b)=>a+b,0) : null;
   const errors = trades.map(t => String(t.errors || "").trim()).filter(Boolean);
   const lessons = trades.map(t => String(t.lesson || "").trim()).filter(Boolean);
   const setups = trades.map(t => String(t.setupPattern || "").trim()).filter(Boolean);
-  const freq = arr => Object.entries(arr.reduce((a,x)=>{a[x]=(a[x]||0)+1;return a},{})).sort((a,b)=>b[1]-a[1]).slice(0,12);
-  return {model,sampleSize:trades.length,wins,losses,winRate:trades.length?wins/trades.length:null,avgR,recentTrades:trades.slice(-20),recurringErrors:freq(errors),recurringLessons:freq(lessons),recurringSetups:freq(setups)};
+  const instruments = trades.map(t => String(t.instrument || "").trim()).filter(Boolean);
+  const sessions = trades.map(t => String(t.session || "").trim()).filter(Boolean);
+  const freq = arr => Object.entries(arr.reduce((a,x)=>{a[x]=(a[x]||0)+1;return a},{})).sort((a,b)=>b[1]-a[1]).slice(0,20);
+  const monthly = {};
+  for (const t of trades) {
+    const month=String(t.timestamp||"").slice(0,7)||"unknown";
+    (monthly[month] ||= {trades:0,wins:0,losses:0,R:0});
+    monthly[month].trades++;
+    if(/WIN/i.test(String(t.result||""))) monthly[month].wins++;
+    if(/LOSS/i.test(String(t.result||""))) monthly[month].losses++;
+    const rr=Number(t.R); if(Number.isFinite(rr)) monthly[month].R+=rr;
+  }
+  return {
+    model, sampleSize:trades.length, wins, losses, breakeven,
+    winRate:trades.length?wins/trades.length:null, avgR, totalR,
+    dateRange:trades.length?[trades[0].timestamp,trades[trades.length-1].timestamp]:null,
+    monthly,
+    instruments:freq(instruments), sessions:freq(sessions),
+    recurringErrors:freq(errors), recurringLessons:freq(lessons), recurringSetups:freq(setups),
+    recentTrades:trades.slice(-40)
+  };
+}
+
+async function buildAIHistory(model) {
+  const trades=(await loadTrades()).filter(t=>t.model===model);
+  const snapshot=await buildOptimizationSnapshot(model);
+  return {model,snapshot,allTradesCount:trades.length,recentDetailedTrades:trades.slice(-200)};
 }
 
 async function askVoiceCoach({model,userText,previousTurns=[]}) {
-  const trades=(await loadTrades()).filter(t=>t.model===model).slice(-250);
+  const aiData=await buildAIHistory(model);
   const profile=await loadProfile();
   const response=await openai.responses.create({
     model:MODEL, reasoning:{effort:"high"},
     input:[
       {role:"system",content:BASE_SYSTEM+"\nVOICE SESSION: ask exactly ONE useful question at a time. Do not dump a lecture."},
-      {role:"user",content:JSON.stringify({mode:"BUSINESS_COACH",model,traderProfile:profile,recentHistory:trades,previousTurns:previousTurns.slice(-12),userText})}
+      {role:"user",content:JSON.stringify({mode:"BUSINESS_COACH",model,traderProfile:profile,historicalData:aiData,previousTurns:previousTurns.slice(-12),userText})}
     ]
   });
   return response.output_text;
@@ -270,7 +298,7 @@ ONE TEST FOR THE NEXT 10-20 TRADES
 ONE BEHAVIOR / PROCESS COMMITMENT
 ONE QUESTION I SHOULD ANSWER
 If sample size is insufficient, say so.`,
-    trade:null,history:(await loadTrades()).filter(t=>t.model===model)
+    trade:null,history:(await loadTrades()).filter(t=>t.model===model).slice(-500)
   });
   res.json({...result,model,snapshot});
 });
