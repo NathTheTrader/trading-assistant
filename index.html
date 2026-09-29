@@ -14,6 +14,7 @@
 <aside class="side"><div class="logo">TRADING <span>ASSISTANT</span></div><nav>
 <button id="navDash" onclick="show('dash',this)">Dashboard</button>
 <button onclick="show('bot',this)">NQ Bot</button>
+<button onclick="show('chat',this)">AI Chat</button>
 <button onclick="show('review',this)">Trade Review</button>
 <button onclick="show('journal',this)">Journal</button>
 <button onclick="chooseModel()">Choose Model</button>
@@ -31,6 +32,22 @@
 <div class="top"><div><h1>Dashboard <span id="modelPill" class="pill"></span></h1><div class="sub">Checklist + journal local</div></div><div class="status">● SYSTEM READY</div></div>
 <div class="grid"><div class="card"><div class="label">Trades enregistrés</div><div class="value" id="trades">0</div></div><div class="card"><div class="label">Dernier score</div><div class="value green" id="dashScore">—</div></div><div class="card"><div class="label">Risk / trade</div><div class="value">$100</div></div><div class="card"><div class="label">Dernier grade</div><div class="value green" id="lastGrade">—</div></div></div>
 <div class="layout"><div class="section"><h2>Latest Review</h2><div id="latest">Aucune review.</div></div><div class="section"><h2>Modèle actif</h2><div id="modelDescription" class="sub"></div></div></div>
+</section>
+
+<section id="chat" class="hidden">
+<div class="top"><div><h1>AI Trading Assistant <span class="pill" id="chatModelPill"></span></h1><div class="sub">Ton assistant central — NQ et Crypto séparés.</div></div><div class="status">● CHAT READY</div></div>
+<div class="section">
+<div id="chatMessages" style="height:430px;overflow:auto;display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+<div style="align-self:flex-start;max-width:78%;background:#151a23;border:1px solid #242b38;padding:12px;border-radius:10px"><b>Trading Assistant</b><div class="sub" style="margin-top:6px">Je suis prêt. Sélectionne NQ ou Crypto et parle-moi de ton setup, de ton trade ou de ton journal.</div></div>
+</div>
+<div style="display:flex;gap:8px"><input id="chatInput" style="flex:1" placeholder="Ex: Pourquoi ce trade est B+ ?" onkeydown="if(event.key==='Enter')sendChat()"><button class="primary" onclick="sendChat()">ENVOYER</button></div>
+<div class="sub" style="margin-top:9px">Mode actuel : <span id="chatModeText"></span> · Connexions réelles à venir.</div>
+</div>
+<div class="section" style="margin-top:16px"><h2>Sources de données</h2><div class="rows">
+<div class="row"><span>NQ — TradeSea / Tradovate</span><span class="neutral">À connecter</span></div>
+<div class="row"><span>Crypto — KCEX</span><span class="neutral">Méthode autorisée requise</span></div>
+<div class="row"><span>TradingView / Bookmap screenshots</span><span class="neutral">AI vision — à connecter</span></div>
+</div></div>
 </section>
 
 <section id="bot" class="hidden">
@@ -85,8 +102,10 @@ let activeModel=localStorage.getItem("activeModel")||"";
 const $=id=>document.getElementById(id);
 function selectModel(m){activeModel=m;localStorage.setItem("activeModel",m);updateModelUI();show("dash",$("navDash"))}
 function chooseModel(){document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));$("models").classList.remove("hidden");document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"))}
-function updateModelUI(){if(!activeModel)return;$("modelPill").textContent=activeModel+" MODEL";$("reviewModel").textContent=activeModel+" MODEL";$("modelDescription").textContent=activeModel==="NQ"?nqDesc:cryptoDesc;renderStats()}
+function updateModelUI(){if(!activeModel)return;$("modelPill").textContent=activeModel+" MODEL";$("reviewModel").textContent=activeModel+" MODEL";$("modelDescription").textContent=activeModel==="NQ"?nqDesc:cryptoDesc;updateChatUI();renderStats()}
 function show(id,btn){if(!activeModel&&id!=="settings"){chooseModel();return}document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));$(id).classList.remove("hidden");document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active")}
+function sendChat(){const input=$("chatInput");const msg=input.value.trim();if(!msg)return;const box=$("chatMessages");box.innerHTML+='<div style="align-self:flex-end;max-width:78%;background:#0d2119;border:1px solid #245b43;padding:12px;border-radius:10px"><b>Toi</b><div style="margin-top:6px">'+escapeHtml(msg)+'</div></div>';let reply="Je n’ai pas encore accès aux données live de ton compte. Pour l’instant, je peux préparer l’analyse selon le modèle "+activeModel+" et le prochain module connectera les trades réels.";if(/trade|setup|entry|entrée|position|pourquoi|valide/i.test(msg))reply="Pour analyser ce trade correctement, j’ai besoin du contexte du setup, de l’entrée et des données du compte. Le moteur "+activeModel+" sera appliqué sans mélanger les règles NQ et Crypto.";box.innerHTML+='<div style="align-self:flex-start;max-width:78%;background:#151a23;border:1px solid #242b38;padding:12px;border-radius:10px"><b>Trading Assistant</b><div class="sub" style="margin-top:6px">'+reply+'</div></div>';input.value="";box.scrollTop=box.scrollHeight}
+function updateChatUI(){if($("chatModelPill")){$("chatModelPill").textContent=activeModel?activeModel+" MODEL":"NO MODEL";$("chatModeText").textContent=activeModel||"Aucun modèle"}}
 function runBotTest(){const g=id=>$("b"+id).checked;const score=(g("timing")?5:-5)+(g("high")?15:-15)+(g("loss")?-10:0)+(g("ko")?10:-10);const killer=!g("backtest")||g("liq")||g("tilt")||g("rev");const grade=score>=27?"A+":score>=23?"A":score>=20?"A-":score>=16?"B+":score>=12?"B":score>=8?"B-":score>=4?"C+":"C";const decision=killer?"NO TRADE":"TRADE VALID";$("botOutput").innerHTML='<div class="score"><div class="circle" style="border-color:'+(killer?'var(--red)':'var(--green)')+'">'+score+'</div><div><div class="'+(killer?'red':'grade')+'">'+grade+'</div><div class="sub">'+decision+'</div></div></div><div class="decision '+(killer?'bad':'')+'">'+(killer?'🔴 NO TRADE — killer actif':'🟢 TRADE VALID — bot NQ')+'</div><div class="sub" style="margin-top:12px">'+escapeHtml($("bnotes").value||"Analyse basée sur la checklist NQ.")+'</div>';const arr=JSON.parse(localStorage.getItem("journal")||"[]");arr.unshift({date:new Date().toLocaleString("fr-CA"),model:"NQ BOT",score,grade,decision,notes:$("bnotes").value});localStorage.setItem("journal",JSON.stringify(arr.slice(0,100)));renderJournal();renderStats()}
 function calc(){const g=id=>$(id).checked;const score=(g("timing")?5:-5)+(g("high")?15:-15)+(g("loss")?-10:0)+(g("ko")?10:-10);const killer=!g("backtest")||g("liq")||g("tilt")||g("revenge");const grade=score>=27?"A+":score>=23?"A":score>=20?"A-":score>=16?"B+":score>=12?"B":score>=8?"B-":score>=4?"C+":"C";return{score,killer,grade}}
 function analyze(){const r=calc();const decision=r.killer?"NO TRADE":"TRADE VALID";const notes=$("notes").value;const arr=JSON.parse(localStorage.getItem("journal")||"[]");arr.unshift({date:new Date().toLocaleString("fr-CA"),model:activeModel,score:r.score,grade:r.grade,decision,notes});localStorage.setItem("journal",JSON.stringify(arr.slice(0,100)));$("result").innerHTML='<div class="score"><div class="circle" style="border-color:'+(r.killer?'var(--red)':'var(--green)')+'">'+r.score+'</div><div><div class="'+(r.killer?'red':'grade')+'">'+r.grade+'</div><div class="sub">'+decision+'</div></div></div><div class="decision '+(r.killer?'bad':'')+'">'+(r.killer?'🔴 NO TRADE — killer actif':'🟢 TRADE VALID')+'</div>';renderJournal();renderStats()}
