@@ -74,7 +74,7 @@ async function connectTradovate() {
   if(tradovate.ws && tradovate.connected) return;
   await new Promise((resolve,reject)=>{
     const ws=new WebSocket(TRADOVATE_WS); tradovate.ws=ws; let settled=false;
-    ws.on("open",()=>tvSend("authorize",tradovate.token));
+    ws.on("open",()=>{tvSend("authorize",tradovate.token); tradovate.heartbeat=setInterval(()=>{try{if(tradovate.ws&&tradovate.ws.readyState===1)tradovate.ws.send("[]")}catch{}},2500)});
     ws.on("message",raw=>{
       tradovate.lastMessageAt=new Date().toISOString();
       let msg; try{msg=JSON.parse(raw.toString())}catch{return}
@@ -110,7 +110,7 @@ async function connectTradovate() {
       }
     });
     ws.on("error",err=>{emitLive({type:"error",error:err.message});if(!settled){settled=true;reject(err)}});
-    ws.on("close",()=>{tradovate.connected=false;emitLive({type:"disconnected"});});
+    ws.on("close",()=>{tradovate.connected=false;if(tradovate.heartbeat)clearInterval(tradovate.heartbeat);tradovate.heartbeat=null;emitLive({type:"disconnected"});setTimeout(()=>connectTradovate().catch(e=>emitLive({type:"reconnect_error",error:e.message})),5000);});
   });
 }
 async function renewTradovate() {
