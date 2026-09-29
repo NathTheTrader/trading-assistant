@@ -336,13 +336,28 @@ function updateModelUI(){
  const desc=activeModel==="NQ"?nqDesc:cryptoDesc;$("modelDescription").textContent=desc;$("settingsModelDesc").textContent=desc;
  renderStats();
 }
+function updateBotMode(){
+  const crypto=siteMode==="CRYPTO";
+  const title=document.querySelector("#bot h1");
+  if(title) title.innerHTML=crypto?'Bot Crypto <span class="pill">MODÈLE CRYPTO</span>':'Bot NQ <span class="pill">MODÈLE NQ</span>';
+  const eyebrow=document.querySelector("#bot .eyebrow");
+  if(eyebrow) eyebrow.textContent=crypto?"Bot live crypto contrôlé":"Bot live NQ contrôlé";
+  const sub=document.querySelector("#bot .topbar .sub");
+  if(sub) sub.textContent=crypto?"Analyse Crypto séparée du modèle NQ. Aucune exécution automatique.":"Tradovate en lecture seule : détection des événements, analyse IA et mémoire des trades. Aucun ordre automatique.";
+  const connect=document.querySelector("#bot .primary[onclick*='connectTradovate']");
+  if(connect) connect.style.display=crypto?"none":"inline-block";
+  const broker=document.querySelector("#bot .card .value.small");
+  if(broker) broker.textContent=crypto?"KCEX / CRYPTO":"Tradovate";
+  const modelInputs=document.querySelectorAll("#bot [data-bot-model]");
+  modelInputs.forEach(x=>x.textContent=crypto?"CRYPTO":"NQ");
+}
 function applyModeVisibility(){
   const isNQ=siteMode==="NQ";
   document.querySelectorAll('[data-mode]').forEach(el=>{
     const m=el.getAttribute("data-mode");
     el.classList.toggle("hidden",m!=="ALL"&&m!==siteMode);
   });
-  if($("bot"))$("bot").classList.toggle("hidden",!isNQ);
+  if($("bot"))$("bot").classList.remove("hidden"); updateBotMode();
   if($("cryptoBot"))$("cryptoBot").classList.toggle("hidden",isNQ);
 }
 function show(id,btn){
@@ -493,7 +508,7 @@ async function refreshTradovateEvents(){if(!BOT_API)return;try{const r=await bot
 setInterval(()=>{if(activeModel==="NQ"&&BOT_API)refreshTradovateUI()},5000);
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");location.reload()}}
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
-setSiteMode(siteMode);applyModeVisibility();$("models").classList.add("hidden");$("dash").classList.remove("hidden");updateModelUI();
+setSiteMode(siteMode);applyModeVisibility();updateBotMode();$("models").classList.add("hidden");$("dash").classList.remove("hidden");updateModelUI();
 renderJournal();resetJournalForm();refreshPatterns();
 $("jDate").addEventListener("change",updateJournalDate);$("jBefore").addEventListener("change",()=>previewJournalImage($("jBefore"),"jBeforePreview"));$("jAfter").addEventListener("change",()=>previewJournalImage($("jAfter"),"jAfterPreview"));
 </script>
