@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "models": {
+    "NQ": {
+      "scope": "NQ/Futures only",
+      "framework": ["HTF bias","POI","liquidity/manipulation","Fibonacci retracement","Rejection Block","limit entry"],
+      "fibLevels": [0.5,0.62,0.705,0.79],
+      "coreConcepts": ["FVG","OB","PD array","liquidity","sweep","MSS","CHOCH","BOS","displacement"],
+      "execution": ["retracement only","Rejection Block trigger","limit orders","avoid impulsive/late entries"],
+      "risk": {"referencePerTradeUSD": 100,"maxTradesPerDay": 2},
+      "sessionNotes": ["Asia is primarily observation/liquidity-range context","Preferred execution has focused on London/NY after sweep, displacement and retracement"],
+      "researchNote": "HTF FVG plus rejection block followed by a retracement containing another RB has been studied; direct RB entry was discussed as weaker. Validate this against the database before treating it as a rule."
+    },
+    "CRYPTO": {
+      "scope": "Crypto only",
+      "framework": ["market direction","manipulated/swept Key Open","aligned HTF POI","entry","let trade play out in high RR"],
+      "secondaryConcepts": ["OTE","Fibonacci"],
+      "execution": ["do not import NQ rules automatically"],
+      "risk": {"referencePerTradeUSD": 100}
+    }
+  },
+  "preTradeChecklist": {
+    "items": ["Timing / Session","High Probability","Recent Loss","Good Without KO","Setup Backtest","Liquidity Near SL","Tilt","Trade To Recover"],
+    "killers": ["Setup Backtest = NO","Liquidity Near SL = YES","Tilt = YES","Trade To Recover = YES"],
+    "scoring": {"timing":[5,-5],"highProbability":[15,-15],"recentLoss":[-10,0],"goodWithoutKO":[10,-10]},
+    "grades": {"A+":"27+","A":"23+","A-":"20+","B+":"16+","B":"12+","B-":"8+","C+":"4+","C":"below 4"},
+    "override": "Any killer means NO TRADE regardless of score."
+  },
+  "researchMethod": {
+    "principles": ["Do not validate hindsight simply because a trade won.","Compare winners and losers under similar conditions.","Always report sample size.","Separate correlation from causation.","Do not turn a small sample into a permanent rule.","Preserve the pre-entry decision independently from the final result."],
+    "backtesting": ["TradingView Replay","FXReplay"],
+    "targetStyle": "High-RR retracement setups; historical discussions included approximately 1:10 to 1:12 RR targets, but analyze realized data rather than assume those targets are optimal."
+  },
+  "behavior": {
+    "observations": ["Avoid emotional overtrading.","A recent loss does not automatically invalidate a setup.","Call out repeated behavioral mistakes only when supported by data."]
+  }
+}
