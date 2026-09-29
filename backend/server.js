@@ -210,24 +210,24 @@ function parseObsidianTrade(rel, text) {
   const fileName=path.basename(rel);
   const model=parseObsidianModel(rel);
   const type=parseObsidianType(rel);
-  const instrument=firstMatch(text,[/-\\s*(?:ES\\s*\\/\\s*NQ|CRYPTO)\\s*:\\s*([^\\n]+)/i]) ||
+  const instrument=firstMatch(text,[/-\s*(?:ES\s*\/\s*NQ|CRYPTO)\s*:\s*([^\n]+)/i]) ||
     ["MNQ","NQ","MES","ES","MGC","BTC","ETH","BNB","SOL","XRP","HYPE","FLOKI"].find(x=>fileName.toUpperCase().includes(x)) || "";
-  const session=firstMatch(text,[/-\\s*London\\s*\\/\\s*NY AM\\s*\\/\\s*NY PM\\s*:\\s*([^\\n]+)/i]);
-  const resultRaw=firstMatch(text,[/WIN;LOSS;BE\\s*;\\s*([^\\n]+)/i]);
-  const grade=firstMatch(text,[/##\\s*Grade;\\s*([^\\n]+)/i]).replace(/^##\\s*Résultat;.*$/i,"").trim();
+  const session=firstMatch(text,[/-\s*London\s*\/\s*NY AM\s*\/\s*NY PM\s*:\s*([^\n]+)/i]);
+  const resultRaw=firstMatch(text,[/WIN;LOSS;BE\s*;\s*([^\n]+)/i]);
+  const grade=firstMatch(text,[/##\s*Grade;\s*([^\n]+)/i]).replace(/^##\s*Résultat;.*$/i,"").trim();
   const rr=firstMatch(text,[
-    /-\\s*R\\s*:\\s*([^\\n]+)/i,
-    /(?:^|\\s)(\\d+(?:[.,]\\d+)?)\\s*RR\\b/i
+    /-\s*R\s*:\s*([^\n]+)/i,
+    /(?:^|\s)(\\d+(?:[.,]\\d+)?)\s*RR\b/i
   ]);
   const pnl=firstMatch(text,[
-    /-\\s*\\$\\s*:\\s*([^\\n]+)/i,
-    /([+-]\\d+(?:[.,]\\d+)?)\\s*(?:US\\$?|\\$)\\b/i
+    /-\s*\\$\s*:\s*([^\n]+)/i,
+    /([+-]\\d+(?:[.,]\\d+)?)\s*(?:US\\$?|\\$)\b/i
   ]);
-  const direction=/\\bLONG\\b/i.test(fileName)?"LONG":(/\\bSHORT\\b/i.test(fileName)?"SHORT":"");
+  const direction=/\bLONG\b/i.test(fileName)?"LONG":(/\bSHORT\b/i.test(fileName)?"SHORT":"");
   const embeds=[...text.matchAll(/!\\[\\[([^\\]]+)\\]\\]/g)].map(m=>m[1]);
-  const context=firstMatch(text,[/##\\s*Contexte;\\s*\\n([\\s\\S]*?)(?=\\n---|\\n##\\s*Ce que j'ai bien fait;|\\n##\\s*Erreurs;|\\n##\\s*Leçon du jour;|$)/i]).trim();
-  const errors=firstMatch(text,[/##\\s*Erreurs;\\s*\\n([\\s\\S]*?)(?=\\n---|\\n##\\s*Leçon du jour;|$)/i]).trim();
-  const lesson=firstMatch(text,[/##\\s*Leçon du jour;\\s*\\n([\\s\\S]*?)(?=\\n---|$)/i]).trim();
+  const context=firstMatch(text,[/##\s*Contexte;\s*\n([\s\\S]*?)(?=\n---|\n##\s*Ce que j'ai bien fait;|\n##\s*Erreurs;|\n##\s*Leçon du jour;|$)/i]).trim();
+  const errors=firstMatch(text,[/##\s*Erreurs;\s*\n([\s\\S]*?)(?=\n---|\n##\s*Leçon du jour;|$)/i]).trim();
+  const lesson=firstMatch(text,[/##\s*Leçon du jour;\s*\n([\s\\S]*?)(?=\n---|$)/i]).trim();
   return {
     id:"obsidian-"+createHash("sha1").update(rel).digest("hex").slice(0,16),
     model,type,sourcePath:rel,fileName,instrument,session,
@@ -248,7 +248,7 @@ async function saveObsidian(trades,status) {
   await fs.writeFile(OBSIDIAN_STATUS_FILE,JSON.stringify(status,null,2));
 }
 function safeZipTarget(root,entryName) {
-  const clean=entryName.replace(/\\/g,"/");
+  const clean=entryName.replace(/\/g,"/");
   if(!clean || clean.includes("\0") || clean.split("/").includes("..")) return null;
   const target=path.resolve(root,clean);
   if(target!==root && !target.startsWith(root+path.sep)) return null;
@@ -294,7 +294,7 @@ async function importObsidianZip(buffer) {
     }
     for(const full of all) {
       if(path.extname(full).toLowerCase()!==".md") continue;
-      const rel=path.relative(root,full).replace(/\\/g,"/");
+      const rel=path.relative(root,full).replace(/\/g,"/");
       const text=await fs.readFile(full,"utf8");
       const model=parseObsidianModel(rel);
       if(model==="OTHER") continue;
@@ -340,7 +340,7 @@ async function obsidianImageAnalysisLoop() {
       const response=await openai.responses.create({
         model:MODEL,reasoning:{effort:"high"},
         input:[
-          {role:"system",content:BASE_SYSTEM+"\\nHISTORICAL SCREENSHOT REVIEW: inspect only visible evidence and keep NQ/CRYPTO separated."},
+          {role:"system",content:BASE_SYSTEM+"\nHISTORICAL SCREENSHOT REVIEW: inspect only visible evidence and keep NQ/CRYPTO separated."},
           {role:"user",content}
         ]
       });
@@ -362,7 +362,12 @@ async function loadProfile() {
   try { return JSON.parse(await fs.readFile(PROFILE_FILE, "utf8")); }
   catch { return {}; }
 }
-async function loadHistoricalContext() {\n  try { return JSON.parse(await fs.readFile(HISTORICAL_CONTEXT_FILE, "utf8")); }\n  catch { return {}; }\n}\n\nasync function loadTrades() {
+async function loadHistoricalContext() {
+  try { return JSON.parse(await fs.readFile(HISTORICAL_CONTEXT_FILE, "utf8")); }
+  catch { return {}; }
+}
+
+async function loadTrades() {
   try { return JSON.parse(await fs.readFile(DATA_FILE, "utf8")); }
   catch { return []; }
 }
