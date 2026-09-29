@@ -199,6 +199,7 @@ body.nq-mode{--accent:#ff3158;--accentSoft:rgba(255,49,88,.12)}
     </div>
     <div class="chat-input"><input id="chatInput" placeholder="Ex. Pourquoi ce trade est B+ ?" onkeydown="if(event.key==='Enter')sendChat()"><button class="primary" onclick="sendChat()">ENVOYER</button></div>
   </div>
+  <div class="section" style="margin-top:14px"><h2>Données accessibles à l’IA</h2><div id="aiDataAccess" class="ai-box">Chargement du périmètre de données…</div></div>
   <div class="section" style="margin-top:14px"><h2>Sources de données</h2><div class="rows"><div class="row"><span>Futures — Tradovate</span><span class="neutral">À connecter</span></div><div class="row"><span>Crypto — KCEX</span><span class="neutral">Méthode autorisée requise</span></div><div class="row"><span>TradingView / Bookmap</span><span class="neutral">Analyse image — à connecter</span></div></div></div>
 </section>
 
@@ -508,6 +509,7 @@ function renderStats(){
  const all=getJournal(),arr=VALID_MODES.has(activeModel)?all.filter(x=>x.model===activeModel):all; $("trades").textContent=arr.length;
  if(arr[0]){$("dashScore").textContent=arr[0].score??"—";$("lastGrade").textContent=arr[0].grade||"—";$("latest").innerHTML='<b>'+esc(arr[0].model||"TRADE")+' — '+esc(arr[0].grade||"—")+' — '+esc(arr[0].decision||"JOURNAL")+'</b><div class="sub" style="margin-top:8px">'+esc(arr[0].notes||arr[0].context||"Aucune note.")+'</div>'}
 }
+async function refreshAIDataAccess(){const el=document.getElementById("aiDataAccess");if(!el)return;const api=String(localStorage.getItem("botApiUrl")||"").replace(/\/$/,"");if(!api){el.textContent="Backend non configuré — aucune donnée serveur n’est accessible à l’IA.";return}try{const r=await fetch(api+"/api/history/ai-context?model="+encodeURIComponent(activeModel));const d=await r.json();el.innerHTML="<b>"+activeModel+"</b> · "+(d.sampleSize||0)+" trades serveur<br><span class='sub'>Historique détaillé récent + statistiques sur l’historique complet + contexte historique vérifié. NQ/Futures et Crypto restent séparés.</span>"}catch(e){el.textContent="Backend hors ligne.";}}
 function refreshPatterns(){
  const arr=getJournal(),scope=activeModel==="NQ"||activeModel==="CRYPTO"?activeModel:null,data=scope?arr.filter(x=>x.model===scope):arr;
  $("patTrades").textContent=data.length;
@@ -549,7 +551,7 @@ setInterval(()=>{if(activeModel==="NQ"&&BOT_API)refreshTradovateUI()},5000);
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");location.reload()}}
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if(!VALID_MODES.has(siteMode))siteMode="NQ"; setSiteMode(siteMode); $("models").classList.add("hidden"); $("dash").classList.remove("hidden"); updateModelUI(); document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode)));
-renderJournal();resetJournalForm();refreshPatterns();
+renderJournal();resetJournalForm();refreshPatterns();refreshAIDataAccess();
 $("jDate").addEventListener("change",updateJournalDate);$("jBefore").addEventListener("change",()=>previewJournalImage($("jBefore"),"jBeforePreview"));$("jAfter").addEventListener("change",()=>previewJournalImage($("jAfter"),"jAfterPreview"));
 </script>
 <script src="./voice-coach.js"></script>
