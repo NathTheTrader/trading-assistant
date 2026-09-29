@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import OpenAI from "openai";
+import OpenAI, { toFile } from "openai";
 import fs from "node:fs/promises";
 import path from "node:path";
 import WebSocket from "ws";
@@ -17,23 +17,52 @@ const MODEL = process.env.OPENAI_MODEL || "gpt-5.6-sol";
 const PROFILE_FILE = process.env.PROFILE_FILE || path.join(process.cwd(), "trader-profile.json");
 
 const BASE_SYSTEM = `
-You are Trading Assistant, a serious trading-analysis engine for one trader.
-You are an analytical assistant, not an execution engine. Never place, cancel, or modify orders.
-Your job is to inspect evidence, reason step by step internally, distinguish facts from hypotheses, and give concise actionable observations.
+You are TRADING ASSISTANT, the trader's analytical operating system and performance coach.
 
-MODEL SEPARATION:
-NQ/Futures model: HTF bias -> POI -> liquidity/manipulation -> Fibonacci retracement -> Rejection Block -> limit entry.
-Crypto model: market direction -> manipulated/swept Key Open -> aligned HTF POI -> entry -> let the trade play out in high RR. OTE/Fibonacci is secondary.
-Never mix the two models or invent undocumented rules.
+CORE MISSION
+Your primary mission is continuous optimization of the trader's process. Every day, look for the smallest evidence-based improvement that can increase decision quality, execution quality, discipline, research quality, or business process quality. Do NOT optimize for making more trades or for short-term P&L. Optimize the process that produces the trades.
 
-TRADER PREFERENCES:
-The trader focuses on retracements, Rejection Blocks, Fibonacci levels 0.5/0.62/0.705/0.79, liquidity, sweeps, MSS/CHOCH/BOS, FVG/OB/PD arrays and session context.
-The trader wants live analysis rather than hindsight validation.
-Do not tell the trader what they want to hear. If the evidence is weak, say so.
-Do not turn a small sample into a rule. Always report sample size when making a historical observation.
-Do not promise profitability or predict a guaranteed outcome.
-When reviewing a trade, separate: setup quality, execution quality, market context, news risk, and trader behavior.
-When detecting a recurring pattern, state the evidence, sample size, win/loss breakdown when available, and what should be tested next.
+You are not an order-execution engine. Never place, cancel, modify, or recommend an automatic order. Never guarantee a result. You may analyze a live setup, but you must clearly separate what is known now from what is only a hypothesis.
+
+MODEL SEPARATION — ABSOLUTE
+NQ/Futures model:
+HTF bias -> POI -> liquidity/manipulation -> Fibonacci retracement -> Rejection Block -> limit entry.
+Use the trader's documented NQ concepts: FVG, OB, PD array, liquidity, sweep, MSS/CHOCH/BOS, displacement, retracement levels 0.5/0.62/0.705/0.79, session context, R:R, news proximity and execution quality.
+
+Crypto model:
+market direction -> manipulated/swept Key Open -> aligned HTF POI -> entry -> let the trade play out in high RR.
+OTE/Fibonacci is secondary. Key Open manipulation/sweep and HTF POI alignment are central.
+
+NEVER import an NQ rule into Crypto or a Crypto rule into NQ unless the trader explicitly asks for a cross-model research comparison. If a cross-model comparison is requested, keep the evidence separated.
+
+EVIDENCE DISCIPLINE
+1. Facts: directly documented data.
+2. Interpretation: the most reasonable reading of those facts.
+3. Hypothesis: a pattern that could be true but is not proven.
+4. Test: the exact comparison/backtest needed to confirm or reject the hypothesis.
+5. Decision: what the trader should do with the information today, without pretending certainty.
+Always report sample size when discussing historical patterns. Prefer winners-vs-losers comparisons under similar conditions. Never let a single winning trade validate a setup or a losing trade invalidate it.
+
+DAILY OPTIMIZATION LOOP
+At every meaningful review, ask:
+- What did the trader do?
+- What was the intended model and was it followed?
+- What repeated?
+- What was different from normal?
+- Which error is recurring versus isolated?
+- Which condition appears associated with better/worse outcomes?
+- What is the highest-value question still unanswered?
+- What ONE experiment should be run next?
+Do not produce ten changes at once. Prefer one measurable experiment at a time.
+
+TRADING BUSINESS COACHING
+Treat trading as a business process, not just chart reading. When the trader asks for business coaching, investigate process consistency, journal/data quality, research/backtesting pipeline, risk discipline, session selection, preparation/review routine, time allocation, decision fatigue/overtrading, sample-size quality, and whether proposed changes are actually testable. Ask direct questions when information is missing. Do not flatter the trader and do not manufacture problems.
+
+VOICE COACH
+In voice/business-coach mode, behave like a demanding but concise interviewer. Ask ONE question at a time. Turn vague impressions into measurable actions. If the trader gives a vague answer, ask a precise follow-up. After enough answers, summarize OBSERVATION, EVIDENCE, HYPOTHESIS, NEXT TEST, and ONE COMMITMENT.
+
+COMMUNICATION
+Respond in French unless asked otherwise. Be concise during live/voice interaction and more detailed for research. Never tell the trader what they want to hear. If evidence is weak, say so plainly.
 `;
 
 const TRADOVATE_API = process.env.TRADOVATE_API_URL || "https://live.tradovateapi.com/v1";
@@ -196,6 +225,95 @@ async function askAI({task, trade, history=[]}) {
   });
   return { ok:true, text:response.output_text, model:MODEL };
 }
+
+
+function normalizeModel(value) {
+  return String(value || "NQ").toUpperCase() === "CRYPTO" ? "CRYPTO" : "NQ";
+}
+
+async function buildOptimizationSnapshot(model) {
+  const trades = (await loadTrades()).filter(t => t.model === model);
+  const wins = trades.filter(t => /WIN/i.test(String(t.result || ""))).length;
+  const losses = trades.filter(t => /LOSS/i.test(String(t.result || ""))).length;
+  const rVals = trades.map(t => Number(t.R)).filter(Number.isFinite);
+  const avgR = rVals.length ? rVals.reduce((a,b)=>a+b,0) / rVals.length : null;
+  const errors = trades.map(t => String(t.errors || "").trim()).filter(Boolean);
+  const lessons = trades.map(t => String(t.lesson || "").trim()).filter(Boolean);
+  const setups = trades.map(t => String(t.setupPattern || "").trim()).filter(Boolean);
+  const freq = arr => Object.entries(arr.reduce((a,x)=>{a[x]=(a[x]||0)+1;return a},{})).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  return {model,sampleSize:trades.length,wins,losses,winRate:trades.length?wins/trades.length:null,avgR,recentTrades:trades.slice(-20),recurringErrors:freq(errors),recurringLessons:freq(lessons),recurringSetups:freq(setups)};
+}
+
+async function askVoiceCoach({model,userText,previousTurns=[]}) {
+  const trades=(await loadTrades()).filter(t=>t.model===model).slice(-250);
+  const profile=await loadProfile();
+  const response=await openai.responses.create({
+    model:MODEL, reasoning:{effort:"high"},
+    input:[
+      {role:"system",content:BASE_SYSTEM+"\nVOICE SESSION: ask exactly ONE useful question at a time. Do not dump a lecture."},
+      {role:"user",content:JSON.stringify({mode:"BUSINESS_COACH",model,traderProfile:profile,recentHistory:trades,previousTurns:previousTurns.slice(-12),userText})}
+    ]
+  });
+  return response.output_text;
+}
+
+app.get("/api/optimization/daily", async (req,res) => {
+  const model=normalizeModel(req.query.model);
+  const snapshot=await buildOptimizationSnapshot(model);
+  const result=await askAI({
+    task:`Run the DAILY OPTIMIZATION REVIEW for ${model}. Do not rewrite the model. Use the evidence snapshot and recent trades. Return exactly:
+TODAY'S DIAGNOSIS
+WHAT IS WORKING
+WHAT IS COSTING THE MOST
+ONE HYPOTHESIS
+ONE TEST FOR THE NEXT 10-20 TRADES
+ONE BEHAVIOR / PROCESS COMMITMENT
+ONE QUESTION I SHOULD ANSWER
+If sample size is insufficient, say so.`,
+    trade:null,history:(await loadTrades()).filter(t=>t.model===model)
+  });
+  res.json({...result,model,snapshot});
+});
+
+app.post("/api/coach/question", async (req,res) => {
+  if(!openai) return res.status(503).json({ok:false,error:"OPENAI_API_KEY manquante."});
+  const model=normalizeModel(req.body.model);
+  const snapshot=await buildOptimizationSnapshot(model);
+  const response=await openai.responses.create({
+    model:MODEL,reasoning:{effort:"high"},
+    input:[
+      {role:"system",content:BASE_SYSTEM+"\nBUSINESS INTERVIEW START: ask exactly ONE high-value question in French, grounded in the trader's actual evidence."},
+      {role:"user",content:JSON.stringify({model,snapshot,goal:"Start a daily business optimization interview and find the highest-value unresolved bottleneck."})}
+    ]
+  });
+  res.json({ok:true,model,question:response.output_text});
+});
+
+app.post("/api/voice/turn", async (req,res) => {
+  if(!openai) return res.status(503).json({ok:false,error:"OPENAI_API_KEY manquante."});
+  try {
+    const model=normalizeModel(req.body.model);
+    const audioBase64=String(req.body.audioBase64||"");
+    if(!audioBase64) return res.status(400).json({ok:false,error:"Audio manquant."});
+    const buffer=Buffer.from(audioBase64,"base64");
+    const mime=String(req.body.mimeType||"audio/webm").split(";")[0];
+    const ext=mime.includes("mp4")||mime.includes("m4a")?"m4a":mime.includes("wav")?"wav":"webm";
+    const transcription=await openai.audio.transcriptions.create({
+      file:await toFile(buffer,"voice."+ext),
+      model:process.env.OPENAI_TRANSCRIBE_MODEL||"gpt-4o-transcribe",
+      response_format:"text"
+    });
+    const transcript=String(transcription||"").trim();
+    const previousTurns=Array.isArray(req.body.previousTurns)?req.body.previousTurns:[];
+    const reply=await askVoiceCoach({model,userText:transcript,previousTurns});
+    const speech=await openai.audio.speech.create({
+      model:process.env.OPENAI_TTS_MODEL||"gpt-4o-mini-tts",
+      voice:process.env.OPENAI_TTS_VOICE||"alloy",
+      input:reply,response_format:"mp3"
+    });
+    res.json({ok:true,model,transcript,reply,audioBase64:Buffer.from(await speech.arrayBuffer()).toString("base64")});
+  } catch(e) { res.status(502).json({ok:false,error:e.message}); }
+});
 
 app.get("/api/tradovate/status",(req,res)=>res.json(tradovateStatus()));
 app.get("/api/tradovate/events",(req,res)=>res.json(liveEvents.slice(-100)));
