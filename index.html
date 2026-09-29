@@ -312,6 +312,7 @@ const BOT_API=(localStorage.getItem("botApiUrl")||"").replace(/\\/$/,"");
 let activeModel=localStorage.getItem("activeModel")||"";
 let siteMode=localStorage.getItem("siteMode")||"NQ";
 const $=id=>document.getElementById(id);
+const VALID_MODES=new Set(["NQ","CRYPTO"]);
 function setSiteMode(mode){
   mode=String(mode||"NQ").toUpperCase();
   if(!VALID_MODES.has(mode)) mode="NQ";
