@@ -91,7 +91,7 @@ async function connectTradovate() {
             timestamp: fill.timestamp || new Date().toISOString(),
             model: "NQ",
             instrument: fill.contractId ? String(fill.contractId) : "NQ",
-            direction: Number(fill.action || fill.buySell === "Buy") ? "LONG" : "SHORT",
+            direction: /buy|b|long/i.test(String(fill.action ?? fill.buySell ?? "")) ? "LONG" : "SHORT",
             entry: fill.price ?? null,
             risk: 100,
             result: "OPEN",
