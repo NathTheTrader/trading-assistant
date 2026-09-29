@@ -13,6 +13,7 @@ const PORT = Number(process.env.PORT || 3000);
 const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), "data", "trades.json");
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 const MODEL = process.env.OPENAI_MODEL || "gpt-5.6-sol";
+const PROFILE_FILE = process.env.PROFILE_FILE || path.join(process.cwd(), "trader-profile.json");
 
 const BASE_SYSTEM = `
 You are Trading Assistant, a serious trading-analysis engine for one trader.
@@ -34,6 +35,10 @@ When reviewing a trade, separate: setup quality, execution quality, market conte
 When detecting a recurring pattern, state the evidence, sample size, win/loss breakdown when available, and what should be tested next.
 `;
 
+async function loadProfile() {
+  try { return JSON.parse(await fs.readFile(PROFILE_FILE, "utf8")); }
+  catch { return {}; }
+}
 async function loadTrades() {
   try { return JSON.parse(await fs.readFile(DATA_FILE, "utf8")); }
   catch { return []; }
@@ -72,7 +77,9 @@ async function askAI({task, trade, history=[]}) {
   if (!openai) {
     return { ok:false, error:"OPENAI_API_KEY manquante. Le moteur est prêt mais aucune clé serveur n'est configurée." };
   }
+  const profile = await loadProfile();
   const payload = {
+    traderProfile: profile,
     task,
     currentTrade: trade || null,
     recentHistory: history.slice(-250)
@@ -96,6 +103,8 @@ app.get("/health", (req,res) => res.json({
   model:MODEL,
   timestamp:new Date().toISOString()
 }));
+
+app.get("/api/profile", async (req,res) => { res.json(await loadProfile()); });
 
 app.get("/api/trades", async (req,res) => {
   const trades=await loadTrades();
@@ -136,12 +145,24 @@ app.get("/api/patterns", async (req,res) => {
   const trades=await loadTrades();
   const model=req.query.model;
   const scoped=model ? trades.filter(t=>t.model===model) : trades;
+  const groups = {};
+  for (const t of scoped) {
+    const key = [t.model,t.instrument,t.session,t.setupPattern].map(x=>String(x||"").trim()).join("|");
+    if (!key.replace(/\\|/g,"")) continue;
+    (groups[key] ||= []).push(t);
+  }
+  const stats = Object.entries(groups).map(([key,items])=>{
+    const wins=items.filter(x=>String(x.result).toUpperCase().includes("WIN")).length;
+    const losses=items.filter(x=>String(x.result).toUpperCase().includes("LOSS")).length;
+    const rVals=items.map(x=>Number(x.R)).filter(Number.isFinite);
+    return {key,n:items.length,wins,losses,winRate:items.length?wins/items.length:null,avgR:rVals.length?rVals.reduce((a,b)=>a+b,0)/rVals.length:null};
+  }).filter(x=>x.n>=3).sort((a,b)=>b.n-a.n);
   const result=await askAI({
-    task:`Find recurring patterns in the historical trades. Do not invent patterns. Require meaningful sample size before calling something a pattern. Group observations by model, instrument, session, setupPattern, result, R/P&L, news proximity and recorded errors. Report sample size for every material finding and distinguish correlation from causation.`,
+    task:`Find recurring patterns in the historical trades. Use the deterministic statistics below as evidence. Do not invent patterns. Require meaningful sample size, report sample size and win/loss data, distinguish correlation from causation, and state what should be tested next. Deterministic stats: ${JSON.stringify(stats.slice(0,100))}`,
     trade:null,
     history:scoped
   });
-  res.json(result);
+  res.json({...result,deterministicStats:stats.slice(0,100)});
 });
 
 app.listen(PORT,()=>console.log(`Trading Assistant backend listening on :${PORT}`));
