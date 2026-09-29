@@ -91,17 +91,6 @@ async function connectTradovate() {
         emitLive({type:"entity_update",entity:key,count:d[key].length});
         if(key==="fills") for(const fill of d[key]) { const fillKey=String(fill.id??(String(fill.orderId)+":"+String(fill.timestamp)+":"+String(fill.price)+":"+String(fill.action))); if(tradovate.fillIds.has(fillKey)) continue; tradovate.fillIds.add(fillKey);
           const detected=parseFill(fill);
-          /* 
-            timestamp: fill.timestamp || new Date().toISOString(),
-            model: "NQ",
-            instrument: fill.contractId ? String(fill.contractId) : "NQ",
-            direction: /buy|b|long/i.test(String(fill.action ?? fill.buySell ?? "")) ? "LONG" : "SHORT",
-            entry: fill.price ?? null,
-            risk: 100,
-            result: "OPEN",
-            context: "Tradovate fill détecté automatiquement en READ ONLY.",
-            tags: ["tradovate","live-fill"]
-          }); */
           const trades=await loadTrades(); if(!trades.some(t=>t.id===detected.id)){trades.push(detected); await saveTrades(trades);}
           emitLive({type:"trade_fill",fill,trade:detected});
           if(openai) {
