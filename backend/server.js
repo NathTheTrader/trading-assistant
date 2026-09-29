@@ -215,20 +215,22 @@ app.post("/api/trades", async (req,res) => {
 app.post("/api/analyze-trade", async (req,res) => {
   const trades=await loadTrades();
   const trade=cleanTrade(req.body.trade || req.body);
+  trade.model = String(trade.model || "NQ").toUpperCase() === "CRYPTO" ? "CRYPTO" : "NQ";
   const result=await askAI({
     task:`Analyze this trade before judging it. Identify what is documented versus inferred. Check model compliance, HTF/context, POI, liquidity/manipulation, Fib/RB logic, entry quality, R:R, news proximity, execution and trader behavior. Then give: FACTS, STRENGTHS, WEAKNESSES, RISKS, PATTERN LINKS, and WHAT TO TEST NEXT.`,
     trade,
-    history:trades
+    history:trades.filter(t=>t.model===trade.model)
   });
   res.json(result);
 });
 
 app.post("/api/chat", async (req,res) => {
   const trades=await loadTrades();
+  const model=String(req.body.model||"NQ").toUpperCase()==="CRYPTO"?"CRYPTO":"NQ";
   const result=await askAI({
-    task:`Answer the trader's question using the stored trading history as evidence. Compare NQ and Crypto only when explicitly useful and keep their models separate. User question: ${String(req.body.message || "")}`,
+    task:`Answer the trader's question using ONLY the ${model} model and its stored trading history. Never import rules or trades from the other model. User question: ${String(req.body.message || "")}`,
     trade:null,
-    history:trades
+    history:trades.filter(t=>t.model===model)
   });
   res.json(result);
 });
