@@ -202,7 +202,7 @@ textarea{width:100%;min-height:105px;resize:vertical}.full{grid-column:1/-1}
   </div>
   <div class="layout">
     <div class="section"><h2>Tester la checklist NQ</h2><div class="form">
-      <label>Timing / Session <input id="btiming" type="checkbox" checked></label><label>High Probability <input id="bhigh" type="checkbox" checked></label>
+      <label>Timing / Session <input id="btiming" type="checkbox" checked></label><label>Haute probabilité <input id="bhigh" type="checkbox" checked></label>
       <label>Perte récente <input id="bloss" type="checkbox"></label><label>Bon sans Key Open <input id="bko" type="checkbox" checked></label>
       <label>Setup backtesté <input id="bbacktest" type="checkbox" checked></label><label>Liquidité près du SL <input id="bliq" type="checkbox"></label>
       <label>Tilt <input id="btilt" type="checkbox"></label><label>Trade pour récupérer <input id="brev" type="checkbox"></label>
@@ -216,7 +216,7 @@ textarea{width:100%;min-height:105px;resize:vertical}.full{grid-column:1/-1}
 <section id="review" class="hidden">
   <div class="topbar"><div><div class="eyebrow">Contrôle avant décision</div><h1>Revue de trade <span id="reviewModel" class="pill"></span></h1><div class="sub">La checklist suit exactement la logique du modèle enregistrée dans le bot.</div></div></div>
   <div class="section"><div class="form">
-    <label>Timing / Session <input id="timing" type="checkbox" checked></label><label>High Probability <input id="high" type="checkbox" checked></label>
+    <label>Timing / Session <input id="timing" type="checkbox" checked></label><label>Haute probabilité <input id="high" type="checkbox" checked></label>
     <label>Perte récente <input id="loss" type="checkbox"></label><label>Bon sans Key Open <input id="ko" type="checkbox" checked></label>
     <label>Setup backtesté <input id="backtest" type="checkbox" checked></label><label>Liquidité près du SL <input id="liq" type="checkbox"></label>
     <label>Tilt <input id="tilt" type="checkbox"></label><label>Trade pour récupérer <input id="revenge" type="checkbox"></label>
@@ -282,8 +282,8 @@ function selectModel(m){activeModel=m;localStorage.setItem("activeModel",m);upda
 function chooseModel(){document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));$("models").classList.remove("hidden");document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"))}
 function updateModelUI(){
  if(!activeModel)return;
- $("modelPill").textContent=activeModel+" MODEL";$("reviewModel").textContent=activeModel+" MODEL";
- $("chatModelPill").textContent=activeModel+" MODEL";$("chatModeText").textContent=activeModel;
+ $("modelPill").textContent=activeModel+" MODÈLE";$("reviewModel").textContent=activeModel+" MODÈLE";
+ $("chatModelPill").textContent=activeModel+" MODÈLE";$("chatModeText").textContent=activeModel;
  $("dashModelTag").textContent=activeModel==="NQ"?"MODÈLE NQ":"MODÈLE CRYPTO";
  $("settingsModel").textContent=activeModel==="NQ"?"MODÈLE NQ":"MODÈLE CRYPTO";
  const desc=activeModel==="NQ"?nqDesc:cryptoDesc;$("modelDescription").textContent=desc;$("settingsModelDesc").textContent=desc;
@@ -319,15 +319,15 @@ function scoreFrom(prefix){
  return{score,killer,grade};
 }
 function runBotTest(){
- const r=scoreFrom("b");const decision=r.killer?"NO TRADE":"TRADE VALIDE";const note=$("bnotes").value||"Analyse basée sur la checklist NQ.";
- $("botOutput").innerHTML='<div class="score"><div class="circle" style="border-color:'+(r.killer?'var(--red)':'var(--green)')+'">'+r.score+'</div><div><div class="'+(r.killer?'red':'grade')+'">'+r.grade+'</div><div class="sub">'+decision+'</div></div></div><div class="decision '+(r.killer?'bad':'')+'">'+(r.killer?'🔴 NO TRADE — un killer est actif':'🟢 TRADE VALIDE — checklist NQ')+'</div><div class="sub" style="margin-top:12px">'+esc(note)+'</div>';
+ const r=scoreFrom("b");const decision=r.killer?"PAS DE TRADE":"TRADE VALIDE";const note=$("bnotes").value||"Analyse basée sur la checklist NQ.";
+ $("botOutput").innerHTML='<div class="score"><div class="circle" style="border-color:'+(r.killer?'var(--red)':'var(--green)')+'">'+r.score+'</div><div><div class="'+(r.killer?'red':'grade')+'">'+r.grade+'</div><div class="sub">'+decision+'</div></div></div><div class="decision '+(r.killer?'bad':'')+'">'+(r.killer?'🔴 PAS DE TRADE — un killer est actif':'🟢 TRADE VALIDE — checklist NQ')+'</div><div class="sub" style="margin-top:12px">'+esc(note)+'</div>';
  const arr=getJournal();arr.unshift({id:Date.now(),dateISO:new Date().toISOString().slice(0,10),date:new Date().toISOString().slice(0,10),model:"NQ",market:"FUTURES",instrument:"NQ",score:r.score,grade:r.grade,decision,notes:note,context:note});localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));renderJournal();renderStats();
 }
 function analyze(){
- const r=scoreFrom("");const decision=r.killer?"NO TRADE":"TRADE VALIDE",notes=$("notes").value;
+ const r=scoreFrom("");const decision=r.killer?"PAS DE TRADE":"TRADE VALIDE",notes=$("notes").value;
  const arr=getJournal();arr.unshift({id:Date.now(),dateISO:new Date().toISOString().slice(0,10),date:new Date().toISOString().slice(0,10),model:activeModel,market:activeModel==="CRYPTO"?"CRYPTO":"FUTURES",instrument:activeModel==="CRYPTO"?"BTC":"NQ",score:r.score,grade:r.grade,decision,notes,context:notes});
  localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));
- $("result").innerHTML='<div class="score"><div class="circle" style="border-color:'+(r.killer?'var(--red)':'var(--green)')+'">'+r.score+'</div><div><div class="'+(r.killer?'red':'grade')+'">'+r.grade+'</div><div class="sub">'+decision+'</div></div></div><div class="decision '+(r.killer?'bad':'')+'">'+(r.killer?'🔴 NO TRADE — un killer est actif':'🟢 TRADE VALIDE')+'</div>';
+ $("result").innerHTML='<div class="score"><div class="circle" style="border-color:'+(r.killer?'var(--red)':'var(--green)')+'">'+r.score+'</div><div><div class="'+(r.killer?'red':'grade')+'">'+r.grade+'</div><div class="sub">'+decision+'</div></div></div><div class="decision '+(r.killer?'bad':'')+'">'+(r.killer?'🔴 PAS DE TRADE — un killer est actif':'🟢 TRADE VALIDE')+'</div>';
  renderJournal();renderStats();
 }
 function resetReview(){["loss","liq","tilt","revenge"].forEach(id=>$(id).checked=false);["timing","high","ko","backtest"].forEach(id=>$(id).checked=true);$("notes").value="";$("result").innerHTML='<div class="empty">Aucune analyse.</div>'}
