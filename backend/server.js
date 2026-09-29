@@ -275,4 +275,4 @@ app.get("/api/patterns", async (req,res) => {
   res.json({...result,deterministicStats:stats.slice(0,100)});
 });
 
-app.listen(PORT,()=>console.log(`Trading Assistant backend listening on :${PORT}`));
+app.listen(PORT,()=>{console.log(`Trading Assistant backend listening on :${PORT}`); if(process.env.TRADOVATE_USERNAME&&process.env.TRADOVATE_PASSWORD&&process.env.TRADOVATE_APP_ID&&process.env.TRADOVATE_CID&&process.env.TRADOVATE_SEC){connectTradovate().catch(e=>emitLive({type:"startup_connect_error",error:e.message}));}});
