@@ -1,0 +1,29 @@
+name: Trading Assistant CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm install
+      - name: Check backend syntax
+        run: node --check backend/server.js
+      - name: Check frontend inline JavaScript
+        run: |
+          node - <<'NODE'
+          const fs=require("fs");
+          const html=fs.readFileSync("index.html","utf8");
+          const scripts=[...html.matchAll(/<script>([\\s\\S]*?)<\\/script>/g)];
+          if(!scripts.length) throw new Error("No inline script found");
+          fs.writeFileSync("/tmp/index-inline.js",scripts[scripts.length-1][1]);
+          NODE
+          node --check /tmp/index-inline.js
