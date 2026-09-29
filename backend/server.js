@@ -86,7 +86,27 @@ async function connectTradovate() {
       for(const key of ["accounts","positions","orders","fills","cashBalances","contracts"]) if(Array.isArray(d[key])){
         if(key==="accounts") tradovate.accounts=d[key];
         emitLive({type:"entity_update",entity:key,items:d[key]});
-        if(key==="fills") for(const fill of d[key]) emitLive({type:"trade_fill",fill});
+        if(key==="fills") for(const fill of d[key]) {
+          const detected=cleanTrade({
+            timestamp: fill.timestamp || new Date().toISOString(),
+            model: "NQ",
+            instrument: fill.contractId ? String(fill.contractId) : "NQ",
+            direction: Number(fill.action || fill.buySell === "Buy") ? "LONG" : "SHORT",
+            entry: fill.price ?? null,
+            risk: 100,
+            result: "OPEN",
+            context: "Tradovate fill détecté automatiquement en READ ONLY.",
+            tags: ["tradovate","live-fill"]
+          });
+          const trades=await loadTrades(); trades.push(detected); await saveTrades(trades);
+          emitLive({type:"trade_fill",fill,trade:detected});
+          if(openai) {
+            askAI({
+              task:"A live Tradovate fill was detected. Analyze it as an observational event only. Do not claim the fill proves setup quality. Identify missing evidence required to judge the NQ model and list the next data that should be attached.",
+              trade:detected, history:trades
+            }).then(ai=>emitLive({type:"trade_ai_analysis",tradeId:detected.id,analysis:ai.text||ai.error})).catch(e=>emitLive({type:"trade_ai_error",error:e.message}));
+          }
+        }
       }
     });
     ws.on("error",err=>{emitLive({type:"error",error:err.message});if(!settled){settled=true;reject(err)}});
