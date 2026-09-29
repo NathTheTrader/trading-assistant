@@ -316,7 +316,7 @@ async function importObsidianZip(buffer) {
     }
     for(const full of all) {
       if(path.extname(full).toLowerCase()!==".md") continue;
-      const rel=path.relative(root,full).replace(/\/g,"/");
+      const rel=path.relative(root,full).replace(/\\/g,"/");
       const text=await fs.readFile(full,"utf8");
       const model=parseObsidianModel(rel);
       if(model==="OTHER") continue;
