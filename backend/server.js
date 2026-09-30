@@ -753,15 +753,22 @@ async function obsidianImageAnalysisLoop() {
           content
         });
       } catch(e) {
-        if(e?.status===429 || /rate.?limit|too many requests|free.*limit/i.test(String(e?.message||""))) {
+        const detail=String(e?.message||"");
+        if(/api key not valid|invalid api key|unauthorized|authentication/i.test(detail)){
+          obsidianJob={...obsidianJob,running:false,phase:"paused-auth",
+            error:"Clé Gemini rejetée par Google. Crée une nouvelle clé d’authentification dans Google AI Studio, remplace GEMINI_API_KEY dans Railway, puis relance l’analyse. La progression déjà enregistrée est conservée."};
+          await saveObsidianJob();
+          return;
+        }
+        if(e?.status===429 || /rate.?limit|too many requests|free.*limit/i.test(detail)) {
           obsidianJob={...obsidianJob,running:false,phase:"paused-rate-limit",
             error:"Limite IA atteinte. Progression sauvegardée; relance plus tard pour reprendre sans retraiter les images."};
           await saveObsidianJob();
           return;
         }
-        if((e?.status===400 || e?.status===413) && /context|token|too large|request/i.test(String(e?.message||""))) {
+        if((e?.status===400 || e?.status===413) && /context|token|too large|request/i.test(detail)) {
           obsidianJob={...obsidianJob,running:false,phase:"paused-context-limit",
-            error:"Image trop lourde pour Gemini : "+path.basename(batch[0]?.file||"inconnu")+" — "+String(e?.message||"requête trop grande").slice(0,420)};
+            error:"Image trop lourde pour Gemini : "+path.basename(batch[0]?.file||"inconnu")+" — "+detail.slice(0,420)};
           await saveObsidianJob();
           return;
         }
