@@ -28,7 +28,7 @@
   .ta-auto-voice-dot{width:5px;height:5px;border-radius:50%;background:#566170}
   .ta-auto-voice.on .ta-auto-voice-dot{background:#35e39b;box-shadow:0 0 9px rgba(53,227,155,.65)}
   body.crypto-mode .ta-auto-voice.on .ta-auto-voice-dot{background:#4da3ff;box-shadow:0 0 9px rgba(77,163,255,.65)}
-  @media(max-width:600px){.ta-auto-voice{right:82px;bottom:12px}}
+  @media(max-width:600px){.ta-auto-voice{right:12px;bottom:54px}}
   .ta-voice-fab .ta-fab-orb{
     width:9px;height:9px;border-radius:50%;background:#ff2b2b;
     box-shadow:0 0 14px rgba(255,43,43,.75)
