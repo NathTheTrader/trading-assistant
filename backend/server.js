@@ -1305,7 +1305,7 @@ async function synthesizeAudioWithGemini(text){
   if(!GEMINI_API_KEY)return "";
   const model=process.env.GEMINI_TTS_MODEL||"gemini-3.8-flash-tts";
   const voiceConfig=await loadVoiceConfig();
-  const voice=process.env.GEMINI_TTS_VOICE||voiceConfig.voiceId||"Algenib";
+  const voice=process.env.GEMINI_TTS_VOICE||"Gacrux";
   const response=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{
     method:"POST",
     headers:{"Content-Type":"application/json","x-goog-api-key":GEMINI_API_KEY},
