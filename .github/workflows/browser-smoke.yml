@@ -30,7 +30,17 @@ jobs:
           (async()=>{
             const browser=await chromium.launch({headless:true});
             const page=await browser.newPage({viewport:{width:1440,height:900}});
-            await page.route("https://trading-assistant-production.up.railway.app/**",route=>route.abort());
+            await page.route("https://trading-assistant-production.up.railway.app/**",async route=>{
+              const u=new URL(route.request().url());
+              let body={ok:true};
+              if(u.pathname==="/api/history/ai-context")body={ok:true,sampleSize:0,model:"NQ"};
+              else if(u.pathname==="/api/obsidian/status")body={ok:true,imported:false,tradeRecords:0,imageFiles:0,modelTradeRecords:0,imageAnalyses:0,job:{}};
+              else if(u.pathname==="/api/connections/status")body={readOnly:true,tradovate:{connected:false,configured:false},rithmic:{configured:false,connected:false},kcex:{available:true,mode:"screen-observer",apiDirect:false}};
+              else if(u.pathname==="/api/tradovate/status")body={connected:false,configured:false};
+              else if(u.pathname==="/api/tradovate/events")body=[];
+              else if(u.pathname==="/api/trades")body=[];
+              await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(body)});
+            });
             const errors=[];
             page.on("pageerror",e=>errors.push("pageerror: "+e.message));
             page.on("console",m=>{if(m.type()==="error"&&!/\b403\b/.test(m.text()))errors.push("console: "+m.text())});
