@@ -1055,6 +1055,23 @@ function resetReview(){
   $("result").innerHTML='<div class="empty">Aucune analyse.</div>';
  updateLiveChecklist("b");updateLiveChecklist("");
 }
+let lastSeenTradovateTrade="";
+async function refreshTradovateEvents(){
+ if(!BOT_API)return;
+ try{
+  const r=await botFetch("/api/tradovate/events"),events=Array.isArray(r)?r:[],orders=events.filter(x=>x.type==="trade_order"),fills=events.filter(x=>x.type==="trade_fill"),ev=events.slice(-1)[0],ai=events.filter(x=>x.type==="trade_ai_analysis").slice(-1)[0];
+  if(ev&&$("tvLastEvent"))$("tvLastEvent").innerHTML='<b>'+esc(ev.type||"event")+'</b><div class="sub">'+esc(ev.timestamp||"")+'</div>';
+  if(ai&&$("tvAI"))$("tvAI").innerHTML='<b>JARVIS</b><div class="sub" style="margin-top:8px">'+esc(ai.analysis||"")+'</div>';
+  const latest=orders[orders.length-1]||fills[fills.length-1],key=String(latest?.trade?.id||latest?.order?.id||latest?.fill?.id||"");
+  if(latest&&key&&key!==lastSeenTradovateTrade){
+    lastSeenTradovateTrade=key;const src=latest.order||latest.fill||{},t=latest.trade||{};
+    const orderStatus=String(src.ordStatus||"").toUpperCase();
+    showTradePopup({broker:"Tradovate",model:"NQ",instrument:t.instrument||src.instrument||"NQ",direction:t.direction||(/BUY|B/i.test(String(src.action||""))?"LONG":"SHORT"),orderType:latest.type==="trade_order"?(src.orderType||src.ordType||"ORDER"):"FILL",price:t.entry??src.price??src.limitPrice??src.stopPrice??null,qty:src.qty??null,risk:"$100",context:latest.type==="trade_order"?"Ordre Tradovate détecté : "+(orderStatus||"nouveau")+" · lecture seule.":"Fill Tradovate détecté automatiquement en lecture seule."});
+  }
+ }catch(e){}
+}
+setInterval(()=>{if(activeModel==="NQ"&&BOT_API)refreshTradovateUI()},3000);
+
 function showTradePopup(data={}){$("tradePopup").classList.add("show");$("popBroker").textContent=data.broker||"Tradovate";$("popModel").textContent=data.model||activeModel||"NQ";$("popInstrument").textContent=data.instrument||"NQ";$("popDirection").textContent=data.direction||"LONG";$("popOrderType").textContent=data.orderType||"TRADE";$("popPrice").textContent=data.price??"—";$("popQty").textContent=data.qty??"—";$("popRisk").textContent=data.risk||"$100";$("popSetup").value="";$("popContext").value=data.context||"";$("tradePopup").dataset.screenshot=data.screenshot||"";$("popAnalysis").textContent="⏳ EN ATTENTE DE TA CONFIRMATION";$("popAnalysis").className="decision bad";}
 function closeTradePopup(){$("tradePopup").classList.remove("show")}
 async function analyzePopupTrade(){const broker=$("popBroker").textContent,model=$("popModel").textContent,instrument=$("popInstrument").textContent,direction=$("popDirection").textContent,setup=$("popSetup").value,context=$("popContext").value.trim(),screen=$("tradePopup").dataset.screenshot||"";const trade={model,instrument,direction,risk:$("popRisk").textContent,orderType:$("popOrderType").textContent,entry:$("popPrice").textContent,quantity:$("popQty").textContent,broker,setupPattern:setup,context:[context,setup?"Setup confirmé : "+setup:""].filter(Boolean).join("\n"),result:"OPEN",timestamp:new Date().toISOString(),screenshots:screen?[screen]:[]};if(!BOT_API){$("popAnalysis").textContent="🟡 Backend non configuré";$("popAnalysis").className="decision";return}$("popAnalysis").textContent="⏳ JARVIS analyse le trade…";$("popAnalysis").className="decision bad";try{const r=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade})});$("popAnalysis").innerHTML=esc(r.text||"Analyse terminée.").replace(/\n/g,"<br>");$("popAnalysis").className="decision";await syncTradeToBot(trade)}catch(e){$("popAnalysis").textContent="⚠️ IA indisponible : "+(e?.message||"erreur");$("popAnalysis").className="decision bad";}}
