@@ -63,7 +63,7 @@ const openai = openrouter ? {
         temperature: Number(process.env.OPENROUTER_TEMPERATURE || 0.2),
         max_tokens: Number(process.env.OPENROUTER_MAX_TOKENS || 8000)
       };
-      if (process.env.OPENROUTER_REASONING === "true" && reasoning) body.reasoning = reasoning;
+      if (process.env.OPENROUTER_REASONING !== "false" && reasoning) body.reasoning = reasoning;
       await reserveAIRequest();
       const r = await openrouter.chat.completions.create(body);
       return { output_text: aiText(r.choices?.[0]?.message?.content), raw:r };
