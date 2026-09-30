@@ -807,7 +807,7 @@ input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--acc
       <div class="full"><textarea id="jContext" placeholder="Contexte du trade…"></textarea></div>
       <div class="full"><textarea id="jErrors" placeholder="Erreurs / points à améliorer…"></textarea></div>
       <div class="full"><textarea id="jLesson" placeholder="Leçon concrète…"></textarea></div>
-      <div class="full"><div class="image-drop"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots du trade</div><div class="image-drop-sub">AVANT et APRÈS sont conservés avec l’entrée.</div></div></div><div class="image-inputs"><div class="image-input"><label for="jBefore">AVANT</label><input id="jBefore" type="file" accept="image/*"><img id="jBeforePreview" class="image-preview"></div><div class="image-input"><label for="jAfter">APRÈS</label><input id="jAfter" type="file" accept="image/*"><img id="jAfterPreview" class="image-preview"></div></div></div></div>
+      <div class="full"><div class="image-drop"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots du trade</div><div class="image-drop-sub">AVANT et APRÈS sont conservés avec l’entrée.</div></div></div><div class="image-inputs"><div class="image-input"><label for="jBefore">AVANT</label><input id="jBefore" type="file" accept="image/*" data-image-preview="jBeforePreview"><img id="jBeforePreview" class="image-preview"></div><div class="image-input"><label for="jAfter">APRÈS</label><input id="jAfter" type="file" accept="image/*" data-image-preview="jAfterPreview"><img id="jAfterPreview" class="image-preview"></div></div></div></div>
       <div class="full"><h3>🤖 JARVIS</h3><textarea id="jAI" readonly placeholder="Pré-analyse JARVIS…"></textarea></div>
       <div class="full actions"><button class="primary" onclick="prepareAIJournal()">PRÉ-ANALYSER</button><button class="primary" onclick="saveJournalEntry()">ENREGISTRER</button><button class="secondary" onclick="resetJournalForm()">RÉINITIALISER</button></div>
     </div>
@@ -875,8 +875,6 @@ function selectModel(m){setSiteMode(m);showActiveDashboard();}
 function chooseModel(){show("models");}
 function updateModelUI(){
  if(!activeModel)return;
- $("reviewNQ")?.classList.toggle("hidden",activeModel!=="NQ");
- $("reviewCrypto")?.classList.toggle("hidden",activeModel!=="CRYPTO");
  $("dashMarketEyebrow")?.textContent="FUTURES";
  $("cryptoDashMarketEyebrow")?.textContent="CRYPTO";
  $("reviewModel")?.textContent="FUTURES MODÈLE";
@@ -886,10 +884,8 @@ function updateModelUI(){
  $("dashModelTag")?.textContent="MODÈLE NQ";
  $("cryptoDashModelTag")?.textContent="MODÈLE CRYPTO";
  $("settingsModel")?.textContent=activeModel==="NQ"?"MODÈLE NQ":"MODÈLE CRYPTO";
- const desc=activeModel==="NQ"?nqDesc:cryptoDesc;
  $("modelDescription")?.textContent=nqDesc;
  $("cryptoModelDescription")?.textContent=cryptoDesc;
- $("settingsModelDesc")?.textContent=desc;
  const navF=$("navBotFutures"),navC=$("navBotCrypto"),revF=$("navReviewFutures"),revC=$("navReviewCrypto");
  if(navF)navF.classList.toggle("hidden",activeModel!=="NQ");
  if(navC)navC.classList.toggle("hidden",activeModel!=="CRYPTO");
@@ -902,11 +898,6 @@ function updateBotMode(){
  const crypto=activeModel==="CRYPTO";
  $("bot")?.classList.toggle("hidden",crypto);
  $("crypto")?.classList.toggle("hidden",!crypto);
- if(crypto){
-   $("navBotText")?.replaceChildren(document.createTextNode("Bot Crypto"));
- }else{
-   $("navBotText")?.replaceChildren(document.createTextNode("Bot Futures"));
- }
 }
 function applyModeVisibility(){
  document.querySelectorAll("[data-mode]").forEach(el=>{
