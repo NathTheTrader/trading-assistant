@@ -307,6 +307,26 @@ input:focus,textarea:focus,select:focus{
 .ai-box{background:rgba(255,255,255,.018);border-color:rgba(255,255,255,.075)}
 .divider{background:rgba(255,255,255,.07)}
 .hidden{display:none!important}
+</style><style>
+/* Final visual polish: quieter chrome, stronger hierarchy */
+.side{background:rgba(7,9,12,.88);border-right-color:rgba(255,255,255,.055)}
+.side-bottom{opacity:.72}
+.nav-icon{opacity:.7}
+.main{padding-top:34px}
+.topbar{align-items:center}
+.topbar .sub{max-width:680px}
+.section,.card,.model-card{box-shadow:0 10px 32px rgba(0,0,0,.12)}
+.section{background:rgba(13,16,21,.78)}
+.dashboard-kpis .card{min-height:116px}
+.dashboard-kpis .card .value{margin-top:10px}
+.form label{color:#d7dce4}
+.form textarea{font-size:12px;line-height:1.55}
+#journal .section:first-of-type{background:linear-gradient(180deg,rgba(17,20,27,.88),rgba(12,15,20,.78))}
+#journal h2{letter-spacing:-.2px}
+#journal .actions{padding-top:2px}
+#journal .actions .primary:first-child{background:rgba(255,255,255,.055);color:#f2f4f7;border:1px solid rgba(255,255,255,.10);box-shadow:none}
+#journal .actions .primary:first-child:hover{background:rgba(255,255,255,.085)}
+.mode-switch{background:rgba(255,255,255,.025)!important;border-color:rgba(255,255,255,.065)!important}
 </style></style>
 </head>
 <body>
@@ -526,6 +546,7 @@ let siteMode=localStorage.getItem("siteMode")||"NQ";
 const $=id=>document.getElementById(id);
 const VALID_MODES=new Set(["NQ","CRYPTO"]);
 function setSiteMode(mode){
+  if($("journal")&&!$("journal").classList.contains("hidden")) saveJournalDraft();
   mode=String(mode||"NQ").toUpperCase();
   if(!VALID_MODES.has(mode)) mode="NQ";
   siteMode=mode; activeModel=mode;
@@ -589,6 +610,7 @@ function applyModeVisibility(){
   updateBotMode();
 }
 function show(id,btn){
+ if($("journal")&&!$("journal").classList.contains("hidden")&&id!=="journal") saveJournalDraft();
  if(!VALID_MODES.has(activeModel)){setSiteMode(siteMode||"NQ");}
  document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));
  const target=$(id); if(target)target.classList.remove("hidden");
