@@ -875,17 +875,17 @@ function selectModel(m){setSiteMode(m);showActiveDashboard();}
 function chooseModel(){show("models");}
 function updateModelUI(){
  if(!activeModel)return;
- $("dashMarketEyebrow")?.textContent="FUTURES";
- $("cryptoDashMarketEyebrow")?.textContent="CRYPTO";
- $("reviewModel")?.textContent="FUTURES MODÈLE";
- $("cryptoReviewModel")?.textContent="CRYPTO MODÈLE";
- $("chatModelPill")?.textContent=activeModel+" MODÈLE";
- $("chatModeText")?.textContent=activeModel;
- $("dashModelTag")?.textContent="MODÈLE NQ";
- $("cryptoDashModelTag")?.textContent="MODÈLE CRYPTO";
- $("settingsModel")?.textContent=activeModel==="NQ"?"MODÈLE NQ":"MODÈLE CRYPTO";
- $("modelDescription")?.textContent=nqDesc;
- $("cryptoModelDescription")?.textContent=cryptoDesc;
+ if($("dashMarketEyebrow"))$("dashMarketEyebrow").textContent="FUTURES";
+ if($("cryptoDashMarketEyebrow"))$("cryptoDashMarketEyebrow").textContent="CRYPTO";
+ if($("reviewModel"))$("reviewModel").textContent="FUTURES MODÈLE";
+ if($("cryptoReviewModel"))$("cryptoReviewModel").textContent="CRYPTO MODÈLE";
+ if($("chatModelPill"))$("chatModelPill").textContent=activeModel+" MODÈLE";
+ if($("chatModeText"))$("chatModeText").textContent=activeModel;
+ if($("dashModelTag"))$("dashModelTag").textContent="MODÈLE NQ";
+ if($("cryptoDashModelTag"))$("cryptoDashModelTag").textContent="MODÈLE CRYPTO";
+ if($("settingsModel"))$("settingsModel").textContent=activeModel==="NQ"?"MODÈLE NQ":"MODÈLE CRYPTO";
+ if($("modelDescription"))$("modelDescription").textContent=nqDesc;
+ if($("cryptoModelDescription"))$("cryptoModelDescription").textContent=cryptoDesc;
  const navF=$("navBotFutures"),navC=$("navBotCrypto"),revF=$("navReviewFutures"),revC=$("navReviewCrypto");
  if(navF)navF.classList.toggle("hidden",activeModel!=="NQ");
  if(navC)navC.classList.toggle("hidden",activeModel!=="CRYPTO");
