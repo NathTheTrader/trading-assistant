@@ -569,6 +569,9 @@ button:active{transform:translateY(1px)}
 .weight{font-size:9px;letter-spacing:.5px;color:#8f99aa;margin-left:auto;margin-right:8px}.weight.killer{color:#ff496b}
 .live-check-score{margin-top:12px;padding:12px 14px;border:1px solid var(--hairline2);border-radius:10px;background:linear-gradient(135deg,rgba(255,255,255,.035),rgba(255,255,255,.015));display:flex;align-items:center;gap:12px}.live-check-score span{font-size:9px;letter-spacing:1.2px;color:#778291;font-weight:850}.live-check-score strong{font-size:24px;line-height:1}.live-check-score em{font-style:normal;font-size:11px;font-weight:900;margin-left:auto}
 </style>
+
+.observer-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.observer-card{background:#0b0f15;border:1px solid #1d2430;border-radius:12px;padding:12px}.observer-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.observer-title{font-size:12px;font-weight:900}.observer-state{font-size:9px;font-weight:900;color:#8f9aaa}.observer-card p{font-size:10px;color:#8f9aaa;line-height:1.5;margin:7px 0 0}.trade-question{margin-top:12px;display:grid;gap:8px}.trade-question label{font-size:9px;color:#7f8999;font-weight:850;text-transform:uppercase;letter-spacing:.7px}.trade-question select,.trade-question textarea{width:100%}.trade-question textarea{min-height:70px}.observer-live{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:10px;color:#8f9aaa}.observer-live i{width:7px;height:7px;border-radius:50%;background:#697487;box-shadow:0 0 10px currentColor}.observer-live.live i{background:var(--green)}
+@media(max-width:760px){.observer-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -602,15 +605,16 @@ button:active{transform:translateY(1px)}
     <button class="close-pop" onclick="closeTradePopup()">×</button>
   </div>
   <div class="trade-pop-body">
-    <div id="popupAlert" class="sub">Le bot est en mode lecture seule.</div>
+    <div id="popupAlert" class="sub">Lecture seule · aucun ordre ne sera envoyé.</div>
     <div class="trade-pop-grid">
-      <div class="trade-pop-item"><span>MODÈLE</span><b id="popModel">NQ</b></div>
-      <div class="trade-pop-item"><span>INSTRUMENT</span><b id="popInstrument">NQ</b></div>
-      <div class="trade-pop-item"><span>DIRECTION</span><b id="popDirection">LONG</b></div>
-      <div class="trade-pop-item"><span>RISQUE</span><b id="popRisk">$100</b></div>
+      <div class="trade-pop-item"><span>COURTIER</span><b id="popBroker">Tradovate</b></div><div class="trade-pop-item"><span>MODÈLE</span><b id="popModel">NQ</b></div>
+      <div class="trade-pop-item"><span>INSTRUMENT</span><b id="popInstrument">NQ</b></div><div class="trade-pop-item"><span>DIRECTION</span><b id="popDirection">LONG</b></div>
+      <div class="trade-pop-item"><span>TYPE</span><b id="popOrderType">FILL</b></div><div class="trade-pop-item"><span>PRIX</span><b id="popPrice">—</b></div>
+      <div class="trade-pop-item"><span>QUANTITÉ</span><b id="popQty">—</b></div><div class="trade-pop-item"><span>RISQUE</span><b id="popRisk">$100</b></div>
     </div>
+    <div class="trade-question"><label for="popSetup">Qu'est-ce que tu as pris ?</label><select id="popSetup"><option value="">Sélectionne ton setup</option><option value="Key Open + sweep">Key Open + sweep</option><option value="HTF POI">HTF POI</option><option value="Key Open + HTF POI">Key Open + HTF POI</option><option value="R.B. / Rejection Block">R.B. / Rejection Block</option><option value="Sweep + POI">Sweep + POI</option><option value="Autre">Autre</option></select><label for="popContext">Contexte / pourquoi tu l'as pris</label><textarea id="popContext" placeholder="Ex. direction bullish, sweep du Key Open, POI HTF, entrée limit…"></textarea></div>
     <div id="popAnalysis" class="decision bad">⏳ EN ATTENTE D'ANALYSE</div>
-    <div class="trade-pop-actions" style="margin-top:10px"><button class="primary" onclick="analyzePopupTrade()">ANALYSER</button><button class="secondary" onclick="journalPopupTrade()">JOURNAL</button></div>
+    <div class="trade-pop-actions" style="margin-top:10px"><button class="primary" onclick="analyzePopupTrade()">ANALYSER AVEC JARVIS</button><button class="secondary" onclick="journalPopupTrade()">JOURNAL</button></div>
   </div>
 </div>
 
@@ -694,6 +698,8 @@ button:active{transform:translateY(1px)}
     </div><div id="botCryptoPanel" class="hidden"><div class="ai-box"><b>MODÈLE CRYPTO</b><div class="sub" style="margin-top:8px">Direction du marché → Key Open manipulé / sweep → POI HTF aligné → entrée → laisser le trade jouer en high RR. OTE / Fib secondaire.</div></div><textarea id="cryptoBotContext" placeholder="Décris le setup Crypto : direction du marché, Key Open, sweep/manipulation, POI HTF, zone d'entrée et contexte."></textarea></div><div class="actions"><button class="primary" onclick="runBotTest()">LANCER L'ANALYSE</button></div></div>
     <div class="section"><h2>Sortie du bot</h2><div id="botOutput"><div class="empty">Aucun trade analysé.</div></div></div>
   </div>
+  <div class="section" data-mode="NQ" style="margin-top:14px"><h2>Rithmic — Observateur Futures</h2><div class="ai-box"><b>Lecture seule par partage de fenêtre</b><div class="sub" style="margin-top:7px">Partage la fenêtre de R|Trader ou de ta plateforme Rithmic. EDGEFLOW observe uniquement l'écran et détecte une nouvelle activité de trade. Aucun ordre n'est envoyé.</div></div><div class="actions"><button class="primary" type="button" onclick="startRithmicScreenShare()">PARTAGER RITHMIC</button><button class="secondary" type="button" onclick="stopRithmicScreenShare()">ARRÊTER</button><button class="secondary" type="button" onclick="toggleRithmicObserver()">ARMER L'OBSERVATEUR</button><button class="secondary" type="button" onclick="analyzeRithmicScreen()">ANALYSER MAINTENANT</button></div><div id="rithmicScreenStatus" class="sub" style="margin-top:10px">Pas de partage actif.</div><div class="photo-box" style="margin-top:10px"><video id="rithmicScreenPreview" autoplay muted playsinline style="display:none;width:100%;max-height:420px;object-fit:contain;border-radius:8px;background:#07090d"></video></div><div class="observer-live" id="rithmicObserverState"><i></i><span>Observateur désarmé</span></div><div id="rithmicAIOutput" class="ai-box" style="margin-top:10px">Aucune capture analysée.</div></div>
+
   <div class="section" data-mode="CRYPTO" style="margin-top:14px">
   <h2>KCEX — Observateur Crypto</h2>
   <div class="ai-box">
@@ -707,11 +713,7 @@ button:active{transform:translateY(1px)}
     <button class="secondary" type="button" onclick="analyzeKCEXScreen()">ANALYSER MAINTENANT</button>
     <button class="secondary" type="button" onclick="toggleKCEXAuto()">AUTO 15s</button>
   </div>
-  <div id="kcexScreenStatus" class="sub" style="margin-top:10px">Pas de partage actif.</div>
-  <div class="photo-box" style="margin-top:10px">
-    <video id="kcexScreenPreview" autoplay muted playsinline style="display:none;width:100%;max-height:420px;object-fit:contain;border-radius:8px;background:#07090d"></video>
-  </div>
-  <div id="kcexAIOutput" class="ai-box" style="margin-top:10px">Aucune capture analysée.</div>
+  <div id="kcexScreenStatus" class="sub" style="margin-top:10px">Pas de partage actif.</div><div class="photo-box" style="margin-top:10px"><video id="kcexScreenPreview" autoplay muted playsinline style="display:none;width:100%;max-height:420px;object-fit:contain;border-radius:8px;background:#07090d"></video></div><div class="observer-live" id="kcexObserverState"><i></i><span>Observateur désarmé</span></div><div id="kcexAIOutput" class="ai-box" style="margin-top:10px">Aucune capture analysée.</div>
 </div>
 </section>
 
@@ -1053,250 +1055,22 @@ function resetReview(){
   $("result").innerHTML='<div class="empty">Aucune analyse.</div>';
  updateLiveChecklist("b");updateLiveChecklist("");
 }
-function showTradePopup(data={}){
- $("tradePopup").classList.add("show");$("popModel").textContent=data.model||activeModel||"NQ";$("popInstrument").textContent=data.instrument||"NQ";$("popDirection").textContent=data.direction||"LONG";$("popRisk").textContent=data.risk||"$100";$("popAnalysis").textContent="⏳ EN ATTENTE D'ANALYSE";$("popAnalysis").className="decision bad";
-}
+function showTradePopup(data={}){$("tradePopup").classList.add("show");$("popBroker").textContent=data.broker||"Tradovate";$("popModel").textContent=data.model||activeModel||"NQ";$("popInstrument").textContent=data.instrument||"NQ";$("popDirection").textContent=data.direction||"LONG";$("popOrderType").textContent=data.orderType||"TRADE";$("popPrice").textContent=data.price??"—";$("popQty").textContent=data.qty??"—";$("popRisk").textContent=data.risk||"$100";$("popSetup").value="";$("popContext").value=data.context||"";$("tradePopup").dataset.screenshot=data.screenshot||"";$("popAnalysis").textContent="⏳ EN ATTENTE DE TA CONFIRMATION";$("popAnalysis").className="decision bad";}
 function closeTradePopup(){$("tradePopup").classList.remove("show")}
-async function analyzePopupTrade(){
- const trade={model:$("popModel").textContent,instrument:$("popInstrument").textContent,direction:$("popDirection").textContent,risk:$("popRisk").textContent,timestamp:new Date().toISOString()};
- if(!BOT_API){$("popAnalysis").textContent="🟡 ANALYSE PRÊTE — backend non configuré";$("popAnalysis").className="decision";return;}
- $("popAnalysis").textContent="⏳ LE BOT RÉFLÉCHIT…";$("popAnalysis").className="decision bad";
- try{
-   const r=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade})});
-   $("popAnalysis").textContent=r.text||"Analyse terminée."; $("popAnalysis").className="decision";
-   await syncTradeToBot(trade);
- }catch(e){$("popAnalysis").textContent="⚠️ IA indisponible : "+(e?.message||"erreur"); $("popAnalysis").className="decision bad";}
-}
-function journalPopupTrade(){
- const d=new Date().toISOString().slice(0,10),arr=getJournal();arr.unshift({id:Date.now(),dateISO:d,date:d,model:$("popModel").textContent,market:$("popModel").textContent==="CRYPTO"?"CRYPTO":"FUTURES",instrument:$("popInstrument").textContent,session:"",result:"",grade:"",R:"",pnl:"",context:"Trade détecté automatiquement.",errors:"",lesson:"",score:null,decision:null,notes:"Trade détecté automatiquement."});
- localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));renderJournal();renderStats();closeTradePopup();show("journal");
-}
-function getJournal(){try{return JSON.parse(localStorage.getItem("journal")||"[]")}catch(e){return[]}}
-function journalKey(x){return String(x.dateISO||x.date||"").slice(0,7)||"unknown"}
-function compressImage(file){return new Promise(resolve=>{if(!file){resolve("");return}const reader=new FileReader();reader.onload=e=>{const img=new Image();img.onload=()=>{const max=1400,scale=Math.min(1,max/img.width),c=document.createElement("canvas");c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext("2d").drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL("image/jpeg",.72))};img.src=e.target.result};reader.readAsDataURL(file)})}
-function previewJournalImage(input,id){const f=input.files&&input.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{$(id).src=e.target.result;$(id).style.display="block"};r.readAsDataURL(f)}
-async function prepareAIJournal(){
- const market=$("jMarket").value,instrument=$("jInstrument").value,context=$("jContext").value,errors=$("jErrors").value,result=$("jResult").value,grade=$("jGrade").value;
- let t="Pré-analyse locale : "+(market==="FUTURES"?"Futures":"Crypto")+" "+instrument+". Résultat : "+(result||"non renseigné")+" · Grade : "+(grade||"non renseigné")+". ";
- t+=context?"Le contexte a été fourni. ":"Le contexte est à compléter. ";t+=errors?"Des erreurs ont été documentées et devront être vérifiées.":"Aucune erreur n'est documentée.";t+=" Les screenshots seront utilisables par le moteur IA lorsque le backend sera connecté.";
- $("jAI").value=t;
-}
-async function saveJournalEntry(){
- const d=$("jDate").value||new Date().toISOString().slice(0,10),market=$("jMarket").value,before=await compressImage($("jBefore").files&&$("jBefore").files[0]),after=await compressImage($("jAfter").files&&$("jAfter").files[0]);
- const entry={id:Date.now(),dateISO:d,date:d,model:market==="FUTURES"?"NQ":"CRYPTO",market,instrument:$("jInstrument").value,session:$("jSession").value,result:$("jResult").value,grade:$("jGrade").value,R:$("jR").value,pnl:$("jPnL").value,context:$("jContext").value,errors:$("jErrors").value,lesson:$("jLesson").value,aiOpinion:$("jAI").value,photoBefore:before,photoAfter:after,score:null,decision:null,notes:$("jContext").value};
- const arr=getJournal();arr.unshift(entry);localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));renderJournal();renderStats();resetJournalForm();syncTradeToBot(entry);
-}
-function formatJournalDate(v){if(!v)return"—";return new Date(v+"T12:00:00").toLocaleDateString("fr-CA",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}
-function updateJournalDate(){$("jDateDisplay").textContent=formatJournalDate($("jDate").value)}
-function updateJournalMarket(){
- const market=activeModel==="CRYPTO"?"CRYPTO":"FUTURES";
- $("jMarket").value=market;
- $("jMarket").disabled=true;
- const options=market==="FUTURES"?["MNQ","MES","MGC","Autre"]:["BTC","ETH","BNB","SOL","XRP","HYPE","FLOKI","Autre"];
- $("jInstrument").innerHTML=options.map(x=>'<option value="'+x+'">'+x+"</option>").join("");
-}
-const JOURNAL_DRAFT_KEY=()=> "edgeflow.journalDraft."+activeModel;
-const JOURNAL_DRAFT_FIELDS=["jDate","jSession","jResult","jGrade","jR","jPnL","jContext","jErrors","jLesson","jAI","jInstrument"];
-function saveJournalDraft(){
- const draft={};JOURNAL_DRAFT_FIELDS.forEach(id=>{const el=$(id);if(el)draft[id]=el.value});
- localStorage.setItem(JOURNAL_DRAFT_KEY(),JSON.stringify(draft));
-}
-function restoreJournalDraft(){
- try{
-  const draft=JSON.parse(localStorage.getItem(JOURNAL_DRAFT_KEY())||"{}");
-  if(draft.jInstrument){
-   const opt=[...$("jInstrument").options].find(o=>o.value===draft.jInstrument);
-   if(!opt){$("jInstrument").insertAdjacentHTML("beforeend",'<option value="'+esc(draft.jInstrument)+'">'+esc(draft.jInstrument)+"</option>");}
-  }
-  Object.entries(draft).forEach(([id,v])=>{if($(id)&&v!==undefined)$(id).value=v});
- }catch(e){}
- updateJournalDate();
-}
-function clearJournalDraft(){localStorage.removeItem(JOURNAL_DRAFT_KEY());}
-function resetJournalForm(){
- clearJournalDraft();
- $("jDate").value=new Date().toISOString().slice(0,10);$("jMarket").value=activeModel==="CRYPTO"?"CRYPTO":"FUTURES";updateJournalMarket();updateJournalDate();
- ["jSession","jResult","jGrade","jR","jPnL","jContext","jErrors","jLesson","jAI"].forEach(id=>$(id).value="");
- ["jBefore","jAfter"].forEach(id=>$(id).value="");["jBeforePreview","jAfterPreview"].forEach(id=>{$(id).src="";$(id).style.display="none"});
-}
-function renderJournal(){
- const scope=VALID_MODES.has(activeModel)?activeModel:null;
- const source=scope?getJournal().filter(x=>x.model===scope):getJournal(),groups={};
- source.forEach(x=>{const k=journalKey(x);(groups[k]||(groups[k]=[])).push(x)});const keys=Object.keys(groups).sort().reverse();
- $("journalMonths").innerHTML=keys.length?keys.map(k=>{
-   const [y,m]=k.split("-"),label=k==="unknown"?"Sans date":new Date(Number(y),Number(m)-1,1).toLocaleDateString("fr-CA",{year:"numeric",month:"long"}),rows=groups[k],f=rows.filter(x=>x.model==="NQ").length,c=rows.filter(x=>x.model==="CRYPTO").length;
-   return '<div class="section" style="margin:10px 0;background:#0c1017"><div class="topbar" style="margin-bottom:10px"><div><b style="font-size:16px;text-transform:capitalize">'+esc(label)+'</b><div class="sub">'+rows.length+' trade(s) · Futures '+f+' · Crypto '+c+'</div></div></div><div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Marché</th><th>Instrument</th><th>Session</th><th>Résultat</th><th>Grade</th><th>R</th><th>P&L</th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+esc(x.dateISO||x.date||"")+'</td><td>'+esc(x.market||x.model||"")+'</td><td>'+esc(x.instrument||"")+'</td><td>'+esc(x.session||"")+'</td><td>'+esc(x.result||"")+'</td><td>'+esc(x.grade||"")+'</td><td>'+esc(x.R||"")+'</td><td>'+esc(x.pnl||"")+'</td></tr><tr><td colspan="8">'+(x.context?'<div class="sub" style="margin-bottom:8px"><b>Contexte :</b> '+esc(x.context)+'</div>':"")+(x.errors?'<div class="sub" style="margin-bottom:8px"><b>Erreurs :</b> '+esc(x.errors)+'</div>':"")+(x.lesson?'<div class="sub" style="margin-bottom:8px"><b>Leçon :</b> '+esc(x.lesson)+'</div>':"")+(x.photoBefore||x.photoAfter?'<div class="photo-grid">'+(x.photoBefore?'<div class="photo-box"><b>AVANT</b><img src="'+x.photoBefore+'"></div>':"")+(x.photoAfter?'<div class="photo-box"><b>APRÈS</b><img src="'+x.photoAfter+'"></div>':"")+'</div>':"")+(x.aiOpinion?'<div class="ai-box" style="margin-top:10px"><b>🤖 Avis IA</b><div class="sub" style="margin-top:6px">'+esc(x.aiOpinion)+'</div></div>':"")+'</td></tr>').join("")+'</tbody></table></div></div>';
- }).join(""):'<div class="empty">Aucun trade dans le journal.</div>';
- const now=new Date(),k=now.toISOString().slice(0,7),current=source.filter(x=>journalKey(x)===k);
- $("journalMonth").textContent=now.toLocaleDateString("fr-CA",{year:"numeric",month:"long"});$("monthTrades").textContent=current.length;$("monthNQ").textContent=current.filter(x=>x.model==="NQ").length;$("monthCrypto").textContent=current.filter(x=>x.model==="CRYPTO").length;
-}
-function askJournalAI(){
- const arr=getJournal();if(!arr.length){$("journalAI").innerHTML='<div class="empty">Aucune entrée à analyser.</div>';return}
- const scope=activeModel==="NQ"||activeModel==="CRYPTO"?activeModel:null,data=scope?arr.filter(x=>x.model===scope):arr,wins=data.filter(x=>String(x.result||"").toUpperCase().includes("WIN")).length,losses=data.filter(x=>String(x.result||"").toUpperCase().includes("LOSS")).length,errors=data.flatMap(x=>x.errors?[x.errors]:[]).slice(0,5);
- $("journalAI").innerHTML='<div class="decision">Analyse locale — '+(scope||"FUTURES + CRYPTO")+'</div><div class="sub" style="margin-top:10px">Trades analysés : <b>'+data.length+'</b> · WIN : <b>'+wins+'</b> · LOSS : <b>'+losses+'</b><br><br>Erreurs enregistrées : '+(errors.length?errors.map(esc).join(" • "):"aucune pour le moment.")+'<br><br>Cette analyse reste locale. Le moteur IA complet sera branché au backend.</div>';
-}
-function renderStats(){
- const all=getJournal(),arr=VALID_MODES.has(activeModel)?all.filter(x=>x.model===activeModel):all;
- const wins=arr.filter(x=>String(x.result||"").toUpperCase().includes("WIN")).length;
- const losses=arr.filter(x=>String(x.result||"").toUpperCase().includes("LOSS")).length;
- const rrValues=arr.map(x=>{const m=String(x.R??x.r??"").replace(",",".").match(/[-+]?\d+(?:\.\d+)?/);return m?Number(m[0]):NaN}).filter(Number.isFinite);
- const totalR=rrValues.reduce((a,b)=>a+b,0);
- const avgR=rrValues.length?totalR/rrValues.length:0;
- const wr=(wins+losses)?(wins/(wins+losses))*100:0;
- $("trades").textContent=arr.length;
- $("dashWinrate").textContent=(wins+losses)?wr.toFixed(1)+"%":"—";
- $("dashAvgR").textContent=rrValues.length?(avgR>=0?"+":"")+avgR.toFixed(2)+"R":"—";
- $("dashTotalR").textContent=rrValues.length?(totalR>=0?"+":"")+totalR.toFixed(2)+"R":"—";
- if(arr[0]){
-   $("latest").innerHTML='<b>'+esc(arr[0].model||"TRADE")+' — '+esc(arr[0].instrument||"")+' — '+esc(arr[0].result||"EN COURS")+'</b><div class="sub" style="margin-top:8px">RR : <b>'+esc(arr[0].R||"—")+'</b> · P&L : <b>'+esc(arr[0].pnl||"—")+'</b></div><div class="sub" style="margin-top:6px">'+esc(arr[0].notes||arr[0].context||"Aucune note.")+'</div>';
- }
-}
-async function refreshConnectionCenter(){
-  if(!BOT_API)return;
-  try{
-    const r=await botFetch("/api/connections/status");
-    const set=(id,textValue,kind)=>{const el=$(id);if(el){el.textContent=textValue;el.className="connection-status "+(kind||"")}};
-    set("connTradovate",r.tradovate?.connected?"LIVE":r.tradovate?.configured?"PRÊT":"CONFIG À FAIRE",r.tradovate?.connected?"live":r.tradovate?.configured?"ready":"warn");
-    set("dashConnTradovate",r.tradovate?.connected?"LIVE":r.tradovate?.configured?"PRÊT":"À CONFIGURER",r.tradovate?.connected?"live":r.tradovate?.configured?"ready":"warn");
-    set("connRithmic",r.rithmic?.configured?"CONFIGURÉ":"ACCÈS API REQUIS",r.rithmic?.configured?"ready":"warn");
-    set("dashConnRithmic",r.rithmic?.configured?"PRÊT":"API REQUISE",r.rithmic?.configured?"ready":"warn");
-  }catch(e){}
-}
-async function refreshAIDataAccess(){const el=document.getElementById("aiDataAccess");if(!el)return;if(!BOT_API){el.textContent="Backend non configuré — aucune donnée serveur n’est accessible à l’IA.";return}try{const d=await botFetch("/api/history/ai-context?model="+encodeURIComponent(activeModel));el.innerHTML="<b>"+activeModel+"</b> · "+(d.sampleSize||0)+" trades serveur<br><span class='sub'>Mémoire historique + journal + contexte vérifié. Obsidian est importé séparément et reste cloisonné par modèle.</span>"}catch(e){el.textContent="Backend hors ligne.";}}
-async function refreshObsidianStatus(){
-  const box=$("obsidianStatusBox"),progress=$("obsidianProgress");
-  if(!box||!BOT_API){if(box)box.textContent="Configure d'abord le backend IA.";return;}
-  try{
-    const r=await botFetch("/api/obsidian/status?model="+encodeURIComponent(activeModel||"NQ"));
-    if(!r.imported){box.innerHTML="<b>OBSIDIAN</b> · non importé<br><span class='sub'>Importe ton ZIP une fois. L'IA pourra ensuite utiliser les fiches et les screenshots.</span>";return;}
-    box.innerHTML="<b>OBSIDIAN ACTIF</b> · "+(r.tradeRecords||0)+" fiches · "+(r.imageFiles||0)+" images<br><span class='sub'>"+(r.modelTradeRecords||0)+" fiches pour "+esc(activeModel)+" · "+(r.imageAnalyses||0)+" images déjà analysées.</span>";
-    const j=r.job||{}; if(progress) progress.textContent=j.running?("Analyse visuelle en cours : "+j.processed+"/"+j.total+" images."):(j.phase==="complete"?"Analyse visuelle terminée.":j.error?"Erreur : "+j.error:"Prêt à analyser.");
-  }catch(e){if(box)box.innerHTML="<span class='neutral'>Backend hors ligne.</span>";}
-}
-async function importObsidianJournal(){
-  if(!BOT_API){alert("Configure d'abord l'URL du backend dans Paramètres.");return;}
-  const file=$("obsidianZip")?.files?.[0]; if(!file){alert("Sélectionne ton ZIP Obsidian.");return;}
-  const progress=$("obsidianProgress"); progress.textContent="Import du journal Obsidian en cours…";
-  try{
-    const form=new FormData();form.append("file",file,file.name);
-    const headers={}; if(EDGEFLOW_ACCESS_KEY) headers["X-EDGEFLOW-ACCESS"]=EDGEFLOW_ACCESS_KEY;
-    const r=await fetch(BOT_API+"/api/obsidian/import",{method:"POST",headers,body:form});
-    const d=await r.json().catch(()=>({}));
-    if(!r.ok)throw new Error(d.error||"Import impossible");
-    progress.textContent="Import terminé : "+d.status.tradeRecords+" fiches et "+d.status.imageFiles+" images.";
-    await refreshObsidianStatus(); await refreshAIDataAccess();
-  }catch(e){progress.textContent="Import échoué : "+e.message;}
-}
-async function analyzeObsidianImages(){
-  if(!BOT_API){alert("Configure d'abord le backend.");return;}
-  const progress=$("obsidianProgress");progress.textContent="Démarrage de l'analyse visuelle…";
-  try{
-    const r=await botFetch("/api/obsidian/analyze-images",{method:"POST",body:JSON.stringify({model:activeModel})});
-    progress.textContent=r.started?"Analyse visuelle démarrée.":"Analyse déjà en cours.";
-    pollObsidianJob();
-  }catch(e){progress.textContent="Analyse impossible : "+e.message;}
-}
-async function pollObsidianJob(){
-  if(!BOT_API)return;
-  try{
-    const r=await botFetch("/api/obsidian/job");
-    const p=$("obsidianProgress");
-    if(p&&r.running){p.textContent="Analyse visuelle : "+r.processed+"/"+r.total+" images.";setTimeout(pollObsidianJob,5000);}
-    else {if(p)p.textContent=r.error?"Erreur : "+r.error:(r.phase==="complete"?"Analyse visuelle terminée.":"Prêt.");refreshObsidianStatus();}
-  }catch(e){}
-}
-async function saveBotUrl(){
- const v=$("botApiUrl").value.trim().replace(/\/$/,""); const k=$("edgeflowAccessKey")?.value.trim()||""; if(v)localStorage.setItem("botApiUrl",v); if(k)localStorage.setItem("edgeflowAccessKey",k); else localStorage.removeItem("edgeflowAccessKey"); if(v)location.reload();
-}
-async function testBotConnection(){
- if(!BOT_API){$("backendStatus").textContent="NON CONFIGURÉ";return;}
- try{const r=await botFetch("/health");$("backendStatus").textContent=r.ai?"IA CONNECTÉE":"SERVEUR CONNECTÉ — CLÉ IA MANQUANTE";$("backendStatus").className=r.ai?"yes":"neutral";}catch(e){$("backendStatus").textContent="HORS LIGNE";$("backendStatus").className="no";}
-}
-async function connectTradovateUI(){if(!BOT_API){$("tvConnectionText").textContent="Backend non configuré";return}try{const r=await botFetch("/api/tradovate/connect",{method:"POST"});renderTradovateStatus(r);refreshTradovateEvents()}catch(e){$("tvConnectionText").textContent=e.message}}
-async function refreshTradovateUI(){if(!BOT_API)return;try{const r=await botFetch("/api/tradovate/snapshot");renderTradovateStatus(r);renderTradovateSnapshot(r);refreshTradovateEvents()}catch(e){$("tvConnectionText").textContent="Backend hors ligne"}}
-function renderTradovateSnapshot(r){
-  const p=(r.positions||[]).filter(x=>Number(x.netPos||0)!==0);
-  const fills=(r.recentFills||[]).slice(-5).reverse();
-  if($("tvDetails"))$("tvDetails").innerHTML=[
-    '<div class="row"><span>Utilisateur</span><span>'+esc(r.userId||"—")+'</span></div>',
-    '<div class="row"><span>Comptes</span><span>'+esc((r.accounts||[]).map(a=>a.name||a.id).join(", ")||"—")+'</span></div>',
-    '<div class="row"><span>Position NQ</span><span>'+esc(p.length?p.map(x=>(x.instrument||"NQ")+" "+(Number(x.netPos)>0?"LONG ":"SHORT ")+Math.abs(Number(x.netPos))).join(" · "):"Aucune")+'</span></div>',
-    '<div class="row"><span>Dernier fill</span><span>'+esc(fills[0]?(fills[0].instrument+" @ "+(fills[0].price??"—")):"—")+'</span></div>'
-  ].join("");
-}
-function renderTradovateStatus(r){const ok=!!r.connected;if($("tvLiveStatus")){$("tvLiveStatus").textContent=ok?"● LIVE":"● DÉCONNECTÉ";$("tvLiveStatus").className=ok?"status green":"status"}if($("tvBotState")){$("tvBotState").textContent=ok?"LIVE":"EN ATTENTE";$("tvBotState").className="value small "+(ok?"green":"orange")}if($("tvConnectionText"))$("tvConnectionText").textContent=ok?"Flux actif":"Non connecté";if($("tvDetails"))$("tvDetails").innerHTML='<div class="row"><span>Utilisateur</span><span>'+esc(r.userId||"—")+'</span></div><div class="row"><span>Comptes</span><span>'+esc((r.accounts||[]).map(a=>a.name||a.id).join(", ")||"—")+'</span></div>'}
-async function refreshTradovateEvents(){if(!BOT_API)return;try{const r=await botFetch("/api/tradovate/events"),ev=(r||[]).slice(-1)[0],ai=(r||[]).filter(x=>x.type==="trade_ai_analysis").slice(-1)[0];if(ev&&$("tvLastEvent"))$("tvLastEvent").innerHTML='<b>'+esc(ev.type||"event")+'</b><div class="sub">'+esc(ev.timestamp||"")+'</div>';if(ai&&$("tvAI"))$("tvAI").innerHTML='<b>JARVIS</b><div class="sub" style="margin-top:8px">'+esc(ai.analysis||"")+'</div>'}catch(e){}}
-setInterval(()=>{if(activeModel==="NQ"&&BOT_API)refreshTradovateUI()},10000);
-let kcexScreenStream=null;
-let kcexAutoTimer=null;
-let kcexAnalyzing=false;
-
-function setKCEXStatus(text){const el=$("kcexScreenStatus");if(el)el.textContent=text;}
-function stopKCEXAuto(){if(kcexAutoTimer){clearInterval(kcexAutoTimer);kcexAutoTimer=null;}}
-function stopKCEXScreenShare(){
-  stopKCEXAuto();
-  if(kcexScreenStream){kcexScreenStream.getTracks().forEach(t=>t.stop());kcexScreenStream=null;}
-  const video=$("kcexScreenPreview");if(video){video.srcObject=null;video.style.display="none";}
-  setKCEXStatus("Partage KCEX arrêté.");
-}
-async function startKCEXScreenShare(){
-  if(!navigator.mediaDevices?.getDisplayMedia){setKCEXStatus("Le partage d'écran n'est pas disponible dans ce navigateur.");return;}
-  try{
-    stopKCEXAuto();
-    if(kcexScreenStream) stopKCEXScreenShare();
-    kcexScreenStream=await navigator.mediaDevices.getDisplayMedia({
-      video:{displaySurface:"browser"},
-      audio:false,
-      selfBrowserSurface:"exclude",
-      surfaceSwitching:"include",
-      monitorTypeSurfaces:"include"
-    });
-    const video=$("kcexScreenPreview");
-    video.srcObject=kcexScreenStream;
-    video.style.display="block";
-    await video.play().catch(()=>{});
-    const track=kcexScreenStream.getVideoTracks()[0];
-    track.addEventListener("ended",()=>stopKCEXScreenShare(),{once:true});
-    setKCEXStatus("KCEX partagé. Sélectionne l'onglet KCEX dans la fenêtre de permission.");
-  }catch(e){setKCEXStatus("Partage annulé ou refusé : "+(e.message||e.name));}
-}
-function captureKCEXFrame(){
-  const video=$("kcexScreenPreview");
-  if(!video||!kcexScreenStream||video.readyState<2||!video.videoWidth)return "";
-  const canvas=document.createElement("canvas");
-  const max=1800,scale=Math.min(1,max/video.videoWidth);
-  canvas.width=Math.round(video.videoWidth*scale);canvas.height=Math.round(video.videoHeight*scale);
-  canvas.getContext("2d").drawImage(video,0,0,canvas.width,canvas.height);
-  return canvas.toDataURL("image/jpeg",.78);
-}
-async function analyzeKCEXScreen(){
-  if(kcexAnalyzing)return;
-  const imageDataUrl=captureKCEXFrame();
-  if(!imageDataUrl){setKCEXStatus("Partage KCEX actif requis avant l'analyse.");return;}
-  if(!BOT_API){setKCEXStatus("Backend non configuré. Ajoute l'URL du backend dans Paramètres.");return;}
-  kcexAnalyzing=true;
-  const out=$("kcexAIOutput");if(out)out.innerHTML="<b>TRADING ASSISTANT</b><div class='sub' style='margin-top:8px'>Analyse de l'écran KCEX en cours…</div>";
-  try{
-    const r=await botFetch("/api/analyze-screen",{method:"POST",body:JSON.stringify({
-      model:"CRYPTO",
-      imageDataUrl,
-      context:$("cryptoBotContext")?.value?.trim()||"Observation live de l'interface KCEX. Décrire uniquement ce qui est visible et pertinent pour le modèle Crypto."
-    })});
-    if(out)out.innerHTML="<b>TRADING ASSISTANT — CRYPTO</b><div class='sub' style='margin-top:8px'>"+esc(r.text||"Analyse terminée.")+"</div>";
-    setKCEXStatus("Dernière capture analysée : "+new Date().toLocaleTimeString("fr-CA"));
-  }catch(e){
-    if(out)out.innerHTML="<div class='decision bad'>Analyse impossible</div><div class='sub' style='margin-top:8px'>"+esc(e.message||"Erreur backend")+"</div>";
-    setKCEXStatus("Erreur d'analyse backend.");
-  }finally{kcexAnalyzing=false;}
-}
-function toggleKCEXAuto(){
-  if(kcexAutoTimer){stopKCEXAuto();setKCEXStatus("Analyse automatique arrêtée.");return;}
-  if(!kcexScreenStream){setKCEXStatus("Partage KCEX requis avant l'auto 15s.");return;}
-  analyzeKCEXScreen();
-  kcexAutoTimer=setInterval(()=>analyzeKCEXScreen(),15000);
-  setKCEXStatus("Analyse automatique active : une capture toutes les 15 secondes.");
-}
-
+async function analyzePopupTrade(){const broker=$("popBroker").textContent,model=$("popModel").textContent,instrument=$("popInstrument").textContent,direction=$("popDirection").textContent,setup=$("popSetup").value,context=$("popContext").value.trim(),screen=$("tradePopup").dataset.screenshot||"";const trade={model,instrument,direction,risk:$("popRisk").textContent,orderType:$("popOrderType").textContent,entry:$("popPrice").textContent,quantity:$("popQty").textContent,broker,setupPattern:setup,context:[context,setup?"Setup confirmé : "+setup:""].filter(Boolean).join("\n"),result:"OPEN",timestamp:new Date().toISOString(),screenshots:screen?[screen]:[]};if(!BOT_API){$("popAnalysis").textContent="🟡 Backend non configuré";$("popAnalysis").className="decision";return}$("popAnalysis").textContent="⏳ JARVIS analyse le trade…";$("popAnalysis").className="decision bad";try{const r=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade})});$("popAnalysis").innerHTML=esc(r.text||"Analyse terminée.").replace(/\n/g,"<br>");$("popAnalysis").className="decision";await syncTradeToBot(trade)}catch(e){$("popAnalysis").textContent="⚠️ IA indisponible : "+(e?.message||"erreur");$("popAnalysis").className="decision bad";}}
+function journalPopupTrade(){const d=new Date().toISOString().slice(0,10),model=$("popModel").textContent,arr=getJournal();arr.unshift({id:Date.now(),dateISO:d,date:d,model,market:model==="CRYPTO"?"CRYPTO":"FUTURES",instrument:$("popInstrument").textContent,session:"",result:"",grade:"",R:"",pnl:"",context:$("popContext").value||$("popSetup").value||"Trade détecté automatiquement.",errors:"",lesson:"",score:null,decision:null,notes:"Broker : "+$("popBroker").textContent+" · Type : "+$("popOrderType").textContent});localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));renderJournal();renderStats();closeTradePopup();}
+let rithmicScreenStream=null,rithmicObserverTimer=null,rithmicLastFrame="",rithmicLastDetection=0,kcexObserverTimer=null,kcexLastFrame="",kcexLastDetection=0;
+function setObserverState(id,t,live){const el=$(id);if(el){el.classList.toggle("live",!!live);const span=el.querySelector("span");if(span)span.textContent=t;}}
+function setScreenStatus(id,t){const el=$(id);if(el)el.textContent=t;}
+function frameChanged(a,b){if(!a||!b)return true;return a.slice(0,18000)!==b.slice(0,18000);}
+async function detectScreenTrade(broker,currentImage,previousImage){if(!BOT_API||!currentImage)return;try{const r=await botFetch("/api/detect-screen-trade",{method:"POST",body:JSON.stringify({broker,model:broker==="KCEX"?"CRYPTO":"NQ",imageDataUrl:currentImage,previousImageDataUrl:previousImage||""})});if(r?.detected){const now=Date.now(),last=broker==="KCEX"?kcexLastDetection:rithmicLastDetection;if(now-last<15000)return;if(broker==="KCEX")kcexLastDetection=now;else rithmicLastDetection=now;showTradePopup({broker,model:broker==="KCEX"?"CRYPTO":"NQ",instrument:r.instrument||"UNKNOWN",direction:r.direction||"UNKNOWN",orderType:r.orderType||"TRADE DÉTECTÉ",price:r.price??"—",qty:r.quantity??"—",risk:"$100",context:r.context||"Activité de trade détectée visuellement.",screenshot:currentImage});}}catch(e){}}
+function captureSharedFrame(video,stream){if(!video||!stream||video.readyState<2||!video.videoWidth)return "";const canvas=document.createElement("canvas"),max=1500,scale=Math.min(1,max/video.videoWidth);canvas.width=Math.round(video.videoWidth*scale);canvas.height=Math.round(video.videoHeight*scale);canvas.getContext("2d").drawImage(video,0,0,canvas.width,canvas.height);return canvas.toDataURL("image/jpeg",.72);}
+function startObserverLoop(kind){const isK=kind==="KCEX",stream=isK?kcexScreenStream:rithmicScreenStream;if(!stream)return;const video=$(isK?"kcexScreenPreview":"rithmicScreenPreview"),state=isK?"kcexObserverState":"rithmicObserverState",broker=isK?"KCEX":"RITHMIC";const loop=async()=>{if(!(isK?kcexObserverTimer:rithmicObserverTimer))return;const current=captureSharedFrame(video,stream);if(current&&frameChanged(current,isK?kcexLastFrame:rithmicLastFrame)){const previous=isK?kcexLastFrame:rithmicLastFrame;if(isK)kcexLastFrame=current;else rithmicLastFrame=current;await detectScreenTrade(broker,current,previous);}};if(isK){kcexObserverTimer=setInterval(loop,4000);setObserverState(state,"Observateur armé · vérification toutes les 4s",true)}else{rithmicObserverTimer=setInterval(loop,4000);setObserverState(state,"Observateur armé · vérification toutes les 4s",true)}loop();}
+function stopObserver(kind){const isK=kind==="KCEX";if(isK){if(kcexObserverTimer){clearInterval(kcexObserverTimer);kcexObserverTimer=null}setObserverState("kcexObserverState","Observateur désarmé",false)}else{if(rithmicObserverTimer){clearInterval(rithmicObserverTimer);rithmicObserverTimer=null}setObserverState("rithmicObserverState","Observateur désarmé",false)}}
+async function startRithmicScreenShare(){if(!navigator.mediaDevices?.getDisplayMedia){setScreenStatus("rithmicScreenStatus","Le partage d'écran n'est pas disponible.");return}try{stopRithmicScreenShare();rithmicScreenStream=await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:"window"},audio:false,selfBrowserSurface:"exclude",surfaceSwitching:"include",monitorTypeSurfaces:"include"});const v=$("rithmicScreenPreview");v.srcObject=rithmicScreenStream;v.style.display="block";await v.play().catch(()=>{});const track=rithmicScreenStream.getVideoTracks()[0];track.addEventListener("ended",()=>stopRithmicScreenShare(),{once:true});setScreenStatus("rithmicScreenStatus","Rithmic partagé. Sélectionne R|Trader ou ta plateforme dans la permission.");}catch(e){setScreenStatus("rithmicScreenStatus","Partage annulé : "+(e.message||e.name));}}
+function stopRithmicScreenShare(){stopObserver("RITHMIC");if(rithmicScreenStream){rithmicScreenStream.getTracks().forEach(t=>t.stop());rithmicScreenStream=null}const v=$("rithmicScreenPreview");if(v){v.srcObject=null;v.style.display="none"}setScreenStatus("rithmicScreenStatus","Partage Rithmic arrêté.");}
+function toggleRithmicObserver(){if(rithmicObserverTimer){stopObserver("RITHMIC");setScreenStatus("rithmicScreenStatus","Observateur arrêté.");return}if(!rithmicScreenStream){setScreenStatus("rithmicScreenStatus","Partage Rithmic requis.");return}startObserverLoop("RITHMIC");}
+async function analyzeRithmicScreen(){const img=captureSharedFrame($("rithmicScreenPreview"),rithmicScreenStream);if(!img){setScreenStatus("rithmicScreenStatus","Partage Rithmic actif requis.");return}if(!BOT_API){setScreenStatus("rithmicScreenStatus","Backend non configuré.");return}try{const r=await botFetch("/api/analyze-screen",{method:"POST",body:JSON.stringify({model:"NQ",imageDataUrl:img,context:"Observation live de Rithmic. Décrire uniquement ce qui est visible et pertinent pour le modèle Futures."})});$("rithmicAIOutput").innerHTML="<b>JARVIS — FUTURES</b><div class='sub' style='margin-top:8px'>"+esc(r.text||"Analyse terminée.")+"</div>"}catch(e){$("rithmicAIOutput").innerHTML="<div class='decision bad'>Analyse impossible</div><div class='sub' style='margin-top:8px'>"+esc(e.message||"Erreur backend")+"</div>"}}
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");localStorage.removeItem("edgeflowAccessKey");location.reload()}}
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
