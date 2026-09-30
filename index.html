@@ -4,9 +4,614 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#090b10">
-<meta name="edgeflow-build" content="2026-09-30-1030-full-rebuild-v8>
 <title>EDGEFLOW — Trading Intelligence</title>
-<link rel="stylesheet" href="./edgeflow.css?v=202609301100"><link rel="stylesheet" href="./edgeflow.css?v=202609301100">
+<style>
+:root{
+  --accent:var(--red);--accentSoft:rgba(255,49,88,.12);
+  --bg:#07090d;--bg2:#0b0e14;--panel:#10141c;--panel2:#151a23;--panel3:#0d1118;
+  --line:#242b38;--line2:#303949;--text:#f5f7fb;--muted:#8f9aaa;
+  --red:#ff3158;--red2:#e11d48;--red3:#7f102b;--redSoft:rgba(255,49,88,.12);
+  --green:#35e39b;--orange:#ffbd5a;--blue:#6ea8ff;
+  --shadow:0 20px 60px rgba(0,0,0,.42);--radius:16px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(circle at 78% 0%,rgba(225,29,72,.09),transparent 32%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{display:flex;min-height:100vh}
+.side{position:sticky;top:0;width:250px;height:100vh;flex:0 0 250px;background:linear-gradient(180deg,#0b0d13 0%,#090b10 100%);border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;z-index:20}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 9px 25px}
+.brand-mark{width:35px;height:35px;border-radius:11px;background:linear-gradient(135deg,var(--red),#9f1239);display:grid;place-items:center;font-weight:950;box-shadow:0 8px 28px rgba(255,49,88,.22)}
+.brand-title{font-weight:900;letter-spacing:.5px;font-size:14px}.brand-title span{color:var(--accent)}
+.brand-sub{font-size:9px;color:var(--muted);margin-top:2px;letter-spacing:1.2px}
+.nav-title{font-size:9px;color:#596373;font-weight:800;letter-spacing:1.5px;padding:0 11px 8px}
+nav{display:grid;gap:4px}
+nav button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:transparent;border:1px solid transparent;color:var(--muted);padding:11px 12px;border-radius:11px;font-size:13px;font-weight:650;transition:.16s}
+nav button:hover{background:#11151e;color:#fff;border-color:#1e2531}
+nav button.active{background:linear-gradient(90deg,var(--accentSoft),transparent);color:#fff;border-color:color-mix(in srgb,var(--accent) 30%,transparent);box-shadow:inset 3px 0 0 var(--accent)}
+.nav-icon{width:18px;text-align:center;opacity:.9}
+.side-bottom{margin-top:auto;padding:12px 8px 2px}
+.connection-mini{border:1px solid var(--line);background:linear-gradient(145deg,#11151e,#0b0f15);border-radius:13px;padding:12px}
+.connection-mini .mini-head{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:800}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:6px;background:var(--orange);box-shadow:0 0 10px currentColor}
+.mini-sub{font-size:10px;color:var(--muted);line-height:1.5;margin-top:7px}
+.main{width:min(1500px,100%);margin:0 auto;padding:28px 30px 50px}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:22px}
+.eyebrow{font-size:10px;color:var(--accent);font-weight:900;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:7px}
+h1{font-size:28px;line-height:1.1;margin:0;font-weight:900;letter-spacing:-.7px}
+.sub{color:var(--muted);font-size:12px;line-height:1.55}
+.top-actions{display:flex;gap:8px;align-items:center}
+.status,.pill{border:1px solid rgba(255,49,88,.25);background:var(--redSoft);color:#ff6a86;padding:7px 10px;border-radius:999px;font-size:10px;font-weight:850;letter-spacing:.3px;white-space:nowrap}
+.status.green{border-color:rgba(53,227,155,.25);background:rgba(53,227,155,.09);color:var(--green)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
+.card,.section,.model-card{background:linear-gradient(145deg,rgba(17,21,29,.98),rgba(13,17,24,.98));border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 8px 30px rgba(0,0,0,.16)}
+.card{position:relative;overflow:hidden}
+.card:before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,49,88,.35),transparent)}
+.label{font-size:10px;color:#7f8999;font-weight:750;text-transform:uppercase;letter-spacing:.8px}
+.value{font-size:25px;font-weight:900;margin-top:8px;letter-spacing:-.5px}.value.small{font-size:17px}
+.green{color:var(--green)}.red{color:var(--red)}.orange{color:var(--orange)}.blue{color:var(--blue)}
+.layout{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}
+.section h2{font-size:14px;margin:0 0 14px;font-weight:850}.section h3{font-size:12px}
+.rows{display:grid;gap:7px}.row{display:flex;justify-content:space-between;align-items:center;gap:15px;background:#0c1017;border:1px solid #1d2430;padding:11px 12px;border-radius:10px;font-size:12px}
+.yes{color:var(--green);font-weight:800}.no{color:var(--red);font-weight:800}.neutral{color:var(--orange);font-weight:800}
+.divider{height:1px;background:var(--line);margin:16px 0}
+button.primary{background:linear-gradient(135deg,var(--accent),var(--accent));color:#fff;border:0;padding:11px 15px;border-radius:10px;font-weight:850;box-shadow:0 8px 22px rgba(225,29,72,.18);transition:.16s}
+button.primary:hover{transform:translateY(-1px);filter:brightness(1.08)}
+button.secondary{background:#151a23;color:#e9edf4;border:1px solid var(--line2);padding:10px 13px;border-radius:10px;font-weight:700;transition:.16s}
+button.secondary:hover{border-color:#4a5568;background:#1a202b}
+button.danger{background:transparent;color:#ff708b;border:1px solid rgba(255,49,88,.3);padding:10px 13px;border-radius:10px;font-weight:700}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.form{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.form label{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#0c1017;border:1px solid #1d2430;padding:11px 12px;border-radius:10px;font-size:12px;color:#dce1ea}
+.form input[type=checkbox]{appearance:none;width:18px;height:18px;border:1px solid #3a4352;background:#090c11;border-radius:5px;position:relative;flex:0 0 auto}
+.form input[type=checkbox]:checked{background:var(--red);border-color:var(--red)}
+.form input[type=checkbox]:checked:after{content:"✓";position:absolute;color:#fff;font-size:12px;font-weight:900;left:3px;top:-1px}
+input,textarea,select{background:#0a0e14;color:#fff;border:1px solid var(--line2);border-radius:9px;padding:10px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:rgba(255,49,88,.6);box-shadow:0 0 0 3px rgba(255,49,88,.08)}
+textarea{width:100%;min-height:105px;resize:vertical}.full{grid-column:1/-1}
+.score{display:flex;align-items:center;gap:18px;margin:10px 0 16px}
+.circle{width:90px;height:90px;border-radius:50%;border:7px solid var(--red);display:grid;place-items:center;font-size:21px;font-weight:950;background:#0b0e14;box-shadow:0 0 35px rgba(255,49,88,.08)}
+.grade{font-size:28px;font-weight:950;color:var(--red)}
+.decision{margin-top:10px;background:rgba(53,227,155,.08);border:1px solid rgba(53,227,155,.22);padding:12px;border-radius:10px;color:var(--green);font-weight:850;text-align:center}
+.decision.bad{background:rgba(255,49,88,.08);border-color:rgba(255,49,88,.28);color:#ff6a86}
+.model-select{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.model-card{cursor:pointer;transition:.18s;position:relative;overflow:hidden}
+.model-card:after{content:"→";position:absolute;right:18px;top:18px;color:#596373;font-size:20px}
+.model-card:hover{border-color:rgba(255,49,88,.55);transform:translateY(-2px);box-shadow:0 18px 45px rgba(0,0,0,.28)}
+.model-card h2{margin:0 0 8px;font-size:19px}.model-card p{color:var(--muted);line-height:1.65;font-size:12px;max-width:650px}
+.tag{display:inline-block;margin-bottom:13px;padding:5px 8px;border-radius:6px;background:var(--redSoft);color:#ff6a86;font-size:9px;font-weight:900;letter-spacing:.8px}
+.hero{background:radial-gradient(circle at 85% 15%,rgba(255,49,88,.13),transparent 30%),linear-gradient(145deg,#121720,#0c1017);border:1px solid rgba(255,49,88,.2);border-radius:18px;padding:22px;margin-bottom:14px;display:flex;justify-content:space-between;gap:20px;align-items:flex-end}
+.hero-title{font-size:21px;font-weight:900;margin:5px 0 8px}.hero p{margin:0;max-width:720px;color:var(--muted);font-size:12px;line-height:1.65}
+.hero-actions{display:flex;gap:8px;flex-wrap:wrap}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+.table{width:100%;border-collapse:collapse;font-size:11px;min-width:760px}.table th,.table td{text-align:left;padding:11px;border-bottom:1px solid var(--line)}.table th{color:#7f8999;font-size:9px;text-transform:uppercase;letter-spacing:.8px;background:#0d1118}.table tr:last-child td{border-bottom:0}
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.photo-box{background:#0a0e14;border:1px solid var(--line);border-radius:10px;padding:10px}.photo-box img{width:100%;max-height:280px;object-fit:contain;border-radius:7px;margin-top:8px;background:#07090d}
+.ai-box{background:rgba(255,49,88,.05);border:1px solid rgba(255,49,88,.18);border-radius:10px;padding:13px}
+.hidden{display:none!important}
+.trade-pop{position:fixed;right:22px;top:88px;width:380px;max-width:calc(100vw - 30px);background:linear-gradient(145deg,#121720,#0b0f15);border:1px solid rgba(255,49,88,.7);border-radius:16px;box-shadow:0 25px 80px rgba(0,0,0,.65),0 0 35px rgba(255,49,88,.1);z-index:9999;display:none;overflow:hidden}
+.trade-pop.show{display:block;animation:popIn .22s ease-out}
+@keyframes popIn{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
+.trade-pop-head{display:flex;justify-content:space-between;align-items:center;padding:15px 16px;background:linear-gradient(90deg,rgba(255,49,88,.14),transparent);border-bottom:1px solid var(--line)}
+.trade-pop-title{color:var(--accent);font-size:15px;font-weight:950;letter-spacing:.3px}.close-pop{background:none;border:0;color:#7f8999;font-size:22px;cursor:pointer}.close-pop:hover{color:#fff}
+.trade-pop-body{padding:16px}.trade-pop-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.trade-pop-item{background:#090d13;border:1px solid #1d2430;border-radius:9px;padding:9px}.trade-pop-item span{display:block;color:#717b8b;font-size:9px;font-weight:800;letter-spacing:.8px}.trade-pop-item b{display:block;margin-top:4px;font-size:13px}
+.trade-pop-actions{display:flex;gap:8px}.trade-pop-actions button{flex:1}
+.chat-shell{display:flex;flex-direction:column;height:570px}.chat-messages{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px}.bubble{max-width:78%;padding:11px 13px;border-radius:12px;border:1px solid var(--line);font-size:12px;line-height:1.55}.bubble.ai{align-self:flex-start;background:#151a23}.bubble.me{align-self:flex-end;background:rgba(255,49,88,.08);border-color:rgba(255,49,88,.2)}.bubble b{font-size:10px}.chat-input{display:flex;gap:8px;margin-top:12px}.chat-input input{flex:1}
+.stat-line{display:flex;align-items:center;gap:12px;margin-top:12px}.bar{height:7px;border-radius:99px;background:#1a202b;overflow:hidden;flex:1}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--red3),var(--red));border-radius:99px}
+.empty{padding:30px 10px;text-align:center;color:var(--muted);font-size:12px}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.kpi{background:#0b0f15;border:1px solid #1d2430;border-radius:10px;padding:11px}.kpi .num{font-size:18px;font-weight:900;margin-top:4px}
+.mobile-menu{display:none}
+@media(max-width:1050px){.side{width:215px;flex-basis:215px}.main{padding:22px}.grid{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}}
+@media(max-width:760px){.app{display:block}.side{position:sticky;width:100%;height:auto;display:block;padding:10px;border-right:0;border-bottom:1px solid var(--line)}.brand{padding:3px 8px 10px}.nav-title,.side-bottom{display:none}nav{display:flex;overflow:auto;padding-bottom:2px}nav button{flex:0 0 auto;width:auto;padding:9px 10px}.nav-icon{display:none}.main{padding:18px 14px 35px}.topbar{margin-bottom:17px}h1{font-size:23px}.top-actions{display:none}.hero{display:block}.hero-actions{margin-top:14px}.grid,.form,.model-select,.photo-grid{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.trade-pop{right:12px;top:78px}.bubble{max-width:90%}}
+
+.mode-switch{margin:0 8px 18px;padding:4px;background:#0b0f15;border:1px solid var(--line);border-radius:12px;display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.mode-switch button{border:0;background:transparent;color:var(--muted);padding:9px 5px;border-radius:8px;font-size:10px;font-weight:900;letter-spacing:.6px}
+.mode-switch button.active{background:var(--accentSoft);color:#fff;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 28%,transparent)}
+.mode-banner{display:flex;align-items:center;gap:10px;padding:10px 13px;border:1px solid color-mix(in srgb,var(--accent) 28%,transparent);background:var(--accentSoft);border-radius:10px;margin-bottom:14px;font-size:11px;font-weight:800}
+.mode-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+body.crypto-mode{--accent:#4da3ff;--accentSoft:rgba(77,163,255,.13);--red:#4da3ff;--red2:#2563eb}
+body.nq-mode{--accent:#ff3158;--accentSoft:rgba(255,49,88,.12)}
+
+/* EDGEFLOW — trade analyzer controls */
+.check-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.check-card{position:relative;display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:62px;padding:12px 13px!important;background:linear-gradient(145deg,rgba(255,255,255,.025),rgba(255,255,255,.012))!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:12px!important}
+.check-card:hover{border-color:rgba(255,255,255,.16)!important;background:rgba(255,255,255,.035)!important}
+.check-main{display:flex;align-items:center;gap:10px;min-width:0}
+.check-icon{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.045);color:#9aa5b5;font-size:12px;font-weight:900;flex:0 0 auto}
+.check-copy{min-width:0}.check-title{font-size:12px;font-weight:800;color:#edf1f7}.check-meta{display:block;margin-top:3px;font-size:9px;color:#727d8d;font-weight:700;letter-spacing:.3px}
+.check-card.killer .check-icon{color:#ff708b;background:rgba(255,49,88,.09)}
+.check-card input[type=checkbox]{position:absolute;opacity:0;pointer-events:none}
+.check-switch{width:42px;height:24px;border-radius:999px;background:#171d27;border:1px solid #303949;position:relative;flex:0 0 auto;transition:.18s}
+.check-switch:after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#697487;transition:.18s;box-shadow:0 2px 5px rgba(0,0,0,.35)}
+.check-card input:checked + .check-switch{background:rgba(53,227,155,.18);border-color:rgba(53,227,155,.55)}
+.check-card input:checked + .check-switch:after{left:21px;background:var(--green)}
+.check-card.killer input:checked + .check-switch{background:rgba(255,49,88,.2);border-color:rgba(255,49,88,.6)}
+.check-card.killer input:checked + .check-switch:after{background:var(--red)}
+.check-score-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 7px}
+.check-score-label{font-size:9px;color:#7d8797;font-weight:850;letter-spacing:1px;text-transform:uppercase}
+.image-drop{border:1px dashed rgba(255,255,255,.16);background:rgba(255,255,255,.018);border-radius:12px;padding:13px}
+.image-drop-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.image-drop-title{font-size:11px;font-weight:850}.image-drop-sub{font-size:10px;color:var(--muted);margin-top:3px}
+.image-inputs{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+.image-input{background:#0a0e14;border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:9px}
+.image-input label{display:block!important;background:transparent!important;border:0!important;padding:0!important;margin:0 0 7px!important;font-size:10px!important;font-weight:800!important;color:#aeb7c5!important}
+.image-input input[type=file]{width:100%;min-height:38px;padding:7px;font-size:10px}
+.image-preview{display:none;width:100%;max-height:190px;object-fit:contain;border-radius:8px;margin-top:8px;background:#05070a}
+.ai-analysis{white-space:pre-wrap;font-size:12px;line-height:1.7;color:#d9e0ea}
+@media(max-width:760px){.check-grid,.image-inputs{grid-template-columns:1fr}}
+
+/* FINAL COMPACT TRADING WORKSPACE */
+.side{width:205px;flex-basis:205px;padding:16px 10px}
+.brand{padding:2px 7px 16px}.mode-switch{margin:0 5px 12px}
+.main{max-width:1600px;padding:18px 20px 34px}.topbar{margin-bottom:14px}
+h1{font-size:24px}.grid{gap:9px}.card,.section,.model-card{padding:13px;border-radius:12px}
+.layout{gap:9px;margin-top:9px}.hero{padding:16px;margin-bottom:10px;border-radius:13px}
+.section h2{margin-bottom:10px}.row{padding:8px 10px}.actions{margin-top:9px;gap:6px}
+.chat-shell{height:calc(100vh - 205px);min-height:440px}.chat-input{margin-top:8px}
+.table th,.table td{padding:8px}.trade-pop{top:65px}
+.ta-voice-fab{right:16px!important;bottom:16px!important;padding:10px 13px!important}
+@media(max-width:1050px){.side{width:185px;flex-basis:185px}.main{padding:15px}.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.side{width:100%;padding:8px}.main{padding:12px}.chat-shell{height:60vh}}
+
+/* EDGEFLOW — compact dashboard + model accents */
+.dashboard-kpis{grid-template-columns:repeat(4,1fr)}
+.dashboard-kpis .card{min-height:86px}
+.dashboard-kpis .value{font-size:22px;margin-top:5px}
+body.crypto-mode .eyebrow,
+body.crypto-mode .brand-title span,
+body.crypto-mode .tag,
+body.crypto-mode .pill,
+body.crypto-mode .status:not(.green),
+body.crypto-mode .value.blue,
+body.crypto-mode .card:before{color:#6ea8ff}
+body.crypto-mode .tag{background:rgba(77,163,255,.13)}
+body.crypto-mode .status:not(.green),
+body.crypto-mode .pill{border-color:rgba(77,163,255,.28);background:rgba(77,163,255,.12);color:#6ea8ff}
+body.crypto-mode button.primary{background:linear-gradient(135deg,#4da3ff,#2563eb);box-shadow:0 8px 22px rgba(37,99,235,.18)}
+body.crypto-mode .hero{background:radial-gradient(circle at 85% 15%,rgba(77,163,255,.13),transparent 30%),linear-gradient(145deg,#121720,#0c1017);border-color:rgba(77,163,255,.2)}
+body.crypto-mode .card:before{background:linear-gradient(90deg,transparent,rgba(77,163,255,.35),transparent)}
+body.crypto-mode input:focus,body.crypto-mode textarea:focus,body.crypto-mode select:focus{border-color:rgba(77,163,255,.6);box-shadow:0 0 0 3px rgba(77,163,255,.08)}
+@media(max-width:1050px){.dashboard-kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.dashboard-kpis{grid-template-columns:repeat(2,1fr)}}
+/* edgeflow-design-system */
+:root{
+  --bg:#080a0e;--bg2:#0c0f14;--panel:#10141a;--panel2:#141920;--panel3:#0d1116;
+  --line:rgba(255,255,255,.075);--line2:rgba(255,255,255,.13);
+  --text:#f4f7fb;--muted:#8d97a6;--red:#ff335b;--red2:#ff1744;
+  --blue:#3b8cff;--blue2:#1677ff;--green:#2edc91;--orange:#ffb84d;--radius:14px;
+}
+body{
+  background:radial-gradient(circle at 75% -10%,rgba(255,51,91,.075),transparent 28%),linear-gradient(180deg,#080a0e 0%,#0a0d12 100%);
+  letter-spacing:.005em;
+}
+body.crypto-mode{
+  background:radial-gradient(circle at 75% -10%,rgba(59,140,255,.085),transparent 28%),linear-gradient(180deg,#080a0e 0%,#0a0d12 100%);
+}
+.side{
+  background:rgba(10,12,17,.96);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  border-right-color:var(--line);
+}
+.brand{padding-bottom:18px}
+.brand-mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--red2),#8f1233);box-shadow:0 10px 30px rgba(255,23,68,.22);font-size:16px}
+body.crypto-mode .brand-mark{background:linear-gradient(135deg,var(--blue),#145bd8);box-shadow:0 10px 30px rgba(59,140,255,.2)}
+.brand-title{font-size:15px;letter-spacing:.7px}
+.brand-sub{letter-spacing:1.5px}
+nav{gap:3px}
+nav button{min-height:42px}
+.main{padding-top:20px}
+h1{font-size:27px;letter-spacing:-.9px}
+.hero{min-height:150px;background:linear-gradient(135deg,rgba(255,255,255,.035),rgba(255,255,255,.012));border-color:var(--line2);box-shadow:0 20px 60px rgba(0,0,0,.22)}
+.card,.section,.model-card{background:linear-gradient(145deg,rgba(17,21,27,.98),rgba(12,15,20,.98));border-color:var(--line);box-shadow:0 10px 34px rgba(0,0,0,.15)}
+.card:hover,.model-card:hover{border-color:var(--line2)}
+.dashboard-kpis .card{min-height:96px}
+.label{color:#788392;font-size:9px}
+.value{font-variant-numeric:tabular-nums}
+.row,.kpi{background:rgba(255,255,255,.018);border-color:var(--line)}
+input,textarea,select{background:#0a0e13;border-color:rgba(255,255,255,.13);color:#f5f7fb;min-height:42px}
+textarea{min-height:110px}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,255,255,.04)}
+.chat-shell{height:calc(100vh - 190px);min-height:520px}
+.chat-input{align-items:flex-end}
+.chat-input textarea{flex:1;min-height:44px;height:44px;max-height:140px;resize:vertical;padding:12px}
+.chat-input .primary{min-height:44px}
+.bubble{box-shadow:0 5px 20px rgba(0,0,0,.12)}
+.bubble.me{background:var(--accentSoft);border-color:rgba(255,255,255,.08)}
+button.primary{min-height:42px;background:linear-gradient(135deg,var(--accent),var(--accent));box-shadow:0 8px 24px rgba(0,0,0,.2)}
+button.secondary{min-height:42px;background:#151a21;border-color:var(--line2)}
+button.danger{min-height:42px}
+.photo-box{background:#090c11;border-color:var(--line)}
+.ai-box{background:rgba(255,255,255,.025);border-color:var(--line2)}
+.trade-pop{z-index:10000}
+.ta-voice-fab{z-index:10001!important}
+.ta-voice-panel{z-index:10000!important}
+@media(max-width:760px){
+  .main{padding:14px 12px 30px}
+  h1{font-size:23px}
+  .chat-shell{height:68vh;min-height:430px}
+  .chat-input textarea{font-size:16px}
+  input,textarea,select{font-size:16px}
+}
+/* EDGEFLOW 2026 visual system */
+:root{
+  --bg:#07080b;--bg2:#0a0c10;--panel:#0d1015;--panel2:#11151c;--panel3:#0a0d12;
+  --line:rgba(255,255,255,.075);--line2:rgba(255,255,255,.13);
+  --text:#f2f4f7;--muted:#858e9d;
+  --red:#ff3158;--red2:#e31b45;--red3:#7f102b;--redSoft:rgba(255,49,88,.10);
+  --green:#35e39b;--orange:#ffbd5a;--blue:#5fa0ff;
+  --shadow:0 24px 70px rgba(0,0,0,.38);--radius:14px;
+}
+body{
+  background:
+    radial-gradient(900px 500px at 78% -8%,rgba(255,49,88,.055),transparent 62%),
+    radial-gradient(700px 450px at 18% 100%,rgba(80,120,255,.025),transparent 65%),
+    var(--bg);
+  font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  letter-spacing:-.01em;
+}
+.side{
+  width:248px;flex-basis:248px;
+  background:rgba(8,10,14,.94);
+  border-right:1px solid rgba(255,255,255,.065);
+  backdrop-filter:blur(18px);
+  padding:20px 13px;
+}
+.brand{gap:12px;padding:3px 9px 27px}
+.brand-mark{
+  width:38px;height:38px;border-radius:12px;
+  display:grid;place-items:center;color:#fff;
+  background:linear-gradient(145deg,#ff3158 0%,#b3123a 100%);
+  box-shadow:0 10px 30px rgba(255,49,88,.18),inset 0 1px 0 rgba(255,255,255,.25);
+}
+.brand-mark svg{width:28px;height:28px}
+.brand-title{font-size:14px;font-weight:850;letter-spacing:.8px}
+.brand-title span{color:#ff3158}
+.brand-sub{font-size:8px;letter-spacing:1.55px;color:#687281;margin-top:3px}
+.nav-title{color:#596271;font-size:8px;letter-spacing:1.7px;padding:0 11px 9px}
+nav{gap:3px}
+nav button{
+  padding:10px 11px;border-radius:9px;font-size:12px;font-weight:620;
+  color:#7f8896;transition:background .16s,border-color .16s,color .16s,transform .16s;
+}
+nav button:hover{background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.06);color:#e9edf3}
+nav button.active{
+  background:linear-gradient(90deg,rgba(255,49,88,.12),rgba(255,49,88,.025));
+  color:#f7f8fa;border-color:rgba(255,49,88,.16);
+  box-shadow:inset 2px 0 0 #ff3158;
+}
+.nav-icon{width:18px;color:#687281;font-size:14px}
+nav button.active .nav-icon{color:#ff5b78}
+.main{padding:30px 34px 60px;max-width:1480px}
+.topbar{margin-bottom:25px}
+.eyebrow{font-size:9px;letter-spacing:1.8px;color:#ff4c6e;margin-bottom:8px}
+h1{font-size:27px;letter-spacing:-1px;font-weight:820}
+.sub{font-size:11.5px;color:#818b99}
+.status,.pill{
+  border-radius:8px;padding:6px 9px;font-size:9px;letter-spacing:.5px;
+  background:rgba(255,49,88,.075);border-color:rgba(255,49,88,.18);color:#ff6680;
+}
+.card,.section,.model-card{
+  background:linear-gradient(145deg,rgba(16,19,25,.96),rgba(11,14,19,.96));
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:13px;box-shadow:0 12px 35px rgba(0,0,0,.15);
+}
+.card{padding:17px}
+.card:before{background:linear-gradient(90deg,transparent,rgba(255,49,88,.18),transparent)}
+.label{color:#727c8b;font-size:9px;letter-spacing:1px}
+.value{font-size:24px;font-weight:800;letter-spacing:-.8px}
+.layout{gap:16px}
+.section{padding:17px}
+.section h2{font-size:13px;font-weight:780}
+.row{background:rgba(255,255,255,.018);border-color:rgba(255,255,255,.065);border-radius:9px}
+button.primary{
+  background:linear-gradient(135deg,#ff3158,#e51d48);
+  border-radius:9px;padding:10px 14px;font-size:11px;
+  box-shadow:0 8px 22px rgba(255,49,88,.14);
+}
+button.secondary{
+  background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.11);
+  border-radius:9px;padding:9px 12px;font-size:11px;
+}
+button.secondary:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18)}
+.form label{background:rgba(255,255,255,.018);border-color:rgba(255,255,255,.065)}
+input,textarea,select{
+  background:#090c11;border-color:rgba(255,255,255,.10);border-radius:8px;
+}
+input:focus,textarea:focus,select:focus{
+  border-color:rgba(255,49,88,.48);box-shadow:0 0 0 3px rgba(255,49,88,.065)
+}
+.hero{
+  background:
+    radial-gradient(500px 220px at 90% 0%,rgba(255,49,88,.09),transparent 70%),
+    linear-gradient(145deg,#11151c,#0b0e13);
+  border:1px solid rgba(255,255,255,.075);border-radius:15px;padding:24px;
+}
+.hero-title{font-size:20px;font-weight:800;letter-spacing:-.5px}
+.model-card:hover{border-color:rgba(255,49,88,.38)}
+.table-wrap{border-color:rgba(255,255,255,.075);border-radius:10px}
+.table th{background:#0b0e13;color:#6f7887}
+.table th,.table td{border-color:rgba(255,255,255,.065)}
+.ai-box{background:rgba(255,255,255,.018);border-color:rgba(255,255,255,.075)}
+.divider{background:rgba(255,255,255,.07)}
+.hidden{display:none!important}
+</style><style>
+/* FINAL EDGEFLOW ART DIRECTION */
+:root{
+ --bg:#07090c;--bg2:#0a0d11;--surface:#0d1116;--surface2:#11161d;--surface3:#151b23;
+ --hairline:rgba(255,255,255,.065);--hairline2:rgba(255,255,255,.105);
+ --text:#f3f5f8;--muted:#8993a2;--dim:#626c7b;
+ --red:#ff365d;--redGlow:rgba(255,54,93,.16);--blue:#4b9cff;--blueGlow:rgba(75,156,255,.16);
+}
+html{background:var(--bg);color-scheme:dark}
+body{
+ min-height:100vh;overflow-x:hidden;
+ background:
+   radial-gradient(700px 420px at 86% -8%,var(--redGlow),transparent 68%),
+   radial-gradient(560px 360px at 8% 108%,rgba(75,156,255,.035),transparent 70%),
+   linear-gradient(180deg,#07090c 0%,#090c11 100%);
+ -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+body:before{
+ content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.22;
+ background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+ background-size:56px 56px;
+ mask-image:linear-gradient(to bottom,rgba(0,0,0,.75),transparent 78%);
+}
+body.crypto-mode{background:
+ radial-gradient(700px 420px at 86% -8%,var(--blueGlow),transparent 68%),
+ radial-gradient(560px 360px at 8% 108%,rgba(75,156,255,.04),transparent 70%),
+ linear-gradient(180deg,#07090c 0%,#090c11 100%)}
+.side{
+ width:224px;flex-basis:224px;padding:18px 11px;
+ background:rgba(8,10,14,.82);border-right:1px solid var(--hairline);
+ box-shadow:18px 0 60px rgba(0,0,0,.16);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+}
+.brand{padding:3px 8px 22px;gap:11px}
+.brand-mark{
+ width:40px;height:40px;border-radius:13px;
+ background:linear-gradient(145deg,#ff4267 0%,#c61640 48%,#7e102d 100%);
+ border:1px solid rgba(255,255,255,.16);
+ box-shadow:0 12px 34px rgba(255,54,93,.18),inset 0 1px 0 rgba(255,255,255,.25);
+}
+.brand-mark svg{width:29px;height:29px}
+body.crypto-mode .brand-mark{
+ background:linear-gradient(145deg,#62aeff,#2874dc 52%,#16418c);
+ box-shadow:0 12px 34px rgba(75,156,255,.18),inset 0 1px 0 rgba(255,255,255,.25)
+}
+.brand-title{font-size:15px;font-weight:820;letter-spacing:.85px}
+.brand-title span{color:var(--red)}
+body.crypto-mode .brand-title span{color:var(--blue)}
+.brand-sub{font-size:8px;letter-spacing:1.8px;color:#687383}
+.mode-switch{
+ margin:0 5px 20px;padding:3px;border-radius:11px;
+ background:rgba(255,255,255,.025);border:1px solid var(--hairline);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.025)
+}
+.mode-switch button{
+ position:relative;min-height:34px;border-radius:8px;color:#697483;font-size:9px;letter-spacing:.8px;
+ transition:.2s ease;z-index:1
+}
+.mode-switch button.active{color:#fff;background:rgba(255,255,255,.075);box-shadow:0 4px 16px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.06)}
+body.nq-mode .mode-switch button#modeNQ.active{color:#fff;box-shadow:0 4px 18px rgba(255,54,93,.12),inset 0 0 0 1px rgba(255,54,93,.12)}
+body.crypto-mode .mode-switch button#modeCrypto.active{color:#fff;box-shadow:0 4px 18px rgba(75,156,255,.12),inset 0 0 0 1px rgba(75,156,255,.12)}
+.nav-title{font-size:8px;letter-spacing:1.9px;color:#596473;padding:0 10px 8px}
+nav{gap:2px}
+nav button{
+ position:relative;min-height:40px;padding:9px 11px;border-radius:9px;border-color:transparent;
+ color:#788392;font-size:11.5px;font-weight:620;letter-spacing:-.05px;
+}
+nav button:hover{background:rgba(255,255,255,.035);color:#e8ebef;border-color:rgba(255,255,255,.045)}
+nav button.active{
+ color:#f8fafc;background:linear-gradient(90deg,rgba(255,54,93,.105),rgba(255,54,93,.025) 75%,transparent);
+ border-color:rgba(255,255,255,.045);box-shadow:none
+}
+nav button.active:before{content:"";position:absolute;left:-1px;top:8px;bottom:8px;width:2px;border-radius:4px;background:var(--red);box-shadow:0 0 12px var(--red)}
+body.crypto-mode nav button.active:before{background:var(--blue);box-shadow:0 0 12px var(--blue)}
+.nav-icon{width:19px;font-size:13px;color:#667180;transition:.18s}
+nav button.active .nav-icon{color:var(--red)}
+body.crypto-mode nav button.active .nav-icon{color:var(--blue)}
+.side-bottom{padding:10px 6px 1px}
+.connection-mini{
+ padding:11px;border-radius:11px;background:rgba(255,255,255,.018);
+ border:1px solid var(--hairline)
+}
+.mini-sub{font-size:9px;color:#687281;line-height:1.55}
+.main{max-width:1500px;padding:26px 30px 56px}
+.topbar{margin-bottom:20px}
+.eyebrow{font-size:8.5px;letter-spacing:2px;color:var(--red);margin-bottom:8px}
+body.crypto-mode .eyebrow{color:var(--blue)}
+h1{font-size:28px;font-weight:780;letter-spacing:-1.15px}
+.sub{color:#7f8998;font-size:11.5px}
+.status,.pill{
+ border-radius:7px;padding:6px 8px;font-size:8.5px;letter-spacing:.65px;
+ background:rgba(255,255,255,.035);border-color:var(--hairline2);color:#9aa4b2
+}
+.status.green{background:rgba(46,220,145,.065);border-color:rgba(46,220,145,.16);color:#55e3a6}
+.grid{gap:10px}
+.card,.section,.model-card{
+ background:linear-gradient(145deg,rgba(15,19,25,.94),rgba(10,13,18,.94));
+ border:1px solid var(--hairline);border-radius:13px;box-shadow:0 14px 40px rgba(0,0,0,.16);
+}
+.card{padding:16px}
+.card:before{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.11),transparent)}
+.card:hover,.section:hover{border-color:var(--hairline2)}
+.dashboard-kpis .card{min-height:105px}
+.dashboard-kpis .label{color:#687382}
+.dashboard-kpis .value{font-size:25px;font-weight:760;letter-spacing:-.8px}
+.layout{gap:12px;margin-top:12px}
+.section{padding:16px}
+.section h2{font-size:13px;font-weight:720;letter-spacing:-.15px}
+.row,.kpi{
+ background:rgba(255,255,255,.018);border:1px solid var(--hairline);border-radius:9px
+}
+.hero{
+ position:relative;overflow:hidden;min-height:172px;padding:25px;
+ background:
+  radial-gradient(500px 260px at 92% 0%,rgba(255,54,93,.105),transparent 70%),
+  linear-gradient(145deg,rgba(20,25,33,.96),rgba(10,13,18,.96));
+ border:1px solid var(--hairline2);box-shadow:0 24px 70px rgba(0,0,0,.22)
+}
+body.crypto-mode .hero{background:
+ radial-gradient(500px 260px at 92% 0%,rgba(75,156,255,.105),transparent 70%),
+ linear-gradient(145deg,rgba(20,25,33,.96),rgba(10,13,18,.96))}
+.hero:after{
+ content:"";position:absolute;right:-80px;bottom:-130px;width:330px;height:260px;border:1px solid rgba(255,255,255,.035);
+ border-radius:50%;transform:rotate(-18deg);pointer-events:none
+}
+.hero-title{font-size:22px;font-weight:780;letter-spacing:-.65px}
+.hero p{font-size:11.5px;max-width:690px}
+.model-card{padding:20px;min-height:190px}
+.model-card:after{font-size:18px;color:#667180}
+.model-card h2{font-size:18px;font-weight:760}
+.model-card p{font-size:11.5px}
+.tag{
+ border:1px solid rgba(255,54,93,.13);background:rgba(255,54,93,.07);color:#ff7088;
+ border-radius:6px;padding:5px 7px;font-size:8px;letter-spacing:1.1px
+}
+body.crypto-mode .tag{background:rgba(75,156,255,.08);border-color:rgba(75,156,255,.14);color:#72b6ff}
+button.primary{
+ min-height:40px;border-radius:8px;padding:9px 13px;font-size:10.5px;font-weight:760;
+ background:linear-gradient(135deg,#ff3b61,#e91d48);box-shadow:0 8px 26px rgba(255,54,93,.13)
+}
+body.crypto-mode button.primary{background:linear-gradient(135deg,#55a8ff,#2875df);box-shadow:0 8px 26px rgba(75,156,255,.13)}
+button.secondary{
+ min-height:40px;border-radius:8px;padding:9px 12px;font-size:10.5px;font-weight:650;
+ background:rgba(255,255,255,.035);border-color:var(--hairline2)
+}
+button.secondary:hover{background:rgba(255,255,255,.065);border-color:rgba(255,255,255,.17)}
+.form{gap:8px}
+.form label{background:rgba(255,255,255,.014);border-color:var(--hairline);border-radius:9px;padding:10px 11px;font-size:11px}
+input,textarea,select{background:#090c11;border-color:var(--hairline2);border-radius:8px}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 10%,transparent)}
+textarea{line-height:1.55}
+.photo-box{background:rgba(255,255,255,.014);border-color:var(--hairline)}
+.table-wrap{border-color:var(--hairline);border-radius:10px}
+.table th{background:rgba(255,255,255,.018);color:#697382}
+.ai-box{background:rgba(255,255,255,.018);border-color:var(--hairline)}
+.chat-shell{background:linear-gradient(180deg,rgba(255,255,255,.012),transparent);border:1px solid var(--hairline);border-radius:13px;padding:12px}
+.bubble{border-color:var(--hairline);border-radius:10px}
+.bubble.ai{background:rgba(255,255,255,.025)}
+.bubble.me{background:var(--accentSoft);border-color:color-mix(in srgb,var(--accent) 18%,transparent)}
+.score .circle{background:rgba(255,255,255,.018)}
+.divider{background:var(--hairline)}
+.trade-pop{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+/* tactile details */
+button,input,textarea,select{transition:border-color .16s,background .16s,box-shadow .16s,transform .16s}
+button:active{transform:translateY(1px)}
+:focus-visible{outline:2px solid color-mix(in srgb,var(--accent) 70%,white);outline-offset:2px}
+@media(max-width:1050px){
+ .side{width:195px;flex-basis:195px}.main{padding:22px 18px 45px}
+}
+@media(max-width:760px){
+ body:before{display:none}
+ .app{display:block}
+ .side{position:sticky;top:0;width:100%;height:auto;padding:9px 9px 7px;z-index:50}
+ .brand{padding:2px 7px 10px}.brand-mark{width:36px;height:36px}.brand-mark svg{width:26px;height:26px}
+ .brand-title{font-size:14px}.mode-switch{margin:0 4px 8px}
+ .nav-title{display:none}
+ nav{gap:4px;overflow-x:auto;scrollbar-width:none;padding:1px 1px 2px}
+ nav::-webkit-scrollbar{display:none}
+ nav button{min-height:38px;flex:0 0 auto;padding:8px 11px;border-radius:8px}
+ nav button.active:before{left:6px;right:6px;top:auto;bottom:0;width:auto;height:2px}
+ .nav-icon{display:none}
+ .side-bottom{display:none}
+ .main{padding:17px 12px 34px}
+ .topbar{margin-bottom:15px}
+ h1{font-size:23px}.hero{min-height:0;padding:18px}
+ .hero-title{font-size:19px}.model-card{min-height:0;padding:17px}
+ .dashboard-kpis{gap:7px}.dashboard-kpis .card{min-height:91px;padding:13px}
+ .dashboard-kpis .value{font-size:21px}
+ .section,.card{border-radius:11px}
+}
+
+.side{background:rgba(7,9,12,.88);border-right-color:rgba(255,255,255,.055)}
+.side-bottom{opacity:.72}
+.nav-icon{opacity:.7}
+.main{padding-top:34px}
+.topbar{align-items:center}
+.topbar .sub{max-width:680px}
+.section,.card,.model-card{box-shadow:0 10px 32px rgba(0,0,0,.12)}
+.section{background:rgba(13,16,21,.78)}
+.dashboard-kpis .card{min-height:116px}
+.dashboard-kpis .card .value{margin-top:10px}
+.form label{color:#d7dce4}
+.form textarea{font-size:12px;line-height:1.55}
+#journal .section:first-of-type{background:linear-gradient(180deg,rgba(17,20,27,.88),rgba(12,15,20,.78))}
+#journal h2{letter-spacing:-.2px}
+#journal .actions{padding-top:2px}
+#journal .actions .primary:first-child{background:rgba(255,255,255,.055);color:#f2f4f7;border:1px solid rgba(255,255,255,.10);box-shadow:none}
+#journal .actions .primary:first-child:hover{background:rgba(255,255,255,.085)}
+.mode-switch{background:rgba(255,255,255,.025)!important;border-color:rgba(255,255,255,.065)!important}
+
+/* CONNECTIONS / LIVE DATA HUB */
+.connection-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.connection-card{position:relative;overflow:hidden;padding:15px;border:1px solid var(--hairline);border-radius:12px;background:linear-gradient(145deg,rgba(18,22,29,.92),rgba(10,13,18,.92));box-shadow:0 10px 30px rgba(0,0,0,.12)}
+.connection-card:before{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.22}
+.connection-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.connection-brand{display:flex;align-items:center;gap:10px}
+.connection-logo{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.045);border:1px solid var(--hairline2);font-weight:900;font-size:12px}
+.connection-name{font-size:12px;font-weight:800}.connection-type{font-size:9px;color:var(--dim);margin-top:2px}
+.connection-status{font-size:8px;font-weight:850;letter-spacing:.7px;padding:5px 7px;border-radius:6px;border:1px solid var(--hairline2);color:#9aa4b2;background:rgba(255,255,255,.025)}
+.connection-status.live{color:var(--green);border-color:rgba(46,220,145,.18);background:rgba(46,220,145,.06)}
+.connection-status.ready{color:var(--blue);border-color:rgba(75,156,255,.18);background:rgba(75,156,255,.06)}
+.connection-status.warn{color:var(--orange);border-color:rgba(255,189,90,.18);background:rgba(255,189,90,.06)}
+.connection-card p{font-size:10px;line-height:1.55;color:#778291;margin:11px 0 12px}
+.connection-actions{display:flex;gap:6px;flex-wrap:wrap}
+.connection-actions button,.connection-actions a{font:inherit;font-size:9px;font-weight:750;text-decoration:none}
+.connection-actions a{display:inline-flex;align-items:center;min-height:36px;padding:8px 10px;border:1px solid var(--hairline2);border-radius:8px;color:#dfe4eb;background:rgba(255,255,255,.035)}
+.connection-meta{margin-top:9px;font-size:8px;color:#5f6977}
+@media(max-width:760px){.connection-grid{grid-template-columns:1fr}.connection-card{padding:13px}}
+.chat-shell{min-height:calc(100vh - 185px);height:calc(100vh - 185px)}
+@media(max-width:760px){.chat-shell{height:calc(100vh - 245px);min-height:500px}}
+
+
+
+.observer-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.observer-card{background:#0b0f15;border:1px solid #1d2430;border-radius:12px;padding:12px}.observer-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.observer-title{font-size:12px;font-weight:900}.observer-state{font-size:9px;font-weight:900;color:#8f9aaa}.observer-card p{font-size:10px;color:#8f9aaa;line-height:1.5;margin:7px 0 0}.trade-question{margin-top:12px;display:grid;gap:8px}.trade-question label{font-size:9px;color:#7f8999;font-weight:850;text-transform:uppercase;letter-spacing:.7px}.trade-question select,.trade-question textarea{width:100%}.trade-question textarea{min-height:70px}.observer-live{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:10px;color:#8f9aaa}.observer-live i{width:7px;height:7px;border-radius:50%;background:#697487;box-shadow:0 0 10px currentColor}.observer-live.live i{background:var(--green)}
+@media(max-width:760px){.observer-grid{grid-template-columns:1fr}}
+/* EDGEFLOW — 2026 FINAL UI PASS */
+:root{--red:#e12d39;--red2:#b91f2a;--red3:#71151d;--redSoft:rgba(225,45,57,.10);--accent:var(--red);--accentSoft:var(--redSoft);--text:#f5f7fa;--muted:#8b95a4;--dim:#687281;--hairline:rgba(255,255,255,.065);--hairline2:rgba(255,255,255,.11);--radius:12px}
+html{scroll-behavior:auto}
+body{font-family:"Manrope",Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-feature-settings:"cv11" 1,"ss01" 1;background:radial-gradient(760px 430px at 86% -8%,rgba(225,45,57,.055),transparent 68%),linear-gradient(180deg,#07090c 0%,#090c11 100%)}
+body.crypto-mode{--accent:#4b9cff;--accentSoft:rgba(75,156,255,.10);--blue:#4b9cff;background:radial-gradient(760px 430px at 86% -8%,rgba(75,156,255,.07),transparent 68%),linear-gradient(180deg,#07090c 0%,#090c11 100%)}
+.side{width:216px;flex-basis:216px;padding:18px 10px;background:rgba(7,9,12,.92);border-right:1px solid rgba(255,255,255,.055)}
+.brand{padding:3px 8px 19px;gap:10px}.brand-mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(145deg,#f0444d 0%,#d51f2d 52%,#92151f 100%);box-shadow:0 10px 28px rgba(225,45,57,.20),inset 0 1px 0 rgba(255,255,255,.20)}
+body.crypto-mode .brand-mark{background:linear-gradient(145deg,#67b2ff,#2878df 55%,#19498e);box-shadow:0 10px 28px rgba(75,156,255,.18),inset 0 1px 0 rgba(255,255,255,.20)}
+.brand-title{font-family:"Manrope",sans-serif;font-size:14px;font-weight:850;letter-spacing:.7px}.brand-title span{color:var(--red)}body.crypto-mode .brand-title span{color:var(--blue)}
+.brand-sub{font-size:8px;letter-spacing:1.65px}.mode-switch{margin:0 4px 17px;padding:3px;border-radius:10px}.mode-switch button{min-height:33px;font-size:9px}
+.nav-title{font-size:8px;letter-spacing:1.7px;padding:0 10px 7px}nav{gap:2px}nav button{min-height:38px;padding:8px 10px;border-radius:8px;font-size:11.5px;font-weight:650}
+nav button.active{background:linear-gradient(90deg,rgba(225,45,57,.12),rgba(225,45,57,.025) 75%,transparent);border-color:rgba(255,255,255,.045)}nav button.active:before{background:var(--red);box-shadow:0 0 12px var(--red)}
+body.crypto-mode nav button.active{background:linear-gradient(90deg,rgba(75,156,255,.12),rgba(75,156,255,.025) 75%,transparent)}body.crypto-mode nav button.active:before{background:var(--blue);box-shadow:0 0 12px var(--blue)}nav button.active .nav-icon{color:var(--red)}body.crypto-mode nav button.active .nav-icon{color:var(--blue)}
+.connection-mini{border-radius:10px;padding:10px}.mini-sub{font-size:8.5px}
+.main{width:min(100%,1380px);max-width:1380px;padding:24px 24px 48px}.topbar{margin-bottom:17px}.eyebrow{color:var(--red);font-size:8.5px;letter-spacing:1.8px}body.crypto-mode .eyebrow{color:var(--blue)}
+h1{font-family:"Manrope",sans-serif;font-size:25px;font-weight:780;letter-spacing:-1.05px}.sub{font-size:11px}.grid{gap:9px}
+.card,.section,.model-card{border-radius:12px;background:linear-gradient(145deg,rgba(15,19,25,.96),rgba(10,13,18,.96));border-color:var(--hairline);box-shadow:0 9px 28px rgba(0,0,0,.13)}.card{padding:14px}.section{padding:14px}.section h2{font-size:12.5px;font-weight:750;margin-bottom:10px}.label{font-size:8.5px}.value{font-size:22px}.layout{gap:10px;margin-top:10px}
+.hero{padding:19px;min-height:145px;border-radius:13px}.hero-title{font-size:20px}.hero p{font-size:11px}
+button.primary{min-height:38px;background:linear-gradient(135deg,#e83a45,#c9222f);box-shadow:0 7px 20px rgba(225,45,57,.13)}button.secondary{min-height:38px}body.crypto-mode button.primary{background:linear-gradient(135deg,#55a8ff,#2875df);box-shadow:0 7px 20px rgba(75,156,255,.13)}
+input,textarea,select{min-height:40px}textarea{min-height:96px}.form{gap:7px}.form label{padding:9px 10px;font-size:10.5px}.table th,.table td{padding:8px 9px}.table{font-size:10.5px}
+.kpi-grid{gap:7px}.kpi{padding:9px}.dashboard-kpis{gap:8px}.dashboard-kpis .card{min-height:88px}.dashboard-kpis .card .value{margin-top:7px}.dashboard-kpis .value{font-size:21px}
+.check-grid{gap:7px}.check-card{min-height:56px;padding:10px 11px!important;border-radius:10px!important}.check-icon{width:28px;height:28px;border-radius:8px}.check-title{font-size:11px}.check-meta{font-size:8.5px}.image-drop{padding:11px}.image-inputs{gap:7px}.image-input{padding:8px}.image-input input[type=file]{min-height:35px}.ai-analysis{font-size:11.5px;line-height:1.65}
+main>section.hidden{display:none!important}main>section:not(.hidden){animation:edgeViewIn .16s ease-out}@keyframes edgeViewIn{from{opacity:.35;transform:translateY(3px)}to{opacity:1;transform:none}}
+#journal{width:min(100%,1120px);margin:0 auto}#journal .topbar{margin-bottom:14px}#journal>.grid{grid-template-columns:1.25fr .8fr .8fr .8fr}#journal>.grid .card{min-height:78px;padding:12px 13px}#journal>.grid .value{font-size:19px}#journal>.section{margin-top:10px!important;padding:13px}
+#journal .form{grid-template-columns:repeat(2,minmax(0,1fr))}#journal .form label{min-height:46px}#journal textarea{min-height:82px}#journal .photo-grid{gap:7px}#journal .photo-box{padding:8px}#journal .photo-box img{max-height:210px}#journal .actions{gap:6px}#journal .table-wrap{max-height:460px}#journal .table{min-width:680px}
+#settings{width:min(100%,1160px);margin:0 auto}#review{width:min(100%,1180px);margin:0 auto}#bot{width:min(100%,1240px);margin:0 auto}#chat{width:min(100%,1120px);margin:0 auto}#chat .chat-shell{height:calc(100vh - 175px);min-height:480px}
+#journal .section h2,#settings .section h2,#review .section h2{letter-spacing:-.15px}.connection-card{padding:12px}.connection-card p{margin:8px 0 10px}.connection-actions a,.connection-actions button{min-height:34px}
+.status,.pill{background:rgba(225,45,57,.07);border-color:rgba(225,45,57,.18);color:#ef6670}.tag{background:rgba(225,45,57,.07);border-color:rgba(225,45,57,.14);color:#ef6972}.circle{border-color:var(--red);box-shadow:0 0 30px rgba(225,45,57,.07)}.grade{color:var(--red)}.card:before{background:linear-gradient(90deg,transparent,rgba(225,45,57,.18),transparent)}
+input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}.trade-pop{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+@media(max-width:760px){.side{width:100%;padding:8px}.main{padding:16px 12px 32px}#journal,#settings,#review,#bot,#chat{width:100%}#journal>.grid{grid-template-columns:repeat(2,1fr)}#journal .form{grid-template-columns:1fr}#chat .chat-shell{height:68vh;min-height:430px}}
+
+
+/* VIEW ISOLATION — one workspace at a time */
+.app[data-view="models"] main>section:not(#models),
+.app[data-view="dash"] main>section:not(#dash),
+.app[data-view="bot"] main>section:not(#bot),
+.app[data-view="chat"] main>section:not(#chat),
+.app[data-view="journal"] main>section:not(#journal),
+.app[data-view="review"] main>section:not(#review),
+.app[data-view="settings"] main>section:not(#settings){display:none!important}
+.app[data-view="journal"] #journal{display:block!important}
+.app[data-view="bot"] #bot{display:block!important}
+</style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -14,7 +619,7 @@
 <aside class="side">
   <div class="brand">
     <div class="brand-mark" aria-label="EDGEFLOW"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3 35 11.5v17L20 37 5 28.5v-17L20 3Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M26.8 11.5H14.2v17h12.6M14.2 20h9.4" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M28.5 13.2 33 15.8v8.4l-4.5 2.6" fill="none" stroke="currentColor" stroke-width="1.3" opacity=".55"/></svg></div>
-    <div><div class="brand-title">EDGE<span>FLOW</span></div><div class="brand-sub">FUTURES • CRYPTO • AI</div><div id="edgeflowBuild" class="brand-sub" style="margin-top:4px;opacity:.45">BUILD 09:30</div></div>
+    <div><div class="brand-title">EDGE<span>FLOW</span></div><div class="brand-sub">FUTURES • CRYPTO • AI</div></div>
   </div>
   <div class="mode-switch" aria-label="Mode du site"><button id="modeNQ" type="button" data-site-mode="NQ" aria-pressed="false">FUTURES</button><button id="modeCrypto" type="button" data-site-mode="CRYPTO" aria-pressed="false">CRYPTO</button></div>
   <div class="nav-title">ESPACE DE TRADING</div>
@@ -133,6 +738,8 @@
     </div><div id="botCryptoPanel" class="hidden"><div class="ai-box"><b>MODÈLE CRYPTO</b><div class="sub" style="margin-top:8px">Direction du marché → Key Open manipulé / sweep → POI HTF aligné → entrée → laisser le trade jouer en high RR. OTE / Fib secondaire.</div></div><textarea id="cryptoBotContext" placeholder="Décris le setup Crypto : direction du marché, Key Open, sweep/manipulation, POI HTF, zone d'entrée et contexte."></textarea></div><div class="actions"><button class="primary" onclick="runBotTest()">LANCER L'ANALYSE</button></div></div>
     <div class="section"><h2>Sortie du bot</h2><div id="botOutput"><div class="empty">Aucun trade analysé.</div></div></div>
   </div>
+  <div class="section" data-mode="NQ" style="margin-top:14px"><h2>Rithmic — Observateur Futures</h2><div class="ai-box"><b>Lecture seule par partage de fenêtre</b><div class="sub" style="margin-top:7px">Partage la fenêtre de R|Trader ou de ta plateforme Rithmic. EDGEFLOW observe uniquement l'écran et détecte une nouvelle activité de trade. Aucun ordre n'est envoyé.</div></div><div class="actions"><button class="primary" type="button" onclick="startRithmicScreenShare()">PARTAGER RITHMIC</button><button class="secondary" type="button" onclick="stopRithmicScreenShare()">ARRÊTER</button><button class="secondary" type="button" onclick="toggleRithmicObserver()">ARMER L'OBSERVATEUR</button><button class="secondary" type="button" onclick="analyzeRithmicScreen()">ANALYSER MAINTENANT</button></div><div id="rithmicScreenStatus" class="sub" style="margin-top:10px">Pas de partage actif.</div><div class="photo-box" style="margin-top:10px"><video id="rithmicScreenPreview" autoplay muted playsinline style="display:none;width:100%;max-height:420px;object-fit:contain;border-radius:8px;background:#07090d"></video></div><div class="observer-live" id="rithmicObserverState"><i></i><span>Observateur désarmé</span></div><div id="rithmicAIOutput" class="ai-box" style="margin-top:10px">Aucune capture analysée.</div></div>
+
   <div class="section" data-mode="CRYPTO" style="margin-top:14px">
   <h2>KCEX — Observateur Crypto</h2>
   <div class="ai-box">
@@ -190,111 +797,50 @@
   <div class="section" style="margin-top:14px"><h2>Résultat</h2><div id="result"><div class="empty">Aucune analyse.</div></div></div>
 </section>
 
-
-<section id="journal" class="hidden" aria-hidden="true">
-  <div class="ef-workspace ef-journal">
-    <div class="ef-page-head">
-      <div><div class="eyebrow">JOURNAL</div><h1>Journal de trading</h1><div class="sub">Un espace dédié à tes trades. Le modèle actif contrôle automatiquement Futures ou Crypto.</div></div>
-      <div class="ef-page-status"><span class="status-dot"></span><span id="journalModeBadge">FUTURES</span></div>
-    </div>
-
-    <div class="ef-mode-banner">
-      <div class="ef-mode-copy"><span class="ef-kicker">MODÈLE ACTIF</span><strong id="journalModelTitle">FUTURES · NQ</strong><span id="journalModelDesc">HTF → POI → liquidité / sweep → retracement → R.B. → entrée.</span></div>
-      <div class="ef-mode-chip" id="journalModelChip">FUTURES</div>
-    </div>
-
-    <div class="journal-kpis">
-      <div class="journal-kpi"><span>Mois actif</span><strong id="journalMonth">—</strong></div>
-      <div class="journal-kpi"><span>Trades ce mois</span><strong id="monthTrades">0</strong></div>
-      <div class="journal-kpi"><span>Futures</span><strong id="monthNQ">0</strong></div>
-      <div class="journal-kpi"><span>Crypto</span><strong id="monthCrypto">0</strong></div>
-    </div>
-
-    <div class="ef-panel ef-entry">
-      <div class="ef-panel-head"><div><span class="ef-kicker">NOUVEAU TRADE</span><h2>Documenter le setup</h2><div class="sub">Remplis uniquement les informations que tu connais. Les screenshots servent de preuve visuelle.</div></div></div>
-      <div class="ef-form-grid">
-        <label>Date<div class="ef-date"><div id="jDateDisplay">—</div><button type="button" class="secondary" onclick="$('jDate').showPicker ? $('jDate').showPicker() : $('jDate').click()">📅</button></div><input id="jDate" type="date" lang="fr-CA" class="visually-hidden-input"></label>
-        <label>Marché<select id="jMarket" onchange="updateJournalMarket()" disabled><option value="FUTURES">FUTURES</option><option value="CRYPTO">CRYPTO</option></select></label>
-        <label>Instrument<select id="jInstrument"></select></label>
-        <label>Session<input id="jSession" placeholder="NY AM / NY PM / London / Asia"></label>
-        <label>Résultat<input id="jResult" placeholder="WIN / LOSS / BE"></label>
-        <label>Grade<input id="jGrade" placeholder="A+ / A / B+"></label>
-        <label>R réalisé<input id="jR" placeholder="+4R / -1R"></label>
-        <label>$ P&L<input id="jPnL" placeholder="+400 / -100"></label>
-        <label class="ef-full">Contexte du trade<textarea id="jContext" placeholder="Futures : HTF bias → POI → liquidité/sweep → retracement → R.B. → entrée → SL/TP → news.&#10;Crypto : direction → Key Open manipulé/sweep → POI HTF → entrée → high RR."></textarea></label>
-        <label class="ef-full">Erreurs / points à améliorer<textarea id="jErrors" placeholder="Ce qui était incorrect, tardif, forcé ou évitable."></textarea></label>
-        <label class="ef-full">Leçon à retenir<textarea id="jLesson" placeholder="La règle concrète à appliquer au prochain trade."></textarea></label>
-      </div>
-
-      <div class="ef-subhead">PREUVES VISUELLES</div>
-      <div class="ef-photos">
-        <div class="ef-photo"><div class="ef-photo-title"><b>AVANT · SETUP</b><span>Contexte et entrée</span></div><input id="jBefore" type="file" accept="image/*" onchange="previewJournalImage(this,'jBeforePreview')"><img id="jBeforePreview" alt="" style="display:none"></div>
-        <div class="ef-photo"><div class="ef-photo-title"><b>APRÈS · RÉSULTAT</b><span>Gestion et résultat</span></div><input id="jAfter" type="file" accept="image/*" onchange="previewJournalImage(this,'jAfterPreview')"><img id="jAfterPreview" alt="" style="display:none"></div>
-      </div>
-
-      <div class="ef-subhead">JARVIS</div>
-      <div class="ef-ai"><textarea id="jAI" placeholder="Pré-analyse JARVIS…" readonly></textarea></div>
-      <div class="ef-actions"><button class="primary" type="button" onclick="prepareAIJournal()">🤖 PRÉ-ANALYSER</button><button class="primary" type="button" onclick="saveJournalEntry()">ENREGISTRER LE TRADE</button><button class="secondary" type="button" onclick="resetJournalForm()">RÉINITIALISER</button></div>
-    </div>
-
-    <div class="ef-panel">
-      <div class="ef-panel-head"><div><span class="ef-kicker">HISTORIQUE</span><h2>Trades enregistrés</h2><div class="sub">L'historique est filtré automatiquement sur le modèle actif.</div></div></div>
-      <div id="journalMonths"></div>
-    </div>
-
-    <div class="ef-panel">
-      <div class="ef-panel-head"><div><span class="ef-kicker">ANALYSE</span><h2>Lecture du journal</h2><div class="sub">Recherche locale des résultats et erreurs. JARVIS peut ensuite enrichir cette analyse via le backend.</div></div><button class="secondary" type="button" onclick="askJournalAI()">ANALYSER</button></div>
-      <div id="journalAI" class="ef-analysis-output"></div>
+<section id="journal" class="hidden">
+  <div class="topbar"><div><div class="eyebrow">JOURNAL</div><h1>Journal de trading</h1><div class="sub">Un journal propre et séparé pour ton modèle Futures et ton modèle Crypto.</div></div><div class="status green">● JOURNAL ACTIF</div></div>
+  <div class="grid">
+    <div class="card"><div class="label">Mois actif</div><div class="value small" id="journalMonth">—</div></div>
+    <div class="card"><div class="label">Trades ce mois</div><div class="value" id="monthTrades">0</div></div>
+    <div class="card"><div class="label">Futures</div><div class="value red" id="monthNQ">0</div></div>
+    <div class="card"><div class="label">Crypto</div><div class="value red" id="monthCrypto">0</div></div>
+  </div>
+  <div class="section" style="margin-top:14px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:15px"><div><h2>Nouvelle entrée</h2><div class="sub">Le marché est verrouillé sur le modèle actif : Futures ou Crypto.</div></div><span id="journalModeBadge" class="tag">FUTURES</span></div>
+    <div class="form">
+      <label>Date<div style="display:flex;gap:7px;margin-top:7px"><div id="jDateDisplay" style="flex:1;background:#0b0f15;color:#fff;border:1px solid var(--line2);border-radius:9px;padding:10px;min-height:40px;display:flex;align-items:center">—</div><button type="button" class="secondary" onclick="$('jDate').showPicker ? $('jDate').showPicker() : $('jDate').click()">📅</button></div><input id="jDate" type="date" lang="fr-CA" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none"></label>
+      <label>Marché<select id="jMarket" onchange="updateJournalMarket()" disabled style="width:100%;margin-top:7px"><option value="FUTURES">FUTURES</option><option value="CRYPTO">CRYPTO</option></select></label>
+      <label>Instrument<select id="jInstrument" style="width:100%;margin-top:7px"></select></label>
+      <label>Session<input id="jSession" placeholder="NY AM / NY PM / London / Asia..." style="width:100%;margin-top:7px"></label>
+      <label>Résultat<input id="jResult" placeholder="WIN / LOSS / BE" style="width:100%;margin-top:7px"></label>
+      <label>Grade<input id="jGrade" placeholder="A+ / A / B+..." style="width:100%;margin-top:7px"></label>
+      <label>R réalisé<input id="jR" placeholder="+4R / -1R" style="width:100%;margin-top:7px"></label>
+      <label>$ P&L<input id="jPnL" placeholder="+400 / -100" style="width:100%;margin-top:7px"></label>
+      <div class="full"><textarea id="jContext" placeholder="Futures : HTF bias → POI → liquidité/sweep → retracement → R.B. → entrée → SL/TP → news.&#10;Crypto : direction → Key Open manipulé/sweep → POI HTF → entrée → high RR."></textarea></div>
+      <div class="full"><textarea id="jErrors" placeholder="Erreurs / points à améliorer : ce qui était incorrect, tardif, forcé ou évitable."></textarea></div>
+      <div class="full"><textarea id="jLesson" placeholder="Leçon concrète à appliquer au prochain trade."></textarea></div>
+      <div class="full"><h3>📸 Screenshots</h3><div class="photo-grid">
+        <div class="photo-box"><b>AVANT · SETUP</b><div class="sub">Contexte et entrée</div><input id="jBefore" type="file" accept="image/*" style="width:100%;margin-top:8px"><img id="jBeforePreview" style="display:none"></div>
+        <div class="photo-box"><b>APRÈS · RÉSULTAT</b><div class="sub">Gestion et résultat</div><input id="jAfter" type="file" accept="image/*" style="width:100%;margin-top:8px"><img id="jAfterPreview" style="display:none"></div>
+      </div></div>
+      <div class="full"><h3>🤖 JARVIS</h3><div class="ai-box"><textarea id="jAI" placeholder="Pré-analyse JARVIS…" readonly style="width:100%;min-height:90px"></textarea></div></div>
+      <div class="full actions"><button class="primary" type="button" onclick="prepareAIJournal()">PRÉ-ANALYSER</button><button class="primary" type="button" onclick="saveJournalEntry()">ENREGISTRER</button><button class="secondary" type="button" onclick="resetJournalForm()">RÉINITIALISER</button></div>
     </div>
   </div>
+  <div class="section" style="margin-top:12px"><h2>Historique</h2><div class="sub" style="margin-bottom:10px">Trades enregistrés pour le modèle actif.</div><div id="journalMonths"></div></div>
+  <div class="section" style="margin-top:12px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><div><h2>Analyse du journal</h2><div class="sub">Lecture locale des résultats et erreurs.</div></div><button class="secondary" onclick="askJournalAI()">ANALYSER</button></div><div id="journalAI" style="margin-top:12px"></div></div>
 </section>
-
-<section id="settings" class="hidden" aria-hidden="true">
-  <div class="ef-workspace ef-settings">
-    <div class="ef-page-head">
-      <div><div class="eyebrow">CONFIGURATION</div><h1>Paramètres</h1><div class="sub">Toutes les connexions et données sensibles restent séparées du moteur d'analyse.</div></div>
-      <div class="ef-page-status">LECTURE SEULE</div>
-    </div>
-
-    <div class="ef-settings-grid">
-      <div class="ef-panel ef-settings-main">
-        <div class="ef-panel-head"><div><span class="ef-kicker">BACKEND</span><h2>Serveur EDGEFLOW</h2><div class="sub">URL du backend et clé d'accès privée stockées uniquement dans ce navigateur.</div></div><span id="backendStatus" class="ef-state">NON CONFIGURÉ</span></div>
-        <div class="ef-backend-grid"><input id="botApiUrl" placeholder="https://ton-backend.example.com" autocomplete="url"><input id="edgeflowAccessKey" type="password" placeholder="Clé d’accès privée" autocomplete="off"></div>
-        <div class="ef-actions"><button class="secondary" type="button" onclick="saveBotUrl()">ENREGISTRER</button><button class="secondary" type="button" onclick="testBotConnection()">TESTER</button></div>
-      </div>
-
-      <div class="ef-panel">
-        <div class="ef-panel-head"><div><span class="ef-kicker">FUTURES</span><h2>Connexions</h2><div class="sub">Lecture seule · Tradovate et Rithmic.</div></div></div>
-        <div class="ef-connection-list">
-          <div class="ef-connection"><div><b>Tradovate</b><span>WebSocket · compte / événements</span></div><strong id="connTradovate" class="connection-status">—</strong><div class="ef-actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
-          <div class="ef-connection"><div><b>Rithmic</b><span>R|Protocol API · accès développeur requis</span></div><strong id="connRithmic" class="connection-status">—</strong><div class="ef-actions"><a href="https://www.rithmic.com/apis" target="_blank" rel="noopener noreferrer">VOIR API</a></div></div>
-        </div>
-      </div>
-
-      <div class="ef-panel">
-        <div class="ef-panel-head"><div><span class="ef-kicker">CRYPTO</span><h2>KCEX</h2><div class="sub">Observateur live par partage d'écran. Aucun ordre automatique.</div></div><strong id="connKcex" class="connection-status warn">ÉCRAN</strong></div>
-        <div class="ef-kcex"><span>Le navigateur partage uniquement ce que tu choisis d'afficher.</span><div class="ef-actions"><button class="primary" onclick="setSiteMode('CRYPTO');show('bot',$('navBot'))">OUVRIR OBSERVATEUR</button><button class="secondary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button></div></div>
-      </div>
-
-      <div class="ef-panel">
-        <div class="ef-panel-head"><div><span class="ef-kicker">MÉMOIRE</span><h2>Obsidian</h2><div class="sub">Importe ton journal historique pour enrichir JARVIS.</div></div></div>
-        <div id="obsidianStatusBox" class="ai-box">Aucun journal Obsidian importé sur le backend.</div>
-        <div class="ef-actions"><input id="obsidianZip" type="file" accept=".zip,application/zip"><button class="primary" onclick="importObsidianJournal()">IMPORTER</button><button class="secondary" onclick="analyzeObsidianImages()">ANALYSER IMAGES</button></div>
-        <div id="obsidianProgress" class="sub ef-note">Analyse visuelle en lecture seule.</div>
-      </div>
-
-      <div class="ef-panel">
-        <div class="ef-panel-head"><div><span class="ef-kicker">SÉCURITÉ</span><h2>Garde-fous</h2></div></div>
-        <div class="ef-safety"><div><span>Exécution automatique</span><b class="no">DÉSACTIVÉE</b></div><div><span>Lecture seule</span><b class="yes">ACTIVE</b></div><div><span>Journal</span><b class="neutral">NAVIGATEUR LOCAL</b></div></div>
-      </div>
-
-      <div class="ef-panel">
-        <div class="ef-panel-head"><div><span class="ef-kicker">MODÈLE</span><h2>Modèle actif</h2><div class="sub">Futures et Crypto restent complètement séparés.</div></div><span id="settingsModel" class="tag">AUCUN</span></div>
-        <div id="settingsModelDesc" class="ef-model-description"></div>
-        <div class="ef-actions"><button class="secondary" onclick="chooseModel()">CHANGER DE MODÈLE</button><button class="danger" onclick="clearLocalData()">EFFACER LES DONNÉES LOCALES</button></div>
-      </div>
-    </div>
-  </div>
+<section id="settings" class="hidden">
+  <div class="topbar"><div><div class="eyebrow">CONFIGURATION</div><h1>Paramètres</h1><div class="sub">Connexions, backend, mémoire et sécurité d’EDGEFLOW.</div></div><span class="status">LECTURE SEULE</span></div>
+  <div class="section"><h2>Serveur EDGEFLOW</h2><div class="rows"><div class="row"><span>Backend IA</span><span class="neutral" id="backendStatus">NON CONFIGURÉ</span></div></div><div class="actions"><input id="botApiUrl" placeholder="https://ton-backend.example.com" style="flex:1"><input id="edgeflowAccessKey" type="password" placeholder="Clé d’accès privée" autocomplete="off" style="flex:1"><button class="secondary" onclick="saveBotUrl()">ENREGISTRER</button><button class="secondary" onclick="testBotConnection()">TESTER</button></div><div class="sub" style="margin-top:8px">La clé reste dans ce navigateur et protège l’accès au backend privé.</div></div>
+  <div class="section" style="margin-top:12px"><h2>Connexions</h2><div class="connection-grid">
+    <div class="connection-card" data-mode="NQ"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TV</div><div><div class="connection-name">Tradovate</div><div class="connection-type">Futures · lecture seule</div></div></div><span id="connTradovate" class="connection-status">—</span></div><p>Synchronisation des événements et état du compte.</p><div class="connection-actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
+    <div class="connection-card" data-mode="NQ"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">R</div><div><div class="connection-name">Rithmic</div><div class="connection-type">Futures · R|Protocol</div></div></div><span id="connRithmic" class="connection-status">—</span></div><p>Accès API développeur requis pour une intégration directe.</p><div class="connection-actions"><a href="https://www.rithmic.com/apis" target="_blank" rel="noopener noreferrer">VOIR API</a></div></div>
+    <div class="connection-card" data-mode="CRYPTO"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Crypto · observateur</div></div></div><span id="connKcex" class="connection-status warn">ÉCRAN</span></div><p>Observation de l’onglet partagé. Aucun ordre automatique.</p><div class="connection-actions"><button class="primary" onclick="setSiteMode('CRYPTO');show('bot',$('navBot'))">OUVRIR OBSERVATEUR</button><button class="secondary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button></div></div>
+  </div></div>
+  <div class="section" style="margin-top:12px"><h2>Obsidian · mémoire historique</h2><div id="obsidianStatusBox" class="ai-box">Aucun journal Obsidian importé sur le backend.</div><div class="actions"><input id="obsidianZip" type="file" accept=".zip,application/zip" style="flex:1"><button class="primary" onclick="importObsidianJournal()">IMPORTER</button><button class="secondary" onclick="analyzeObsidianImages()">ANALYSER LES IMAGES</button></div><div id="obsidianProgress" class="sub" style="margin-top:8px">Analyse visuelle en lecture seule.</div></div>
+  <div class="section" style="margin-top:12px"><h2>Sécurité</h2><div class="rows"><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div><div class="row"><span>Lecture seule</span><span class="yes">ACTIVE</span></div><div class="row"><span>Stockage du journal</span><span class="neutral">NAVIGATEUR LOCAL</span></div></div></div>
+  <div class="section" style="margin-top:12px"><h2>Modèle actif</h2><div id="settingsModel" class="tag">AUCUN</div><div id="settingsModelDesc" class="sub" style="margin-top:6px"></div><div class="actions"><button class="secondary" onclick="chooseModel()">CHANGER DE MODÈLE</button><button class="danger" onclick="clearLocalData()">EFFACER LES DONNÉES LOCALES</button></div></div>
 </section>
 </main>
 </div>
@@ -318,7 +864,7 @@ function setSiteMode(mode){
   document.body.classList.remove("nq-mode","crypto-mode");
   document.body.classList.add(mode==="CRYPTO"?"crypto-mode":"nq-mode");
   ["NQ","CRYPTO"].forEach(m=>{const b=$("mode"+m);if(b){const on=m===mode;b.classList.toggle("active",on);b.setAttribute("aria-pressed",String(on));}});
-  updateModelUI(); updateBotMode(); applyModeVisibility(); const badge=$("journalModeBadge"); if(badge)badge.textContent=siteMode==="CRYPTO"?"CRYPTO":"FUTURES"; const mini=$("connectionMiniSub"); if(mini) mini.textContent=siteMode==="CRYPTO"?"Crypto : KCEX · observateur lecture seule.":"Futures : Tradovate / Rithmic · lecture seule."; renderJournal(); refreshAIDataAccess(); refreshObsidianStatus();
+  updateModelUI(); updateBotMode(); applyModeVisibility(); const mini=$("connectionMiniSub"); if(mini) mini.textContent=siteMode==="CRYPTO"?"Crypto : KCEX · observateur lecture seule.":"Futures : Tradovate / Rithmic · lecture seule."; renderJournal(); refreshAIDataAccess(); refreshObsidianStatus();
 }
 async function botFetch(path,options={}){
   if(!BOT_API) throw new Error("BOT_API_NOT_CONFIGURED");
@@ -333,7 +879,7 @@ async function syncTradeToBot(trade){
 }
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 function selectModel(m){setSiteMode(m);show("dash",$("navDash"))}
-function chooseModel(){document.querySelectorAll("main>section").forEach(s=>{s.classList.add("hidden");s.setAttribute("aria-hidden","true");s.hidden=true;s.style.display="none"});$("models").classList.remove("hidden");$("models").hidden=false;$("models").style.display="block";document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"))}
+function chooseModel(){document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));$("models").classList.remove("hidden");document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"))}
 function updateModelUI(){
  if(!activeModel)return;
  $("reviewNQ")?.classList.toggle("hidden",activeModel!=="NQ"); $("reviewCrypto")?.classList.toggle("hidden",activeModel!=="CRYPTO");
@@ -373,37 +919,20 @@ function applyModeVisibility(){
   updateBotMode();
 }
 function show(id,btn){
- if($("journal")&&!$("journal").classList.contains("hidden")&&id!=="journal")saveJournalDraft();
+ if($("journal")&&!$("journal").classList.contains("hidden")&&id!=="journal") saveJournalDraft();
  if(!VALID_MODES.has(activeModel)){setSiteMode(siteMode||"NQ");}
- const sections=[...document.querySelectorAll("main>section")];
- sections.forEach(s=>{
-   s.classList.add("hidden");
-   s.setAttribute("aria-hidden","true");
-   s.hidden=true;
-   s.style.display="none";
- });
- const target=$(id);
- if(!target)return;
- target.classList.remove("hidden");
- target.setAttribute("aria-hidden","false");
- target.hidden=false;
- target.style.display="block";
- document.querySelectorAll("nav button").forEach(b=>{b.classList.remove("active");b.removeAttribute("aria-current");});
- if(btn){btn.classList.add("active");btn.setAttribute("aria-current","page");}
+ const app=document.querySelector(".app"); if(app)app.dataset.view=id;
+ document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));
+ const target=$(id); if(target)target.classList.remove("hidden");
+ document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+ if(btn)btn.classList.add("active");
  else{
    const navBtn=[...document.querySelectorAll("nav button")].find(b=>String(b.getAttribute("onclick")||"").includes("show('"+id+"'"));
-   if(navBtn){navBtn.classList.add("active");navBtn.setAttribute("aria-current","page");}
+   if(navBtn)navBtn.classList.add("active");
  }
- const main=document.querySelector(".main");
- if(main)main.scrollTop=0;
- if(target)target.scrollTop=0;
- if(document.scrollingElement)document.scrollingElement.scrollTop=0;
- window.scrollTo(0,0);
- requestAnimationFrame(()=>{if(main)main.scrollTop=0;if(target)target.scrollTop=0;if(document.scrollingElement)document.scrollingElement.scrollTop=0;});
- document.documentElement.scrollTop=0;
- document.body.scrollTop=0;
- if(id==="journal"){updateJournalMarket();renderJournal();restoreJournalDraft();if($("journalModeBadge"))$("journalModeBadge").textContent=activeModel==="CRYPTO"?"CRYPTO":"FUTURES";}
+ if(id==="journal"){renderJournal();updateJournalMarket();restoreJournalDraft();}
  if(id==="dash")renderStats();
+ const main=document.querySelector(".main"); if(main)main.scrollTop=0; window.scrollTo(0,0); document.documentElement.scrollTop=0; document.body.scrollTop=0;
 }
 async function sendChat(){
  const input=$("chatInput"),msg=String(input?.value||"").trim();if(!msg)return;
@@ -598,11 +1127,6 @@ function updateJournalMarket(){
  $("jMarket").disabled=true;
  const options=market==="FUTURES"?["MNQ","MES","MGC","Autre"]:["BTC","ETH","BNB","SOL","XRP","HYPE","FLOKI","Autre"];
  $("jInstrument").innerHTML=options.map(x=>'<option value="'+x+'">'+x+"</option>").join("");
- const title=$("journalModelTitle"),desc=$("journalModelDesc"),chip=$("journalModelChip"),badge=$("journalModeBadge");
- if(title)title.textContent=market==="CRYPTO"?"CRYPTO · "+(options[0]||"BTC"):"FUTURES · "+(options[0]||"MNQ");
- if(desc)desc.textContent=market==="CRYPTO"?"Direction → Key Open manipulé / sweep → POI HTF → entrée → high RR.":"HTF → POI → liquidité / sweep → retracement → R.B. → entrée limite.";
- if(chip)chip.textContent=market;
- if(badge)badge.textContent=market;
 }
 const JOURNAL_DRAFT_KEY=()=> "edgeflow.journalDraft."+activeModel;
 const JOURNAL_DRAFT_FIELDS=["jDate","jSession","jResult","jGrade","jR","jPnL","jContext","jErrors","jLesson","jAI","jInstrument"];
@@ -813,13 +1337,8 @@ async function analyzeRithmicScreen(){const img=captureSharedFrame($("rithmicScr
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");localStorage.removeItem("edgeflowAccessKey");location.reload()}}
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
-if(!VALID_MODES.has(siteMode))siteMode="NQ";
-try{setSiteMode(siteMode)}catch(e){document.documentElement.setAttribute("data-site-mode",siteMode);document.body.classList.toggle("crypto-mode",siteMode==="CRYPTO");document.body.classList.toggle("nq-mode",siteMode!=="CRYPTO");}
-show("dash",$("navDash"));
-try{updateModelUI()}catch(e){}
-document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode)));
-try{renderJournal();resetJournalForm();restoreJournalDraft();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();renderStats()}catch(e){}
-$("navDash")?.classList.add("active");
+if(!VALID_MODES.has(siteMode))siteMode="NQ"; setSiteMode(siteMode); $("models").classList.add("hidden"); $("dash").classList.remove("hidden"); document.querySelector(".app").dataset.view="dash"; updateModelUI(); document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode)));
+renderJournal();resetJournalForm();restoreJournalDraft();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();renderStats();$("navDash")?.classList.add("active");
 bindLiveChecklist();
 JOURNAL_DRAFT_FIELDS.forEach(id=>{
  const el=$(id); if(!el)return;
@@ -828,34 +1347,14 @@ JOURNAL_DRAFT_FIELDS.forEach(id=>{
 });
 window.addEventListener("beforeunload",saveJournalDraft);
 $("jDate").addEventListener("change",updateJournalDate);$("jBefore").addEventListener("change",()=>previewJournalImage($("jBefore"),"jBeforePreview"));$("jAfter").addEventListener("change",()=>previewJournalImage($("jAfter"),"jAfterPreview"));
-
-// EDGEFLOW AUTO-UPDATE: poll the deployed HTML so new GitHub Pages builds are picked up without manual re-download.
-(function edgeflowAutoUpdate(){
-  const meta=document.querySelector('meta[name="edgeflow-build"]');
-  if(!meta)return;
-  const current=meta.content;
-  const check=async()=>{
-    try{
-      const url=location.pathname+"?edgeflow-version-check="+Date.now();
-      const res=await fetch(url,{cache:"no-store",headers:{"Cache-Control":"no-cache"}});
-      if(!res.ok)return;
-      const text=await res.text();
-      const doc=new DOMParser().parseFromString(text,"text/html");
-      const next=doc.querySelector('meta[name="edgeflow-build"]')?.content;
-      if(next&&next!==current){
-        const active=document.activeElement;
-        const editing=active&&(active.matches("input,textarea,select")||active.isContentEditable);
-        if(!editing)location.reload();
-      }
-    }catch(e){}
-  };
-  setTimeout(check,1500);setInterval(check,15000);
-})();
 const chatDraftKey=()=> "edgeflow.chatDraft."+activeModel;
 $("chatInput")?.addEventListener("input",e=>localStorage.setItem(chatDraftKey(),e.target.value));
 $("chatInput")?.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat();}});
 const savedChatDraft=localStorage.getItem(chatDraftKey()); if(savedChatDraft&&$("chatInput")) $("chatInput").value=savedChatDraft;
 </script>
-<script src="./voice-coach.js"></script>
+<script src="./voice-coach.js">
+/* EDGEFLOW SAFE AUTO-UPDATE — no layout changes */
+(function edgeflowAutoUpdate(){const meta=document.querySelector('meta[name="edgeflow-build"]');if(!meta)return;const current=meta.content;const check=async()=>{try{const r=await fetch(location.pathname+"?edgeflow="+Date.now(),{cache:"no-store"});if(!r.ok)return;const t=await r.text();const n=new DOMParser().parseFromString(t,"text/html").querySelector('meta[name="edgeflow-build"]')?.content;if(n&&n!==current&&!document.querySelector("input:focus,textarea:focus,select:focus,[contenteditable=true]"))location.reload();}catch(e){}};setInterval(check,30000)})();
+</script>
 </body>
 </html>
