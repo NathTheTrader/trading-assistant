@@ -896,6 +896,12 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
 
 .bubble-content strong{color:#fff;font-weight:800}.bubble-content h2,.bubble-content h3,.bubble-content h4{font-family:"Manrope","Inter",sans-serif;margin:9px 0 5px;color:#f7f9fc}.bubble-content h2{font-size:14px}.bubble-content h3{font-size:12px}.bubble-content h4{font-size:11px}.md-bullet{position:relative;padding-left:13px;margin:3px 0}.md-bullet:before{content:"";position:absolute;left:1px;top:.65em;width:4px;height:4px;border-radius:50%;background:var(--accent)}.md-gap{height:7px}
 .voice-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.jarvis-voice-settings .ai-box{min-height:68px}@media(max-width:760px){.voice-settings-grid{grid-template-columns:1fr}}
+
+.ai-read-btn{min-height:30px!important;padding:6px 9px!important;font-size:9px!important;opacity:.9}.ai-read-btn:hover{opacity:1}
+.check-card.imperfection .check-icon{color:var(--orange);background:rgba(255,184,77,.08)}
+.check-card.imperfection input:checked + .check-switch{background:rgba(255,184,77,.16);border-color:rgba(255,184,77,.48)}
+.check-card.imperfection input:checked + .check-switch:after{background:var(--orange)}
+.ai-analysis{max-width:760px}
 </style>
 </head><body>
 <div class="app">
@@ -985,7 +991,7 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
         <label class="check-card"><span class="check-main"><span class="check-icon">↕</span><span class="check-copy"><span class="check-title">Entrée / R:R propre</span><span class="check-meta">+5 · pas trop tôt/tard</span></span></span><input id="brr" type="checkbox" checked><span class="check-switch"></span></label>
         <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Setup backtesté</span><span class="check-meta">KILLER · requis</span></span></span><input id="bbacktest" type="checkbox" checked><span class="check-switch"></span></label>
         <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Liquidité près du SL</span><span class="check-meta">KILLER</span></span></span><input id="bliq" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">M</span><span class="check-copy"><span class="check-title">Structure messy</span><span class="check-meta">KILLER</span></span></span><input id="bmessy" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card imperfection"><span class="check-main"><span class="check-icon">M</span><span class="check-copy"><span class="check-title">Structure messy</span><span class="check-meta">-5 · IMPERFECTION</span></span></span><input id="bmessy" type="checkbox"><span class="check-switch"></span></label>
         <label class="check-card killer"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Entrée trop tôt / trop tard</span><span class="check-meta">KILLER</span></span></span><input id="btimebad" type="checkbox"><span class="check-switch"></span></label>
         <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">KILLER comportemental</span></span></span><input id="btilt" type="checkbox"><span class="check-switch"></span></label>
         <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER comportemental</span></span></span><input id="brev" type="checkbox"><span class="check-switch"></span></label>
@@ -1033,7 +1039,7 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
     <label class="check-card"><span class="check-main"><span class="check-icon">↕</span><span class="check-copy"><span class="check-title">Entrée / R:R propre</span><span class="check-meta">+5 · pas trop tôt/tard</span></span></span><input id="rr" type="checkbox" checked><span class="check-switch"></span></label>
     <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Setup backtesté</span><span class="check-meta">KILLER si faux</span></span></span><input id="backtest" type="checkbox" checked><span class="check-switch"></span></label>
     <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Liquidité près du SL</span><span class="check-meta">KILLER</span></span></span><input id="liq" type="checkbox"><span class="check-switch"></span></label>
-    <label class="check-card killer"><span class="check-main"><span class="check-icon">M</span><span class="check-copy"><span class="check-title">Structure messy</span><span class="check-meta">KILLER</span></span></span><input id="messy" type="checkbox"><span class="check-switch"></span></label>
+    <label class="check-card imperfection"><span class="check-main"><span class="check-icon">M</span><span class="check-copy"><span class="check-title">Structure messy</span><span class="check-meta">-5 · IMPERFECTION</span></span></span><input id="messy" type="checkbox"><span class="check-switch"></span></label>
     <label class="check-card killer"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Entrée trop tôt / trop tard</span><span class="check-meta">KILLER</span></span></span><input id="timebad" type="checkbox"><span class="check-switch"></span></label>
     <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">KILLER comportemental</span></span></span><input id="tilt" type="checkbox"><span class="check-switch"></span></label>
     <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER comportemental</span></span></span><input id="revenge" type="checkbox"><span class="check-switch"></span></label>
@@ -1045,7 +1051,7 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
 </section>
 
 <section id="cryptoReview" class="workspace hidden">
-  <div class="workspace-header"><div><div class="eyebrow">CRYPTO · REVUE</div><h1>Revue de trade Crypto <span id="cryptoReviewModel" class="pill">CRYPTO MODÈLE</span></h1><div class="sub">Direction → Key Open manipulé/sweep → POI HTF → entrée → high RR.</div></div></div>
+  <div class="workspace-header"><div><div class="eyebrow">CRYPTO · REVUE</div><h1>Revue de trade Crypto <span id="cryptoReviewModel" class="pill">CRYPTO MODÈLE</span></h1><div class="sub">Direction · Key Open manipulé/sweep · POI HTF · entrée · high RR.</div></div></div>
   <div class="section"><div class="field-grid">
     <label>Instrument<select id="cryptoInstrumentReview"><option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>XRP</option><option>HYPE</option><option>FLOKI</option></select></label>
     <label>Direction du marché<select id="cryptoDirection"><option value="">À déterminer</option><option>Haussière</option><option>Baissière</option></select></label>
@@ -1141,8 +1147,8 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
 
 
 <script>
-const nqDesc="HTF bias → POI → liquidité / manipulation → retracement Fibonacci → Rejection Block → entrée limite.";
-const cryptoDesc="Direction du marché → Key Open manipulé / sweep → POI HTF aligné → entrée → high RR. OTE / Fib secondaire.";
+const nqDesc="HTF bias · POI · liquidité/manipulation · retracement Fibonacci · Rejection Block · entrée limite.";
+const cryptoDesc="Direction du marché · Key Open manipulé/sweep · POI HTF aligné · entrée · high RR. OTE/Fib secondaire.";
 const BOT_API=(localStorage.getItem("botApiUrl")||"https://trading-assistant-production.up.railway.app").replace(/\/$/,"");
 const EDGEFLOW_ACCESS_KEY=localStorage.getItem("edgeflowAccessKey")||"";
 let activeModel=localStorage.getItem("activeModel")||"";
@@ -1379,8 +1385,9 @@ function scoreFrom(prefix=""){
  const timebad=checklistChecked(prefix,"timebad");
  const tilt=checklistChecked(prefix,"tilt");
  const revenge=checklistChecked(prefix,"revenge");
- const score=Math.max(0,Math.min(30,positive));
- const killer=!backtest||liq||messy||timebad||tilt||revenge;
+ const messyPenalty=messy?5:0;
+ const score=Math.max(0,Math.min(30,positive-messyPenalty));
+ const killer=!backtest||liq||timebad||tilt||revenge;
  const grade=killer?"PAS DE TRADE":score>=27?"A+":score>=24?"A":score>=21?"A-":score>=18?"B+":score>=15?"B":score>=12?"B-":score>=9?"C+":"C";
  return{score,rawScore:score,killer,grade};
 }
@@ -1406,10 +1413,38 @@ function extractAIGrade(text=""){
  const m=String(text||"").match(/(?:FINAL GRADE|GRADE FINAL|NOTE FINALE)\s*[:\-]?\s*(A\+|A-|A|B\+|B-|B|C\+|C|NO TRADE)/i);
  return m?m[1].toUpperCase():"";
 }
+let edgeflowAnalysisSeq=0;
+function cleanAIOutputText(text=""){
+ return String(text||"")
+   .replace(/[→➜⇒⟶↔]/g," - ")
+   .replace(/^\s*#{1,4}\s*/gm,"")
+   .replace(/\s*\|\s*/g," · ")
+   .replace(/\n{3,}/g,"\n\n")
+   .trim();
+}
+function speakAIText(text=""){
+ if(!("speechSynthesis" in window))return;
+ const spoken=cleanAIOutputText(text)
+   .replace(/\*{1,3}/g,"")
+   .replace(/\bNO TRADE\b/gi,"Pas de trade")
+   .replace(/\s+/g," ")
+   .trim();
+ if(!spoken)return;
+ window.speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(spoken);
+ u.lang="fr-CA";u.rate=.9;u.pitch=.84;u.volume=1;
+ const voices=window.speechSynthesis.getVoices?.()||[];
+ const voice=voices.find(v=>/^fr-CA/i.test(v.lang))||voices.find(v=>/^fr/i.test(v.lang));
+ if(voice)u.voice=voice;
+ window.speechSynthesis.speak(u);
+}
+function readAIElement(id){const el=$(id);if(el)speakAIText(el.textContent||"");}
 function renderAIAnalysis(text,model,label="JARVIS"){
  const grade=extractAIGrade(text);
+ const clean=cleanAIOutputText(text||"Analyse terminée.");
+ const analysisId="edgeflowAnalysis_"+(++edgeflowAnalysisSeq);
  const gradeHtml=grade?'<div class="ai-grade-chip '+(grade==="NO TRADE"?"bad":(grade.startsWith("A")?"good":grade.startsWith("B")?"mid":"bad"))+'"><span>NOTE</span><strong>'+esc(grade)+'</strong></div>':"";
- return gradeHtml+'<div class="ai-box"><b>'+esc(label)+' — '+esc(model)+'</b><div class="ai-analysis" style="margin-top:10px">'+esc(text||"Analyse terminée.")+'</div></div>';
+ return gradeHtml+'<div class="ai-box"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><b>'+esc(label)+' — '+esc(model)+'</b><button class="secondary ai-read-btn" type="button" onclick="readAIElement(\''+analysisId+'\')">🔊 LIRE</button></div><div id="'+analysisId+'" class="ai-analysis" style="margin-top:10px">'+esc(clean)+'</div></div>';
 }
 async function runBotTest(){
  const isCrypto=activeModel==="CRYPTO";
@@ -1436,6 +1471,7 @@ async function runBotTest(){
    const out=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade})});
    const scoreHtml=r?'<div class="check-score-head"><span class="check-score-label">Pré-check Futures</span><strong>'+r.score+'/30 · '+esc(r.grade)+'</strong></div>':"";
    outEl.innerHTML=scoreHtml+renderAIAnalysis(out.text||"Analyse terminée.",isCrypto?"CRYPTO":"FUTURES","JARVIS");
+   speakAIText(out.text||"");
  }catch(e){outEl.innerHTML='<div class="decision bad">IA indisponible</div><div class="sub" style="margin-top:10px">'+esc(e?.message||"Erreur backend")+'</div>'}
 }
 
@@ -1458,6 +1494,7 @@ async function analyze(){
    const trade={model:isCrypto?"CRYPTO":"NQ",instrument:isCrypto?($("cryptoInstrumentReview")?.value||"CRYPTO"):"NQ",direction:isCrypto?$("cryptoDirection").value:"",risk:100,result:"OPEN",context:notes,setupPattern:isCrypto?"Direction → Key Open sweep → HTF POI → high RR":"HTF bias → POI → liquidity/sweep → retracement → R.B. → limit entry",checklist,screenshots:images,timestamp:new Date().toISOString()};
    const out=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade})});
    outEl.innerHTML=renderAIAnalysis(out.text||"Analyse terminée.",isCrypto?"CRYPTO":"FUTURES","JARVIS");
+   speakAIText(out.text||"");
  }catch(e){outEl.innerHTML='<div class="decision bad">IA indisponible</div><div class="sub" style="margin-top:10px">'+esc(e?.message||"Erreur backend")+'</div>'}
 }
 
