@@ -617,12 +617,42 @@ async function askAI({task, trade, history=[]}) {
     },
     learningMemory: learning
   };
+  const screenshots = Array.isArray(trade?.screenshots) ? trade.screenshots.filter(x => /^data:image\\/(png|jpe?g|webp);base64,/i.test(String(x))) : [];
+  const imageInputs = screenshots.slice(0,2).map((image_url, index) => ({
+    type:"input_image",
+    image_url,
+    detail:"high"
+  }));
+  const analysisTask = String(task || "") + `
+MULTIMODAL TRADE REVIEW
+- If screenshots are supplied, inspect them directly. Do not merely rely on the trader's written description.
+- Extract only visible facts from the images: instrument, timeframe, price/levels, structure, liquidity, Key Open, POI, entry, SL/TP, R:R, session, and visible news/context when readable.
+- If something is not visible or legible, explicitly mark it UNKNOWN rather than guessing.
+- Compare the visible evidence against the correct model only.
+- The checklist is a pre-check, not proof that a trade is valid. Never output "trade valid" solely because the checklist score is high.
+- Return the analysis in this order:
+  1. VISIBLE FACTS
+  2. MODEL ALIGNMENT
+  3. MARKET CONTEXT / HTF
+  4. LIQUIDITY + MANIPULATION
+  5. ENTRY / R.B. / POI QUALITY
+  6. RISK, SL, TP AND R:R
+  7. NEWS / TIMING / EXECUTION RISKS
+  8. MISSING INFORMATION
+  9. CONCLUSION — state whether the evidence is sufficient, insufficient, or contains a model violation, and explain why.
+  10. ONE NEXT ACTION
+`;
+  const finalPayload = { ...payload, task:analysisTask, screenshotCount:imageInputs.length };
+  const userContent = imageInputs.length ? [
+    { type:"input_text", text:JSON.stringify(finalPayload) },
+    ...imageInputs
+  ] : JSON.stringify(finalPayload);
   const response = await openai.responses.create({
     model: MODEL,
     reasoning: { effort: "high" },
     input: [
       { role:"system", content: BASE_SYSTEM },
-      { role:"user", content: JSON.stringify(payload) }
+      { role:"user", content: userContent }
     ]
   });
   return { ok:true, text:response.output_text, model:MODEL };
@@ -854,6 +884,7 @@ app.get("/health", (req,res) => res.json({
   mode:"READ_ONLY",
   ai:!!openrouter,
   model:MODEL,
+  multimodalTradeAnalysis:true,
   timestamp:new Date().toISOString()
 }));
 
@@ -873,17 +904,31 @@ app.post("/api/trades",requirePrivateRequest, async (req,res) => {
   res.status(201).json(trade);
 });
 
-app.post("/api/analyze-trade",requirePrivateRequest,  async (req,res) => {
+app.post("/api/analyze-trade",requirePrivateRequest, async (req,res) => {
   if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
-  const trades=await loadTrades();
-  const trade=cleanTrade(req.body.trade || req.body);
-  trade.model = String(trade.model || "NQ").toUpperCase() === "CRYPTO" ? "CRYPTO" : "NQ";
-  const result=await askAI({
-    task:`Analyze this trade before judging it. Identify what is documented versus inferred. Check model compliance, HTF/context, POI, liquidity/manipulation, Fib/RB logic, entry quality, R:R, news proximity, execution and trader behavior. Then give: FACTS, STRENGTHS, WEAKNESSES, RISKS, PATTERN LINKS, and WHAT TO TEST NEXT.`,
-    trade,
-    history:trades.filter(t=>t.model===trade.model)
-  });
-  res.json(result);
+  try{
+    const trades=await loadTrades();
+    const trade=cleanTrade(req.body.trade || req.body);
+    trade.model=normalizeModel(trade.model);
+    if(Array.isArray(trade.screenshots)){
+      const images=trade.screenshots.filter(x=>/^data:image\\/(png|jpe?g|webp);base64,/i.test(String(x))).slice(0,2);
+      const totalBytes=images.reduce((n,x)=>n+Math.floor(String(x).length*.75),0);
+      if(totalBytes>10*1024*1024) return res.status(413).json({ok:false,error:"Screenshots trop volumineux. Utilise 2 images compressées maximum."});
+      trade.screenshots=images;
+    }else trade.screenshots=[];
+    const modelTask=trade.model==="CRYPTO"
+      ? "Analyse ce setup avec le modèle CRYPTO uniquement : direction du marché → Key Open manipulé/sweep → POI HTF aligné → entrée → laisser jouer en high RR. OTE/Fib est secondaire."
+      : "Analyse ce setup avec le modèle FUTURES/NQ uniquement : HTF bias → POI → liquidity/manipulation → Fibonacci retracement → Rejection Block → limit entry. Vérifie FVG/OB/PD array, sweep, MSS/CHOCH/BOS, displacement, retracement, session, R:R, news et exécution.";
+    const result=await askAI({
+      task:modelTask+" Fournis une analyse complète et factuelle du trade actuel. Sépare ce qui est visible/documenté de ce qui est inféré. Le score de checklist ne remplace jamais l'analyse du graphique. Ne conclus pas à partir du résultat du trade : analyse le setup tel qu'il est présenté.",
+      trade,
+      history:trades.filter(t=>t.model===trade.model)
+    });
+    res.json({...result,model:trade.model,screenshotCount:trade.screenshots.length});
+  }catch(e){
+    const status=Number(e?.status||e?.statusCode||0);
+    res.status(status>=400&&status<600?status:502).json({ok:false,error:e.message||"Analyse impossible."});
+  }
 });
 
 app.post("/api/chat",requirePrivateRequest,  async (req,res) => {
