@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#e11d48">
-<title>Trading Assistant — NQ & Crypto</title>
+<title>NATH TRADING AI — NQ & Crypto</title>
 <style>
 :root{
   --accent:var(--red);--accentSoft:rgba(255,49,88,.12);
@@ -124,6 +124,27 @@ h1{font-size:24px}.grid{gap:9px}.card,.section,.model-card{padding:13px;border-r
 .ta-voice-fab{right:16px!important;bottom:16px!important;padding:10px 13px!important}
 @media(max-width:1050px){.side{width:185px;flex-basis:185px}.main{padding:15px}.grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.side{width:100%;padding:8px}.main{padding:12px}.chat-shell{height:60vh}}
+
+/* NATH TRADING AI — compact dashboard + model accents */
+.dashboard-kpis{grid-template-columns:repeat(4,1fr)}
+.dashboard-kpis .card{min-height:86px}
+.dashboard-kpis .value{font-size:22px;margin-top:5px}
+body.crypto-mode .eyebrow,
+body.crypto-mode .brand-title span,
+body.crypto-mode .tag,
+body.crypto-mode .pill,
+body.crypto-mode .status:not(.green),
+body.crypto-mode .value.blue,
+body.crypto-mode .card:before{color:#6ea8ff}
+body.crypto-mode .tag{background:rgba(77,163,255,.13)}
+body.crypto-mode .status:not(.green),
+body.crypto-mode .pill{border-color:rgba(77,163,255,.28);background:rgba(77,163,255,.12);color:#6ea8ff}
+body.crypto-mode button.primary{background:linear-gradient(135deg,#4da3ff,#2563eb);box-shadow:0 8px 22px rgba(37,99,235,.18)}
+body.crypto-mode .hero{background:radial-gradient(circle at 85% 15%,rgba(77,163,255,.13),transparent 30%),linear-gradient(145deg,#121720,#0c1017);border-color:rgba(77,163,255,.2)}
+body.crypto-mode .card:before{background:linear-gradient(90deg,transparent,rgba(77,163,255,.35),transparent)}
+body.crypto-mode input:focus,body.crypto-mode textarea:focus,body.crypto-mode select:focus{border-color:rgba(77,163,255,.6);box-shadow:0 0 0 3px rgba(77,163,255,.08)}
+@media(max-width:1050px){.dashboard-kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.dashboard-kpis{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -131,7 +152,7 @@ h1{font-size:24px}.grid{gap:9px}.card,.section,.model-card{padding:13px;border-r
 <aside class="side">
   <div class="brand">
     <div class="brand-mark">T</div>
-    <div><div class="brand-title">TRADING <span>ASSISTANT</span></div><div class="brand-sub">NQ • CRYPTO • JOURNAL</div></div>
+    <div><div class="brand-title">NATH <span>TRADING AI</span></div><div class="brand-sub">NQ • CRYPTO • JOURNAL</div></div>
   </div>
   <div class="mode-switch" aria-label="Mode du site"><button id="modeNQ" type="button" data-site-mode="NQ" aria-pressed="false">NQ / FUTURES</button><button id="modeCrypto" type="button" data-site-mode="CRYPTO" aria-pressed="false">CRYPTO</button></div>
   <div class="nav-title">ESPACE DE TRADING</div>
@@ -188,11 +209,11 @@ h1{font-size:24px}.grid{gap:9px}.card,.section,.model-card{padding:13px;border-r
 
 <section id="dash" class="hidden">
   <div class="topbar"><div><div class="eyebrow">Vue d'ensemble</div><h1>Tableau de bord <span id="modelPill" class="pill"></span></h1><div class="sub">Ton espace de contrôle pour le modèle actif.</div></div><div class="top-actions"><div class="status green">● SYSTÈME PRÊT</div><button class="secondary" onclick="show('review')">Nouvelle revue</button></div></div>
-  <div class="grid">
-    <div class="card"><div class="label">Trades enregistrés</div><div class="value" id="trades">0</div><div class="sub">Journal local</div></div>
-    <div class="card"><div class="label">Dernier score</div><div class="value red" id="dashScore">—</div><div class="sub">Checklist précédente</div></div>
-    <div class="card"><div class="label">Risque / trade</div><div class="value">$100</div><div class="sub">Paramètre de référence</div></div>
-    <div class="card"><div class="label">Dernier grade</div><div class="value red" id="lastGrade">—</div><div class="sub">Dernière revue</div></div>
+  <div class="grid dashboard-kpis">
+    <div class="card"><div class="label">Trades</div><div class="value" id="trades">0</div><div class="sub">Modèle actif</div></div>
+    <div class="card"><div class="label">Winrate</div><div class="value green" id="dashWinrate">—</div><div class="sub">WIN / (WIN + LOSS)</div></div>
+    <div class="card"><div class="label">RR moyen</div><div class="value blue" id="dashAvgR">—</div><div class="sub">R réalisé moyen</div></div>
+    <div class="card"><div class="label">RR total</div><div class="value" id="dashTotalR">—</div><div class="sub">Somme des R réalisés</div></div>
   </div>
   <div class="layout">
     <div class="section"><h2>Dernière activité</h2><div id="latest"><div class="empty">Aucune revue enregistrée.</div></div></div>
@@ -422,9 +443,14 @@ function applyModeVisibility(){
 }
 function show(id,btn){
  if(!VALID_MODES.has(activeModel)){setSiteMode(siteMode||"NQ");}
- document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));$(id).classList.remove("hidden");
+ document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));
+ const target=$(id); if(target)target.classList.remove("hidden");
  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
  if(btn)btn.classList.add("active");
+ else{
+   const navBtn=[...document.querySelectorAll("nav button")].find(b=>String(b.getAttribute("onclick")||"").includes("show('"+id+"'"));
+   if(navBtn)navBtn.classList.add("active");
+ }
  if(id==="journal")renderJournal();if(id==="patterns")refreshPatterns();
  if(id==="dash")renderStats();
 }
@@ -548,8 +574,20 @@ function askJournalAI(){
  $("journalAI").innerHTML='<div class="decision">Analyse locale — '+(scope||"FUTURES + CRYPTO")+'</div><div class="sub" style="margin-top:10px">Trades analysés : <b>'+data.length+'</b> · WIN : <b>'+wins+'</b> · LOSS : <b>'+losses+'</b><br><br>Erreurs enregistrées : '+(errors.length?errors.map(esc).join(" • "):"aucune pour le moment.")+'<br><br>Cette analyse reste locale. Le moteur IA complet sera branché au backend.</div>';
 }
 function renderStats(){
- const all=getJournal(),arr=VALID_MODES.has(activeModel)?all.filter(x=>x.model===activeModel):all; $("trades").textContent=arr.length;
- if(arr[0]){$("dashScore").textContent=arr[0].score??"—";$("lastGrade").textContent=arr[0].grade||"—";$("latest").innerHTML='<b>'+esc(arr[0].model||"TRADE")+' — '+esc(arr[0].grade||"—")+' — '+esc(arr[0].decision||"JOURNAL")+'</b><div class="sub" style="margin-top:8px">'+esc(arr[0].notes||arr[0].context||"Aucune note.")+'</div>'}
+ const all=getJournal(),arr=VALID_MODES.has(activeModel)?all.filter(x=>x.model===activeModel):all;
+ const wins=arr.filter(x=>String(x.result||"").toUpperCase().includes("WIN")).length;
+ const losses=arr.filter(x=>String(x.result||"").toUpperCase().includes("LOSS")).length;
+ const rrValues=arr.map(x=>parseFloat(String(x.R??x.r??"").replace(",",".").replace(/[^0-9+-.]/g,""))).filter(Number.isFinite);
+ const totalR=rrValues.reduce((a,b)=>a+b,0);
+ const avgR=rrValues.length?totalR/rrValues.length:0;
+ const wr=(wins+losses)?(wins/(wins+losses))*100:0;
+ $("trades").textContent=arr.length;
+ $("dashWinrate").textContent=(wins+losses)?wr.toFixed(1)+"%":"—";
+ $("dashAvgR").textContent=rrValues.length?(avgR>=0?"+":"")+avgR.toFixed(2)+"R":"—";
+ $("dashTotalR").textContent=rrValues.length?(totalR>=0?"+":"")+totalR.toFixed(2)+"R":"—";
+ if(arr[0]){
+   $("latest").innerHTML='<b>'+esc(arr[0].model||"TRADE")+' — '+esc(arr[0].instrument||"")+' — '+esc(arr[0].result||"EN COURS")+'</b><div class="sub" style="margin-top:8px">RR : <b>'+esc(arr[0].R||"—")+'</b> · P&L : <b>'+esc(arr[0].pnl||"—")+'</b></div><div class="sub" style="margin-top:6px">'+esc(arr[0].notes||arr[0].context||"Aucune note.")+'</div>';
+ }
 }
 async function refreshAIDataAccess(){const el=document.getElementById("aiDataAccess");if(!el)return;const api=String(localStorage.getItem("botApiUrl")||"").replace(/\/$/,"");if(!api){el.textContent="Backend non configuré — aucune donnée serveur n’est accessible à l’IA.";return}try{const r=await fetch(api+"/api/history/ai-context?model="+encodeURIComponent(activeModel));const d=await r.json();el.innerHTML="<b>"+activeModel+"</b> · "+(d.sampleSize||0)+" trades serveur<br><span class='sub'>Mémoire historique + journal + contexte vérifié. Obsidian est importé séparément et reste cloisonné par modèle.</span>"}catch(e){el.textContent="Backend hors ligne.";}}
 function refreshPatterns(){
@@ -704,7 +742,7 @@ function toggleKCEXAuto(){
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");location.reload()}}
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if(!VALID_MODES.has(siteMode))siteMode="NQ"; setSiteMode(siteMode); $("models").classList.add("hidden"); $("dash").classList.remove("hidden"); updateModelUI(); document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode)));
-renderJournal();resetJournalForm();refreshPatterns();refreshAIDataAccess();refreshObsidianStatus();
+renderJournal();resetJournalForm();refreshPatterns();refreshAIDataAccess();refreshObsidianStatus();renderStats();$("navDash")?.classList.add("active");
 $("jDate").addEventListener("change",updateJournalDate);$("jBefore").addEventListener("change",()=>previewJournalImage($("jBefore"),"jBeforePreview"));$("jAfter").addEventListener("change",()=>previewJournalImage($("jAfter"),"jAfterPreview"));
 </script>
 <script src="./voice-coach.js"></script>
