@@ -52,6 +52,9 @@ jobs:
               const wait=page.waitForURL(url=>new URL(url).searchParams.get("mode")===mode,{waitUntil:"domcontentloaded"});
               await page.locator(mode==="CRYPTO"?"#modeCRYPTO":"#modeNQ").evaluate(el=>el.click());
               await wait;
+              await page.waitForLoadState("load").catch(()=>{});
+              await page.waitForSelector("#navDash",{state:"visible"});
+              await page.waitForTimeout(150);
             };
             const visible=()=>page.locator("main > .workspace:not(.hidden)").evaluateAll(xs=>xs.filter(x=>!x.hidden&&x.style.display!=="none").map(x=>x.id));
             const expectVisible=async id=>{const v=await visible();if(v.length!==1||v[0]!==id)throw new Error("Expected "+id+" visible, got "+JSON.stringify(v));};
