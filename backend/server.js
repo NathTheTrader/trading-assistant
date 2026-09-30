@@ -22,7 +22,7 @@ const openrouter = process.env.OPENROUTER_API_KEY ? new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
   defaultHeaders: {
     "HTTP-Referer": process.env.FRONTEND_ORIGIN || "https://naththetrader.github.io",
-    "X-Title": "Trading Assistant"
+    "X-OpenRouter-Title": "EDGEFLOW"
   }
 }) : null;
 const MODEL = process.env.OPENROUTER_MODEL || "openrouter/free";
@@ -39,15 +39,24 @@ function convertAIInput(input) {
   if (!Array.isArray(input)) return [{ role:"user", content:String(input || "") }];
   return input.map(message => ({ role:message?.role || "user", content:convertAIContent(message?.content) }));
 }
+function aiText(content) {
+  if (typeof content === "string") return content;
+  if (Array.isArray(content)) return content.map(x => typeof x === "string" ? x : String(x?.text || x?.content || "")).join("");
+  if (content && typeof content === "object") return String(content.text || content.content || "");
+  return "";
+}
 const openai = openrouter ? {
   responses: {
     create: async ({model,input,reasoning}) => {
-      const r = await openrouter.chat.completions.create({
-        model:model || MODEL,
-        messages:convertAIInput(input),
-        ...(reasoning ? {reasoning} : {})
-      });
-      return { output_text:r.choices?.[0]?.message?.content || "", raw:r };
+      const body = {
+        model: model || MODEL,
+        messages: convertAIInput(input),
+        temperature: Number(process.env.OPENROUTER_TEMPERATURE || 0.2),
+        max_tokens: Number(process.env.OPENROUTER_MAX_TOKENS || 4000)
+      };
+      if (process.env.OPENROUTER_REASONING === "true" && reasoning) body.reasoning = reasoning;
+      const r = await openrouter.chat.completions.create(body);
+      return { output_text: aiText(r.choices?.[0]?.message?.content), raw:r };
     }
   }
 } : null;
