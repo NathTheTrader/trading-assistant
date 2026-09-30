@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1745-crypto-bot-parity-v11"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1815-live-card-optimized-v13"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><style>
@@ -981,6 +981,9 @@ body:after{
 #journal .table td{font-weight:450;color:#c6cdd7}
 #journal .journal-day-summary{font-weight:550!important}
 #journal .ai-box{font-weight:450}
+
+.bot-live-cards{grid-template-columns:repeat(4,minmax(0,1fr))}.live-card{min-height:118px}.live-card .label{margin-bottom:5px}.live-card .value.small{display:inline-block;margin-top:2px}.live-divider{display:inline-block;margin:0 8px;color:#5f6978;font-size:13px;font-weight:500}.live-card .sub{min-height:18px}.live-card .actions{margin-top:8px}
+@media(max-width:980px){.bot-live-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:620px){.bot-live-cards{grid-template-columns:1fr}}
 </style>
 </head><body>
 <div class="app">
@@ -1122,11 +1125,11 @@ body:after{
 
 <section id="bot" class="workspace hidden" data-model="NQ">
   <div class="workspace-header"><div><div class="eyebrow">FUTURES · BOT</div><h1>Bot Futures</h1><div class="sub">Analyse multimodale du modèle NQ. Tradovate et Rithmic restent en lecture seule.</div></div><div id="tvLiveStatus" class="status">● DÉCONNECTÉ</div></div>
-  <div class="grid">
-    <div class="card"><div class="label">Tradovate</div><div class="value small">Futures</div><div id="tvConnectionText" class="sub">Backend non connecté</div><div class="actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
-    <div class="card"><div class="label">Risque de référence</div><div class="value">$100</div><div class="sub">Lecture seule</div></div>
-    <div class="card"><div class="label">État</div><div id="tvBotState" class="value small green">PRÊT</div><div class="sub">Flux Futures</div></div>
-    <div class="card"><div class="label">Modèle</div><div class="value small red">NQ</div><div class="sub">Aucune exécution</div></div>
+  <div class="grid bot-live-cards">
+    <div class="card live-card"><div class="label">TRADOVATE</div><div id="tvConnectionMain" class="value small">FUTURES</div><div id="tvConnectionText" class="sub">Backend non connecté</div><div class="actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
+    <div class="card live-card"><div class="label">POSITION NQ</div><div id="tvPositionMain" class="value small">FLAT</div><div id="tvPositionSub" class="sub">Aucune position active</div></div>
+    <div class="card live-card"><div class="label">DERNIER FILL</div><div id="tvFillMain" class="value small">—</div><div id="tvFillSub" class="sub">Aucun fill récent</div></div>
+    <div class="card live-card"><div class="label">ÉTAT · MODÈLE</div><div><span id="tvBotState" class="value small green">PRÊT</span><span class="live-divider">·</span><span class="value small red">NQ</span></div><div class="sub">Lecture seule · aucune exécution</div></div>
   </div>
   <div class="workspace-grid" style="margin-top:12px">
     <div class="section">
@@ -1160,11 +1163,11 @@ body:after{
 
 <section id="crypto" class="workspace hidden" data-model="CRYPTO">
   <div class="workspace-header"><div><div class="eyebrow">CRYPTO · BOT</div><h1>Bot Crypto</h1><div class="sub">Analyse du modèle Crypto. KCEX reste en lecture seule et aucune exécution n’est effectuée.</div></div><div id="cryptoLiveStatus" class="status green">● CRYPTO</div></div>
-  <div class="grid">
-    <div class="card"><div class="label">KCEX</div><div class="value small">Crypto</div><div id="kcexConnectionText" class="sub">Order Watch · lecture seule</div><div class="actions"><button class="primary" onclick="startKCEXScreenShare()">SURVEILLER</button><button class="secondary" onclick="analyzeKCEXScreen()">ACTUALISER</button></div></div>
-    <div class="card"><div class="label">Risque de référence</div><div class="value">$100</div><div class="sub">Lecture seule</div></div>
-    <div class="card"><div class="label">État</div><div id="cryptoBotState" class="value small green">PRÊT</div><div class="sub">Flux Crypto</div></div>
-    <div class="card"><div class="label">Modèle</div><div class="value small blue">CRYPTO</div><div class="sub">Aucune exécution</div></div>
+  <div class="grid bot-live-cards">
+    <div class="card live-card"><div class="label">KCEX</div><div id="kcexConnectionMain" class="value small">CRYPTO</div><div id="kcexConnectionText" class="sub">Order Watch · lecture seule</div><div class="actions"><button class="primary" onclick="startKCEXScreenShare()">SURVEILLER</button><button class="secondary" onclick="analyzeKCEXScreen()">ACTUALISER</button></div></div>
+    <div class="card live-card"><div class="label">POSITION</div><div id="kcexPositionMain" class="value small">FLAT</div><div id="kcexPositionSub" class="sub">Aucune position active</div></div>
+    <div class="card live-card"><div class="label">DERNIER ORDRE</div><div id="kcexOrderMain" class="value small">—</div><div id="kcexOrderSub" class="sub">Aucun ordre détecté</div></div>
+    <div class="card live-card"><div class="label">ÉTAT · MODÈLE</div><div><span id="cryptoBotState" class="value small green">PRÊT</span><span class="live-divider">·</span><span class="value small blue">CRYPTO</span></div><div class="sub">Lecture seule · aucune exécution</div></div>
   </div>
 
   <div class="workspace-grid" style="margin-top:12px">
@@ -2081,14 +2084,26 @@ async function refreshTradovateUI(){if(!BOT_API)return;try{const r=await botFetc
 function renderTradovateSnapshot(r){
   const p=(r.positions||[]).filter(x=>Number(x.netPos||0)!==0);
   const fills=(r.recentFills||[]).slice(-5).reverse();
+  const posText=p.length?p.map(x=>(x.instrument||"NQ")+" "+(Number(x.netPos)>0?"LONG ":"SHORT ")+Math.abs(Number(x.netPos))).join(" · "):"FLAT";
+  const last=fills[0];
+  if($("tvPositionMain"))$("tvPositionMain").textContent=p.length?(Number(p[0].netPos)>0?"LONG":"SHORT"):"FLAT";
+  if($("tvPositionSub"))$("tvPositionSub").textContent=p.length?posText:"Aucune position active";
+  if($("tvFillMain"))$("tvFillMain").textContent=last?(last.instrument||"NQ")+" @ "+(last.price??"—"):"—";
+  if($("tvFillSub"))$("tvFillSub").textContent=last?("Quantité "+(last.quantity??last.qty??"—")+" · fill récent"):"Aucun fill récent";
   if($("tvDetails"))$("tvDetails").innerHTML=[
     '<div class="row"><span>Utilisateur</span><span>'+esc(r.userId||"—")+'</span></div>',
     '<div class="row"><span>Comptes</span><span>'+esc((r.accounts||[]).map(a=>a.name||a.id).join(", ")||"—")+'</span></div>',
-    '<div class="row"><span>Position NQ</span><span>'+esc(p.length?p.map(x=>(x.instrument||"NQ")+" "+(Number(x.netPos)>0?"LONG ":"SHORT ")+Math.abs(Number(x.netPos))).join(" · "):"Aucune")+'</span></div>',
-    '<div class="row"><span>Dernier fill</span><span>'+esc(fills[0]?(fills[0].instrument+" @ "+(fills[0].price??"—")):"—")+'</span></div>'
+    '<div class="row"><span>Position</span><span>'+esc(posText)+'</span></div>',
+    '<div class="row"><span>Dernier fill</span><span>'+esc(last?(last.instrument+" @ "+(last.price??"—")):"—")+'</span></div>'
   ].join("");
 }
-function renderTradovateStatus(r){const ok=!!r.connected;if($("tvLiveStatus")){$("tvLiveStatus").textContent=ok?"● LIVE":"● DÉCONNECTÉ";$("tvLiveStatus").className=ok?"status green":"status"}if($("tvBotState")){$("tvBotState").textContent=ok?"LIVE":"EN ATTENTE";$("tvBotState").className="value small "+(ok?"green":"orange")}if($("tvConnectionText"))$("tvConnectionText").textContent=ok?"Flux actif":"Non connecté";if($("tvDetails"))$("tvDetails").innerHTML='<div class="row"><span>Utilisateur</span><span>'+esc(r.userId||"—")+'</span></div><div class="row"><span>Comptes</span><span>'+esc((r.accounts||[]).map(a=>a.name||a.id).join(", ")||"—")+'</span></div>'}
+function renderTradovateStatus(r){
+  const ok=!!r.connected;
+  if($("tvLiveStatus")){$("tvLiveStatus").textContent=ok?"● LIVE":"● DÉCONNECTÉ";$("tvLiveStatus").className=ok?"status green":"status";}
+  if($("tvBotState")){$("tvBotState").textContent=ok?"LIVE":"EN ATTENTE";$("tvBotState").className="value small "+(ok?"green":"orange");}
+  if($("tvConnectionText"))$("tvConnectionText").textContent=ok?"Flux actif":"Non connecté";
+  if($("tvConnectionMain"))$("tvConnectionMain").textContent=ok?"LIVE":"FUTURES";
+}
 let tradovateEventPrimed=false,tradovateSeenEvent="";
 async function refreshTradovateEvents(){
   if(!BOT_API)return;
@@ -2168,6 +2183,13 @@ async function analyzeKCEXScreen(){
     kcexPreviousFrame=imageDataUrl;
     if(r.detected){
       toneAlert();
+      if($("kcexConnectionMain"))$("kcexConnectionMain").textContent="LIVE";
+      if($("kcexConnectionText"))$("kcexConnectionText").textContent="Order Watch · actif";
+      if($("cryptoBotState")){$("cryptoBotState").textContent="ORDRE DÉTECTÉ";$("cryptoBotState").className="value small green";}
+      if($("kcexPositionMain"))$("kcexPositionMain").textContent=r.direction||"ACTIVE";
+      if($("kcexPositionSub"))$("kcexPositionSub").textContent=(r.instrument||"CRYPTO")+" · position/activité détectée";
+      if($("kcexOrderMain"))$("kcexOrderMain").textContent=(r.instrument||"CRYPTO")+" · "+(r.direction||"—");
+      if($("kcexOrderSub"))$("kcexOrderSub").textContent=(r.orderType||"—")+" @ "+(r.price??"—")+" · quantité "+(r.quantity??"—");
       showTradePopup({broker:"KCEX",model:"CRYPTO",instrument:r.instrument||"CRYPTO",direction:r.direction||"—",orderType:r.orderType||"—",price:r.price??"—",quantity:r.quantity??"—",risk:"—",context:r.context||"Nouvelle activité d’ordre visible dans KCEX."});
       if(out)out.innerHTML="<b>ORDRE KCEX DÉTECTÉ</b><div class='sub' style='margin-top:8px'>"+esc((r.instrument||"CRYPTO")+" · "+(r.direction||"—")+" · "+(r.orderType||"—")+" · "+(r.price??"—"))+"</div>";
       setKCEXStatus("ORDRE DÉTECTÉ · "+new Date().toLocaleTimeString("fr-CA"));
@@ -2194,7 +2216,7 @@ function toggleKCEXAuto(){
   if(!kcexScreenStream){setKCEXStatus("Partage de l’onglet KCEX requis.");return;}
   analyzeKCEXScreen();
   kcexAutoTimer=setInterval(()=>analyzeKCEXScreen(),15000);
-  setKCEXStatus("ORDER WATCH actif · vérification toutes les 3 secondes · ordres uniquement.");
+  setKCEXStatus("ORDER WATCH actif · vérification toutes les 15 secondes · ordres uniquement.");
 }
 
 
