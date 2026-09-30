@@ -791,6 +791,17 @@ input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--acc
 
 <section id="chat" class="workspace hidden">
   <div class="workspace-header"><div><div class="eyebrow">JARVIS</div><h1>JARVIS <span class="pill" id="chatModelPill"></span></h1><div class="sub">Contexte verrouillé sur le modèle actif : <span id="chatModeText"></span>.</div></div><div class="status">● CHAT PRÊT</div></div>
+  <div class="section" style="margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+      <div><h2>JARVIS · Intelligence</h2><div class="sub">Le moteur utilise uniquement le modèle actif, son historique et les preuves disponibles.</div></div>
+      <span id="aiEngineStatus" class="status">● VÉRIFICATION</span>
+    </div>
+    <div class="workspace-grid" style="margin-top:10px">
+      <div class="ai-box"><div class="label">MÉMOIRE ACTIVE</div><div id="aiMemoryStatus" style="margin-top:6px;font-size:12px;font-weight:800">—</div><div id="aiMemorySub" class="sub" style="margin-top:5px">—</div></div>
+      <div class="ai-box"><div class="label">OPTIMISATION</div><div class="actions" style="margin-top:8px"><button class="primary" onclick="runDailyOptimization()">REVUE DU JOUR</button><button class="secondary" onclick="askCoachQuestion()">QUESTION COACH</button></div></div>
+    </div>
+    <div id="aiOptimizationOutput" class="ai-box" style="margin-top:10px;display:none"></div>
+  </div>
   <div class="section chat-shell"><div id="chatMessages" class="chat-messages"><div class="bubble ai"><b>JARVIS</b><div class="sub" style="margin-top:5px">Je suis prêt. Je réponds selon le modèle actif et son historique.</div></div></div><div class="chat-input"><textarea id="chatInput" rows="1" placeholder="Écris ici…"></textarea><button class="primary" onclick="sendChat()">ENVOYER</button></div></div>
 </section>
 
@@ -945,6 +956,45 @@ function show(id,btn){
  if(id==="dash"||id==="cryptoDash")renderStats();
  const main=document.querySelector(".main"); if(main)main.scrollTop=0;
  window.scrollTo(0,0);
+}
+async function refreshAIEngineStatus(){
+ const status=$("aiEngineStatus"),mem=$("aiMemoryStatus"),sub=$("aiMemorySub");
+ if(!BOT_API){if(status){status.textContent="● BACKEND NON CONFIGURÉ";status.className="status"}return;}
+ try{
+   const [ai,ctx]=await Promise.all([
+     botFetch("/api/ai/status"),
+     botFetch("/api/history/ai-context?model="+encodeURIComponent(activeModel))
+   ]);
+   if(status){status.textContent=ai.configured?"● JARVIS ONLINE":"● IA NON CONFIGURÉE";status.className=ai.configured?"status green":"status";}
+   if(mem)mem.textContent=(ctx.sampleSize||0)+" trades serveur · "+(ctx.obsidian?.tradeRecords?.length||ctx.obsidian?.tradeRecords?.length||0)+" données Obsidian";
+   if(sub)sub.textContent="Modèle : "+(activeModel==="NQ"?"Futures/NQ":"Crypto")+" · moteur "+(ai.engineVersion||"—")+" · "+(ai.primaryModel||"—");
+ }catch(e){
+   if(status){status.textContent="● IA INDISPONIBLE";status.className="status";}
+   if(mem)mem.textContent="Mémoire serveur inaccessible";
+   if(sub)sub.textContent=e.message||"Erreur backend";
+ }
+}
+async function runDailyOptimization(){
+ const out=$("aiOptimizationOutput");if(!out)return;
+ out.style.display="block";out.innerHTML='<div class="empty">JARVIS construit la revue à partir du modèle '+esc(activeModel)+' et de son historique…</div>';
+ try{
+   const r=await botFetch("/api/optimization/daily?model="+encodeURIComponent(activeModel));
+   if(!r.ok)throw new Error(r.error||"Optimisation indisponible");
+   out.innerHTML=renderAIAnalysis(r.text||"Revue terminée.",activeModel==="NQ"?"FUTURES":"CRYPTO","JARVIS · REVUE DU JOUR");
+ }catch(e){
+   out.innerHTML='<div class="decision bad">Revue indisponible</div><div class="sub" style="margin-top:8px">'+esc(e.message||"Erreur IA")+'</div>';
+ }
+}
+async function askCoachQuestion(){
+ const out=$("aiOptimizationOutput");if(!out)return;
+ out.style.display="block";out.innerHTML='<div class="empty">JARVIS prépare une seule question utile…</div>';
+ try{
+   const r=await botFetch("/api/coach/question",{method:"POST",body:JSON.stringify({model:activeModel})});
+   if(!r.ok)throw new Error(r.error||"Coach indisponible");
+   out.innerHTML='<div class="ai-box"><b>QUESTION JARVIS — '+esc(activeModel==="NQ"?"FUTURES":"CRYPTO")+'</b><div class="ai-analysis" style="margin-top:10px">'+esc(r.question||"Aucune question.")+'</div></div>';
+ }catch(e){
+   out.innerHTML='<div class="decision bad">Coach indisponible</div><div class="sub" style="margin-top:8px">'+esc(e.message||"Erreur IA")+'</div>';
+ }
 }
 async function sendChat(){
  const input=$("chatInput"),msg=String(input?.value||"").trim();if(!msg)return;
@@ -1428,7 +1478,7 @@ setSiteMode(siteMode);
 showActiveDashboard($("navDash"));
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
-renderJournal();resetJournalForm();restoreJournalDraft();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();renderStats();bindLiveChecklist();
+renderJournal();resetJournalForm();restoreJournalDraft();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();refreshAIEngineStatus();renderStats();bindLiveChecklist();
 document.querySelectorAll("[data-image-preview]").forEach(input=>input.addEventListener("change",()=>previewJournalImage(input,input.dataset.imagePreview)));
 JOURNAL_DRAFT_FIELDS.forEach(id=>{const el=$(id);if(!el)return;el.addEventListener("input",saveJournalDraft);el.addEventListener("change",saveJournalDraft);});
 window.addEventListener("beforeunload",saveJournalDraft);
