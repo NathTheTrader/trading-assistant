@@ -36,12 +36,16 @@ const openrouter = process.env.OPENROUTER_API_KEY ? new OpenAI({
   }
 }) : null;
 
+const GEMINI_API_KEY = String(GEMINI_API_KEY || "")
+  .trim()
+  .replace(/^(['"])(.*)\\1$/s,"$2")
+  .replace(/\\s+/g,"");
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 const GEMINI_FALLBACK_MODELS = String(process.env.GEMINI_FALLBACK_MODELS || "gemini-3.5-flash-lite,gemini-3.6-flash,gemini-3.5-flash")
   .split(",").map(x=>x.trim()).filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i);
 const MODEL = process.env.OPENROUTER_MODEL || "openrouter/free";
 const FALLBACK_MODELS = String(process.env.OPENROUTER_FALLBACK_MODELS || "").split(",").map(x=>x.trim()).filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i);
-const AI_PROVIDER = process.env.GEMINI_API_KEY ? "gemini" : (process.env.OPENROUTER_API_KEY ? "openrouter" : "none");
+const AI_PROVIDER = GEMINI_API_KEY ? "gemini" : (process.env.OPENROUTER_API_KEY ? "openrouter" : "none");
 const AI_PRIMARY_MODEL = AI_PROVIDER==="gemini" ? GEMINI_MODEL : MODEL;
 const AI_ENGINE_VERSION = "2.1";
 const AI_GRADE_SCALE = "A+ exceptionnellement propre; A solide; A- solide avec petite imperfection; B+ bon avec imperfection claire; B bon mais faiblesse identifiable; B- limite; C+/C qualité limite; NO TRADE si killer ou modele non respecte.";
@@ -134,15 +138,15 @@ function mapGeminiThinking(reasoning) {
   return effort==="high"?"high":effort==="low"?"low":effort==="minimal"?"minimal":"medium";
 }
 async function callGeminiNative({model,input}) {
-  const endpoint="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent";
+  const endpoint="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent?key="+encodeURIComponent(GEMINI_API_KEY);
   const body=buildGeminiRequest(input);
-  body.generationConfig={maxOutputTokens:Number(process.env.GEMINI_MAX_OUTPUT_TOKENS||8000)};
+  body.generationConfig={
+    maxOutputTokens:Number(process.env.GEMINI_MAX_OUTPUT_TOKENS||8000),
+    thinkingConfig:{thinkingLevel:"medium"}
+  };
   const response=await fetch(endpoint,{
     method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "x-goog-api-key":process.env.GEMINI_API_KEY
-    },
+    headers:{"Content-Type":"application/json"},
     body:JSON.stringify(body)
   });
   const data=await response.json().catch(()=>({}));
@@ -180,7 +184,7 @@ async function callGemini({model,input,reasoning}) {
     method:"POST",
     headers:{
       "Content-Type":"application/json",
-      "Authorization":"Bearer "+process.env.GEMINI_API_KEY
+      "Authorization":"Bearer "+GEMINI_API_KEY
     },
     body:JSON.stringify(body)
   });
@@ -201,11 +205,11 @@ async function callGemini({model,input,reasoning}) {
   return {output_text:outputText,raw:data,model};
 }
 
-const openai = (process.env.GEMINI_API_KEY || openrouter) ? {
+const openai = (GEMINI_API_KEY || openrouter) ? {
   responses: {
     create: async ({model,input,reasoning}) => {
       let geminiLastError=null;
-      if(process.env.GEMINI_API_KEY){
+      if(GEMINI_API_KEY){
         const candidates=[GEMINI_MODEL,...GEMINI_FALLBACK_MODELS].filter((x,i,a)=>a.indexOf(x)===i);
         for(const candidate of candidates){
           try{
