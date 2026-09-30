@@ -17,6 +17,8 @@ jobs:
         run: npm install --no-save playwright@1.55.0
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
+      - name: Capture initial dashboard
+        run: mkdir -p /tmp/edgeflow-captures
       - name: Serve frontend
         run: |
           python3 -m http.server 4173 >/tmp/edgeflow-http.log 2>&1 &
@@ -41,17 +43,33 @@ jobs:
             if(await page.locator("#dash .connection-card").count()!==0)throw new Error("Dashboard still contains connection cards");
             await page.click("#navBotFutures");await expectVisible("bot");
             if(await page.locator("#bot .connection-card").count()!==0)throw new Error("Bot Futures has unexpected connection cards");
+            await page.click("#modeCRYPTO");await expectVisible("cryptoDash");
             await page.click("#navBotCrypto");await expectVisible("crypto");
             if(await page.locator("#crypto .connection-card").count()!==0)throw new Error("Bot Crypto has unexpected connection cards");
             await page.click("#navJournal");await expectVisible("journal");
             const journalTop=await page.locator("#journal").evaluate(el=>el.getBoundingClientRect().top);
             if(journalTop<0||journalTop>100)throw new Error("Journal not positioned at workspace top: "+journalTop);
+            await page.click("#modeNQ");await page.click("#navDash");await expectVisible("dash");
             await page.click("#modeCRYPTO");await page.click("#navDash");await expectVisible("cryptoDash");
             await page.click("#navSettings");await expectVisible("settings");
+            await page.screenshot({path:"/tmp/edgeflow-crypto-dashboard.png",fullPage:true});
+            await page.click("#navJournal");await expectVisible("journal");
+            await page.screenshot({path:"/tmp/edgeflow-journal.png",fullPage:true});
+            await page.click("#navSettings");await expectVisible("settings");
+            await page.screenshot({path:"/tmp/edgeflow-settings.png",fullPage:true});
             if(await page.locator("#settings .connection-card").count()!==3)throw new Error("Settings connection center incomplete");
             if(await page.locator("#journalMonths").count()!==1)throw new Error("Journal history target missing");
             if(errors.length)throw new Error(errors.join("\n"));
+            await page.screenshot({path:"/tmp/edgeflow-final.png",fullPage:true});
             console.log("EDGEFLOW browser smoke OK");
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
+      - name: Upload browser captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: edgeflow-browser-captures
+          path: /tmp/edgeflow-*.png
+          if-no-files-found: warn
+          retention-days: 2
