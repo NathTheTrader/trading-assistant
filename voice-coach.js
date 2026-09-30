@@ -189,11 +189,33 @@
       speak(text);
     }catch(e){setState("idle","JARVIS PRÊT");setStatus(e.message)}
   }
+  function chooseBrowserVoice(){
+    if(!("speechSynthesis" in window))return null;
+    const voices=window.speechSynthesis.getVoices()||[];
+    if(!voices.length)return null;
+    const score=v=>{
+      const n=String(v.name||"").toLowerCase(),l=String(v.lang||"").toLowerCase();
+      let sc=0;
+      if(/^fr(-|_)/.test(l))sc+=28;
+      if(/canada|français|french/.test(n))sc+=16;
+      if(/male|homme|david|george|thomas|paul|ryan|olivier/.test(n))sc+=7;
+      if(/microsoft|google/.test(n))sc+=2;
+      if(/female|femme|susan|zira|sophie/.test(n))sc-=8;
+      if(!v.localService)sc+=1;
+      return sc;
+    };
+    return voices.slice().sort((a,b)=>score(b)-score(a))[0]||null;
+  }
   function speak(t){
     if(!("speechSynthesis" in window))return;
     window.speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(String(t||""));u.lang="fr-CA";u.rate=.95;u.pitch=.98;u.volume=1;window.speechSynthesis.speak(u);
+    const u=new SpeechSynthesisUtterance(String(t||""));
+    u.lang="fr-CA";
+    const voice=chooseBrowserVoice();if(voice)u.voice=voice;
+    u.rate=.91;u.pitch=.84;u.volume=1;
+    window.speechSynthesis.speak(u);
   }
+  if("speechSynthesis" in window)window.speechSynthesis.onvoiceschanged=()=>chooseBrowserVoice();
   function mime(){const a=["audio/webm;codecs=opus","audio/webm","audio/ogg;codecs=opus","audio/mp4"];return a.find(x=>window.MediaRecorder?.isTypeSupported(x))||""}
   async function toggle(){
     if(recorder?.state==="recording"){recorder.stop();return}
