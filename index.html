@@ -1510,13 +1510,13 @@ $("chatInput")?.addEventListener("input",e=>localStorage.setItem(chatDraftKey(),
      if(!res.ok)return;
      const doc=new DOMParser().parseFromString(await res.text(),"text/html");
      const next=doc.querySelector('meta[name="edgeflow-build"]')?.content;
-     const active=document.activeElement,editing=active&&(active.matches("input,textarea,select")||active.isContentEditable);
-     const fileInput=document.querySelector("#obsidianZip");
-     const dataBeingEdited=!!(fileInput&&fileInput.files&&fileInput.files.length);
-     if(next&&next!==current&&!editing&&!edgeflowBusy&&!dataBeingEdited)location.reload();
+     if(next&&next!==current){
+       const banner=document.querySelector("#obsidianProgress");
+       if(banner&&!edgeflowBusy) banner.textContent="Nouvelle version Edgeflow disponible · actualisez lorsque vous avez terminé.";
+     }
    }catch(e){}
  };
- setTimeout(check,1500);setInterval(check,30000);
+ setTimeout(check,3000);setInterval(check,60000);
 })();
 </script>
 </body>
