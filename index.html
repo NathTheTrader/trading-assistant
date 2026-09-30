@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1825-mode-refresh-bot-routing-v31"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1840-independent-workspace-routing-v32"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><script>
@@ -1427,26 +1427,31 @@ function setSiteMode(mode){
   try{window.dispatchEvent(new CustomEvent("edgeflow:model-change",{detail:{model:siteMode}}));}catch(e){}
   try{if(typeof renderChatHistory==="function" && $("chat") && !$("chat").classList.contains("hidden")) renderChatHistory(siteMode);}catch(e){}
 }
-function switchMode(mode){
+function navigateEdgeflow(mode,view){
   mode=String(mode||"NQ").toUpperCase();
   if(!VALID_MODES.has(mode))mode="NQ";
   const target=new URL(location.href);
   target.searchParams.set("mode",mode);
+  if(view)target.searchParams.set("view",view);else target.searchParams.delete("view");
   target.hash="";
   localStorage.setItem("siteMode",mode);
   localStorage.setItem("activeModel",mode);
   window.location.replace(target.href);
 }
+function switchMode(mode){navigateEdgeflow(mode,null);}
 function openBotWorkspace(mode,id,btn){
   mode=String(mode||"NQ").toUpperCase();
   if(!VALID_MODES.has(mode))mode="NQ";
-  if(siteMode!==mode){
-    const target=new URL(location.href);
-    target.searchParams.set("mode",mode);
-    location.assign(target.pathname+"?"+target.searchParams.toString());
+  const targetView=mode==="CRYPTO"?"crypto":"bot";
+  const currentMode=String(siteMode||"NQ").toUpperCase();
+  const urlMode=String(new URLSearchParams(location.search).get("mode")||currentMode).toUpperCase();
+  if(urlMode!==mode){
+    navigateEdgeflow(mode,targetView);
     return;
   }
-  show(id,btn);
+  siteMode=mode;activeModel=mode;
+  try{setSiteMode(mode);}catch(e){}
+  show(targetView,btn);
 }
 async function botFetch(path,options={}){
   if(!BOT_API) throw new Error("BOT_API_NOT_CONFIGURED");
@@ -2455,12 +2460,16 @@ function clearLocalData(){if(confirm("Effacer toutes les données locales du jou
 
 function showActiveDashboard(btn){show(activeModel==="CRYPTO"?"cryptoDash":"dash",btn||$("navDash"))}
 function initializeActiveWorkspace(){
-  const urlMode=String(new URLSearchParams(location.search).get("mode")||"").toUpperCase();
+  const params=new URLSearchParams(location.search);
+  const urlMode=String(params.get("mode")||"").toUpperCase();
   const mode=VALID_MODES.has(urlMode)?urlMode:(VALID_MODES.has(siteMode)?siteMode:"NQ");
+  const view=params.get("view");
   siteMode=mode;
   activeModel=mode;
-  setSiteMode(mode);
-  showActiveDashboard($("navDash"));
+  try{setSiteMode(mode);}catch(e){siteMode=mode;activeModel=mode;}
+  if(view==="bot"&&mode==="NQ")show("bot",$("navBotFutures"));
+  else if(view==="crypto"&&mode==="CRYPTO")show("crypto",$("navBotCrypto"));
+  else showActiveDashboard($("navDash"));
 }
 initializeActiveWorkspace();
 window.addEventListener("pageshow",()=>initializeActiveWorkspace());
