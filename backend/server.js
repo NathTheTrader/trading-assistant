@@ -1066,9 +1066,9 @@ app.get("/api/ai/status",requirePrivateRequest,(req,res)=>res.json({
   configuredLegacyModel:MODEL,
   fallbackModels:FALLBACK_MODELS,
   freeModelMode:/^openrouter\/free$/i.test(MODEL),
-  voiceConfigured:Boolean(process.env.ELEVENLABS_API_KEY),
-  voiceEngine:process.env.ELEVENLABS_API_KEY?"ElevenLabs":"Browser fallback",
-  voiceModel:process.env.ELEVENLABS_TTS_MODEL||"eleven_v4_turbo",
+  voiceConfigured:Boolean(process.env.ELEVENLABS_API_KEY||GEMINI_API_KEY),
+  voiceEngine:process.env.ELEVENLABS_API_KEY?"ElevenLabs":GEMINI_API_KEY?"Gemini":"Browser fallback",
+  voiceModel:process.env.ELEVENLABS_API_KEY?(process.env.ELEVENLABS_TTS_MODEL||"eleven_v4_turbo"):(process.env.GEMINI_TTS_MODEL||"gemini-3.8-flash-tts"),
   voiceIdConfigured:Boolean(process.env.ELEVENLABS_VOICE_ID),
   storageRoot:EDGEFLOW_STORAGE_ROOT,
   storageMode:EDGEFLOW_STORAGE_ROOT.startsWith("/data")?"PERSISTENT_VOLUME_EXPECTED":"LOCAL_EPHEMERAL_UNLESS_VOLUME_ATTACHED"
@@ -1121,7 +1121,7 @@ async function transcribeAudioWithGemini(audioBuffer,mimeType="audio/webm"){
     ]}],
     generationConfig:{temperature:0,maxOutputTokens:1200}
   };
-  const response=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(process.env.GEMINI_AUDIO_MODEL||GEMINI_MODEL)+":generateContent",{
+  const response=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(process.env.GEMINI_AUDIO_MODEL||"gemini-3.5-transcribe")+":generateContent",{
     method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":GEMINI_API_KEY},body:JSON.stringify(body)
   });
   const data=await response.json().catch(()=>({}));
