@@ -45,6 +45,8 @@ jobs:
             page.on("pageerror",e=>errors.push("pageerror: "+e.message));
             page.on("console",m=>{if(m.type()==="error"&&!/403/.test(m.text()))errors.push("console: "+m.text())});
             await page.goto("http://127.0.0.1:4173/index.html",{waitUntil:"domcontentloaded"});
+            await page.waitForTimeout(100);
+            if(errors.length)throw new Error("Edgeflow startup errors: "+errors.join("\n"));
             const click=async sel=>page.locator(sel).evaluate(el=>el.click());
             const switchMode=async mode=>{
               const wait=page.waitForURL(url=>new URL(url).searchParams.get("mode")===mode,{waitUntil:"domcontentloaded"});
