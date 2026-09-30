@@ -894,6 +894,7 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
 .model-card .tag{margin-bottom:11px}
 @media(max-width:760px){.side{width:100%;padding:8px}.jarvis-console-head{align-items:flex-start;flex-direction:column}.jarvis-header-right{width:100%;justify-content:space-between}.jarvis-model-tabs{flex:1}.jarvis-model-tab{flex:1}.main{padding:12px}}
 
+.bubble-content strong{color:#fff;font-weight:800}.bubble-content h2,.bubble-content h3,.bubble-content h4{font-family:"Manrope","Inter",sans-serif;margin:9px 0 5px;color:#f7f9fc}.bubble-content h2{font-size:14px}.bubble-content h3{font-size:12px}.bubble-content h4{font-size:11px}.md-bullet{position:relative;padding-left:13px;margin:3px 0}.md-bullet:before{content:"";position:absolute;left:1px;top:.65em;width:4px;height:4px;border-radius:50%;background:var(--accent)}.md-gap{height:7px}
 </style>
 </head><body>
 <div class="app">
@@ -1163,6 +1164,7 @@ function setSiteMode(mode){
   if($("journal")&&!$("journal").classList.contains("hidden")) updateJournalMarket();
   refreshAIDataAccess(); refreshObsidianStatus();
   window.dispatchEvent(new CustomEvent("edgeflow:model-change",{detail:{model:siteMode}}));
+  if(typeof renderChatHistory==="function" && $("chat") && !$("chat").classList.contains("hidden")) renderChatHistory(siteMode);
 }
 function switchMode(mode){
   const current=document.querySelector("main>.workspace:not(.hidden)")?.id||"dash";
@@ -1238,6 +1240,7 @@ function show(id,btn){
  document.querySelectorAll("nav button").forEach(b=>{b.classList.remove("active");b.removeAttribute("aria-current");});
  if(btn){btn.classList.add("active");btn.setAttribute("aria-current","page");}
  if(id==="journal"){updateJournalMarket();renderJournal();restoreJournalDraft();}
+ if(id==="chat"){renderChatHistory(activeModel);}
  if(id==="dash"||id==="cryptoDash")renderStats();
  const main=document.querySelector(".main"); if(main)main.scrollTop=0;
  window.scrollTo(0,0);
@@ -1252,7 +1255,7 @@ async function refreshAIEngineStatus(){
    ]);
    if(status){status.textContent=ai.configured?"● JARVIS ONLINE":"● IA NON CONFIGURÉE";status.className=ai.configured?"status green":"status";}
    if(mem)mem.textContent=(ctx.sampleSize||0)+" trades serveur · "+(ctx.obsidian?.tradeRecords?.length||ctx.obsidian?.tradeRecords?.length||0)+" données Obsidian";
-   if(sub)sub.textContent="Modèle : "+(activeModel==="NQ"?"Futures/NQ":"Crypto")+" · moteur "+(ai.engineVersion||"—")+" · "+(ai.primaryModel||"—");
+   if(sub)sub.textContent="Modèle : "+(activeModel==="NQ"?"Futures/NQ":"Crypto")+" · moteur "+(ai.engineVersion||"—")+" · "+(ai.provider||"—")+" / "+(ai.aiPrimaryModel||ai.primaryModel||"—");
  }catch(e){
    if(status){status.textContent="● IA INDISPONIBLE";status.className="status";}
    if(mem)mem.textContent="Mémoire serveur inaccessible";
@@ -1281,32 +1284,64 @@ async function askCoachQuestion(){
    out.innerHTML='<div class="decision bad">Coach indisponible</div><div class="sub" style="margin-top:8px">'+esc(e.message||"Erreur IA")+'</div>';
  }
 }
+function chatStorageKey(model=activeModel){return "edgeflow.chat.v2."+model;}
+function getChatTurns(model=activeModel){
+ try{const v=JSON.parse(localStorage.getItem(chatStorageKey(model))||"[]");return Array.isArray(v)?v.slice(-40):[];}catch{return[]}
+}
+function saveChatTurns(model=activeModel,turns=[]){localStorage.setItem(chatStorageKey(model),JSON.stringify(turns.slice(-40)));}
+function renderChatText(text=""){
+ let x=esc(text);
+ x=x.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+ x=x.replace(/^###\s+(.+)$/gm,"<h4>$1</h4>");
+ x=x.replace(/^##\s+(.+)$/gm,"<h3>$1</h3>");
+ x=x.replace(/^#\s+(.+)$/gm,"<h2>$1</h2>");
+ x=x.replace(/^\s*[-•]\s+(.+)$/gm,"<div class='md-bullet'>$1</div>");
+ x=x.replace(/\n\n+/g,"<div class='md-gap'></div>");
+ x=x.replace(/\n/g,"<br>");
+ return x;
+}
+function renderChatHistory(model=activeModel){
+ const box=$("chatMessages"); if(!box)return;
+ const turns=getChatTurns(model);
+ const intro=model==="CRYPTO"
+   ?"JARVIS prêt · contexte Crypto verrouillé : direction → Key Open manipulé/sweep → POI HTF → entrée → high RR."
+   :"JARVIS prêt · contexte Futures verrouillé : HTF bias → POI → sweep → retracement → R.B. → entrée limite.";
+ box.innerHTML='<div class="bubble ai"><b>JARVIS</b><div class="sub" style="margin-top:5px">'+intro+'</div></div>'+
+   turns.map(t=>'<div class="bubble '+(t.role==="user"?"me":"ai")+'"><b>'+(t.role==="user"?"TOI":"JARVIS")+'</b><div class="bubble-content" style="margin-top:6px">'+renderChatText(t.content)+'</div></div>').join("");
+ box.scrollTop=box.scrollHeight;
+}
 async function sendChat(){
  const input=$("chatInput"),msg=String(input?.value||"").trim();if(!msg)return;
+ const modelAtSend=activeModel==="CRYPTO"?"CRYPTO":"NQ";
+ const turns=getChatTurns(modelAtSend);
+ turns.push({role:"user",content:msg,timestamp:new Date().toISOString()});
+ saveChatTurns(modelAtSend,turns);
+ renderChatHistory(modelAtSend);
  const box=$("chatMessages"),sendBtn=document.querySelector(".chat-input .primary");
- box.insertAdjacentHTML("beforeend",'<div class="bubble me"><b>TOI</b><div style="margin-top:5px">'+esc(msg)+'</div></div>');
- box.scrollTop=box.scrollHeight;
  if(!BOT_API){
-   box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>JARVIS</b><div class="sub" style="margin-top:5px">'+getJournalAwareReply(msg)+'</div></div>');
-   input.value=""; localStorage.removeItem("edgeflow.chatDraft."+activeModel);
-   return;
+   turns.push({role:"assistant",content:getJournalAwareReply(msg),timestamp:new Date().toISOString()});
+   saveChatTurns(modelAtSend,turns);renderChatHistory(modelAtSend);input.value="";return;
  }
  if(sendBtn)sendBtn.disabled=true;
- box.insertAdjacentHTML("beforeend",'<div id="aiThinking" class="bubble ai"><b>JARVIS</b><div class="sub" style="margin-top:5px">Analyse en cours…</div></div>');
+ box.insertAdjacentHTML("beforeend",'<div id="aiThinking" class="bubble ai"><b>JARVIS</b><div class="sub" style="margin-top:5px">JARVIS analyse…</div></div>');
  try{
-   const r=await botFetch("/api/chat",{method:"POST",body:JSON.stringify({message:msg,model:activeModel})});
+   const r=await botFetch("/api/chat",{method:"POST",body:JSON.stringify({
+     message:msg,model:modelAtSend,previousTurns:turns.slice(-12).map(x=>({role:x.role,content:x.content}))
+   })});
    $("aiThinking")?.remove();
-   box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>JARVIS</b><div class="sub" style="margin-top:5px">'+esc(r.text||"Aucune réponse.")+'</div></div>');
-   input.value=""; localStorage.removeItem("edgeflow.chatDraft."+activeModel);
+   turns.push({role:"assistant",content:String(r.text||"Aucune réponse."),timestamp:new Date().toISOString()});
+   saveChatTurns(modelAtSend,turns);renderChatHistory(modelAtSend);
+   input.value="";localStorage.removeItem("edgeflow.chatDraft."+modelAtSend);
  }catch(e){
    $("aiThinking")?.remove();
-   const err=String(e?.message||"Erreur inconnue");
-   box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>JARVIS</b><div class="sub" style="margin-top:5px"><b>IA indisponible :</b> '+esc(err)+'<br><br>'+getJournalAwareReply(msg)+'</div></div>');
+   turns.push({role:"assistant",content:"IA indisponible : "+String(e?.message||"Erreur backend"),timestamp:new Date().toISOString()});
+   saveChatTurns(modelAtSend,turns);renderChatHistory(modelAtSend);
  }finally{
    if(sendBtn)sendBtn.disabled=false;
    box.scrollTop=box.scrollHeight;
  }
 }
+
 function getJournalAwareReply(msg){
  const arr=getJournal(),scope=activeModel==="NQ"||activeModel==="CRYPTO"?activeModel:null,data=scope?arr.filter(x=>x.model===scope):arr;
  if(!data.length)return"Ton journal ne contient encore aucune entrée pour "+(scope?esc(scope):"ce modèle")+". Ajoute tes trades dans <b>Journal</b> pour créer une base exploitable.";
