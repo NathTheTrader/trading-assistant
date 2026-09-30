@@ -25,7 +25,8 @@ function requirePrivateRequest(req,res,next){
   if(origin===FRONTEND_ORIGIN) return next();
   return res.status(403).json({ok:false,error:"EDGEFLOW private endpoint."});
 }
-const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), "data", "trades.json");
+const EDGEFLOW_STORAGE_ROOT = process.env.EDGEFLOW_STORAGE_ROOT || path.join(process.cwd(),"data");
+const DATA_FILE = process.env.DATA_FILE || path.join(EDGEFLOW_STORAGE_ROOT,"trades.json");
 const openrouter = process.env.OPENROUTER_API_KEY ? new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
   baseURL: "https://openrouter.ai/api/v1",
@@ -97,20 +98,20 @@ const openai = openrouter ? {
     }
   }
 } : null;
-const PROFILE_FILE = process.env.PROFILE_FILE || path.join(process.cwd(), "trader-profile.json");
-const HISTORICAL_CONTEXT_FILE = process.env.HISTORICAL_CONTEXT_FILE || path.join(process.cwd(), "historical-trading-context.json");
-const OBSIDIAN_DIR = process.env.OBSIDIAN_DIR || path.join(process.cwd(), "data", "obsidian");
-const OBSIDIAN_TRADES_FILE = path.join(OBSIDIAN_DIR, "trades.json");
-const OBSIDIAN_STATUS_FILE = path.join(OBSIDIAN_DIR, "status.json");
-const OBSIDIAN_JOB_FILE = path.join(OBSIDIAN_DIR, "analysis-job.json");
-const LEARNING_FILE = process.env.LEARNING_FILE || path.join(process.cwd(), "data", "ai-learning.json");
+const PROFILE_FILE = process.env.PROFILE_FILE || path.join(EDGEFLOW_STORAGE_ROOT,"trader-profile.json");
+const HISTORICAL_CONTEXT_FILE = process.env.HISTORICAL_CONTEXT_FILE || path.join(EDGEFLOW_STORAGE_ROOT,"historical-trading-context.json");
+const OBSIDIAN_DIR = process.env.OBSIDIAN_DIR || path.join(EDGEFLOW_STORAGE_ROOT,"obsidian");
+const OBSIDIAN_TRADES_FILE = path.join(OBSIDIAN_DIR,"trades.json");
+const OBSIDIAN_STATUS_FILE = path.join(OBSIDIAN_DIR,"status.json");
+const OBSIDIAN_JOB_FILE = path.join(OBSIDIAN_DIR,"analysis-job.json");
+const LEARNING_FILE = process.env.LEARNING_FILE || path.join(EDGEFLOW_STORAGE_ROOT,"ai-learning.json");
 const OBSIDIAN_DAILY_REQUEST_BUDGET = Number(process.env.OBSIDIAN_DAILY_REQUEST_BUDGET || 35);
 const OBSIDIAN_IMAGE_BATCH_SIZE = Math.max(1,Math.min(2,Number(process.env.OBSIDIAN_IMAGE_BATCH_SIZE || 1)));
 let obsidianJob = { running:false, phase:"idle", total:0, processed:0, analyzedImages:0, error:null, startedAt:null, finishedAt:null,currentFile:null,currentModel:null };
 async function reserveAIRequest() {
   const limit = Number(process.env.OPENROUTER_DAILY_REQUEST_LIMIT || 0);
   if (!Number.isFinite(limit) || limit <= 0) return { unlimited: true };
-  const file=path.join(process.cwd(),"data","ai-usage.json");
+  const file=path.join(EDGEFLOW_STORAGE_ROOT,"ai-usage.json");
   const today=new Date().toISOString().slice(0,10);
   let usage={date:today,requests:0};
   try {
@@ -496,7 +497,7 @@ async function obsidianImageAnalysisLoop() {
 
   try {
     for(let i=0;i<items.length;i+=OBSIDIAN_IMAGE_BATCH_SIZE) {
-      const usageFile=path.join(path.dirname(OBSIDIAN_JOB_FILE),"../ai-usage.json");
+      const usageFile=path.join(EDGEFLOW_STORAGE_ROOT,"ai-usage.json");
       let usage={date:new Date().toISOString().slice(0,10),requests:0};
       try {
         usage=JSON.parse(await fs.readFile(usageFile,"utf8"));
@@ -755,7 +756,9 @@ app.get("/api/ai/status",requirePrivateRequest,(req,res)=>res.json({
   configured:!!openrouter,
   primaryModel:MODEL,
   fallbackModels:FALLBACK_MODELS,
-  freeModelMode:/^openrouter\/free$/i.test(MODEL)
+  freeModelMode:/^openrouter\/free$/i.test(MODEL),
+  storageRoot:EDGEFLOW_STORAGE_ROOT,
+  storageMode:EDGEFLOW_STORAGE_ROOT.startsWith("/data")?"PERSISTENT_VOLUME_EXPECTED":"LOCAL_EPHEMERAL_UNLESS_VOLUME_ATTACHED"
 }));
 
 app.get("/api/history/ai-context",requirePrivateRequest,  async (req,res) => {
