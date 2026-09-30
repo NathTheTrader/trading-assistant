@@ -902,8 +902,11 @@ function updateModelUI(){
 }
 function updateBotMode(){
  const crypto=activeModel==="CRYPTO";
- $("bot")?.classList.toggle("hidden",crypto);
- $("crypto")?.classList.toggle("hidden",!crypto);
+ const title=$("bot")?.querySelector("h1");
+ if(title)title.textContent="Bot Futures";
+ const cryptoTitle=$("crypto")?.querySelector("h1");
+ if(cryptoTitle)cryptoTitle.textContent="Bot Crypto";
+ const label=$("activeModeLabel"); if(label)label.textContent=crypto?"CRYPTO":"FUTURES";
 }
 function applyModeVisibility(){
  document.querySelectorAll("[data-mode]").forEach(el=>{
@@ -914,11 +917,13 @@ function applyModeVisibility(){
 function show(id,btn){
  if($("journal")&&!$("journal").classList.contains("hidden")&&id!=="journal")saveJournalDraft();
  if(!VALID_MODES.has(activeModel))setSiteMode(siteMode||"NQ");
- document.querySelectorAll("main>.workspace").forEach(s=>s.classList.add("hidden"));
+ const sections=[...document.querySelectorAll("main>.workspace")];
+ sections.forEach(s=>{s.classList.add("hidden");s.hidden=true;s.style.display="none";s.setAttribute("aria-hidden","true");});
  const target=$(id);
- if(target)target.classList.remove("hidden");
- document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
- if(btn)btn.classList.add("active");
+ if(!target)return;
+ target.classList.remove("hidden");target.hidden=false;target.style.display="block";target.setAttribute("aria-hidden","false");
+ document.querySelectorAll("nav button").forEach(b=>{b.classList.remove("active");b.removeAttribute("aria-current");});
+ if(btn){btn.classList.add("active");btn.setAttribute("aria-current","page");}
  if(id==="journal"){updateJournalMarket();renderJournal();restoreJournalDraft();}
  if(id==="dash"||id==="cryptoDash")renderStats();
  const main=document.querySelector(".main"); if(main)main.scrollTop=0;
