@@ -133,6 +133,35 @@ function mapGeminiThinking(reasoning) {
   const effort=String(reasoning?.effort||"medium").toLowerCase();
   return effort==="high"?"high":effort==="low"?"low":effort==="minimal"?"minimal":"medium";
 }
+async function callGeminiNative({model,input}) {
+  const endpoint="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent";
+  const body=buildGeminiRequest(input);
+  body.generationConfig={maxOutputTokens:Number(process.env.GEMINI_MAX_OUTPUT_TOKENS||8000)};
+  const response=await fetch(endpoint,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "x-goog-api-key":process.env.GEMINI_API_KEY
+    },
+    body:JSON.stringify(body)
+  });
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok){
+    const error=new Error(data?.error?.message||("Gemini native API error "+response.status));
+    error.status=response.status;
+    error.code=data?.error?.status||data?.error?.code||null;
+    throw error;
+  }
+  const outputText=(data?.candidates||[]).flatMap(c=>c?.content?.parts||[]).map(p=>String(p?.text||"")).join("");
+  if(!outputText){
+    const reason=String(data?.candidates?.[0]?.finishReason||"EMPTY_RESPONSE");
+    const error=new Error("Gemini native API returned no text (finishReason="+reason+").");
+    error.status=502;
+    throw error;
+  }
+  return {output_text:outputText,raw:data,model};
+}
+
 async function callGemini({model,input,reasoning}) {
   // Use Gemini's OpenAI-compatible endpoint with Bearer authentication.
   // This is the supported path for current Gemini authorization (AQ/auth) keys
@@ -659,8 +688,8 @@ async function obsidianImageAnalysisLoop() {
 
       let response;
       try {
-        response=await openai.responses.create({
-          model:MODEL,
+        response=await callGeminiNative({
+          model:GEMINI_MODEL,
           input:[
             {role:"system",content:BASE_SYSTEM+"\nHISTORICAL SCREENSHOT REVIEW: inspect only visible evidence and keep NQ/CRYPTO separated."},
             {role:"user",content}
