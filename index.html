@@ -1110,7 +1110,7 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
       <div class="full"><textarea id="jLesson" placeholder="Leçon concrète…"></textarea></div>
       <div class="full"><div class="image-drop"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots du trade</div><div class="image-drop-sub">AVANT et APRÈS sont conservés avec l’entrée.</div></div></div><div class="image-inputs"><div class="image-input"><label for="jBefore">AVANT</label><input id="jBefore" type="file" accept="image/*" data-image-preview="jBeforePreview" onchange="previewJournalImage(this,'jBeforePreview')"><img id="jBeforePreview" class="image-preview"></div><div class="image-input"><label for="jAfter">APRÈS</label><input id="jAfter" type="file" accept="image/*" data-image-preview="jAfterPreview" onchange="previewJournalImage(this,'jAfterPreview')"><img id="jAfterPreview" class="image-preview"></div></div></div></div>
       <div class="full"><h3>🤖 JARVIS</h3><textarea id="jAI" readonly placeholder="Pré-analyse JARVIS…"></textarea></div>
-      <div class="full actions"><button class="primary" onclick="prepareAIJournal()">PRÉ-ANALYSER</button><button class="primary" onclick="saveJournalEntry()">ENREGISTRER</button><button class="secondary" onclick="resetJournalForm()">RÉINITIALISER</button></div>
+      <div class="full actions"><span id="journalSyncStatus" class="status" style="margin-right:auto">● PRÊT</span><button class="primary" onclick="prepareAIJournal()">PRÉ-ANALYSER</button><button class="primary" onclick="saveJournalEntry()">ENREGISTRER</button><button class="secondary" onclick="resetJournalForm()">RÉINITIALISER</button></div>
     </div>
   </div>
   <div class="section" style="margin-top:12px"><h2>Historique du modèle actif</h2><div id="journalMonths"></div></div>
@@ -1534,7 +1534,11 @@ async function prepareAIJournal(){
 async function saveJournalEntry(){
  const d=$("jDate").value||new Date().toISOString().slice(0,10),market=$("jMarket").value,before=await compressImage($("jBefore").files&&$("jBefore").files[0]),after=await compressImage($("jAfter").files&&$("jAfter").files[0]);
  const entry={id:Date.now(),dateISO:d,date:d,model:market==="FUTURES"?"NQ":"CRYPTO",market,instrument:$("jInstrument").value,session:$("jSession").value,result:$("jResult").value,grade:$("jGrade").value,R:$("jR").value,pnl:$("jPnL").value,context:$("jContext").value,errors:$("jErrors").value,lesson:$("jLesson").value,aiOpinion:$("jAI").value,photoBefore:before,photoAfter:after,score:null,decision:null,notes:$("jContext").value};
- const arr=getJournal();arr.unshift(entry);localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));renderJournal();renderStats();resetJournalForm();syncTradeToBot(entry);
+ const arr=getJournal();arr.unshift(entry);localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));renderJournal();renderStats();
+ if($("journalSyncStatus"))$("journalSyncStatus").textContent="● SYNCHRONISATION…";
+ const synced=await syncTradeToBot(entry);
+ if($("journalSyncStatus"))$("journalSyncStatus").textContent=synced?"● SERVEUR SYNC":"● LOCAL · SERVEUR INDISPONIBLE";
+ resetJournalForm();
 }
 function formatJournalDate(v){if(!v)return"—";return new Date(v+"T12:00:00").toLocaleDateString("fr-CA",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}
 function updateJournalDate(){$("jDateDisplay").textContent=formatJournalDate($("jDate").value)}
@@ -1614,6 +1618,7 @@ async function refreshConnectionCenter(){
     set("dashConnTradovate",r.tradovate?.connected?"LIVE":r.tradovate?.configured?"PRÊT":"À CONFIGURER",r.tradovate?.connected?"live":r.tradovate?.configured?"ready":"warn");
     set("connRithmic",r.rithmic?.configured?"API PRÊTE · ORDER WATCH":"ORDER WATCH",r.rithmic?.configured?"ready":"warn");
     set("dashConnRithmic",r.rithmic?.configured?"API PRÊTE":"ORDER WATCH",r.rithmic?.configured?"ready":"warn");
+    set("connKcex",r.kcex?.mode==="screen-observer"?"ORDER WATCH":"—","warn");
   }catch(e){}
 }
 async function refreshAIDataAccess(){const el=document.getElementById("aiDataAccess");if(!el)return;if(!BOT_API){el.textContent="Backend non configuré — aucune donnée serveur n’est accessible à l’IA.";return}try{const d=await botFetch("/api/history/ai-context?model="+encodeURIComponent(activeModel));el.innerHTML="<b>"+activeModel+"</b> · "+(d.sampleSize||0)+" trades serveur<br><span class='sub'>Mémoire historique + journal + contexte vérifié. Obsidian est importé séparément et reste cloisonné par modèle.</span>"}catch(e){el.textContent="Backend hors ligne.";}}
