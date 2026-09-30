@@ -65,8 +65,19 @@ const openai = openrouter ? {
       };
       if (process.env.OPENROUTER_REASONING !== "false" && reasoning) body.reasoning = reasoning;
       await reserveAIRequest();
-      const r = await openrouter.chat.completions.create(body);
-      return { output_text: aiText(r.choices?.[0]?.message?.content), raw:r };
+      let lastError = null;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        try {
+          const r = await openrouter.chat.completions.create(body);
+          return { output_text: aiText(r.choices?.[0]?.message?.content), raw:r };
+        } catch (error) {
+          lastError = error;
+          const status = Number(error?.status || error?.response?.status || 0);
+          if (status !== 429 || attempt === 3) throw error;
+          await new Promise(resolve => setTimeout(resolve, 1000 * (2 ** attempt)));
+        }
+      }
+      throw lastError || new Error("AI request failed.");
     }
   }
 } : null;
@@ -80,6 +91,8 @@ const LEARNING_FILE = process.env.LEARNING_FILE || path.join(process.cwd(), "dat
 const OBSIDIAN_DAILY_REQUEST_BUDGET = Number(process.env.OBSIDIAN_DAILY_REQUEST_BUDGET || 35);
 let obsidianJob = { running:false, phase:"idle", total:0, processed:0, analyzedImages:0, error:null, startedAt:null, finishedAt:null };
 async function reserveAIRequest() {
+  const limit = Number(process.env.OPENROUTER_DAILY_REQUEST_LIMIT || 0);
+  if (!Number.isFinite(limit) || limit <= 0) return { unlimited: true };
   const file=path.join(process.cwd(),"data","ai-usage.json");
   const today=new Date().toISOString().slice(0,10);
   let usage={date:today,requests:0};
@@ -87,7 +100,7 @@ async function reserveAIRequest() {
     usage=JSON.parse(await fs.readFile(file,"utf8"));
     if(usage.date!==today) usage={date:today,requests:0};
   } catch {}
-  if(usage.requests>=50) {
+  if(usage.requests>=limit) {
     const e=new Error("Daily AI request limit reached.");
     e.status=429;
     throw e;
