@@ -1445,7 +1445,7 @@ app.post("/api/analyze-trade",requirePrivateRequest, async (req,res) => {
       ? "Analyse ce setup avec le modèle CRYPTO uniquement : direction du marché → Key Open manipulé/sweep → POI HTF aligné → entrée → laisser jouer en high RR. OTE/Fib est secondaire."
       : "Analyse ce setup avec le modèle FUTURES/NQ uniquement : HTF bias → POI → liquidity/manipulation → Fibonacci retracement → Rejection Block → limit entry. Vérifie FVG/OB/PD array, sweep, MSS/CHOCH/BOS, displacement, retracement, session, R:R, news et exécution.";
     const result=await askAI({
-      task:modelTask+" Fournis une analyse complète et factuelle du trade actuel. Sépare ce qui est visible/documenté de ce qui est inféré. Le score de checklist ne remplace jamais l'analyse du graphique. Ne conclus pas à partir du résultat du trade : analyse le setup tel qu'il est présenté.",
+      task:modelTask+" Fournis une analyse concise, factuelle et directement exploitable du trade actuel. Vise 250 à 450 mots maximum sauf demande explicite d'une analyse profonde. N'utilise pas de chaînes de flèches ni les symboles décoratifs comme →, ➜ ou ⇒. Utilise uniquement ces rubriques courtes : LECTURE LIVE, MODÈLE, ENTRÉE, RISQUE-RR, IMPERFECTION, NOTE FINALE, ACTION. Donne la conclusion utile rapidement et évite les répétitions. Sépare ce qui est visible/documenté de ce qui est inféré. Le score de checklist ne remplace jamais l'analyse du graphique. Ne conclus pas à partir du résultat du trade : analyse le setup tel qu'il est présenté. Structure messy = imperfection qui coûte des points, pas NO TRADE automatique.",
       trade,
       history:trades.filter(t=>t.model===trade.model)
     });
