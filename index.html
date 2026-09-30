@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2005-chart-zero-premium-bg-v18"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2200-stable-clean-ui-v22"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><style>
@@ -2057,12 +2057,13 @@ function populateDashboardMonthControls(model,data){
  if(title)title.textContent=monthLabelLong(selected);
  if(label)label.textContent=monthLabelLong(selected);
 }
-async function renderStats(){
- const datasets=await Promise.all([loadDashboardTrades("NQ"),loadDashboardTrades("CRYPTO")]);
- const put=(prefix,data)=>{
+async let dashboardRenderVersion=0;
+function renderStats(){
+ const version=++dashboardRenderVersion;
+ const renderOne=(prefix,data)=>{
    data.trades.forEach(t=>{t.__dashboardMonth=data.month;});
    const s=calcDashboardStats(data.trades);s.month=data.month;
-   if($(prefix+"Trades"))$(prefix+"Trades").textContent=s.trades;
+   if($(prefix+"Trades"))$(prefix+"Trades").textContent=String(s.trades);
    if($(prefix+"Winrate"))$(prefix+"Winrate").textContent=s.winrate!==null?s.winrate.toFixed(1)+"%":"—";
    if($(prefix+"AvgR"))$(prefix+"AvgR").textContent=s.avgR!==null?((s.avgR>=0?"+":"")+s.avgR.toFixed(2)+"R"):"—";
    if($(prefix+"TotalR"))$(prefix+"TotalR").textContent=s.totalR!==null?((s.totalR>=0?"+":"")+s.totalR.toFixed(2)+"R"):"—";
@@ -2074,7 +2075,14 @@ async function renderStats(){
    const status=$(prefix+"DataStatus");if(status){status.textContent=data.serverOk?"● JOURNAL + SERVEUR":"● JOURNAL LOCAL";status.className=data.serverOk?"status green":"status";}
    const source=$(prefix+"SourceLabel");if(source)source.textContent=data.serverOk?"Journal + serveur":"Journal local";
  };
- put("dash",datasets[0]);put("cryptoDash",datasets[1]);
+ const localNQ=getJournal().filter(x=>x.model==="NQ"),localCrypto=getJournal().filter(x=>x.model==="CRYPTO");
+ const monthNQ=dashboardMonthKey("NQ"),monthCrypto=dashboardMonthKey("CRYPTO");
+ renderOne("dash",{trades:localNQ.filter(t=>tradeMonthKey(t)===monthNQ),allTrades:localNQ,month:monthNQ,serverOk:false});
+ renderOne("cryptoDash",{trades:localCrypto.filter(t=>tradeMonthKey(t)===monthCrypto),allTrades:localCrypto,month:monthCrypto,serverOk:false});
+ Promise.all([loadDashboardTrades("NQ"),loadDashboardTrades("CRYPTO")]).then(([nq,crypto])=>{
+   if(version!==dashboardRenderVersion)return;
+   renderOne("dash",nq);renderOne("cryptoDash",crypto);
+ }).catch(()=>{});
 }
 async function refreshConnectionCenter(){
   if(!BOT_API)return;
