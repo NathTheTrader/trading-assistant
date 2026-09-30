@@ -35,6 +35,25 @@ const openrouter = process.env.OPENROUTER_API_KEY ? new OpenAI({
   }
 }) : null;
 const MODEL = process.env.OPENROUTER_MODEL || "openrouter/free";
+const FALLBACK_MODELS = String(process.env.OPENROUTER_FALLBACK_MODELS || "").split(",").map(x=>x.trim()).filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i);
+const AI_ENGINE_VERSION = "2.0";
+const AI_GRADE_SCALE = "A+ exceptionnellement propre; A solide; A- solide avec petite imperfection; B+ bon avec imperfection claire; B bon mais faiblesse identifiable; B- limite; C+/C qualité limite; NO TRADE si killer ou modele non respecte.";
+const MODEL_CONTRACTS = {
+  NQ:{
+    label:"FUTURES / NQ",
+    sequence:"HTF bias -> POI -> liquidity/manipulation -> displacement -> retracement -> Rejection Block -> limit entry",
+    mustCheck:["HTF bias","POI","liquidity/sweep/manipulation","displacement/impulse quality","Fibonacci 0.5 / 0.62 / 0.705 / 0.79","Rejection Block","limit entry location","SL","R:R","session/timing","news"],
+    entryStyle:"Retracement propre uniquement. Signaler explicitement trop tôt, pas assez deep, trop tard ou mal placé. Ne pas valoriser une entrée prise sur l'impulsion.",
+    realityRule:"Le live market peut dévier de la théorie parfaite. Utiliser le modèle comme cadre, pas comme règle mécanique."
+  },
+  CRYPTO:{
+    label:"CRYPTO",
+    sequence:"market direction -> manipulated/swept Key Open -> aligned HTF POI -> entry -> high RR",
+    mustCheck:["market direction","Key Open manipulation/sweep","HTF POI alignment","entry location","high-RR logic","context/news/invalidations"],
+    entryStyle:"OTE/Fibonacci est secondaire. Ne pas importer la hiérarchie Futures/R.B. dans Crypto.",
+    realityRule:"Le live market peut dévier de la théorie parfaite. Juger d'abord les preuves visibles et la cohérence du modèle Crypto."
+  }
+};
 
 function convertAIContent(content) {
   if (!Array.isArray(content)) return content;
@@ -57,27 +76,24 @@ function aiText(content) {
 const openai = openrouter ? {
   responses: {
     create: async ({model,input,reasoning}) => {
-      const body = {
-        model: model || MODEL,
-        messages: convertAIInput(input),
-        temperature: Number(process.env.OPENROUTER_TEMPERATURE || 0.2),
-        max_tokens: Number(process.env.OPENROUTER_MAX_TOKENS || 8000)
-      };
-      if (process.env.OPENROUTER_REASONING !== "false" && reasoning) body.reasoning = reasoning;
+      const candidates=[model||MODEL,...FALLBACK_MODELS].filter((x,i,a)=>a.indexOf(x)===i);
       await reserveAIRequest();
-      let lastError = null;
-      for (let attempt = 0; attempt < 4; attempt++) {
-        try {
-          const r = await openrouter.chat.completions.create(body);
-          return { output_text: aiText(r.choices?.[0]?.message?.content), raw:r };
-        } catch (error) {
-          lastError = error;
-          const status = Number(error?.status || error?.response?.status || 0);
-          if (status !== 429 || attempt === 3) throw error;
-          await new Promise(resolve => setTimeout(resolve, 1000 * (2 ** attempt)));
+      let lastError=null;
+      for(const candidate of candidates){
+        const body={model:candidate,messages:convertAIInput(input),temperature:Number(process.env.OPENROUTER_TEMPERATURE||0.2),max_tokens:Number(process.env.OPENROUTER_MAX_TOKENS||8000)};
+        if(process.env.OPENROUTER_REASONING!=="false"&&reasoning) body.reasoning=reasoning;
+        try{
+          const r=await openrouter.chat.completions.create(body);
+          return {output_text:aiText(r.choices?.[0]?.message?.content),raw:r,model:candidate};
+        }catch(error){
+          lastError=error;
+          const status=Number(error?.status||error?.response?.status||0);
+          const detail=String(error?.message||"").toLowerCase();
+          if(status===429 && /(free-models-per-day|free.*daily|daily.*free)/i.test(detail)) throw error;
+          if(status!==429) throw error;
         }
       }
-      throw lastError || new Error("AI request failed.");
+      throw lastError||new Error("AI request failed.");
     }
   }
 } : null;
@@ -600,75 +616,55 @@ function cleanTrade(t={}) {
   };
 }
 
-async function askAI({task, trade, history=[]}) {
-  if (!openai) {
-    return { ok:false, error:"OPENROUTER_API_KEY manquante. Le moteur est prêt mais aucune clé serveur n'est configurée." };
-  }
-  const profile = await loadProfile();
-  const model = normalizeModel(trade?.model || (String(task || "").toUpperCase().includes("CRYPTO") ? "CRYPTO" : "NQ"));
-  const historicalContext = await loadHistoricalContext();
-  const obsidianStatus = await loadObsidianStatus();
-  const obsidianTrades = (await loadObsidianTrades()).filter(t=>t.model===model);
-  const backtestTrades = obsidianTrades.filter(t=>t.type === "BACKTEST");
-  const liveJournalTrades = obsidianTrades.filter(t=>t.type !== "BACKTEST");
-  const learning = (await loadLearning()).entries.filter(x=>x.model===model).slice(-40);
-  const payload = {
-    traderProfile: profile,
-    model,
-    historicalContext: historicalContext.models?.[model] || {},
-    task,
-    currentTrade: trade || null,
-    recentHistory: history.slice(-500),
-    obsidian: { status: obsidianStatus, tradeRecords: obsidianTrades.slice(-250) },
-    backtests: {
-      source: "Obsidian BACKTEST folder imported from the trader ZIP",
-      sampleSize: backtestTrades.length,
-      records: backtestTrades.slice(-1000),
-      liveJournalSampleSize: liveJournalTrades.length
-    },
-    learningMemory: learning
-  };
-  const screenshots = Array.isArray(trade?.screenshots) ? trade.screenshots.filter(x => /^data:image\/(png|jpe?g|webp);base64,/i.test(String(x))) : [];
-  const imageInputs = screenshots.slice(0,2).map((image_url, index) => ({
-    type:"input_image",
-    image_url,
-    detail:"high"
-  }));
-  const analysisTask = String(task || "") + `
-MULTIMODAL TRADE REVIEW
-- If screenshots are supplied, inspect them directly. Do not merely rely on the trader's written description.
-- Extract only visible facts from the images: instrument, timeframe, price/levels, structure, liquidity, Key Open, POI, entry, SL/TP, R:R, session, and visible news/context when readable.
-- If something is not visible or legible, explicitly mark it UNKNOWN rather than guessing.
-- Compare the visible evidence against the correct model only.
-- The checklist is a pre-check, not proof that a trade is valid. Never output "trade valid" solely because the checklist score is high.
-- Return the analysis in this order:
-  1. VISIBLE FACTS
-  2. MODEL ALIGNMENT
-  3. MARKET CONTEXT / HTF
-  4. LIQUIDITY + MANIPULATION
-  5. ENTRY / R.B. / POI QUALITY
-  6. RISK, SL, TP AND R:R
-  7. NEWS / TIMING / EXECUTION RISKS
-  8. MISSING INFORMATION
-  9. CONCLUSION — state whether the evidence is sufficient, insufficient, or contains a model violation, and explain why.
-  10. ONE NEXT ACTION
-`;
-  const finalPayload = { ...payload, task:analysisTask, screenshotCount:imageInputs.length };
-  const userContent = imageInputs.length ? [
-    { type:"input_text", text:JSON.stringify(finalPayload) },
-    ...imageInputs
-  ] : JSON.stringify(finalPayload);
-  const response = await openai.responses.create({
-    model: MODEL,
-    reasoning: { effort: "high" },
-    input: [
-      { role:"system", content: BASE_SYSTEM },
-      { role:"user", content: userContent }
-    ]
-  });
-  return { ok:true, text:response.output_text, model:MODEL };
+function compactTradeForAI(t={}){
+  return {timestamp:t.timestamp||null,model:t.model||null,instrument:t.instrument||null,direction:t.direction||null,entry:t.entry??null,stop:t.stop??null,target:t.target??null,risk:t.risk??null,result:t.result||null,R:t.R??null,pnl:t.pnl??null,session:t.session||null,setupPattern:t.setupPattern||null,context:String(t.context||"").slice(0,1800),errors:String(t.errors||"").slice(0,1200),lesson:String(t.lesson||"").slice(0,1200),news:Array.isArray(t.news)?t.news.slice(0,8):[],tags:Array.isArray(t.tags)?t.tags.slice(0,12):[]};
 }
-
+function buildModelContract(model){return MODEL_CONTRACTS[model]||MODEL_CONTRACTS.NQ;}
+function evidenceStats(trades=[]){
+  const wins=trades.filter(t=>/WIN/i.test(String(t.result||""))).length;
+  const losses=trades.filter(t=>/LOSS/i.test(String(t.result||""))).length;
+  const r=trades.map(t=>Number(t.R)).filter(Number.isFinite);
+  return {sampleSize:trades.length,wins,losses,winRate:(wins+losses)?Number((wins/(wins+losses)*100).toFixed(1)):null,avgR:r.length?Number((r.reduce((a,b)=>a+b,0)/r.length).toFixed(2)):null,totalR:r.length?Number(r.reduce((a,b)=>a+b,0).toFixed(2)):null};
+}
+function compactLearning(entries=[]){return entries.slice(-20).map(x=>({timestamp:x.timestamp,type:x.type,content:String(x.content||"").slice(0,1800),meta:x.meta||{}}));}
+async function askAI({task, trade, history=[]}) {
+  if(!openai)return {ok:false,error:"OPENROUTER_API_KEY manquante. Le moteur JARVIS est prêt mais aucune clé serveur n'est configurée."};
+  const profile=await loadProfile();
+  const model=normalizeModel(trade?.model || (String(task||"").toUpperCase().includes("CRYPTO")?"CRYPTO":"NQ"));
+  const contract=buildModelContract(model);
+  const historicalContext=await loadHistoricalContext();
+  const obsidianTrades=(await loadObsidianTrades()).filter(t=>t.model===model);
+  const backtestTrades=obsidianTrades.filter(t=>t.type==="BACKTEST");
+  const liveJournalTrades=obsidianTrades.filter(t=>t.type!=="BACKTEST");
+  const learning=(await loadLearning()).entries.filter(x=>x.model===model);
+  const scopedHistory=history.filter(t=>normalizeModel(t?.model||model)===model);
+  const combined=[...scopedHistory,...liveJournalTrades];
+  const images=Array.isArray(trade?.screenshots)?trade.screenshots.filter(x=>/^data:image\/(png|jpe?g|webp);base64,/i.test(String(x))).slice(0,2):[];
+  const payload={engineVersion:AI_ENGINE_VERSION,traderProfile:profile,model,modelContract:contract,gradeScale:AI_GRADE_SCALE,historicalContext:historicalContext.models?.[model]||{},evidenceStats:evidenceStats(combined),task,currentTrade:trade?compactTradeForAI(trade):null,recentHistory:scopedHistory.slice(-60).map(compactTradeForAI),obsidian:{status:await loadObsidianStatus(),modelSampleSize:obsidianTrades.length},backtests:{sampleSize:backtestTrades.length,evidenceStats:evidenceStats(backtestTrades),recentRecords:backtestTrades.slice(-120).map(compactTradeForAI),liveJournalSampleSize:liveJournalTrades.length},learningMemory:compactLearning(learning)};
+  const protocol=[
+    "JARVIS LIVE-TRADING PROTOCOL",
+    "- Analyze the setup as it exists NOW. Do not use hindsight.",
+    "- The trade result is an outcome, not proof of setup quality. Never upgrade/downgrade because it won or lost.",
+    "- The trader is learning. Grade A, B and borderline setups honestly; do not force A.",
+    "- Be nuanced: one small imperfection should lower the grade without automatically invalidating the setup.",
+    model==="NQ" ? "- Futures: explicitly judge entry timing EARLY / WELL-PLACED / LATE and retracement SHALLOW / ADEQUATE / DEEP / TOO DEEP when evidence permits." : "- Crypto: prioritize market direction, Key Open manipulation/sweep and aligned HTF POI. OTE/Fib is secondary.",
+    "- FACTS must come from the screenshot/data. Unknown or unreadable = UNKNOWN.",
+    "- Separate FACT, INTERPRETATION, HYPOTHESIS and TEST.",
+    "- FINAL GRADE must use this scale: "+AI_GRADE_SCALE,
+    "OUTPUT ORDER: LIVE READ -> MODEL CHECK -> ENTRY QUALITY -> RISK / R:R -> TIMING + NEWS -> MAIN ERROR / IMPERFECTION -> FINAL GRADE -> ONE NEXT ACTION",
+    "- Never guarantee direction or outcome."
+  ].join("\n");
+  const userContent=images.length?[{type:"input_text",text:JSON.stringify({...payload,task:String(task||"")+"\n"+protocol,screenshotCount:images.length})},...images.map(x=>({type:"input_image",image_url:x,detail:"high"}))]:JSON.stringify({...payload,task:String(task||"")+"\n"+protocol,screenshotCount:0});
+  try{
+    const response=await openai.responses.create({model:MODEL,reasoning:{effort:"high"},input:[{role:"system",content:BASE_SYSTEM+"\n\nACTIVE MODEL CONTRACT:\n"+JSON.stringify(contract)+"\n\nGRADE SCALE:\n"+AI_GRADE_SCALE},{role:"user",content:userContent}]});
+    return {ok:true,text:response.output_text,model:response.model||MODEL,engineVersion:AI_ENGINE_VERSION};
+  }catch(e){
+    const status=Number(e?.status||e?.statusCode||0);
+    const detail=String(e?.message||"");
+    if(status===429&&/(free-models-per-day|free.*daily|daily.*free)/i.test(detail)) return {ok:false,error:"Quota OpenRouter des modèles gratuits atteinte. Configure OPENROUTER_MODEL vers un modèle disponible ou ajoute OPENROUTER_FALLBACK_MODELS.",code:"AI_DAILY_QUOTA",model:MODEL,engineVersion:AI_ENGINE_VERSION};
+    throw e;
+  }
+}
 
 function normalizeModel(value) {
   return String(value || "NQ").toUpperCase() === "CRYPTO" ? "CRYPTO" : "NQ";
