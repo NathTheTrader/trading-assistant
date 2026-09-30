@@ -598,7 +598,7 @@ function show(id,btn){
    const navBtn=[...document.querySelectorAll("nav button")].find(b=>String(b.getAttribute("onclick")||"").includes("show('"+id+"'"));
    if(navBtn)navBtn.classList.add("active");
  }
- if(id==="journal")renderJournal();if(id==="patterns")
+ if(id==="journal"){renderJournal();updateJournalMarket();restoreJournalDraft();}
  if(id==="dash")renderStats();
 }
 async function sendChat(){
@@ -719,12 +719,20 @@ function updateJournalMarket(){
  $("jInstrument").innerHTML=options.map(x=>'<option value="'+x+'">'+x+"</option>").join("");
 }
 const JOURNAL_DRAFT_KEY=()=> "edgeflow.journalDraft."+activeModel;
+const JOURNAL_DRAFT_FIELDS=["jDate","jSession","jResult","jGrade","jR","jPnL","jContext","jErrors","jLesson","jAI","jInstrument"];
 function saveJournalDraft(){
- const ids=["jDate","jSession","jResult","jGrade","jR","jPnL","jContext","jErrors","jLesson","jAI"];
- const draft={};ids.forEach(id=>{const el=$(id);if(el)draft[id]=el.value});localStorage.setItem(JOURNAL_DRAFT_KEY(),JSON.stringify(draft));
+ const draft={};JOURNAL_DRAFT_FIELDS.forEach(id=>{const el=$(id);if(el)draft[id]=el.value});
+ localStorage.setItem(JOURNAL_DRAFT_KEY(),JSON.stringify(draft));
 }
 function restoreJournalDraft(){
- try{const draft=JSON.parse(localStorage.getItem(JOURNAL_DRAFT_KEY())||"{}");Object.entries(draft).forEach(([id,v])=>{if($(id)&&v!==undefined)$(id).value=v});}catch(e){}
+ try{
+  const draft=JSON.parse(localStorage.getItem(JOURNAL_DRAFT_KEY())||"{}");
+  if(draft.jInstrument){
+   const opt=[...$("jInstrument").options].find(o=>o.value===draft.jInstrument);
+   if(!opt){$("jInstrument").insertAdjacentHTML("beforeend",'<option value="'+esc(draft.jInstrument)+'">'+esc(draft.jInstrument)+"</option>");}
+  }
+  Object.entries(draft).forEach(([id,v])=>{if($(id)&&v!==undefined)$(id).value=v});
+ }catch(e){}
  updateJournalDate();
 }
 function clearJournalDraft(){localStorage.removeItem(JOURNAL_DRAFT_KEY());}
@@ -906,7 +914,12 @@ if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
 if(!VALID_MODES.has(siteMode))siteMode="NQ"; setSiteMode(siteMode); $("models").classList.add("hidden"); $("dash").classList.remove("hidden"); updateModelUI(); document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode)));
 renderJournal();resetJournalForm();restoreJournalDraft();refreshAIDataAccess();refreshObsidianStatus();renderStats();$("navDash")?.classList.add("active");
-["jDate","jSession","jResult","jGrade","jR","jPnL","jContext","jErrors","jLesson"].forEach(id=>$(id)?.addEventListener("input",saveJournalDraft));
+JOURNAL_DRAFT_FIELDS.forEach(id=>{
+ const el=$(id); if(!el)return;
+ el.addEventListener("input",saveJournalDraft);
+ el.addEventListener("change",saveJournalDraft);
+});
+window.addEventListener("beforeunload",saveJournalDraft);
 $("jDate").addEventListener("change",updateJournalDate);$("jBefore").addEventListener("change",()=>previewJournalImage($("jBefore"),"jBeforePreview"));$("jAfter").addEventListener("change",()=>previewJournalImage($("jAfter"),"jAfterPreview"));
 const chatDraftKey=()=> "edgeflow.chatDraft."+activeModel;
 $("chatInput")?.addEventListener("input",e=>localStorage.setItem(chatDraftKey(),e.target.value));
