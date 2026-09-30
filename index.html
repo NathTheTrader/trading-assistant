@@ -902,6 +902,18 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
 .check-card.imperfection input:checked + .check-switch{background:rgba(255,184,77,.16);border-color:rgba(255,184,77,.48)}
 .check-card.imperfection input:checked + .check-switch:after{background:var(--orange)}
 .ai-analysis{max-width:760px}
+
+/* EDGEFLOW — connected performance dashboard */
+.dashboard-kpis{grid-template-columns:repeat(5,minmax(0,1fr))}
+.dashboard-grid-main{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(330px,.72fr);gap:12px;margin-top:12px}
+.pnl-chart-card{min-height:390px}.pnl-chart{margin-top:6px;min-height:300px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,.006));border:1px solid var(--line)}
+.pnl-chart .empty{height:298px;display:grid;place-items:center}.pnl-chart-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:8px}.pnl-chart-head h2{margin-bottom:4px}
+.pnl-net{padding:7px 10px;border-radius:8px;font-weight:900;font-size:12px;border:1px solid var(--line)}.pnl-net.positive{color:var(--green);background:rgba(39,227,154,.06);border-color:rgba(39,227,154,.16)}.pnl-net.negative{color:#ff6a6a;background:rgba(255,43,43,.06);border-color:rgba(255,43,43,.16)}.pnl-net.neutral{color:var(--muted);background:rgba(255,255,255,.025)}
+.pnl-svg{width:100%;height:300px;display:block}.pnl-grid-line{stroke:rgba(255,255,255,.06);stroke-width:1}.pnl-zero{stroke:rgba(255,255,255,.15);stroke-width:1.2;stroke-dasharray:4 4}.pnl-axis{fill:#687281;font-size:11px;font-family:Inter,system-ui,sans-serif}.pnl-area{fill:color-mix(in srgb,var(--accent) 8%,transparent);stroke:none}.pnl-line{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}.pnl-dot{fill:var(--accent);stroke:#0a0e14;stroke-width:2}.pnl-point:hover .pnl-dot{r:5}
+.section-head-inline{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.dashboard-side-card{min-height:390px}.dashboard-activity-list{display:grid;gap:6px;margin-top:10px}.dashboard-activity-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.018)}.activity-main{min-width:0}.activity-top{display:flex;align-items:center;gap:8px}.activity-top strong{font-size:11px}.activity-result{font-size:8px;font-weight:900;letter-spacing:.6px;padding:4px 6px;border-radius:5px;border:1px solid var(--line)}.activity-result.win{color:var(--green);border-color:rgba(39,227,154,.18);background:rgba(39,227,154,.055)}.activity-result.loss{color:#ff7272;border-color:rgba(255,43,43,.18);background:rgba(255,43,43,.055)}.activity-result.open{color:var(--orange)}.activity-right{display:grid;gap:2px;text-align:right;min-width:78px}.activity-right strong{font-size:11px}.activity-right span{font-size:9px;color:var(--muted)}
+.dashboard-side-meta{display:grid;gap:6px}.dashboard-side-meta .row{min-height:38px;padding:8px 10px;font-size:10px}.dashboard-model-strip{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-top:12px}.dashboard-model-title{font-size:15px;font-weight:850;margin:4px 0}.dashboard-model-tags{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.dashboard-model-tags .tag{margin:0}
+@media(max-width:1120px){.dashboard-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.dashboard-grid-main{grid-template-columns:1fr}.dashboard-side-card{min-height:0}.dashboard-model-strip{display:block}.dashboard-model-tags{justify-content:flex-start;margin-top:10px}}
+@media(max-width:760px){.dashboard-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-grid-main{gap:8px}.pnl-chart-card,.dashboard-side-card{min-height:0}.pnl-svg{height:260px}.pnl-chart{min-height:260px}.dashboard-activity-row{padding:9px}.dashboard-model-strip{padding:12px}.dashboard-model-tags{gap:5px}.dashboard-model-tags .tag{font-size:8px}}
 </style>
 </head><body>
 <div class="app">
@@ -919,7 +931,6 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
     <button id="navDash" onclick="showActiveDashboard(this)"><span class="nav-icon">⌂</span>Dashboard</button>
     <button id="navBotFutures" data-mode="NQ" onclick="setSiteMode('NQ');show('bot',this)"><span class="nav-icon">◉</span>Bot Futures</button>
     <button id="navBotCrypto" data-mode="CRYPTO" onclick="setSiteMode('CRYPTO');show('crypto',this)"><span class="nav-icon">◉</span>Bot Crypto</button>
-    <button id="navReviewFutures" data-mode="NQ" onclick="setSiteMode('NQ');show('review',this)"><span class="nav-icon">◇</span>Revue Futures</button>
     <button id="navReviewCrypto" data-mode="CRYPTO" onclick="setSiteMode('CRYPTO');show('cryptoReview',this)"><span class="nav-icon">◇</span>Revue Crypto</button>
     <button id="navChat" onclick="show('chat',this)"><span class="nav-icon">◆</span>JARVIS</button>
     <button id="navJournal" onclick="show('journal',this)"><span class="nav-icon">▤</span>Journal</button>
@@ -938,36 +949,90 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
 <section id="models" class="workspace">
   <div class="workspace-header"><div><div class="eyebrow">EDGEFLOW</div><h1>Choisis ton modèle</h1><div class="sub">Deux environnements distincts. Le contexte, le journal, le bot et les règles restent séparés.</div></div><div class="status green">● SYSTÈME PRÊT</div></div>
   <div class="model-select">
-    <div class="model-card" onclick="selectModel('NQ')"><div class="tag">FUTURES</div><h2>Modèle Futures</h2><p>HTF bias → POI → liquidité / manipulation → retracement Fibonacci → Rejection Block → entrée limite.</p><div class="sub">Ouvrir Futures →</div></div>
-    <div class="model-card" onclick="selectModel('CRYPTO')"><div class="tag">CRYPTO</div><h2>Modèle Crypto</h2><p>Direction → Key Open manipulé / sweep → POI HTF aligné → entrée → high RR. OTE / Fib secondaire.</p><div class="sub">Ouvrir Crypto →</div></div>
+    <div class="model-card" onclick="selectModel('NQ')"><div class="tag">FUTURES</div><h2>Modèle Futures</h2><p>HTF bias · POI · liquidité/manipulation · retracement Fibonacci · Rejection Block · entrée limite.</p><div class="sub">Ouvrir Futures →</div></div>
+    <div class="model-card" onclick="selectModel('CRYPTO')"><div class="tag">CRYPTO</div><h2>Modèle Crypto</h2><p>Direction · Key Open manipulé/sweep · POI HTF aligné · entrée · high RR. OTE/Fib secondaire.</p><div class="sub">Ouvrir Crypto →</div></div>
   </div>
 </section>
 
 <section id="dash" class="workspace hidden" data-model="NQ">
-  <div class="workspace-header"><div><div class="eyebrow" id="dashMarketEyebrow">FUTURES</div><h1>Dashboard Futures</h1><div class="sub">Statistiques et activité du modèle Futures uniquement.</div></div><div class="status green">● FUTURES ACTIF</div></div>
+  <div class="workspace-header">
+    <div><div class="eyebrow" id="dashMarketEyebrow">FUTURES</div><h1>Dashboard Futures</h1><div class="sub">Performance réelle du journal Futures. Les trades enregistrés sont automatiquement repris ici.</div></div>
+    <div class="status green">● FUTURES ACTIF</div>
+  </div>
   <div class="grid dashboard-kpis">
     <div class="card"><div class="label">Trades</div><div class="value" id="dashTrades">0</div><div class="sub">Journal Futures</div></div>
     <div class="card"><div class="label">Winrate</div><div class="value green" id="dashWinrate">—</div><div class="sub">WIN / (WIN + LOSS)</div></div>
     <div class="card"><div class="label">RR moyen</div><div class="value blue" id="dashAvgR">—</div><div class="sub">R réalisé moyen</div></div>
     <div class="card"><div class="label">RR total</div><div class="value" id="dashTotalR">—</div><div class="sub">Somme des R</div></div>
+    <div class="card"><div class="label">P&L cumulé</div><div class="value" id="dashPnl">—</div><div class="sub" id="dashPnlMeta">P&L renseigné dans le journal</div></div>
   </div>
-  <div class="workspace-grid" style="margin-top:12px">
-    <div class="section"><h2>Dernière activité Futures</h2><div id="dashLatest"><div class="empty">Aucune activité enregistrée.</div></div></div>
-    <div class="section"><h2>Modèle</h2><div class="tag" id="dashModelTag">MODÈLE NQ</div><div id="modelDescription" class="sub"></div><div class="divider"></div><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div><div class="actions"><button class="primary" onclick="show('bot',this)">BOT FUTURES</button><button class="secondary" onclick="show('review',this)">NOUVELLE REVUE</button></div></div>
+
+  <div class="dashboard-grid-main">
+    <div class="section pnl-chart-card">
+      <div class="pnl-chart-head">
+        <div><h2>Courbe P&L</h2><div id="dashPnlCaption" class="sub">En attente de données P&L.</div></div>
+        <div id="dashPnlBadge" class="pnl-net neutral">—</div>
+      </div>
+      <div id="dashPnlChart" class="pnl-chart"><div class="empty">Ajoute ton P&L dans le Journal pour construire la courbe.</div></div>
+    </div>
+    <div class="section dashboard-side-card">
+      <div class="section-head-inline"><div><h2>Activité récente</h2><div class="sub">Derniers trades du modèle actif</div></div><span id="dashDataStatus" class="status">● LOCAL</span></div>
+      <div id="dashLatest" class="dashboard-activity-list"><div class="empty">Aucune activité enregistrée.</div></div>
+      <div class="divider"></div>
+      <div class="dashboard-side-meta">
+        <div class="row"><span>Source</span><span id="dashSourceLabel">Journal</span></div>
+        <div class="row"><span>Trades P&L</span><span id="dashPnlCount">0</span></div>
+        <div class="row"><span>Meilleur cumul</span><span id="dashPeakPnl">—</span></div>
+        <div class="row"><span>Drawdown max</span><span id="dashMaxDD">—</span></div>
+      </div>
+      <div class="actions"><button class="primary" onclick="show('bot',this)">ANALYSER UN SETUP</button><button class="secondary" onclick="show('journal',this)">OUVRIR LE JOURNAL</button></div>
+    </div>
+  </div>
+
+  <div class="section dashboard-model-strip">
+    <div><div class="eyebrow">MODÈLE</div><div class="dashboard-model-title">Futures / NQ</div><div id="modelDescription" class="sub">HTF bias · POI · liquidité/manipulation · retracement Fibonacci · Rejection Block · entrée limite.</div></div>
+    <div class="dashboard-model-tags"><span class="tag">R.B.</span><span class="tag">FIB 0.5 / 0.62 / 0.705 / 0.79</span><span class="tag">LIMIT</span><span class="tag">READ ONLY</span></div>
   </div>
 </section>
 
 <section id="cryptoDash" class="workspace hidden">
-  <div class="workspace-header"><div><div class="eyebrow" id="cryptoDashMarketEyebrow">CRYPTO</div><h1>Dashboard Crypto</h1><div class="sub">Statistiques et activité du modèle Crypto uniquement.</div></div><div class="status green">● CRYPTO ACTIF</div></div>
+  <div class="workspace-header">
+    <div><div class="eyebrow" id="cryptoDashMarketEyebrow">CRYPTO</div><h1>Dashboard Crypto</h1><div class="sub">Performance réelle du journal Crypto. La courbe suit uniquement les trades Crypto enregistrés.</div></div>
+    <div class="status green">● CRYPTO ACTIF</div>
+  </div>
   <div class="grid dashboard-kpis">
     <div class="card"><div class="label">Trades</div><div class="value" id="cryptoDashTrades">0</div><div class="sub">Journal Crypto</div></div>
     <div class="card"><div class="label">Winrate</div><div class="value green" id="cryptoDashWinrate">—</div><div class="sub">WIN / (WIN + LOSS)</div></div>
     <div class="card"><div class="label">RR moyen</div><div class="value blue" id="cryptoDashAvgR">—</div><div class="sub">R réalisé moyen</div></div>
     <div class="card"><div class="label">RR total</div><div class="value" id="cryptoDashTotalR">—</div><div class="sub">Somme des R</div></div>
+    <div class="card"><div class="label">P&L cumulé</div><div class="value" id="cryptoDashPnl">—</div><div class="sub" id="cryptoDashPnlMeta">P&L renseigné dans le journal</div></div>
   </div>
-  <div class="workspace-grid" style="margin-top:12px">
-    <div class="section"><h2>Dernière activité Crypto</h2><div id="cryptoDashLatest"><div class="empty">Aucune activité enregistrée.</div></div></div>
-    <div class="section"><h2>Modèle Crypto</h2><div class="tag" id="cryptoDashModelTag">MODÈLE CRYPTO</div><div id="cryptoModelDescription" class="sub"></div><div class="divider"></div><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div><div class="actions"><button class="primary" onclick="show('crypto',this)">BOT CRYPTO</button><button class="secondary" onclick="show('cryptoReview',this)">NOUVELLE REVUE</button></div></div>
+
+  <div class="dashboard-grid-main">
+    <div class="section pnl-chart-card">
+      <div class="pnl-chart-head">
+        <div><h2>Courbe P&L</h2><div id="cryptoDashPnlCaption" class="sub">En attente de données P&L.</div></div>
+        <div id="cryptoDashPnlBadge" class="pnl-net neutral">—</div>
+      </div>
+      <div id="cryptoDashPnlChart" class="pnl-chart"><div class="empty">Ajoute ton P&L dans le Journal pour construire la courbe.</div></div>
+    </div>
+    <div class="section dashboard-side-card">
+      <div class="section-head-inline"><div><h2>Activité récente</h2><div class="sub">Derniers trades du modèle actif</div></div><span id="cryptoDashDataStatus" class="status">● LOCAL</span></div>
+      <div id="cryptoDashLatest" class="dashboard-activity-list"><div class="empty">Aucune activité enregistrée.</div></div>
+      <div class="divider"></div>
+      <div class="dashboard-side-meta">
+        <div class="row"><span>Source</span><span id="cryptoDashSourceLabel">Journal</span></div>
+        <div class="row"><span>Trades P&L</span><span id="cryptoDashPnlCount">0</span></div>
+        <div class="row"><span>Meilleur cumul</span><span id="cryptoDashPeakPnl">—</span></div>
+        <div class="row"><span>Drawdown max</span><span id="cryptoDashMaxDD">—</span></div>
+      </div>
+      <div class="actions"><button class="primary" onclick="show('crypto',this)">ANALYSER UN SETUP</button><button class="secondary" onclick="show('journal',this)">OUVRIR LE JOURNAL</button></div>
+    </div>
+  </div>
+
+  <div class="section dashboard-model-strip">
+    <div><div class="eyebrow">MODÈLE</div><div class="dashboard-model-title">Crypto</div><div id="cryptoModelDescription" class="sub">Direction du marché · Key Open manipulé/sweep · POI HTF aligné · entrée · high RR.</div></div>
+    <div class="dashboard-model-tags"><span class="tag">KEY OPEN</span><span class="tag">HTF POI</span><span class="tag">HIGH RR</span><span class="tag">READ ONLY</span></div>
   </div>
 </section>
 
@@ -1026,28 +1091,6 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
   </div><div class="actions"><button class="primary" onclick="runBotTest()">ANALYSER LE SETUP CRYPTO</button></div></div>
   <div class="section" style="margin-top:12px"><h2>JARVIS · analyse Crypto</h2><div id="cryptoBotOutput"><div class="empty">Aucun setup analysé.</div></div></div>
   <div class="section" style="margin-top:12px"><h2>KCEX · observateur</h2><div class="ai-box"><b>Lecture seule par partage d’écran</b><div class="sub" style="margin-top:6px">Partage uniquement l’onglet KCEX. EDGEFLOW ne stocke pas ton mot de passe et ne passe aucun ordre.</div></div><div class="actions"><button class="primary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button><button class="secondary" onclick="startKCEXScreenShare()">PARTAGER KCEX</button><button class="secondary" onclick="stopKCEXScreenShare()">ARRÊTER</button><button class="secondary" onclick="analyzeKCEXScreen()">ANALYSER</button><button class="secondary" onclick="toggleKCEXAuto()">AUTO 15s</button></div><div id="kcexScreenStatus" class="sub" style="margin-top:8px">Pas de partage actif.</div><video id="kcexScreenPreview" autoplay muted playsinline style="display:none;width:100%;max-height:400px;margin-top:9px;background:#07090d;border-radius:9px"></video><div id="kcexObserverState" class="observer-live"><i></i><span>Observateur désarmé</span></div><div id="kcexAIOutput" class="ai-box" style="margin-top:9px">Aucune capture analysée.</div></div>
-</section>
-
-<section id="review" class="workspace hidden">
-  <div class="workspace-header"><div><div class="eyebrow">FUTURES · REVUE</div><h1>Revue de trade Futures <span id="reviewModel" class="pill">FUTURES MODÈLE</span></h1><div class="sub">Le score est un pré-check. Le graphique et le contexte restent les preuves principales.</div></div></div>
-  <div class="section"><div class="check-grid">
-    <label class="check-card"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Timing / Session</span><span class="check-meta">+5</span></span></span><input id="timing" type="checkbox" checked><span class="check-switch"></span></label>
-    <label class="check-card"><span class="check-main"><span class="check-icon">H</span><span class="check-copy"><span class="check-title">HTF bias aligné</span><span class="check-meta">+5</span></span></span><input id="htf" type="checkbox" checked><span class="check-switch"></span></label>
-    <label class="check-card"><span class="check-main"><span class="check-icon">P</span><span class="check-copy"><span class="check-title">POI propre</span><span class="check-meta">+5</span></span></span><input id="poi" type="checkbox" checked><span class="check-switch"></span></label>
-    <label class="check-card"><span class="check-main"><span class="check-icon">F</span><span class="check-copy"><span class="check-title">Retracement Fibonacci</span><span class="check-meta">+5 · 0.5 / 0.62 / 0.705 / 0.79</span></span></span><input id="fib" type="checkbox" checked><span class="check-switch"></span></label>
-    <label class="check-card"><span class="check-main"><span class="check-icon">R</span><span class="check-copy"><span class="check-title">Rejection Block</span><span class="check-meta">+5</span></span></span><input id="rb" type="checkbox" checked><span class="check-switch"></span></label>
-    <label class="check-card"><span class="check-main"><span class="check-icon">↕</span><span class="check-copy"><span class="check-title">Entrée / R:R propre</span><span class="check-meta">+5 · pas trop tôt/tard</span></span></span><input id="rr" type="checkbox" checked><span class="check-switch"></span></label>
-    <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Setup backtesté</span><span class="check-meta">KILLER si faux</span></span></span><input id="backtest" type="checkbox" checked><span class="check-switch"></span></label>
-    <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Liquidité près du SL</span><span class="check-meta">KILLER</span></span></span><input id="liq" type="checkbox"><span class="check-switch"></span></label>
-    <label class="check-card imperfection"><span class="check-main"><span class="check-icon">M</span><span class="check-copy"><span class="check-title">Structure messy</span><span class="check-meta">-5 · IMPERFECTION</span></span></span><input id="messy" type="checkbox"><span class="check-switch"></span></label>
-    <label class="check-card killer"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Entrée trop tôt / trop tard</span><span class="check-meta">KILLER</span></span></span><input id="timebad" type="checkbox"><span class="check-switch"></span></label>
-    <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">KILLER comportemental</span></span></span><input id="tilt" type="checkbox"><span class="check-switch"></span></label>
-    <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER comportemental</span></span></span><input id="revenge" type="checkbox"><span class="check-switch"></span></label>
-  </div><div id="reviewLiveScore" class="live-check-score"><span>PRÉ-CHECK</span><strong id="reviewLiveScoreValue">30/30</strong><em id="reviewLiveScoreGrade">A+</em></div><textarea id="notes" placeholder="HTF bias → POI → liquidité/sweep → retracement → R.B. → entrée → SL/TP → news…"></textarea><div class="image-drop" style="margin-top:10px"><div class="image-inputs">
-    <div class="image-input"><label for="rBefore">AVANT / SETUP</label><input id="rBefore" type="file" accept="image/*" data-image-preview="rBeforePreview" onchange="previewJournalImage(this,'rBeforePreview')"><img id="rBeforePreview" class="image-preview"></div>
-    <div class="image-input"><label for="rAfter">APRÈS / RÉSULTAT</label><input id="rAfter" type="file" accept="image/*" data-image-preview="rAfterPreview" onchange="previewJournalImage(this,'rAfterPreview')"><img id="rAfterPreview" class="image-preview"></div>
-  </div></div><div class="actions"><button class="primary" onclick="analyze()">ANALYSER LE TRADE</button><button class="secondary" onclick="resetReview()">RÉINITIALISER</button></div></div>
-  <div class="section" style="margin-top:12px"><h2>Résultat JARVIS</h2><div id="result"><div class="empty">Aucune analyse.</div></div></div>
 </section>
 
 <section id="cryptoReview" class="workspace hidden">
@@ -1180,7 +1223,7 @@ function switchMode(mode){
   if(current==="journal") show("journal");
   else if(current==="settings") show("settings");
   else if(current==="chat") show("chat");
-  else if(current==="review"||current==="cryptoReview") show(mode==="CRYPTO"?"cryptoReview":"review");
+  else if(current==="cryptoReview") show("cryptoReview");
   else if(current==="bot"||current==="crypto") show(mode==="CRYPTO"?"crypto":"bot");
   else show(mode==="CRYPTO"?"cryptoDash":"dash");
 }
@@ -1202,8 +1245,7 @@ function updateModelUI(){
  if(!activeModel)return;
  if($("dashMarketEyebrow"))$("dashMarketEyebrow").textContent="FUTURES";
  if($("cryptoDashMarketEyebrow"))$("cryptoDashMarketEyebrow").textContent="CRYPTO";
- if($("reviewModel"))$("reviewModel").textContent="FUTURES MODÈLE";
- if($("cryptoReviewModel"))$("cryptoReviewModel").textContent="CRYPTO MODÈLE";
+  if($("cryptoReviewModel"))$("cryptoReviewModel").textContent="CRYPTO MODÈLE";
  if($("chatModelPill"))$("chatModelPill").textContent=activeModel+" MODÈLE";
  if($("chatModeText"))$("chatModeText").textContent=activeModel;
  if($("dashModelTag"))$("dashModelTag").textContent="MODÈLE NQ";
@@ -1211,10 +1253,9 @@ function updateModelUI(){
  if($("settingsModel"))$("settingsModel").textContent=activeModel==="NQ"?"MODÈLE NQ":"MODÈLE CRYPTO";
  if($("modelDescription"))$("modelDescription").textContent=nqDesc;
  if($("cryptoModelDescription"))$("cryptoModelDescription").textContent=cryptoDesc;
- const navF=$("navBotFutures"),navC=$("navBotCrypto"),revF=$("navReviewFutures"),revC=$("navReviewCrypto");
+ const navF=$("navBotFutures"),navC=$("navBotCrypto"),revC=$("navReviewCrypto");
  if(navF)navF.classList.toggle("hidden",activeModel!=="NQ");
  if(navC)navC.classList.toggle("hidden",activeModel!=="CRYPTO");
- if(revF)revF.classList.toggle("hidden",activeModel!=="NQ");
  if(revC)revC.classList.toggle("hidden",activeModel!=="CRYPTO");
  const modeLabel=$("activeModeLabel"); if(modeLabel)modeLabel.textContent=activeModel==="CRYPTO"?"CRYPTO":"FUTURES";
  const jLabel=$("jarvisModeLabel"); if(jLabel)jLabel.textContent=activeModel==="CRYPTO"?"CRYPTO INTELLIGENCE":"FUTURES INTELLIGENCE";
@@ -1575,10 +1616,11 @@ async function prepareAIJournal(){
 async function saveJournalEntry(){
  const d=$("jDate").value||new Date().toISOString().slice(0,10),market=$("jMarket").value,before=await compressImage($("jBefore").files&&$("jBefore").files[0]),after=await compressImage($("jAfter").files&&$("jAfter").files[0]);
  const entry={id:Date.now(),dateISO:d,date:d,model:market==="FUTURES"?"NQ":"CRYPTO",market,instrument:$("jInstrument").value,session:$("jSession").value,result:$("jResult").value,grade:$("jGrade").value,R:$("jR").value,pnl:$("jPnL").value,context:$("jContext").value,errors:$("jErrors").value,lesson:$("jLesson").value,aiOpinion:$("jAI").value,photoBefore:before,photoAfter:after,score:null,decision:null,notes:$("jContext").value};
- const arr=getJournal();arr.unshift(entry);localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));renderJournal();renderStats();
+ const arr=getJournal();arr.unshift(entry);localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));
  if($("journalSyncStatus"))$("journalSyncStatus").textContent="● SYNCHRONISATION…";
  const synced=await syncTradeToBot(entry);
  if($("journalSyncStatus"))$("journalSyncStatus").textContent=synced?"● SERVEUR SYNC":"● LOCAL · SERVEUR INDISPONIBLE";
+ renderJournal();await renderStats();
  resetJournalForm();
 }
 function formatJournalDate(v){if(!v)return"—";return new Date(v+"T12:00:00").toLocaleDateString("fr-CA",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}
@@ -1630,25 +1672,131 @@ function askJournalAI(){
  const scope=activeModel==="NQ"||activeModel==="CRYPTO"?activeModel:null,data=scope?arr.filter(x=>x.model===scope):arr,wins=data.filter(x=>String(x.result||"").toUpperCase().includes("WIN")).length,losses=data.filter(x=>String(x.result||"").toUpperCase().includes("LOSS")).length,errors=data.flatMap(x=>x.errors?[x.errors]:[]).slice(0,5);
  $("journalAI").innerHTML='<div class="decision">Analyse locale — '+(scope||"FUTURES + CRYPTO")+'</div><div class="sub" style="margin-top:10px">Trades analysés : <b>'+data.length+'</b> · WIN : <b>'+wins+'</b> · LOSS : <b>'+losses+'</b><br><br>Erreurs enregistrées : '+(errors.length?errors.map(esc).join(" • "):"aucune pour le moment.")+'<br><br>Cette analyse reste locale. Le moteur IA complet sera branché au backend.</div>';
 }
-function renderStats(){
- const all=getJournal();
- const scopedNQ=all.filter(x=>x.model==="NQ"),scopedC=all.filter(x=>x.model==="CRYPTO");
- const calc=arr=>{
-   const wins=arr.filter(x=>String(x.result||"").toUpperCase().includes("WIN")).length;
-   const losses=arr.filter(x=>String(x.result||"").toUpperCase().includes("LOSS")).length;
-   const rrValues=arr.map(x=>{const m=String(x.R??x.r??"").replace(",",".").match(/[-+]?\d+(?:\.\d+)?/);return m?Number(m[0]):NaN}).filter(Number.isFinite);
-   const totalR=rrValues.reduce((a,b)=>a+b,0),avgR=rrValues.length?totalR/rrValues.length:0;
-   return {wins,losses,trades:arr.length,avgR,totalR,wr:(wins+losses)?wins/(wins+losses)*100:0,latest:arr[0]||null};
+function parseNumericAmount(value){
+ const s=String(value??"").replace(/\s/g,"").replace(/,/g,".");
+ const m=s.match(/[-+]?\d+(?:\.\d+)?/);
+ return m?Number(m[0]):NaN;
+}
+function parseNumericR(value){
+ const m=String(value??"").replace(",",".").match(/[-+]?\d+(?:\.\d+)?/);
+ return m?Number(m[0]):NaN;
+}
+function tradeTimestamp(t){
+ return String(t.timestamp||t.dateISO||t.date||"");
+}
+function mergeDashboardTrades(local,server){
+ const map=new Map();
+ [...server,...local].forEach(t=>{
+   const id=String(t.id??(tradeTimestamp(t)+"|"+t.model+"|"+t.instrument+"|"+t.pnl));
+   map.set(id,{...(map.get(id)||{}),...t});
+ });
+ return [...map.values()].sort((a,b)=>tradeTimestamp(a).localeCompare(tradeTimestamp(b)));
+}
+async function loadDashboardTrades(model){
+ const local=getJournal().filter(x=>x.model===model);
+ let server=[];
+ let serverOk=false;
+ try{
+   if(BOT_API){
+     const r=await botFetch("/api/trades?model="+encodeURIComponent(model));
+     if(Array.isArray(r)){server=r;serverOk=true;}
+   }
+ }catch(e){}
+ return{trades:mergeDashboardTrades(local,server),localCount:local.length,serverCount:server.length,serverOk};
+}
+function formatMoneyShort(n){
+ if(!Number.isFinite(n))return"—";
+ return (n<0?"-":"+")+"$"+Math.abs(n).toLocaleString("fr-CA",{minimumFractionDigits:0,maximumFractionDigits:2});
+}
+function formatDateShort(v){
+ const d=new Date(String(v).length===10?v+"T12:00:00":v);
+ return Number.isNaN(d.getTime())?"—":d.toLocaleDateString("fr-CA",{month:"short",day:"2-digit"});
+}
+function calcDashboardStats(arr){
+ const wins=arr.filter(x=>/^WIN/i.test(String(x.result||""))).length;
+ const losses=arr.filter(x=>/^LOSS/i.test(String(x.result||""))).length;
+ const rr=arr.map(x=>parseNumericR(x.R)).filter(Number.isFinite);
+ const pnlTrades=arr.map((x,index)=>({trade:x,pnl:parseNumericAmount(x.pnl),index})).filter(x=>Number.isFinite(x.pnl));
+ let cumulative=0,peak=0,maxDD=0;
+ const series=pnlTrades.map(x=>{
+   cumulative+=x.pnl;
+   peak=Math.max(peak,cumulative);
+   maxDD=Math.min(maxDD,cumulative-peak);
+   return{...x,cumulative};
+ });
+ const totalR=rr.reduce((a,b)=>a+b,0);
+ return{
+   wins,losses,trades:arr.length,
+   winrate:wins+losses?wins/(wins+losses)*100:null,
+   avgR:rr.length?totalR/rr.length:null,totalR:rr.length?totalR:null,
+   pnl:pnlTrades.length?series[series.length-1].cumulative:null,
+   pnlCount:pnlTrades.length,series,peak,drawdown:Math.abs(maxDD)
  };
- const put=(prefix,arr)=>{const s=calc(arr);
+}
+function pnlTooltipPoint(point){
+ const t=point.trade||{};
+ return esc(formatDateShort(tradeTimestamp(t)))+" · "+esc(t.instrument||"")+
+   " · "+esc(formatMoneyShort(point.pnl))+" · cumul "+esc(formatMoneyShort(point.cumulative));
+}
+function renderPnlChart(prefix,stats){
+ const el=$(prefix+"PnlChart"); if(!el)return;
+ const badge=$(prefix+"PnlBadge"), caption=$(prefix+"PnlCaption"), meta=$(prefix+"PnlMeta"), count=$(prefix+"PnlCount"), peak=$(prefix+"PeakPnl"),dd=$(prefix+"MaxDD");
+ if(meta)meta.textContent=stats.pnlCount?stats.pnlCount+" trade(s) avec P&L":"P&L renseigné dans le journal";
+ if(count)count.textContent=String(stats.pnlCount);
+ if(peak)peak.textContent=stats.pnlCount?formatMoneyShort(stats.peak):"—";
+ if(dd)dd.textContent=stats.pnlCount?formatMoneyShort(-stats.drawdown):"—";
+ if(badge){badge.textContent=stats.pnl!==null?formatMoneyShort(stats.pnl):"—";badge.className="pnl-net "+(stats.pnl>0?"positive":stats.pnl<0?"negative":"neutral");}
+ if(caption)caption.textContent=stats.pnlCount?stats.pnlCount+" trade(s) · cumul final "+formatMoneyShort(stats.pnl):"Ajoute ton P&L dans le Journal pour construire la courbe.";
+ if(!stats.series.length){
+   el.innerHTML='<div class="empty">Ajoute ton P&L dans le Journal pour construire la courbe.</div>';return;
+ }
+ const w=940,h=300,padL=52,padR=20,padT=18,padB=34;
+ const vals=[0,...stats.series.map(p=>p.cumulative)],min=Math.min(...vals),max=Math.max(...vals);
+ const spread=Math.max(1,max-min),lo=min-spread*.08,hi=max+spread*.08;
+ const x=i=>padL+(i/(Math.max(1,stats.series.length-1)))*(w-padL-padR);
+ const y=v=>padT+(1-(v-lo)/(hi-lo))*(h-padT-padB);
+ const zeroY=y(0);
+ const line=stats.series.map((p,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(p.cumulative).toFixed(1)).join(" ");
+ const area=line+" L "+x(stats.series.length-1).toFixed(1)+" "+zeroY.toFixed(1)+" L "+x(0).toFixed(1)+" "+zeroY.toFixed(1)+" Z";
+ const grid=[];
+ for(let i=0;i<4;i++){
+   const v=lo+(hi-lo)*(i/3),yy=y(v);
+   grid.push('<line x1="'+padL+'" y1="'+yy.toFixed(1)+'" x2="'+(w-padR)+'" y2="'+yy.toFixed(1)+'" class="pnl-grid-line"/>');
+   grid.push('<text x="'+(padL-10)+'" y="'+(yy+3).toFixed(1)+'" text-anchor="end" class="pnl-axis">'+esc(formatMoneyShort(v))+'</text>');
+ }
+ const dots=stats.series.map((p,i)=>'<g class="pnl-point"><circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.cumulative).toFixed(1)+'" r="4" class="pnl-dot"/><title>'+pnlTooltipPoint(p)+'</title></g>').join("");
+ const labels=stats.series.length>1?[0,Math.floor((stats.series.length-1)/2),stats.series.length-1].filter((v,i,a)=>a.indexOf(v)===i).map(i=>'<text x="'+x(i).toFixed(1)+'" y="'+(h-8)+'" text-anchor="middle" class="pnl-axis">'+esc(formatDateShort(tradeTimestamp(stats.series[i].trade)))+'</text>').join(""):"";
+ el.innerHTML='<svg class="pnl-svg" viewBox="0 0 '+w+" "+h+'" role="img" aria-label="Courbe P&L cumulée">'+grid.join("")+
+   '<line x1="'+padL+'" y1="'+zeroY.toFixed(1)+'" x2="'+(w-padR)+'" y2="'+zeroY.toFixed(1)+'" class="pnl-zero"/>'+
+   '<path d="'+area+'" class="pnl-area"/><path d="'+line+'" class="pnl-line"/>'+dots+labels+
+   '<text x="'+padL+'" y="12" class="pnl-axis">P&L cumulé</text></svg>';
+}
+function renderDashboardActivity(prefix,arr){
+ const el=$(prefix+"Latest");if(!el)return;
+ const rows=arr.slice().sort((a,b)=>tradeTimestamp(b).localeCompare(tradeTimestamp(a))).slice(0,6);
+ if(!rows.length){el.innerHTML='<div class="empty">Aucune activité enregistrée.</div>';return;}
+ el.innerHTML=rows.map(t=>{
+   const result=String(t.result||"").toUpperCase();
+   const resultClass=result.includes("WIN")?"win":result.includes("LOSS")?"loss":"open";
+   return '<div class="dashboard-activity-row"><div class="activity-main"><div class="activity-top"><strong>'+esc(t.instrument||"—")+'</strong><span class="activity-result '+resultClass+'">'+esc(result||"OPEN")+'</span></div><div class="sub">'+esc(formatDateShort(tradeTimestamp(t)))+' · '+esc(t.session||"Session non définie")+'</div></div><div class="activity-right"><strong class="'+(parseNumericAmount(t.pnl)>0?"green":parseNumericAmount(t.pnl)<0?"red":"")+'">'+(Number.isFinite(parseNumericAmount(t.pnl))?esc(formatMoneyShort(parseNumericAmount(t.pnl))):"—")+'</strong><span>'+esc(t.R||"—")+'</span></div></div>';
+ }).join("");
+}
+async function renderStats(){
+ const datasets=await Promise.all([loadDashboardTrades("NQ"),loadDashboardTrades("CRYPTO")]);
+ const put=(prefix,data)=>{
+   const s=calcDashboardStats(data.trades);
    if($(prefix+"Trades"))$(prefix+"Trades").textContent=s.trades;
-   if($(prefix+"Winrate"))$(prefix+"Winrate").textContent=(s.wins+s.losses)?s.wr.toFixed(1)+"%":"—";
-   if($(prefix+"AvgR"))$(prefix+"AvgR").textContent=rrText(s.avgR,s.avgR!==0||arr.some(x=>x.R));
-   if($(prefix+"TotalR"))$(prefix+"TotalR").textContent=rrText(s.totalR,s.totalR!==0||arr.some(x=>x.R));
-   if($(prefix+"Latest"))$(prefix+"Latest").innerHTML=s.latest?'<b>'+esc(s.latest.model||"TRADE")+' — '+esc(s.latest.instrument||"")+' — '+esc(s.latest.result||"EN COURS")+'</b><div class="sub" style="margin-top:8px">RR : <b>'+esc(s.latest.R||"—")+'</b> · P&L : <b>'+esc(s.latest.pnl||"—")+'</b></div><div class="sub" style="margin-top:6px">'+esc(s.latest.notes||s.latest.context||"Aucune note.")+'</div>':'<div class="empty">Aucune activité enregistrée.</div>';
+   if($(prefix+"Winrate"))$(prefix+"Winrate").textContent=s.winrate!==null?s.winrate.toFixed(1)+"%":"—";
+   if($(prefix+"AvgR"))$(prefix+"AvgR").textContent=s.avgR!==null?((s.avgR>=0?"+":"")+s.avgR.toFixed(2)+"R"):"—";
+   if($(prefix+"TotalR"))$(prefix+"TotalR").textContent=s.totalR!==null?((s.totalR>=0?"+":"")+s.totalR.toFixed(2)+"R"):"—";
+   if($(prefix+"Pnl"))$(prefix+"Pnl").textContent=s.pnl!==null?formatMoneyShort(s.pnl):"—";
+   if($(prefix+"PnlMeta"))$(prefix+"PnlMeta").textContent=s.pnlCount?s.pnlCount+" trade(s) avec P&L":"P&L renseigné dans le journal";
+   renderDashboardActivity(prefix,data.trades);
+   renderPnlChart(prefix,s);
+   const status=$(prefix+"DataStatus");
+   if(status){status.textContent=data.serverOk?"● JOURNAL + SERVEUR":"● JOURNAL LOCAL";status.className=data.serverOk?"status green":"status";}
  };
- const rrText=(n,has)=>has?((n>=0?"+":"")+n.toFixed(2)+"R"):"—";
- put("dash",scopedNQ);put("cryptoDash",scopedC);
+ put("dash",datasets[0]);put("cryptoDash",datasets[1]);
 }
 async function refreshConnectionCenter(){
   if(!BOT_API)return;
