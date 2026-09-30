@@ -1733,26 +1733,8 @@ function chooseChatSpeechVoice(){
 }
 async function speakChatMessage(text){
  const value=stripChatMarkup(text);
- if(!value)return;
- try{
-   const headers={"Content-Type":"application/json"};
-   const key=localStorage.getItem("edgeflowAccessKey")||"";
-   if(key)headers["X-EDGEFLOW-ACCESS"]=key;
-   const r=await fetch(BOT_API+"/api/voice/speak",{
-     method:"POST",
-     headers,
-     body:JSON.stringify({model:activeModel==="CRYPTO"?"CRYPTO":"NQ",text:value})
-   });
-   const d=await r.json().catch(()=>({}));
-   if(!r.ok||!d.audioBase64)throw new Error(d.error||"Voix JARVIS indisponible");
-   window.speechSynthesis?.cancel();
-   const audio=new Audio("data:"+(d.audioMimeType||"audio/mpeg")+";base64,"+d.audioBase64);
-   await audio.play();
- }catch(e){
-   console.warn("[EDGEFLOW][CHAT_VOICE]",e);
-   window.speechSynthesis?.cancel();
-   alert("Voix JARVIS indisponible : "+String(e?.message||"erreur"));
- }
+ if(!value)return false;
+ return speakAIText(value,true);
 }
 function renderChatHistory(model=activeModel){
  const box=$("chatMessages"); if(!box)return;
