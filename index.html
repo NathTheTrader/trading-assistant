@@ -600,6 +600,17 @@ main>section.hidden{display:none!important}main>section:not(.hidden){animation:e
 input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}.trade-pop{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
 @media(max-width:760px){.side{width:100%;padding:8px}.main{padding:16px 12px 32px}#journal,#settings,#review,#bot,#chat{width:100%}#journal>.grid{grid-template-columns:repeat(2,1fr)}#journal .form{grid-template-columns:1fr}#chat .chat-shell{height:68vh;min-height:430px}}
 
+
+/* VIEW ISOLATION — one workspace at a time */
+.app[data-view="models"] main>section:not(#models),
+.app[data-view="dash"] main>section:not(#dash),
+.app[data-view="bot"] main>section:not(#bot),
+.app[data-view="chat"] main>section:not(#chat),
+.app[data-view="journal"] main>section:not(#journal),
+.app[data-view="review"] main>section:not(#review),
+.app[data-view="settings"] main>section:not(#settings){display:none!important}
+.app[data-view="journal"] #journal{display:block!important}
+.app[data-view="bot"] #bot{display:block!important}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -921,6 +932,7 @@ function applyModeVisibility(){
 function show(id,btn){
  if($("journal")&&!$("journal").classList.contains("hidden")&&id!=="journal") saveJournalDraft();
  if(!VALID_MODES.has(activeModel)){setSiteMode(siteMode||"NQ");}
+ const app=document.querySelector(".app"); if(app)app.dataset.view=id;
  document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));
  const target=$(id); if(target)target.classList.remove("hidden");
  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
@@ -1121,7 +1133,7 @@ async function analyzeRithmicScreen(){const img=captureSharedFrame($("rithmicScr
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");localStorage.removeItem("edgeflowAccessKey");location.reload()}}
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
-if(!VALID_MODES.has(siteMode))siteMode="NQ"; setSiteMode(siteMode); $("models").classList.add("hidden"); $("dash").classList.remove("hidden"); updateModelUI(); document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode)));
+if(!VALID_MODES.has(siteMode))siteMode="NQ"; setSiteMode(siteMode); $("models").classList.add("hidden"); $("dash").classList.remove("hidden"); document.querySelector(".app").dataset.view="dash"; updateModelUI(); document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode)));
 renderJournal();resetJournalForm();restoreJournalDraft();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();renderStats();$("navDash")?.classList.add("active");
 bindLiveChecklist();
 JOURNAL_DRAFT_FIELDS.forEach(id=>{
