@@ -1030,6 +1030,15 @@ async function getAnalyzerImages(beforeId,afterId){
   const after=await compressImage($(afterId)?.files?.[0]);
   return [before,after].filter(Boolean);
 }
+function extractAIGrade(text=""){
+ const m=String(text||"").match(/(?:FINAL GRADE|GRADE FINAL|NOTE FINALE)\s*[:\-]?\s*(A\+|A-|A|B\+|B-|B|C\+|C|NO TRADE)/i);
+ return m?m[1].toUpperCase():"";
+}
+function renderAIAnalysis(text,model,label="JARVIS"){
+ const grade=extractAIGrade(text);
+ const gradeHtml=grade?'<div class="ai-grade-chip '+(grade==="NO TRADE"?"bad":(grade.startsWith("A")?"good":grade.startsWith("B")?"mid":"bad"))+'"><span>NOTE</span><strong>'+esc(grade)+'</strong></div>':"";
+ return gradeHtml+'<div class="ai-box"><b>'+esc(label)+' — '+esc(model)+'</b><div class="ai-analysis" style="margin-top:10px">'+esc(text||"Analyse terminée.")+'</div></div>';
+}
 async function runBotTest(){
  const isCrypto=activeModel==="CRYPTO";
  const outputId=isCrypto?"cryptoBotOutput":"botOutput";
@@ -1054,7 +1063,7 @@ async function runBotTest(){
    const trade={model:isCrypto?"CRYPTO":"NQ",instrument:isCrypto?($("cryptoInstrumentBot")?.value||"CRYPTO"):"NQ",direction:isCrypto?($("cryptoDirectionBot")?.value||""):"",risk:100,result:"OPEN",context:notes,setupPattern:isCrypto?"Direction → Key Open sweep → HTF POI → high RR":"HTF bias → POI → sweep → retracement → R.B. → limit entry",checklist,screenshots:images,timestamp:new Date().toISOString()};
    const out=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade})});
    const scoreHtml=r?'<div class="check-score-head"><span class="check-score-label">Pré-check Futures</span><strong>'+r.score+'/30 · '+esc(r.grade)+'</strong></div>':"";
-   outEl.innerHTML=scoreHtml+'<div class="ai-box"><b>JARVIS — '+(isCrypto?"CRYPTO":"FUTURES")+'</b><div class="ai-analysis" style="margin-top:10px">'+esc(out.text||"Analyse terminée.")+'</div></div>';
+   outEl.innerHTML=scoreHtml+renderAIAnalysis(out.text||"Analyse terminée.",isCrypto?"CRYPTO":"FUTURES","JARVIS");
  }catch(e){outEl.innerHTML='<div class="decision bad">IA indisponible</div><div class="sub" style="margin-top:10px">'+esc(e?.message||"Erreur backend")+'</div>'}
 }
 
@@ -1076,7 +1085,7 @@ async function analyze(){
  try{
    const trade={model:isCrypto?"CRYPTO":"NQ",instrument:isCrypto?($("cryptoInstrumentReview")?.value||"CRYPTO"):"NQ",direction:isCrypto?$("cryptoDirection").value:"",risk:100,result:"OPEN",context:notes,setupPattern:isCrypto?"Direction → Key Open sweep → HTF POI → high RR":"HTF bias → POI → liquidity/sweep → retracement → R.B. → limit entry",checklist,screenshots:images,timestamp:new Date().toISOString()};
    const out=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade})});
-   outEl.innerHTML='<div class="ai-box"><b>JARVIS — '+(isCrypto?"CRYPTO":"FUTURES")+'</b><div class="ai-analysis" style="margin-top:10px">'+esc(out.text||"Analyse terminée.")+'</div></div>';
+   outEl.innerHTML=renderAIAnalysis(out.text||"Analyse terminée.",isCrypto?"CRYPTO":"FUTURES","JARVIS");
  }catch(e){outEl.innerHTML='<div class="decision bad">IA indisponible</div><div class="sub" style="margin-top:10px">'+esc(e?.message||"Erreur backend")+'</div>'}
 }
 
