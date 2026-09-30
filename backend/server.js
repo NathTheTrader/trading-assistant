@@ -114,6 +114,27 @@ function geminiParts(content) {
   }
   return parts;
 }
+async function verifyGeminiModelAccess(model=GEMINI_IMAGE_MODEL) {
+  if(!GEMINI_API_KEY) return {configured:false};
+  try {
+    const response=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model),{
+      method:"GET",
+      headers:{"x-goog-api-key":GEMINI_API_KEY}
+    });
+    const data=await response.json().catch(()=>({}));
+    return {
+      configured:true,
+      model,
+      valid:response.ok,
+      status:response.status,
+      modelFound:Boolean(data?.name),
+      error:response.ok?null:String(data?.error?.message||"")
+    };
+  } catch(error) {
+    return {configured:true,model,valid:false,status:0,modelFound:false,error:String(error?.message||"")};
+  }
+}
+
 async function verifyGeminiCredential() {
   if(!GEMINI_API_KEY) return {configured:false};
   try {
@@ -1304,4 +1325,4 @@ app.get("/api/patterns",requirePrivateRequest,  async (req,res) => {
   res.json({...result,deterministicStats:stats.slice(0,100)});
 });
 
-app.listen(PORT,()=>{console.log(`Trading Assistant backend listening on :${PORT}`); if(process.env.TRADOVATE_USERNAME&&process.env.TRADOVATE_PASSWORD&&process.env.TRADOVATE_APP_ID&&process.env.TRADOVATE_CID&&process.env.TRADOVATE_SEC){connectTradovate().catch(e=>emitLive({type:"startup_connect_error",error:e.message}));}});
+app.listen(PORT,()=>{console.log(`Trading Assistant backend listening on :${PORT}`); verifyGeminiCredential().then(r=>console.log("[EDGEFLOW][GEMINI_AUTH]",JSON.stringify(r))).catch(e=>console.error("[EDGEFLOW][GEMINI_AUTH]",e.message)); verifyGeminiModelAccess().then(r=>console.log("[EDGEFLOW][GEMINI_MODEL]",JSON.stringify(r))).catch(e=>console.error("[EDGEFLOW][GEMINI_MODEL]",e.message)); if(process.env.TRADOVATE_USERNAME&&process.env.TRADOVATE_PASSWORD&&process.env.TRADOVATE_APP_ID&&process.env.TRADOVATE_CID&&process.env.TRADOVATE_SEC){connectTradovate().catch(e=>emitLive({type:"startup_connect_error",error:e.message}));}});
