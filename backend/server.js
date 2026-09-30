@@ -732,6 +732,16 @@ async function askVoiceCoach({model,userText,previousTurns=[]}) {
   return response.output_text;
 }
 
+app.get("/api/ai/status",requirePrivateRequest,(req,res)=>res.json({
+  ok:true,
+  engine:"JARVIS",
+  engineVersion:AI_ENGINE_VERSION,
+  configured:!!openrouter,
+  primaryModel:MODEL,
+  fallbackModels:FALLBACK_MODELS,
+  freeModelMode:/^openrouter\/free$/i.test(MODEL)
+}));
+
 app.get("/api/history/ai-context",requirePrivateRequest,  async (req,res) => {
   const model=normalizeModel(req.query.model);
   const data=await buildAIHistory(model);
@@ -963,6 +973,10 @@ app.post("/api/analyze-trade",requirePrivateRequest, async (req,res) => {
       trade,
       history:trades.filter(t=>t.model===trade.model)
     });
+    if(!result.ok){
+      const status=result.code==="AI_DAILY_QUOTA"?429:503;
+      return res.status(status).json(result);
+    }
     res.json({...result,model:trade.model,screenshotCount:trade.screenshots.length});
   }catch(e){
     const status=Number(e?.status||e?.statusCode||0);
@@ -982,6 +996,7 @@ app.post("/api/chat",requirePrivateRequest,  async (req,res) => {
     trade:null,
     history:trades.filter(t=>t.model===model)
   });
+  if(!result.ok) return res.status(result.code==="AI_DAILY_QUOTA"?429:503).json(result);
   res.json(result);
 });
 
@@ -1006,6 +1021,7 @@ app.get("/api/patterns",requirePrivateRequest,  async (req,res) => {
     trade:null,
     history:scoped
   });
+  if(!result.ok) return res.status(result.code==="AI_DAILY_QUOTA"?429:503).json(result);
   res.json({...result,deterministicStats:stats.slice(0,100)});
 });
 
