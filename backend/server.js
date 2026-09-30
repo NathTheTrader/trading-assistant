@@ -488,7 +488,10 @@ CRYPTO GRADING DETAIL
 Use the Crypto model only: market direction, Key Open manipulation/sweep, HTF POI alignment, entry quality and high-RR logic. Fibonacci/OTE is secondary. Do not import Futures Rejection Block requirements into Crypto.
 
 COMMUNICATION
-Respond in French unless asked otherwise. Be concise during live/voice interaction and more detailed for research. Never tell the trader what they want to hear. If evidence is weak, say so plainly.
+Respond in French unless asked otherwise. Answer the exact question first. For a simple factual question, use 1-4 short sentences or a short list. Do not add generic coaching, setup analysis, warnings, alternative calendars, or background information unless the user asks for it or it is necessary to answer correctly. Do not repeat the user's question. Never tell the trader what they want to hear. If evidence is weak, say so plainly.
+
+CHAT RESPONSE RULE
+When the user is chatting with JARVIS, default to a direct, compact answer. If the user asks for a list of news, give the relevant news and the key market implication, then stop. If the user asks about a time window such as "ce soir", answer that window specifically. Do not replace the requested answer with preparation advice. Only expand when the user asks for detail.
 `;
 
 const TRADOVATE_API = process.env.TRADOVATE_API_URL || "https://live.tradovateapi.com/v1";
@@ -1656,11 +1659,15 @@ app.post("/api/chat",requirePrivateRequest,  async (req,res) => {
   const newsIntent=/(^|\\s)(news|news\\s+d['’]?actualite|actualité|actualités|headline|headlines|breaking|macro|macroeconomic|économie|fed|fomc|cpi|nfp|pmi|rates|taux|ce soir|ce matin|aujourd'hui|today|tonight)(\\s|$)/i.test(message);
 
   const task=newsIntent
-    ? `NEWS MODE — Answer the trader's news question directly from the live FinancialJuice context below. This is a news-information request, NOT a setup-analysis request. First give the relevant recent FinancialJuice headlines with their publication times when available. Then give a short factual summary of what appears market-relevant for the active ${model} model. Do NOT invent a scheduled event that is not present in the feed. Do NOT tell the trader to consult ForexFactory, another calendar, or another site unless the trader explicitly asks for another source. Do NOT turn the answer into generic trading coaching. If the feed does not contain a reliable schedule for "ce soir", say that the feed provides headlines rather than a complete scheduled calendar, and list the latest relevant headlines instead. Keep reported facts separate from interpretation. User question: ${message}
+    ? `NEWS MODE. Answer the exact news question directly and briefly from the live FinancialJuice data below. No setup analysis unless the user asks. No generic coaching. No preamble. For "ce soir", focus only on tonight's relevant information and latest headlines; if the feed does not contain a reliable scheduled release time, say that in one sentence and give the latest relevant headlines. Do not mention ForexFactory or another calendar unless explicitly requested. Do not invent events, times, or facts. Keep reported headlines separate from your interpretation. Maximum about 120 words unless the user asks for detail.
+
+User question: ${message}
 
 LIVE FINANCIAL JUICE CONTEXT
 ${financialJuiceContext}`
-    : `Answer the trader's question using ONLY the ${model} model and its stored trading history. Never import rules or trades from the other model. Use the live FinancialJuice context below when the question involves current market/news context. Treat headlines as source material, not as guaranteed truth. Do not invent missing details. Always distinguish a reported headline from your own interpretation. User question: ${message}
+    : `Answer the exact trader question using ONLY the active ${model} model and its stored trading history. Be direct and concise. Do not add generic coaching or setup analysis unless requested. Do not import rules or trades from the other model. Use FinancialJuice only when relevant to the question. Treat headlines as source material, not guaranteed truth. Do not invent missing details. Maximum about 120 words for a normal chat question unless the user asks for depth.
+
+User question: ${message}
 
 LIVE FINANCIAL JUICE CONTEXT
 ${financialJuiceContext}`;
