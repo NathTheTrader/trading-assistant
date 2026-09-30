@@ -39,6 +39,7 @@ jobs:
               else if(u.pathname==="/api/connections/status")body={readOnly:true,tradovate:{connected:false,configured:false},rithmic:{configured:false,connected:false},kcex:{available:true,mode:"screen-observer",apiDirect:false}};
               else if(u.pathname==="/api/tradovate/status")body={connected:false,configured:false};
               else if(u.pathname==="/api/tradovate/events")body=[];
+              else if(u.pathname==="/api/chat" && route.request().method()==="POST"){const p=JSON.parse(route.request().postData()||"{}");body={ok:true,text:"Réponse smoke JARVIS "+(p.model||"NQ")};}
               else if(u.pathname==="/api/trades" && route.request().method()==="POST"){status=201;body={ok:true,...JSON.parse(route.request().postData()||"{}")};}
               else if(u.pathname==="/api/trades")body=[];
               await route.fulfill({status,contentType:"application/json",body:JSON.stringify(body)});
@@ -80,6 +81,23 @@ jobs:
             if(await page.locator("#cryptoReview #timing").count()!==0)throw new Error("Futures checklist leaked into Crypto Review");
             if(await page.locator("#cryptoReview #cryptoDirection").count()!==1||await page.locator("#cryptoReview #cryptoKO").count()!==1)throw new Error("Crypto Review controls incomplete");
             await page.screenshot({path:"/tmp/edgeflow-crypto-review.png",fullPage:true});
+            await click("#navChat");await expectVisible("chat");
+            if(!await page.locator("#chat .jarvis-chat-top").isVisible())throw new Error("JARVIS command center missing");
+            await page.locator("#chatInput").fill("Test Futures");
+            await page.click("#chat button:has-text('ENVOYER')");
+            await page.waitForTimeout(350);
+            if(!await page.locator("#chat .bubble.me").count())throw new Error("JARVIS user bubble missing");
+            if(!(await page.locator("#chat .bubble.ai").count()>=2))throw new Error("JARVIS assistant response missing");
+            const chatNQ=await page.evaluate(()=>JSON.parse(localStorage.getItem("edgeflow.chat.v2.NQ")||"[]").length);
+            if(chatNQ!==2)throw new Error("Futures JARVIS history not persisted");
+            await click("#modeCRYPTO");await expectVisible("chat");
+            if((await page.locator("#chatModeText2").textContent()).trim()!=="CRYPTO")throw new Error("JARVIS did not switch to Crypto");
+            if(await page.locator("#chat .bubble.me").count()!==0)throw new Error("Futures chat leaked into Crypto");
+            await page.locator("#chatInput").fill("Test Crypto");
+            await page.click("#chat button:has-text('ENVOYER')");
+            await page.waitForTimeout(350);
+            const chatSplit=await page.evaluate(()=>({nq:JSON.parse(localStorage.getItem("edgeflow.chat.v2.NQ")||"[]").length,crypto:JSON.parse(localStorage.getItem("edgeflow.chat.v2.CRYPTO")||"[]").length}));
+            if(chatSplit.nq!==2||chatSplit.crypto!==2)throw new Error("JARVIS model histories not isolated: "+JSON.stringify(chatSplit));
             await click("#navDash");await expectVisible("cryptoDash");
             await page.screenshot({path:"/tmp/edgeflow-crypto-dashboard.png",fullPage:true});
             await click("#navBotCrypto");await expectVisible("crypto");
