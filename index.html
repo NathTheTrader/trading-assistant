@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2315-clean-background-mode-reload-v24"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2330-stable-bot-routing-v25"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><style>
@@ -1085,7 +1085,7 @@ html body:before,html body:after{display:none !important;content:none !important
 </aside>
 <main class="main">
 
-<section id="models" class="workspace">
+<section id="models" class="workspace hidden" hidden>
   <div class="workspace-header"><div><div class="eyebrow">EDGEFLOW</div><h1>Choisis ton modèle</h1><div class="sub">Deux environnements distincts. Le contexte, le journal, le bot et les règles restent séparés.</div></div><div class="status green">● SYSTÈME PRÊT</div></div>
   <div class="model-select">
     <div class="model-card" onclick="selectModel('NQ')"><div class="tag">FUTURES</div><h2>Modèle Futures</h2><p>HTF bias · POI · liquidité/manipulation · retracement Fibonacci · Rejection Block · entrée limite.</p><div class="sub">Ouvrir Futures →</div></div>
@@ -1417,7 +1417,12 @@ function switchMode(mode){
 function openBotWorkspace(mode,id,btn){
   mode=String(mode||"NQ").toUpperCase();
   if(!VALID_MODES.has(mode))mode="NQ";
-  setSiteMode(mode);
+  if(siteMode!==mode){
+    const target=new URL(location.href);
+    target.searchParams.set("mode",mode);
+    location.assign(target.pathname+"?"+target.searchParams.toString());
+    return;
+  }
   show(id,btn);
 }
 async function botFetch(path,options={}){
