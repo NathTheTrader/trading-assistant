@@ -271,13 +271,13 @@ function normalizeObsidianPath(rel) {
   return rel;
 }
 function parseObsidianModel(rel) {
-  const normalized=normalizeObsidianPath(String(rel).replace(/\\/g,"/"));
+  const normalized=normalizeObsidianPath(String(rel).replace(/\/g,"/"));
   if (normalized.startsWith("CRYPTO/")) return "CRYPTO";
   if (normalized.startsWith("FUNDED NEW EDGE/") || normalized.startsWith("BACKTEST/") || normalized.startsWith("Journal/") || normalized.startsWith("WEEKLY RECAP/")) return "NQ";
   return "OTHER";
 }
 function parseObsidianType(rel) {
-  const normalized=normalizeObsidianPath(String(rel).replace(/\\/g,"/"));
+  const normalized=normalizeObsidianPath(String(rel).replace(/\/g,"/"));
   if (normalized.startsWith("CRYPTO/") || normalized.startsWith("FUNDED NEW EDGE/")) return "LIVE";
   if (normalized.startsWith("BACKTEST/")) return "BACKTEST";
   if (normalized.startsWith("Journal/")) return "JOURNAL";
@@ -373,7 +373,7 @@ async function saveObsidian(trades,status) {
   await fs.writeFile(OBSIDIAN_STATUS_FILE,JSON.stringify(status,null,2));
 }
 function safeZipTarget(root,entryName) {
-  const clean=entryName.replace(/\\/g,"/");
+  const clean=entryName.replace(/\/g,"/");
   if(!clean || clean.includes("\0") || clean.split("/").includes("..")) return null;
   const target=path.resolve(root,clean);
   if(target!==root && !target.startsWith(root+path.sep)) return null;
@@ -419,7 +419,7 @@ async function importObsidianZip(buffer) {
     }
     for(const full of all) {
       if(path.extname(full).toLowerCase()!==".md") continue;
-      const relRaw=path.relative(root,full).replace(/\\/g,"/");
+      const relRaw=path.relative(root,full).replace(/\/g,"/");
       const rel=normalizeObsidianPath(relRaw);
       const text=await fs.readFile(full,"utf8");
       const model=parseObsidianModel(rel);
@@ -617,7 +617,7 @@ async function askAI({task, trade, history=[]}) {
     },
     learningMemory: learning
   };
-  const screenshots = Array.isArray(trade?.screenshots) ? trade.screenshots.filter(x => /^data:image\\/(png|jpe?g|webp);base64,/i.test(String(x))) : [];
+  const screenshots = Array.isArray(trade?.screenshots) ? trade.screenshots.filter(x => /^data:image\/(png|jpe?g|webp);base64,/i.test(String(x))) : [];
   const imageInputs = screenshots.slice(0,2).map((image_url, index) => ({
     type:"input_image",
     image_url,
@@ -801,7 +801,7 @@ app.post("/api/detect-screen-trade",requirePrivateRequest, async (req,res) => {
     const model=broker==="KCEX"?"CRYPTO":"NQ";
     const current=String(req.body.imageDataUrl||"");
     const previous=String(req.body.previousImageDataUrl||"");
-    const valid=x=>/^data:image\\/(png|jpe?g|webp);base64,/i.test(x);
+    const valid=x=>/^data:image\/(png|jpe?g|webp);base64,/i.test(x);
     if(!valid(current)) return res.status(400).json({ok:false,error:"Capture courante invalide."});
     if(current.length>9000000||previous.length>9000000) return res.status(413).json({ok:false,error:"Capture trop volumineuse."});
     const previousInput=valid(previous)?[{type:"input_text",text:"IMAGE PRÉCÉDENTE — compare-la avec la capture actuelle pour détecter uniquement une nouvelle activité de trade."},{type:"input_image",image_url:previous,detail:"high"}]:[];
@@ -943,7 +943,7 @@ app.post("/api/analyze-trade",requirePrivateRequest, async (req,res) => {
     const trade=cleanTrade(req.body.trade || req.body);
     trade.model=normalizeModel(trade.model);
     if(Array.isArray(trade.screenshots)){
-      const images=trade.screenshots.filter(x=>/^data:image\\/(png|jpe?g|webp);base64,/i.test(String(x))).slice(0,2);
+      const images=trade.screenshots.filter(x=>/^data:image\/(png|jpe?g|webp);base64,/i.test(String(x))).slice(0,2);
       const totalBytes=images.reduce((n,x)=>n+Math.floor(String(x).length*.75),0);
       if(totalBytes>10*1024*1024) return res.status(413).json({ok:false,error:"Screenshots trop volumineux. Utilise 2 images compressées maximum."});
       trade.screenshots=images;
