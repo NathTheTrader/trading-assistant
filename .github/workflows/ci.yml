@@ -54,6 +54,10 @@ jobs:
           if(html.indexOf("<style>")>html.indexOf("</head>")) fail("Stylesheet must be in head");
           if(!html.includes('<script src="./voice-coach.js"></script>')) fail("Voice script tag malformed");
           if(!html.includes('id="cryptoBotOutput"')||!html.includes('id="cryptoDashTrades"')||!html.includes('id="cryptoReviewResult"')) fail("Crypto workspace outputs missing");
+          if(!html.includes('id="aiEngineStatus"')||!html.includes('id="aiOptimizationOutput"')) fail("JARVIS intelligence panel missing");
+          if(!html.includes('function refreshAIEngineStatus')||!html.includes('function runDailyOptimization')||!html.includes('function askCoachQuestion')) fail("JARVIS intelligence functions missing");
+          if(!backend.includes('AI_ENGINE_VERSION')||!backend.includes('MODEL_CONTRACTS')||!backend.includes('app.get("/api/ai/status"')) fail("JARVIS AI engine contract missing");
+          if(!backend.includes('AI_DAILY_QUOTA')||!backend.includes('FALLBACK_MODELS')) fail("JARVIS AI error/fallback handling missing");
           if(!html.includes("let rithmicScreenStream=null")) fail("Rithmic screen observer state missing");
           if(!html.includes("function showActiveDashboard")) fail("Independent dashboard routing missing");
           if(!html.includes("s.hidden=true")||!html.includes("target.hidden=false")) fail("Deterministic workspace hiding missing");
