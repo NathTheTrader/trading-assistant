@@ -112,6 +112,34 @@ textarea{width:100%;min-height:105px;resize:vertical}.full{grid-column:1/-1}
 body.crypto-mode{--accent:#4da3ff;--accentSoft:rgba(77,163,255,.13);--red:#4da3ff;--red2:#2563eb}
 body.nq-mode{--accent:#ff3158;--accentSoft:rgba(255,49,88,.12)}
 
+/* EDGEFLOW — trade analyzer controls */
+.check-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.check-card{position:relative;display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:62px;padding:12px 13px!important;background:linear-gradient(145deg,rgba(255,255,255,.025),rgba(255,255,255,.012))!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:12px!important}
+.check-card:hover{border-color:rgba(255,255,255,.16)!important;background:rgba(255,255,255,.035)!important}
+.check-main{display:flex;align-items:center;gap:10px;min-width:0}
+.check-icon{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.045);color:#9aa5b5;font-size:12px;font-weight:900;flex:0 0 auto}
+.check-copy{min-width:0}.check-title{font-size:12px;font-weight:800;color:#edf1f7}.check-meta{display:block;margin-top:3px;font-size:9px;color:#727d8d;font-weight:700;letter-spacing:.3px}
+.check-card.killer .check-icon{color:#ff708b;background:rgba(255,49,88,.09)}
+.check-card input[type=checkbox]{position:absolute;opacity:0;pointer-events:none}
+.check-switch{width:42px;height:24px;border-radius:999px;background:#171d27;border:1px solid #303949;position:relative;flex:0 0 auto;transition:.18s}
+.check-switch:after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#697487;transition:.18s;box-shadow:0 2px 5px rgba(0,0,0,.35)}
+.check-card input:checked + .check-switch{background:rgba(53,227,155,.18);border-color:rgba(53,227,155,.55)}
+.check-card input:checked + .check-switch:after{left:21px;background:var(--green)}
+.check-card.killer input:checked + .check-switch{background:rgba(255,49,88,.2);border-color:rgba(255,49,88,.6)}
+.check-card.killer input:checked + .check-switch:after{background:var(--red)}
+.check-score-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 7px}
+.check-score-label{font-size:9px;color:#7d8797;font-weight:850;letter-spacing:1px;text-transform:uppercase}
+.image-drop{border:1px dashed rgba(255,255,255,.16);background:rgba(255,255,255,.018);border-radius:12px;padding:13px}
+.image-drop-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.image-drop-title{font-size:11px;font-weight:850}.image-drop-sub{font-size:10px;color:var(--muted);margin-top:3px}
+.image-inputs{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+.image-input{background:#0a0e14;border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:9px}
+.image-input label{display:block!important;background:transparent!important;border:0!important;padding:0!important;margin:0 0 7px!important;font-size:10px!important;font-weight:800!important;color:#aeb7c5!important}
+.image-input input[type=file]{width:100%;min-height:38px;padding:7px;font-size:10px}
+.image-preview{display:none;width:100%;max-height:190px;object-fit:contain;border-radius:8px;margin-top:8px;background:#05070a}
+.ai-analysis{white-space:pre-wrap;font-size:12px;line-height:1.7;color:#d9e0ea}
+@media(max-width:760px){.check-grid,.image-inputs{grid-template-columns:1fr}}
+
 /* FINAL COMPACT TRADING WORKSPACE */
 .side{width:205px;flex-basis:205px;padding:16px 10px}
 .brand{padding:2px 7px 16px}.mode-switch{margin:0 5px 12px}
@@ -643,14 +671,27 @@ button:active{transform:translateY(1px)}
     <div class="card"><div class="label">État du bot</div><div id="tvBotState" class="value small green">PRÊT</div><div class="sub">En attente du flux</div></div>
   </div>
   <div class="layout">
-    <div class="section"><h2 id="botChecklistTitle">Tester le modèle Futures</h2><div id="botNQChecklist"><div class="form">
-      <label>Timing / Session <small class="weight">+5</small><input id="btiming" type="checkbox" checked></label><label>Haute probabilité <small class="weight">+15</small><input id="bhigh" type="checkbox" checked></label>
-      <label>Perte récente <small class="weight">−10</small><input id="bloss" type="checkbox"></label><label>Bon sans Key Open <small class="weight">+10</small><input id="bko" type="checkbox" checked></label>
-      <label>Setup backtesté <small class="weight killer">KILLER</small><input id="bbacktest" type="checkbox" checked></label><label>Liquidité près du SL <small class="weight killer">KILLER</small><input id="bliq" type="checkbox"></label>
-      <label>Tilt <small class="weight killer">KILLER</small><input id="btilt" type="checkbox"></label><label>Trade pour récupérer <small class="weight killer">KILLER</small><input id="brev" type="checkbox"></label>
-      <div id="botLiveScore" class="live-check-score"><span>NOTE EN DIRECT</span><strong id="botLiveScoreValue">30</strong><em id="botLiveScoreGrade">A+</em></div>
-      <div class="full"><textarea id="bnotes" placeholder="Ex. HTF bullish → POI 15m → sweep → retracement 0.705 → RB → fill limite..."></textarea></div>
-    </div></div><div id="botCryptoPanel" class="hidden"><div class="ai-box"><b>MODÈLE CRYPTO</b><div class="sub" style="margin-top:8px">Direction du marché → Key Open manipulé / sweep → POI HTF aligné → entrée → laisser le trade jouer en high RR. OTE / Fib secondaire.</div></div><textarea id="cryptoBotContext" placeholder="Décris le setup Crypto : direction du marché, Key Open, sweep/manipulation, POI HTF, zone d'entrée et contexte."></textarea></div><div class="actions"><button class="primary" onclick="runBotTest()">LANCER L'ANALYSE</button></div></div>
+    <div class="section"><h2 id="botChecklistTitle">Tester le modèle Futures</h2><div id="botNQChecklist">
+      <div class="check-grid">
+        <label class="check-card"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Timing / Session</span><span class="check-meta">+5 · fenêtre de trading</span></span></span><input id="btiming" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card"><span class="check-main"><span class="check-icon">H</span><span class="check-copy"><span class="check-title">Haute probabilité</span><span class="check-meta">+15 · qualité du contexte</span></span></span><input id="bhigh" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card"><span class="check-main"><span class="check-icon">L</span><span class="check-copy"><span class="check-title">Perte récente</span><span class="check-meta">−10 · contexte psychologique</span></span></span><input id="bloss" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card"><span class="check-main"><span class="check-icon">K</span><span class="check-copy"><span class="check-title">Bon sans Key Open</span><span class="check-meta">+10 · contexte clé</span></span></span><input id="bko" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Setup backtesté</span><span class="check-meta">KILLER · requis</span></span></span><input id="bbacktest" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Liquidité près du SL</span><span class="check-meta">KILLER · invalide si actif</span></span></span><input id="bliq" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">KILLER · invalide si actif</span></span></span><input id="btilt" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER · invalide si actif</span></span></span><input id="brev" type="checkbox"><span class="check-switch"></span></label>
+      </div>
+      <div class="check-score-head"><span class="check-score-label">Pré-check Futures</span></div>
+      <div id="botLiveScore" class="live-check-score"><span>CHECKLIST</span><strong id="botLiveScoreValue">30</strong><em id="botLiveScoreGrade">A+</em></div>
+      <div class="full"><textarea id="bnotes" placeholder="Contexte : HTF → POI → sweep → impulse → retracement 0.705 → R.B. → fill limite → SL/TP → news..."></textarea></div>
+    </div></div><div class="image-drop">
+      <div class="image-drop-head"><div><div class="image-drop-title">Screenshots du trade</div><div class="image-drop-sub">JARVIS analyse les images avec le contexte, pas seulement le texte.</div></div><span class="pill">2 max</span></div>
+      <div class="image-inputs">
+        <div class="image-input"><label for="bBefore">AVANT / SETUP</label><input id="bBefore" type="file" accept="image/*" onchange="previewJournalImage(this,'bBeforePreview')"><img id="bBeforePreview" class="image-preview"></div>
+        <div class="image-input"><label for="bAfter">APRÈS / RÉSULTAT</label><input id="bAfter" type="file" accept="image/*" onchange="previewJournalImage(this,'bAfterPreview')"><img id="bAfterPreview" class="image-preview"></div>
+      </div>
+    </div><div id="botCryptoPanel" class="hidden"><div class="ai-box"><b>MODÈLE CRYPTO</b><div class="sub" style="margin-top:8px">Direction du marché → Key Open manipulé / sweep → POI HTF aligné → entrée → laisser le trade jouer en high RR. OTE / Fib secondaire.</div></div><textarea id="cryptoBotContext" placeholder="Décris le setup Crypto : direction du marché, Key Open, sweep/manipulation, POI HTF, zone d'entrée et contexte."></textarea></div><div class="actions"><button class="primary" onclick="runBotTest()">LANCER L'ANALYSE</button></div></div>
     <div class="section"><h2>Sortie du bot</h2><div id="botOutput"><div class="empty">Aucun trade analysé.</div></div></div>
   </div>
   <div class="section" data-mode="CRYPTO" style="margin-top:14px">
@@ -677,14 +718,29 @@ button:active{transform:translateY(1px)}
 <section id="review" class="hidden">
   <div class="topbar"><div><div class="eyebrow">Contrôle avant décision</div><h1>Revue de trade <span id="reviewModel" class="pill"></span></h1><div class="sub">Cette revue est strictement cloisonnée au modèle actif.</div></div></div>
   <div id="reviewNQ">
-    <div class="section"><div class="form">
-      <label>Timing / Session <small class="weight">+5</small><input id="timing" type="checkbox" checked></label><label>Haute probabilité <small class="weight">+15</small><input id="high" type="checkbox" checked></label>
-      <label>Perte récente <small class="weight">−10</small><input id="loss" type="checkbox"></label><label>Bon sans Key Open <small class="weight">+10</small><input id="ko" type="checkbox" checked></label>
-      <label>Setup backtesté <small class="weight killer">KILLER</small><input id="backtest" type="checkbox" checked></label><label>Liquidité près du SL <small class="weight killer">KILLER</small><input id="liq" type="checkbox"></label>
-      <label>Tilt <small class="weight killer">KILLER</small><input id="tilt" type="checkbox"></label><label>Trade pour récupérer <small class="weight killer">KILLER</small><input id="revenge" type="checkbox"></label>
-      <div id="reviewLiveScore" class="live-check-score"><span>NOTE EN DIRECT</span><strong id="reviewLiveScoreValue">30</strong><em id="reviewLiveScoreGrade">A+</em></div>
-      <div class="full"><textarea id="notes" placeholder="Notes du setup NQ : sweep → impulse → retracement → RB → fill..."></textarea></div>
-    </div><div class="actions"><button class="primary" onclick="analyze()">ANALYSER LE TRADE</button><button class="secondary" onclick="resetReview()">RÉINITIALISER</button></div></div>
+    <div class="section">
+      <div class="check-grid">
+        <label class="check-card"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Timing / Session</span><span class="check-meta">+5 · fenêtre</span></span></span><input id="timing" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card"><span class="check-main"><span class="check-icon">H</span><span class="check-copy"><span class="check-title">Haute probabilité</span><span class="check-meta">+15 · contexte</span></span></span><input id="high" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card"><span class="check-main"><span class="check-icon">L</span><span class="check-copy"><span class="check-title">Perte récente</span><span class="check-meta">−10 · contexte</span></span></span><input id="loss" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card"><span class="check-main"><span class="check-icon">K</span><span class="check-copy"><span class="check-title">Bon sans Key Open</span><span class="check-meta">+10 · contexte clé</span></span></span><input id="ko" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Setup backtesté</span><span class="check-meta">KILLER · requis</span></span></span><input id="backtest" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Liquidité près du SL</span><span class="check-meta">KILLER</span></span></span><input id="liq" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">KILLER</span></span></span><input id="tilt" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER</span></span></span><input id="revenge" type="checkbox"><span class="check-switch"></span></label>
+      </div>
+      <div class="check-score-head"><span class="check-score-label">Pré-check Futures</span></div>
+      <div id="reviewLiveScore" class="live-check-score"><span>CHECKLIST</span><strong id="reviewLiveScoreValue">30</strong><em id="reviewLiveScoreGrade">A+</em></div>
+      <div class="full"><textarea id="notes" placeholder="Contexte complet : HTF → POI → liquidity/sweep → retracement → R.B. → entry → SL/TP → news..."></textarea></div>
+      <div class="full image-drop">
+        <div class="image-drop-head"><div><div class="image-drop-title">Screenshots du trade</div><div class="image-drop-sub">JARVIS regarde réellement les images envoyées.</div></div><span class="pill">2 max</span></div>
+        <div class="image-inputs">
+          <div class="image-input"><label for="rBefore">AVANT / SETUP</label><input id="rBefore" type="file" accept="image/*" onchange="previewJournalImage(this,'rBeforePreview')"><img id="rBeforePreview" class="image-preview"></div>
+          <div class="image-input"><label for="rAfter">APRÈS / RÉSULTAT</label><input id="rAfter" type="file" accept="image/*" onchange="previewJournalImage(this,'rAfterPreview')"><img id="rAfterPreview" class="image-preview"></div>
+        </div>
+      </div>
+    </div>
+    <div class="actions"><button class="primary" onclick="analyze()">ANALYSER LE TRADE AVEC JARVIS</button><button class="secondary" onclick="resetReview()">RÉINITIALISER</button></div>
   </div>
   <div id="reviewCrypto" class="hidden">
     <div class="section"><h2>Modèle Crypto</h2><div class="form">
@@ -922,41 +978,56 @@ function updateLiveChecklist(prefix=""){
  box.style.borderColor=r.killer?"rgba(255,73,107,.55)":r.score>=20?"rgba(55,226,154,.45)":"rgba(255,255,255,.16)";
  box.setAttribute("aria-label","Note "+r.score+" sur 30"+(r.killer?" — NO TRADE":""));
 }
+async function getAnalyzerImages(beforeId,afterId){
+  const before=await compressImage($(beforeId)?.files?.[0]);
+  const after=await compressImage($(afterId)?.files?.[0]);
+  return [before,after].filter(Boolean);
+}
 async function runBotTest(){
-  if(activeModel==="CRYPTO"){
-    const context=$("cryptoBotContext").value.trim();
-    if(!context){$("botOutput").innerHTML='<div class="empty">Décris le setup Crypto : direction du marché → Key Open manipulé/sweep → POI HTF → entrée → high RR.</div>';return}
-    $("botOutput").innerHTML='<div class="empty">Le bot Crypto analyse le contexte…</div>';
-    if(!BOT_API){$("botOutput").innerHTML='<div class="decision">Analyse locale prête. Configure le backend pour l’analyse IA réelle.</div><div class="sub" style="margin-top:10px">'+esc(context)+'</div>';return}
-    try{
-      const r=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade:{model:"CRYPTO",instrument:"CRYPTO",direction:"",risk:100,result:"OPEN",context,setupPattern:"Key Open → sweep → HTF POI → high RR",timestamp:new Date().toISOString()}})});
-      $("botOutput").innerHTML='<div class="ai-box"><b>JARVIS — CRYPTO</b><div class="sub" style="margin-top:9px">'+esc(r.text||"Analyse terminée.")+'</div></div>';
-    }catch(e){$("botOutput").innerHTML='<div class="decision bad">IA indisponible</div><div class="sub" style="margin-top:10px">'+esc(e?.message||"Erreur backend")+'</div>'}
-    return;
-  }
-  const r=scoreFrom("b");const decision=r.killer?"PAS DE TRADE":"TRADE VALIDE";const note=$("bnotes").value||"Analyse basée sur la checklist Futures.";
-  updateLiveChecklist("b");
-  $("botOutput").innerHTML='<div class="score"><div class="circle" style="border-color:'+(r.killer?'var(--red)':'var(--green)')+'">'+r.score+'/30</div><div><div class="'+(r.killer?'red':'grade')+'">'+r.grade+'</div><div class="sub">'+r.score+'/30 · '+decision+'</div></div></div><div class="decision '+(r.killer?'bad':'')+'">'+(r.killer?'🔴 PAS DE TRADE — un killer est actif':'🟢 TRADE VALIDE — checklist Futures')+'</div><div class="sub" style="margin-top:12px">'+esc(note)+'</div>';
-  const arr=getJournal();arr.unshift({id:Date.now(),dateISO:new Date().toISOString().slice(0,10),date:new Date().toISOString().slice(0,10),model:"NQ",market:"FUTURES",instrument:"NQ",score:r.score,grade:r.grade,decision,notes:note,context:note});localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));renderJournal();renderStats();
+  const isCrypto=activeModel==="CRYPTO";
+  const notes=isCrypto?($("cryptoBotContext")?.value.trim()||""):($("bnotes")?.value.trim()||"");
+  const r=isCrypto?null:scoreFrom("b");
+  const checklist=isCrypto?{}:{
+    timing:checklistChecked("b","timing"),high:checklistChecked("b","high"),recentLoss:checklistChecked("b","loss"),
+    goodWithoutKeyOpen:checklistChecked("b","ko"),backtested:checklistChecked("b","backtest"),liquidityNearSL:checklistChecked("b","liq"),
+    tilt:checklistChecked("b","tilt"),revenge:checklistChecked("b","revenge")
+  };
+  const images=await getAnalyzerImages("bBefore","bAfter");
+  if(!notes&&!images.length){$("botOutput").innerHTML='<div class="empty">Ajoute un contexte ou au moins un screenshot du trade.</div>';return}
+  $("botOutput").innerHTML='<div class="empty">JARVIS analyse le texte, les screenshots, le modèle et le contexte historique…</div>';
+  if(!BOT_API){$("botOutput").innerHTML='<div class="decision bad">Backend non configuré</div>';return}
+  try{
+    const trade={model:isCrypto?"CRYPTO":"NQ",instrument:isCrypto?"CRYPTO":"NQ",direction:"",risk:100,result:"OPEN",context:notes,setupPattern:isCrypto?"Direction → Key Open sweep → HTF POI → high RR":"HTF bias → POI → sweep → retracement → R.B. → limit entry",checklist,screenshots:images,timestamp:new Date().toISOString()};
+    const out=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade})});
+    const scoreHtml=r?'<div class="check-score-head"><span class="check-score-label">Pré-check checklist</span><strong>'+r.score+'/30 · '+esc(r.grade)+'</strong></div>':""; 
+    $("botOutput").innerHTML=scoreHtml+'<div class="ai-box"><b>JARVIS — '+(isCrypto?"CRYPTO":"FUTURES")+'</b><div class="ai-analysis" style="margin-top:10px">'+esc(out.text||"Analyse terminée.")+'</div></div>';
+  }catch(e){$("botOutput").innerHTML='<div class="decision bad">IA indisponible</div><div class="sub" style="margin-top:10px">'+esc(e?.message||"Erreur backend")+'</div>'}
 }
-function analyze(){
- if(activeModel==="CRYPTO"){
-   const vals={direction:$("cryptoDirection").value,keyOpen:$("cryptoKO").value,poi:$("cryptoPOI").value,entry:$("cryptoEntry").value,highRR:$("cryptoRR").value};
-   const missing=Object.values(vals).filter(v=>!v).length,hardFail=[vals.keyOpen,vals.poi,vals.entry].includes("Absent")||vals.entry==="Hors modèle"||vals.highRR==="Non";
-   const decision=hardFail?"PAS DE TRADE":missing?"INCOMPLET — NE PAS DÉCIDER":"SETUP CRYPTO CONFORME À VÉRIFIER";
-   const notes=$("cryptoNotes").value;
-   const arr=getJournal();arr.unshift({id:Date.now(),dateISO:new Date().toISOString().slice(0,10),date:new Date().toISOString().slice(0,10),model:"CRYPTO",market:"CRYPTO",instrument:"BTC",direction:vals.direction,context:notes,setupPattern:"Direction → Key Open sweep → HTF POI → high RR",decision,cryptoReview:vals});
-   localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));
-   $("result").innerHTML='<div class="decision '+(hardFail||missing?"bad":"")+'">'+esc(decision)+'</div><div class="sub" style="margin-top:10px">Direction: <b>'+esc(vals.direction||"—")+'</b> · Key Open: <b>'+esc(vals.keyOpen||"—")+'</b> · HTF POI: <b>'+esc(vals.poi||"—")+'</b> · Entrée: <b>'+esc(vals.entry||"—")+'</b> · High RR: <b>'+esc(vals.highRR||"—")+'</b></div>';
-   renderJournal();renderStats(); return;
- }
- const r=scoreFrom("");const decision=r.killer?"PAS DE TRADE":"TRADE VALIDE",notes=$("notes").value;
- updateLiveChecklist("");
- const arr=getJournal();arr.unshift({id:Date.now(),dateISO:new Date().toISOString().slice(0,10),date:new Date().toISOString().slice(0,10),model:"NQ",market:"FUTURES",instrument:"NQ",score:r.score,grade:r.grade,decision,notes,context:notes});
- localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));
- $("result").innerHTML='<div class="score"><div class="circle" style="border-color:'+(r.killer?'var(--red)':'var(--green)')+'">'+r.score+'/30</div><div><div class="'+(r.killer?'red':'grade')+'">'+r.grade+'</div><div class="sub">'+r.score+'/30 · '+decision+'</div></div></div><div class="decision '+(r.killer?'bad':'')+'">'+(r.killer?'🔴 PAS DE TRADE — un killer est actif':'🟢 TRADE VALIDE')+'</div>';
- renderJournal();renderStats();
+
+async function analyze(){
+  const isCrypto=activeModel==="CRYPTO";
+  const notes=$(isCrypto?"cryptoNotes":"notes")?.value.trim()||"";
+  const images=await getAnalyzerImages("rBefore","rAfter");
+  if(!notes&&!images.length){$("result").innerHTML='<div class="empty">Ajoute le contexte ou les screenshots du trade avant de lancer l’analyse.</div>';return}
+  $("result").innerHTML='<div class="empty">JARVIS analyse le trade en profondeur…</div>';
+  if(!BOT_API){$("result").innerHTML='<div class="decision bad">Backend non configuré.</div>';return}
+  const checklist=isCrypto?{
+    direction:$("cryptoDirection").value,keyOpen:$("cryptoKO").value,poi:$("cryptoPOI").value,entry:$("cryptoEntry").value,highRR:$("cryptoRR").value
+  }:{
+    timing:checklistChecked("","timing"),high:checklistChecked("","high"),recentLoss:checklistChecked("","loss"),
+    goodWithoutKeyOpen:checklistChecked("","ko"),backtested:checklistChecked("","backtest"),liquidityNearSL:checklistChecked("","liq"),
+    tilt:checklistChecked("","tilt"),revenge:checklistChecked("","revenge")
+  };
+  try{
+    const trade={model:isCrypto?"CRYPTO":"NQ",instrument:isCrypto?"CRYPTO":"NQ",direction:isCrypto?$("cryptoDirection").value:"",risk:100,result:"OPEN",context:notes,setupPattern:isCrypto?"Direction → Key Open sweep → HTF POI → high RR":"HTF bias → POI → liquidity/sweep → retracement → R.B. → limit entry",checklist,screenshots:images,timestamp:new Date().toISOString()};
+    const out=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade})});
+    const r=isCrypto?null:scoreFrom("");
+    const pre=r?'<div class="check-score-head"><span class="check-score-label">Pré-check checklist</span><strong>'+r.score+'/30 · '+esc(r.grade)+(r.killer?' · KILLER ACTIF':'')+'</strong></div>':"";
+    $("result").innerHTML=pre+'<div class="ai-box"><b>JARVIS — '+(isCrypto?"CRYPTO":"FUTURES")+'</b><div class="ai-analysis" style="margin-top:10px">'+esc(out.text||"Analyse terminée.")+'</div></div>';
+    const arr=getJournal();arr.unshift({id:Date.now(),dateISO:new Date().toISOString().slice(0,10),date:new Date().toISOString().slice(0,10),model:isCrypto?"CRYPTO":"NQ",market:isCrypto?"CRYPTO":"FUTURES",instrument:isCrypto?"CRYPTO":"NQ",context:notes,decision:"AI_ANALYZED",checklist,screenshots:images});localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));renderJournal();renderStats();
+  }catch(e){$("result").innerHTML='<div class="decision bad">IA indisponible</div><div class="sub" style="margin-top:10px">'+esc(e?.message||"Erreur backend")+'</div>'}
 }
+
 function bindLiveChecklist(){
  const botIds=["btiming","bhigh","bloss","bko","bbacktest","bliq","btilt","brev"];
  const reviewIds=["timing","high","loss","ko","backtest","liq","tilt","revenge"];
@@ -976,7 +1047,10 @@ function resetReview(){
  ["loss","liq","tilt","revenge"].forEach(id=>{const el=$(id);if(el)el.checked=false});
  ["timing","high","ko","backtest"].forEach(id=>{const el=$(id);if(el)el.checked=true});
  ["cryptoDirection","cryptoKO","cryptoPOI","cryptoEntry","cryptoRR"].forEach(id=>{if($(id))$(id).value=""});
- $("notes").value="";$("cryptoNotes").value="";$("result").innerHTML='<div class="empty">Aucune analyse.</div>';
+ $("notes").value="";$("cryptoNotes").value="";
+  ["rBefore","rAfter","bBefore","bAfter"].forEach(id=>{if($(id))$(id).value=""});
+  ["rBeforePreview","rAfterPreview","bBeforePreview","bAfterPreview"].forEach(id=>{if($(id)){$(id).src="";$(id).style.display="none"}});
+  $("result").innerHTML='<div class="empty">Aucune analyse.</div>';
  updateLiveChecklist("b");updateLiveChecklist("");
 }
 function showTradePopup(data={}){
