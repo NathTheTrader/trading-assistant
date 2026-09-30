@@ -43,7 +43,8 @@ jobs:
             if(await page.locator("#dash .connection-card").count()!==0)throw new Error("Dashboard still contains connection cards");
             await page.click("#navBotFutures");await expectVisible("bot");
             if(await page.locator("#bot .connection-card").count()!==0)throw new Error("Bot Futures has unexpected connection cards");
-            await page.click("#modeCRYPTO");await expectVisible("cryptoDash");
+            await page.click("#modeCRYPTO");await expectVisible("crypto");
+            await page.click("#navDash");await expectVisible("cryptoDash");
             await page.click("#navBotCrypto");await expectVisible("crypto");
             if(await page.locator("#crypto .connection-card").count()!==0)throw new Error("Bot Crypto has unexpected connection cards");
             await page.click("#navJournal");await expectVisible("journal");
@@ -58,7 +59,19 @@ jobs:
             await page.click("#navSettings");await expectVisible("settings");
             await page.screenshot({path:"/tmp/edgeflow-settings.png",fullPage:true});
             if(await page.locator("#settings .connection-card").count()!==3)throw new Error("Settings connection center incomplete");
+            await page.click("#modeNQ");await expectVisible("journal");
+            if(await page.locator("#jMarket").inputValue()!=="FUTURES")throw new Error("Journal did not switch to Futures");
+            await page.locator("#jResult").fill("WIN");
+            await page.locator("#jR").fill("+2R");
+            await page.locator("#jPnL").fill("+200");
+            await page.locator("#jContext").fill("Browser smoke test");
+            await page.click("#jBefore");
+            await page.setInputFiles("#jBefore",{name:"before.png",mimeType:"image/png",buffer:Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=","base64")});
+            await page.waitForTimeout(250);
+            await page.click("button:has-text('ENREGISTRER')");
+            if(await page.locator("#dashTrades").count()!==1)throw new Error("Futures dashboard metric target missing");
             if(await page.locator("#journalMonths").count()!==1)throw new Error("Journal history target missing");
+            
             if(errors.length)throw new Error(errors.join("\n"));
             await page.screenshot({path:"/tmp/edgeflow-final.png",fullPage:true});
             console.log("EDGEFLOW browser smoke OK");
