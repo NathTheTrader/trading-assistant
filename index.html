@@ -892,7 +892,7 @@ function updateLiveChecklist(prefix){
  const base=prefix==="b"?"botLiveScore":"reviewLiveScore";
  const v=$(base+"Value"),g=$(base+"Grade");
  if(v)v.textContent=r.score;
- if(g)g.textContent=r.killer?"NO TRADE":r.grade;
+ if(g)g.textContent=r.grade;
  const box=$(base); if(box)box.style.borderColor=r.killer?"rgba(255,73,107,.45)":r.score>=20?"rgba(55,226,154,.35)":"rgba(255,255,255,.10)";
 }
 async function runBotTest(){
