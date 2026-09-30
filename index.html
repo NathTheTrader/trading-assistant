@@ -720,8 +720,8 @@ input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--acc
       <div id="botLiveScore" class="live-check-score"><span>PRÉ-CHECK</span><strong id="botLiveScoreValue">30/30</strong><em id="botLiveScoreGrade">A+</em></div>
       <textarea id="bnotes" placeholder="HTF bias → POI → liquidité / sweep → retracement → R.B. → entrée → SL/TP → news…"></textarea>
       <div class="image-drop" style="margin-top:10px"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots</div><div class="image-drop-sub">AVANT = setup. APRÈS = résultat.</div></div><span class="pill">2 max</span></div><div class="image-inputs">
-        <div class="image-input"><label for="bBefore">AVANT / SETUP</label><input id="bBefore" type="file" accept="image/*" data-image-preview="bBeforePreview"><img id="bBeforePreview" class="image-preview"></div>
-        <div class="image-input"><label for="bAfter">APRÈS / RÉSULTAT</label><input id="bAfter" type="file" accept="image/*" data-image-preview="bAfterPreview"><img id="bAfterPreview" class="image-preview"></div>
+        <div class="image-input"><label for="bBefore">AVANT / SETUP</label><input id="bBefore" type="file" accept="image/*" data-image-preview="bBeforePreview" onchange="previewJournalImage(this,'bBeforePreview')"><img id="bBeforePreview" class="image-preview"></div>
+        <div class="image-input"><label for="bAfter">APRÈS / RÉSULTAT</label><input id="bAfter" type="file" accept="image/*" data-image-preview="bAfterPreview" onchange="previewJournalImage(this,'bAfterPreview')"><img id="bAfterPreview" class="image-preview"></div>
       </div></div>
       <div class="actions"><button class="primary" onclick="runBotTest()">ANALYSER AVEC JARVIS</button></div>
     </div>
@@ -741,8 +741,8 @@ input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--acc
     <label>High RR<select id="cryptoRRBot"><option value="">Non défini</option><option value="Oui">Oui</option><option value="Non">Non</option></select></label>
     <div class="full"><textarea id="cryptoBotContext" placeholder="Direction, Key Open manipulé/sweep, POI HTF, entrée, high RR, contexte du marché…"></textarea></div>
     <div class="full image-drop"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots Crypto</div><div class="image-drop-sub">JARVIS utilise le graphique visible comme preuve principale.</div></div><span class="pill">2 max</span></div><div class="image-inputs">
-      <div class="image-input"><label for="cBefore">AVANT / SETUP</label><input id="cBefore" type="file" accept="image/*" data-image-preview="cBeforePreview"><img id="cBeforePreview" class="image-preview"></div>
-      <div class="image-input"><label for="cAfter">APRÈS / RÉSULTAT</label><input id="cAfter" type="file" accept="image/*" data-image-preview="cAfterPreview"><img id="cAfterPreview" class="image-preview"></div>
+      <div class="image-input"><label for="cBefore">AVANT / SETUP</label><input id="cBefore" type="file" accept="image/*" data-image-preview="cBeforePreview" onchange="previewJournalImage(this,'cBeforePreview')"><img id="cBeforePreview" class="image-preview"></div>
+      <div class="image-input"><label for="cAfter">APRÈS / RÉSULTAT</label><input id="cAfter" type="file" accept="image/*" data-image-preview="cAfterPreview" onchange="previewJournalImage(this,'cAfterPreview')"><img id="cAfterPreview" class="image-preview"></div>
     </div></div>
   </div><div class="actions"><button class="primary" onclick="runBotTest()">ANALYSER LE SETUP CRYPTO</button></div></div>
   <div class="section" style="margin-top:12px"><h2>JARVIS · analyse Crypto</h2><div id="cryptoBotOutput"><div class="empty">Aucun setup analysé.</div></div></div>
@@ -765,8 +765,8 @@ input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--acc
     <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">KILLER comportemental</span></span></span><input id="tilt" type="checkbox"><span class="check-switch"></span></label>
     <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER comportemental</span></span></span><input id="revenge" type="checkbox"><span class="check-switch"></span></label>
   </div><div id="reviewLiveScore" class="live-check-score"><span>PRÉ-CHECK</span><strong id="reviewLiveScoreValue">30/30</strong><em id="reviewLiveScoreGrade">A+</em></div><textarea id="notes" placeholder="HTF bias → POI → liquidité/sweep → retracement → R.B. → entrée → SL/TP → news…"></textarea><div class="image-drop" style="margin-top:10px"><div class="image-inputs">
-    <div class="image-input"><label for="rBefore">AVANT / SETUP</label><input id="rBefore" type="file" accept="image/*" data-image-preview="rBeforePreview"><img id="rBeforePreview" class="image-preview"></div>
-    <div class="image-input"><label for="rAfter">APRÈS / RÉSULTAT</label><input id="rAfter" type="file" accept="image/*" data-image-preview="rAfterPreview"><img id="rAfterPreview" class="image-preview"></div>
+    <div class="image-input"><label for="rBefore">AVANT / SETUP</label><input id="rBefore" type="file" accept="image/*" data-image-preview="rBeforePreview" onchange="previewJournalImage(this,'rBeforePreview')"><img id="rBeforePreview" class="image-preview"></div>
+    <div class="image-input"><label for="rAfter">APRÈS / RÉSULTAT</label><input id="rAfter" type="file" accept="image/*" data-image-preview="rAfterPreview" onchange="previewJournalImage(this,'rAfterPreview')"><img id="rAfterPreview" class="image-preview"></div>
   </div></div><div class="actions"><button class="primary" onclick="analyze()">ANALYSER LE TRADE</button><button class="secondary" onclick="resetReview()">RÉINITIALISER</button></div></div>
   <div class="section" style="margin-top:12px"><h2>Résultat JARVIS</h2><div id="result"><div class="empty">Aucune analyse.</div></div></div>
 </section>
@@ -782,8 +782,8 @@ input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--acc
     <label>High RR prévu<select id="cryptoRR"><option value="">Non défini</option><option>Oui</option><option>Non</option></select></label>
     <div class="full"><textarea id="cryptoNotes" placeholder="Direction, Key Open, sweep, POI HTF, entrée et high RR…"></textarea></div>
     <div class="full image-drop"><div class="image-inputs">
-      <div class="image-input"><label for="crBeforeReview">AVANT / SETUP</label><input id="crBeforeReview" type="file" accept="image/*" data-image-preview="crBeforeReviewPreview"><img id="crBeforeReviewPreview" class="image-preview"></div>
-      <div class="image-input"><label for="crAfterReview">APRÈS / RÉSULTAT</label><input id="crAfterReview" type="file" accept="image/*" data-image-preview="crAfterReviewPreview"><img id="crAfterReviewPreview" class="image-preview"></div>
+      <div class="image-input"><label for="crBeforeReview">AVANT / SETUP</label><input id="crBeforeReview" type="file" accept="image/*" data-image-preview="crBeforeReviewPreview" onchange="previewJournalImage(this,'crBeforeReviewPreview')"><img id="crBeforeReviewPreview" class="image-preview"></div>
+      <div class="image-input"><label for="crAfterReview">APRÈS / RÉSULTAT</label><input id="crAfterReview" type="file" accept="image/*" data-image-preview="crAfterReviewPreview" onchange="previewJournalImage(this,'crAfterReviewPreview')"><img id="crAfterReviewPreview" class="image-preview"></div>
     </div></div>
   </div><div class="actions"><button class="primary" onclick="analyze()">ANALYSER LE SETUP CRYPTO</button><button class="secondary" onclick="resetReview()">RÉINITIALISER</button></div></div>
   <div class="section" style="margin-top:12px"><h2>Résultat JARVIS</h2><div id="cryptoReviewResult"><div class="empty">Aucune analyse.</div></div></div>
@@ -826,7 +826,7 @@ input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--acc
       <div class="full"><textarea id="jContext" placeholder="Contexte du trade…"></textarea></div>
       <div class="full"><textarea id="jErrors" placeholder="Erreurs / points à améliorer…"></textarea></div>
       <div class="full"><textarea id="jLesson" placeholder="Leçon concrète…"></textarea></div>
-      <div class="full"><div class="image-drop"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots du trade</div><div class="image-drop-sub">AVANT et APRÈS sont conservés avec l’entrée.</div></div></div><div class="image-inputs"><div class="image-input"><label for="jBefore">AVANT</label><input id="jBefore" type="file" accept="image/*" data-image-preview="jBeforePreview"><img id="jBeforePreview" class="image-preview"></div><div class="image-input"><label for="jAfter">APRÈS</label><input id="jAfter" type="file" accept="image/*" data-image-preview="jAfterPreview"><img id="jAfterPreview" class="image-preview"></div></div></div></div>
+      <div class="full"><div class="image-drop"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots du trade</div><div class="image-drop-sub">AVANT et APRÈS sont conservés avec l’entrée.</div></div></div><div class="image-inputs"><div class="image-input"><label for="jBefore">AVANT</label><input id="jBefore" type="file" accept="image/*" data-image-preview="jBeforePreview" onchange="previewJournalImage(this,'jBeforePreview')"><img id="jBeforePreview" class="image-preview"></div><div class="image-input"><label for="jAfter">APRÈS</label><input id="jAfter" type="file" accept="image/*" data-image-preview="jAfterPreview" onchange="previewJournalImage(this,'jAfterPreview')"><img id="jAfterPreview" class="image-preview"></div></div></div></div>
       <div class="full"><h3>🤖 JARVIS</h3><textarea id="jAI" readonly placeholder="Pré-analyse JARVIS…"></textarea></div>
       <div class="full actions"><button class="primary" onclick="prepareAIJournal()">PRÉ-ANALYSER</button><button class="primary" onclick="saveJournalEntry()">ENREGISTRER</button><button class="secondary" onclick="resetJournalForm()">RÉINITIALISER</button></div>
     </div>
