@@ -13,6 +13,42 @@ jobs:
         run: |
           set -euo pipefail
           curl --fail --silent --show-error --retry 3 --retry-delay 5             https://trading-assistant-production.up.railway.app/health
+      - name: Check production API contracts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, urllib.request
+          base="https://trading-assistant-production.up.railway.app"
+          origin="https://naththetrader.github.io"
+          paths=[
+            "/api/ai/status",
+            "/api/voice/status",
+            "/api/connections/status",
+            "/api/history/ai-context?model=NQ",
+            "/api/history/ai-context?model=CRYPTO",
+            "/api/obsidian/status?model=NQ",
+            "/api/obsidian/status?model=CRYPTO",
+            "/api/trades?model=NQ",
+            "/api/trades?model=CRYPTO",
+          ]
+          for path in paths:
+              req=urllib.request.Request(base+path,headers={"Origin":origin,"Accept":"application/json"})
+              with urllib.request.urlopen(req,timeout=20) as r:
+                  if r.status!=200: raise RuntimeError(f"{path}: HTTP {r.status}")
+                  data=json.load(r)
+              if path=="/api/ai/status":
+                  assert data.get("ok") is True and data.get("configured") is True, data
+                  assert data.get("provider")=="gemini", data
+                  assert data.get("aiPrimaryModel")=="gemini-3.8-flash", data
+              elif path=="/api/voice/status":
+                  assert data.get("ok") is True and data.get("configured") is True, data
+                  assert data.get("engine")=="Gemini", data
+              elif path.endswith("model=NQ"):
+                  assert data.get("model")=="NQ", data
+              elif path.endswith("model=CRYPTO"):
+                  assert data.get("model")=="CRYPTO", data
+          print("Production API contracts OK")
+          PY
       - name: Check GitHub Pages frontend
         run: |
           set -euo pipefail
