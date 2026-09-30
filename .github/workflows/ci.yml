@@ -49,7 +49,7 @@ jobs:
           const sections=[...html.matchAll(/<section id="([^"]+)"/g)].map(m=>m[1]);
           for(const id of ["models","dash","cryptoDash","bot","crypto","review","cryptoReview","chat","journal","settings"]) if(!sections.includes(id)) fail("Missing workspace: "+id);
           if(new Set(sections).size!==sections.length) fail("Duplicate workspace IDs");
-          if((html.match(/<style\\b/gi)||[]).length!==1 || !html.includes("<style>")) fail("Expected one stylesheet block");
+          if((html.match(/<style\b/gi)||[]).length!==1 || !html.includes("<style>")) fail("Expected one stylesheet block");
           if(html.indexOf("<style>")>html.indexOf("</head>")) fail("Stylesheet must be in head");
           if(!html.includes('<script src="./voice-coach.js"></script>')) fail("Voice script tag malformed");
           if(!html.includes('id="cryptoBotOutput"')||!html.includes('id="cryptoDashTrades"')||!html.includes('id="cryptoReviewResult"')) fail("Crypto workspace outputs missing");
