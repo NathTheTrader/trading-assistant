@@ -14,7 +14,7 @@
   }
   .ta-voice-fab:hover{transform:translateY(-2px);border-color:rgba(255,43,43,.55);box-shadow:0 18px 42px rgba(0,0,0,.5),0 0 30px rgba(255,43,43,.11)}
   .ta-auto-voice{
-    position:fixed;right:124px;bottom:20px;z-index:10001;
+    position:fixed;right:20px;bottom:56px;z-index:10001;
     display:flex;align-items:center;gap:5px;
     border:1px solid rgba(255,255,255,.09);background:rgba(8,11,16,.94);
     color:#6f7a89;border-radius:7px;padding:5px 7px;
