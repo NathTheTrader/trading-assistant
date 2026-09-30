@@ -1612,8 +1612,8 @@ async function refreshConnectionCenter(){
     const set=(id,textValue,kind)=>{const el=$(id);if(el){el.textContent=textValue;el.className="connection-status "+(kind||"")}};
     set("connTradovate",r.tradovate?.connected?"LIVE":r.tradovate?.configured?"PRÊT":"CONFIG À FAIRE",r.tradovate?.connected?"live":r.tradovate?.configured?"ready":"warn");
     set("dashConnTradovate",r.tradovate?.connected?"LIVE":r.tradovate?.configured?"PRÊT":"À CONFIGURER",r.tradovate?.connected?"live":r.tradovate?.configured?"ready":"warn");
-    set("connRithmic",r.rithmic?.configured?"CONFIGURÉ":"ACCÈS API REQUIS",r.rithmic?.configured?"ready":"warn");
-    set("dashConnRithmic",r.rithmic?.configured?"PRÊT":"API REQUISE",r.rithmic?.configured?"ready":"warn");
+    set("connRithmic",r.rithmic?.configured?"API PRÊTE · ORDER WATCH":"ORDER WATCH",r.rithmic?.configured?"ready":"warn");
+    set("dashConnRithmic",r.rithmic?.configured?"API PRÊTE":"ORDER WATCH",r.rithmic?.configured?"ready":"warn");
   }catch(e){}
 }
 async function refreshAIDataAccess(){const el=document.getElementById("aiDataAccess");if(!el)return;if(!BOT_API){el.textContent="Backend non configuré — aucune donnée serveur n’est accessible à l’IA.";return}try{const d=await botFetch("/api/history/ai-context?model="+encodeURIComponent(activeModel));el.innerHTML="<b>"+activeModel+"</b> · "+(d.sampleSize||0)+" trades serveur<br><span class='sub'>Mémoire historique + journal + contexte vérifié. Obsidian est importé séparément et reste cloisonné par modèle.</span>"}catch(e){el.textContent="Backend hors ligne.";}}
@@ -1676,7 +1676,12 @@ async function saveBotUrl(){
 }
 async function testBotConnection(){
  if(!BOT_API){$("backendStatus").textContent="NON CONFIGURÉ";return;}
- try{const r=await botFetch("/health");$("backendStatus").textContent=r.ai?"IA CONNECTÉE":"SERVEUR CONNECTÉ — CLÉ IA MANQUANTE";$("backendStatus").className=r.ai?"yes":"neutral";}catch(e){$("backendStatus").textContent="HORS LIGNE";$("backendStatus").className="no";}
+ try{
+   const r=await botFetch("/health");
+   const valid=r.geminiCredentialValid===true;
+   $("backendStatus").textContent=valid?"GEMINI CONNECTÉE · "+(r.aiPrimaryModel||"IA"):(r.ai?"IA CONNECTÉE":"SERVEUR CONNECTÉ — CLÉ IA MANQUANTE");
+   $("backendStatus").className=valid?"yes":r.ai?"neutral":"no";
+ }catch(e){$("backendStatus").textContent="HORS LIGNE";$("backendStatus").className="no";}
 }
 async function connectTradovateUI(){if(!BOT_API){$("tvConnectionText").textContent="Backend non configuré";return}try{const r=await botFetch("/api/tradovate/connect",{method:"POST"});renderTradovateStatus(r);refreshTradovateEvents()}catch(e){$("tvConnectionText").textContent=e.message}}
 async function refreshTradovateUI(){if(!BOT_API)return;try{const r=await botFetch("/api/tradovate/snapshot");renderTradovateStatus(r);renderTradovateSnapshot(r);refreshTradovateEvents()}catch(e){$("tvConnectionText").textContent="Backend hors ligne"}}
@@ -1691,16 +1696,38 @@ function renderTradovateSnapshot(r){
   ].join("");
 }
 function renderTradovateStatus(r){const ok=!!r.connected;if($("tvLiveStatus")){$("tvLiveStatus").textContent=ok?"● LIVE":"● DÉCONNECTÉ";$("tvLiveStatus").className=ok?"status green":"status"}if($("tvBotState")){$("tvBotState").textContent=ok?"LIVE":"EN ATTENTE";$("tvBotState").className="value small "+(ok?"green":"orange")}if($("tvConnectionText"))$("tvConnectionText").textContent=ok?"Flux actif":"Non connecté";if($("tvDetails"))$("tvDetails").innerHTML='<div class="row"><span>Utilisateur</span><span>'+esc(r.userId||"—")+'</span></div><div class="row"><span>Comptes</span><span>'+esc((r.accounts||[]).map(a=>a.name||a.id).join(", ")||"—")+'</span></div>'}
-async function refreshTradovateEvents(){if(!BOT_API)return;try{const r=await botFetch("/api/tradovate/events"),ev=(r||[]).slice(-1)[0],ai=(r||[]).filter(x=>x.type==="trade_ai_analysis").slice(-1)[0];if(ev&&$("tvLastEvent"))$("tvLastEvent").innerHTML='<b>'+esc(ev.type||"event")+'</b><div class="sub">'+esc(ev.timestamp||"")+'</div>';if(ai&&$("tvAI"))$("tvAI").innerHTML='<b>JARVIS</b><div class="sub" style="margin-top:8px">'+esc(ai.analysis||"")+'</div>'}catch(e){}}
+let tradovateEventPrimed=false,tradovateSeenEvent="";
+async function refreshTradovateEvents(){
+  if(!BOT_API)return;
+  try{
+    const events=await botFetch("/api/tradovate/events");
+    const list=Array.isArray(events)?events:[];
+    const ev=list.slice(-1)[0];
+    const ai=list.filter(x=>x.type==="trade_ai_analysis").slice(-1)[0];
+    if(ev&&$("tvLastEvent"))$("tvLastEvent").innerHTML='<b>'+esc(ev.type||"event")+'</b><div class="sub">'+esc(ev.timestamp||"")+'</div>';
+    if(ai&&$("tvAI"))$("tvAI").innerHTML='<b>JARVIS</b><div class="sub" style="margin-top:8px">'+esc(ai.analysis||"")+'</div>';
+    if(!ev)return;
+    const eventKey=String(ev.id||ev.timestamp||"")+":"+String(ev.type||"")+":"+String(ev.tradeId||ev.order?.id||ev.fill?.id||"");
+    if(!tradovateEventPrimed){tradovateSeenEvent=eventKey;tradovateEventPrimed=true;return;}
+    if(eventKey===tradovateSeenEvent)return;
+    tradovateSeenEvent=eventKey;
+    if(ev.type==="trade_order"||ev.type==="trade_fill"){
+      const t=ev.trade||{};
+      toneAlert();
+      showTradePopup({broker:"TRADOVATE",model:"NQ",instrument:t.instrument||ev.order?.instrument||"NQ",direction:t.direction||"—",orderType:t.orderType||"—",price:t.entry??ev.order?.price??ev.fill?.price??"—",quantity:t.quantity??ev.order?.qty??ev.fill?.qty??"—",risk:"$100",context:"Nouvelle activité d’ordre détectée via Tradovate."});
+    }
+  }catch(e){}
+}
 setInterval(()=>{if(activeModel==="NQ"&&BOT_API)refreshTradovateUI()},10000);
 let kcexScreenStream=null;
 let kcexAutoTimer=null;
 let kcexAnalyzing=false;
+let kcexPreviousFrame="";
 
 function setKCEXStatus(text){const el=$("kcexScreenStatus");if(el)el.textContent=text;}
 function stopKCEXAuto(){if(kcexAutoTimer){clearInterval(kcexAutoTimer);kcexAutoTimer=null;}}
 function stopKCEXScreenShare(){
-  stopKCEXAuto();
+  stopKCEXAuto(); kcexPreviousFrame="";
   if(kcexScreenStream){kcexScreenStream.getTracks().forEach(t=>t.stop());kcexScreenStream=null;}
   const video=$("kcexScreenPreview");if(video){video.srcObject=null;video.style.display="none";}
   setKCEXStatus("Partage KCEX arrêté.");
@@ -1708,7 +1735,7 @@ function stopKCEXScreenShare(){
 async function startKCEXScreenShare(){
   if(!navigator.mediaDevices?.getDisplayMedia){setKCEXStatus("Le partage d'écran n'est pas disponible dans ce navigateur.");return;}
   try{
-    stopKCEXAuto();
+    stopKCEXAuto(); kcexPreviousFrame="";
     if(kcexScreenStream) stopKCEXScreenShare();
     kcexScreenStream=await navigator.mediaDevices.getDisplayMedia({
       video:{displaySurface:"browser"},
@@ -1739,26 +1766,28 @@ async function analyzeKCEXScreen(){
   if(kcexAnalyzing)return;
   const imageDataUrl=captureKCEXFrame();
   if(!imageDataUrl){setKCEXStatus("Partage KCEX actif requis avant l'analyse.");return;}
-  if(!BOT_API){setKCEXStatus("Backend non configuré. Ajoute l'URL du backend dans Paramètres.");return;}
+  if(!BOT_API){setKCEXStatus("Backend non configuré.");return;}
+  if(!kcexPreviousFrame){kcexPreviousFrame=imageDataUrl;setKCEXStatus("ORDER WATCH armé · capture de référence enregistrée.");return;}
   kcexAnalyzing=true;
-  const out=$("kcexAIOutput");if(out)out.innerHTML="<b>TRADING ASSISTANT</b><div class='sub' style='margin-top:8px'>Analyse de l'écran KCEX en cours…</div>";
+  const out=$("kcexAIOutput");
   try{
-    const r=await botFetch("/api/analyze-screen",{method:"POST",body:JSON.stringify({
-      model:"CRYPTO",
-      imageDataUrl,
-      context:$("cryptoBotContext")?.value?.trim()||"Observation live de l'interface KCEX. Décrire uniquement ce qui est visible et pertinent pour le modèle Crypto."
-    })});
+    const r=await botFetch("/api/detect-screen-trade",{method:"POST",body:JSON.stringify({broker:"KCEX",model:"CRYPTO",imageDataUrl,previousImageDataUrl:kcexPreviousFrame})});
+    kcexPreviousFrame=imageDataUrl;
     if(r.detected){
       toneAlert();
-      showTradePopup({broker:"KCEX",model:"CRYPTO",instrument:r.instrument||"CRYPTO",direction:r.direction||"—",orderType:r.orderType||"—",price:r.price??"—",quantity:r.quantity??"—",risk:"—",context:r.context||"Nouvelle activité d’ordre visible dans l’onglet KCEX."});
+      showTradePopup({broker:"KCEX",model:"CRYPTO",instrument:r.instrument||"CRYPTO",direction:r.direction||"—",orderType:r.orderType||"—",price:r.price??"—",quantity:r.quantity??"—",risk:"—",context:r.context||"Nouvelle activité d’ordre visible dans KCEX."});
       if(out)out.innerHTML="<b>ORDRE KCEX DÉTECTÉ</b><div class='sub' style='margin-top:8px'>"+esc((r.instrument||"CRYPTO")+" · "+(r.direction||"—")+" · "+(r.orderType||"—")+" · "+(r.price??"—"))+"</div>";
-    } else if(out)out.innerHTML="<b>KCEX · ORDER WATCH</b><div class='sub' style='margin-top:8px'>Aucun nouvel ordre confirmé sur cette capture.</div>";
-    setKCEXStatus((r.detected?"ORDRE DÉTECTÉ · ":"Capture vérifiée · ")+new Date().toLocaleTimeString("fr-CA"));
+      setKCEXStatus("ORDRE DÉTECTÉ · "+new Date().toLocaleTimeString("fr-CA"));
+    }else{
+      if(out)out.innerHTML="<b>KCEX · ORDER WATCH</b><div class='sub' style='margin-top:8px'>Aucun nouvel ordre confirmé sur cette capture.</div>";
+      setKCEXStatus("Capture vérifiée · "+new Date().toLocaleTimeString("fr-CA"));
+    }
   }catch(e){
-    if(out)out.innerHTML="<div class='decision bad'>Analyse impossible</div><div class='sub' style='margin-top:8px'>"+esc(e.message||"Erreur backend")+"</div>";
-    setKCEXStatus("Erreur d'analyse backend.");
+    if(out)out.innerHTML="<div class='decision bad'>Détection impossible</div><div class='sub' style='margin-top:8px'>"+esc(e.message||"Erreur backend")+"</div>";
+    setKCEXStatus("Erreur de détection.");
   }finally{kcexAnalyzing=false;}
 }
+
 function toneAlert(){
   try{
     const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
