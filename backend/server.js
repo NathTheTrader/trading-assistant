@@ -45,7 +45,7 @@ const MODEL = process.env.OPENROUTER_MODEL || "openrouter/free";
 const FALLBACK_MODELS = String(process.env.OPENROUTER_FALLBACK_MODELS || "").split(",").map(x=>x.trim()).filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i);
 const AI_PROVIDER = GEMINI_API_KEY ? "gemini" : (process.env.OPENROUTER_API_KEY ? "openrouter" : "none");
 const AI_PRIMARY_MODEL = AI_PROVIDER==="gemini" ? GEMINI_MODEL : MODEL;
-const AI_ENGINE_VERSION = "2.1";
+const AI_ENGINE_VERSION = "2.2";
 const AI_GRADE_SCALE = "A+ exceptionnellement propre; A solide; A- solide avec petite imperfection; B+ bon avec imperfection claire; B bon mais faiblesse identifiable; B- limite; C+/C qualité limite; NO TRADE uniquement si un vrai killer/invalidation ou non-respect majeur du modèle. Structure messy seule = imperfection qui coûte des points, jamais un NO TRADE automatique.";
 const MODEL_CONTRACTS = {
   NQ:{
@@ -1124,19 +1124,57 @@ app.post("/api/coach/question",requirePrivateRequest,  async (req,res) => {
 
 async function transcribeAudioWithGemini(audioBuffer,mimeType="audio/webm"){
   if(!GEMINI_API_KEY) throw new Error("Aucun moteur de transcription Gemini configuré.");
-  const body={
-    contents:[{role:"user",parts:[
-      {text:"Transcris exactement la parole en français canadien. Retourne uniquement la transcription, sans commentaire ni guillemets. Préserve les termes de trading et acronymes comme NQ, MNQ, BTC, FVG, OB, R.B., MSS, CHOCH, BOS, OTE, Key Open et RR."},
-      {inlineData:{mimeType:mimeType,data:audioBuffer.toString("base64")}}
-    ]}],
-    generationConfig:{temperature:0,maxOutputTokens:1200}
-  };
-  const response=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(process.env.GEMINI_AUDIO_MODEL||"gemini-3.5-transcribe")+":generateContent",{
-    method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":GEMINI_API_KEY},body:JSON.stringify(body)
-  });
-  const data=await response.json().catch(()=>({}));
-  if(!response.ok) throw new Error(data?.error?.message||"Gemini transcription failed ("+response.status+").");
-  return String(data?.candidates?.[0]?.content?.parts?.map(p=>p?.text||"").join("")||"").trim();
+  const normalizedMime=String(mimeType||"audio/webm").split(";")[0].trim().toLowerCase();
+  const supported=["audio/wav","audio/mp3","audio/aiff","audio/aac","audio/ogg","audio/flac","audio/mpeg","audio/m4a","audio/l16","audio/opus","audio/alaw","audio/mulaw","audio/webm"];
+  const safeMime=supported.includes(normalizedMime)?normalizedMime:"audio/webm";
+  const data=audioBuffer.toString("base64");
+  const prompt="Transcris exactement la parole audible en français canadien. Retourne uniquement la transcription, sans commentaire ni guillemets. Préserve les termes de trading et acronymes comme NQ, MNQ, BTC, FVG, OB, R.B., MSS, CHOCH, BOS, OTE, Key Open, RR, KCEX, Rithmic et Tradovate.";
+
+  // Primary: dedicated Gemini transcription model.
+  try{
+    const body={
+      contents:[{role:"user",parts:[
+        {text:prompt},
+        {inlineData:{mimeType:safeMime,data}}
+      ]}],
+      generationConfig:{temperature:0,maxOutputTokens:1200}
+    };
+    const response=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(process.env.GEMINI_AUDIO_MODEL||"gemini-3.5-transcribe")+":generateContent",{
+      method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":GEMINI_API_KEY},body:JSON.stringify(body)
+    });
+    const responseData=await response.json().catch(()=>({}));
+    if(response.ok){
+      const text=String(responseData?.candidates?.[0]?.content?.parts?.map(p=>p?.text||"").join("")||"").trim();
+      if(text)return text;
+    }else{
+      console.error("[EDGEFLOW][GEMINI_STT_PRIMARY]",responseData?.error?.message||("HTTP "+response.status));
+    }
+  }catch(e){
+    console.error("[EDGEFLOW][GEMINI_STT_PRIMARY]",e.message);
+  }
+
+  // Fallback: Gemini 3.8 Flash audio understanding via Interactions API.
+  try{
+    const response=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-goog-api-key":GEMINI_API_KEY},
+      body:JSON.stringify({
+        model:"gemini-3.8-flash",
+        input:[
+          {type:"text",text:prompt},
+          {type:"audio",data,mime_type:safeMime}
+        ]
+      })
+    });
+    const dataOut=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(dataOut?.error?.message||("Gemini audio fallback failed ("+response.status+")."));
+    const text=String(dataOut?.output_text||dataOut?.output?.map(x=>x?.text||"").join("")||"").trim();
+    if(text)return text;
+    throw new Error("Gemini audio fallback returned no transcript.");
+  }catch(e){
+    console.error("[EDGEFLOW][GEMINI_STT_FALLBACK]",e.message);
+    throw new Error("Transcription vocale indisponible : "+e.message);
+  }
 }
 function pcm24ToWavBase64(pcmBase64){
   const pcm=Buffer.from(pcmBase64,"base64"),header=Buffer.alloc(44);
@@ -1233,6 +1271,7 @@ app.post("/api/voice/turn",requirePrivateRequest,async(req,res)=>{
     const audioBase64=String(req.body.audioBase64||""),mimeType=String(req.body.mimeType||"audio/webm");
     if(!audioBase64)return res.status(400).json({ok:false,error:"Audio manquant."});
     const audioBuffer=Buffer.from(audioBase64,"base64");
+    if(audioBuffer.length<1200)return res.status(422).json({ok:false,error:"Enregistrement audio trop court ou vide."});
     if(audioBuffer.length>12*1024*1024)return res.status(413).json({ok:false,error:"Audio trop volumineux."});
     let transcript="";
     if(process.env.ELEVENLABS_API_KEY){
@@ -1246,7 +1285,7 @@ app.post("/api/voice/turn",requirePrivateRequest,async(req,res)=>{
     }else{
       transcript=await transcribeAudioWithGemini(audioBuffer,mimeType);
     }
-    if(!transcript)return res.status(400).json({ok:false,error:"Aucune parole détectée."});
+    if(!transcript)return res.status(422).json({ok:false,error:"Aucune parole détectée. Vérifie que le micro a bien enregistré ta voix puis réessaie."});
     const model=normalizeModel(req.body.model);
     const previousTurns=Array.isArray(req.body.previousTurns)?req.body.previousTurns.slice(-12):[];
     const reply=String(await askVoiceCoach({model,userText:transcript,previousTurns})||"").trim();
