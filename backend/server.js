@@ -114,6 +114,27 @@ function geminiParts(content) {
   }
   return parts;
 }
+async function verifyGeminiCredential() {
+  if(!GEMINI_API_KEY) return {configured:false};
+  try {
+    const response=await fetch("https://generativelanguage.googleapis.com/v1beta/models",{
+      method:"GET",
+      headers:{"x-goog-api-key":GEMINI_API_KEY}
+    });
+    const data=await response.json().catch(()=>({}));
+    return {
+      configured:true,
+      valid:response.ok,
+      status:response.status,
+      keyPrefix:GEMINI_API_KEY.slice(0,4),
+      keyLength:GEMINI_API_KEY.length,
+      error:response.ok?null:String(data?.error?.message||"")
+    };
+  } catch(error) {
+    return {configured:true,valid:false,status:0,keyPrefix:GEMINI_API_KEY.slice(0,4),keyLength:GEMINI_API_KEY.length,error:String(error?.message||"")};
+  }
+}
+
 function buildGeminiRequest(input) {
   const contents=[];
   const systemParts=[];
@@ -1174,15 +1195,26 @@ app.get("/api/obsidian/job",requirePrivateRequest,  async (req,res)=>{
   res.json(saved||obsidianJob);
 });
 
-app.get("/health", (req,res) => res.json({
-  ok:true,
-  service:"trading-assistant-bot",
-  mode:"READ_ONLY",
-  ai:!!openai,
-  model:MODEL,
-  multimodalTradeAnalysis:true,
-  timestamp:new Date().toISOString()
-}));
+app.get("/health", async (req,res) => {
+  const gemini=GEMINI_API_KEY ? await verifyGeminiCredential() : {configured:false};
+  res.json({
+    ok:true,
+    service:"trading-assistant-bot",
+    mode:"READ_ONLY",
+    ai:!!openai,
+    provider:AI_PROVIDER,
+    model:MODEL,
+    aiPrimaryModel:AI_PRIMARY_MODEL,
+    geminiConfigured:gemini.configured,
+    geminiCredentialValid:gemini.valid??null,
+    geminiCredentialStatus:gemini.status??null,
+    geminiKeyPrefix:gemini.keyPrefix??null,
+    geminiKeyLength:gemini.keyLength??null,
+    geminiCredentialError:gemini.error??null,
+    multimodalTradeAnalysis:true,
+    timestamp:new Date().toISOString()
+  });
+});
 
 app.get("/api/profile",requirePrivateRequest,  async (req,res) => { res.json(await loadProfile()); });
 
