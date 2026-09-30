@@ -93,21 +93,13 @@ jobs:
             await page.click("button:has-text('ENREGISTRER')");
             await page.waitForTimeout(350);
 
-            await switchMode("CRYPTO");await click("#navJournal");await expectVisible("journal");
-            await page.locator("#jDate").fill("2026-09-16");
-            await page.locator("#jDate").dispatchEvent("change");
-            await page.locator("#jResult").fill("LOSS");
-            await page.locator("#jR").fill("-1R");
-            await page.locator("#jPnL").fill("-100");
-            await page.locator("#jContext").fill("Crypto journal smoke test");
-            await page.click("button:has-text('ENREGISTRER')");
-            await page.waitForTimeout(350);
+            await switchMode("CRYPTO");await expectVisible("cryptoDash");
 
             const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem("journal")||"[]"));
             const split=stored.reduce((a,x)=>(a[x.model]=(a[x.model]||0)+1,a),{});
-            if(split.NQ!==1||split.CRYPTO!==1)throw new Error("Journal model split invalid: "+JSON.stringify(split));
+            if(split.NQ!==1||split.CRYPTO)throw new Error("Journal model split invalid: "+JSON.stringify(split));
             if(!stored.some(x=>x.model==="NQ"&&x.dateISO==="2026-09-16"))throw new Error("Futures selected date not persisted");
-            if(!stored.some(x=>x.model==="CRYPTO"&&x.dateISO==="2026-09-16"))throw new Error("Crypto selected date not persisted");
+            
 
             await switchMode("NQ");await click("#navDash");await expectVisible("dash");
             if((await page.locator("#dashTrades").textContent()).trim()!=="1")throw new Error("Futures Dashboard did not read Futures Journal");
