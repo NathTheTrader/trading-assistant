@@ -1080,18 +1080,57 @@ app.post("/api/coach/question",requirePrivateRequest,  async (req,res) => {
   res.json({ok:true,model,question:response.output_text});
 });
 
+async function transcribeAudioWithGemini(audioBuffer,mimeType="audio/webm"){
+  if(!GEMINI_API_KEY) throw new Error("Aucun moteur de transcription Gemini configuré.");
+  const body={
+    contents:[{role:"user",parts:[
+      {text:"Transcris exactement la parole en français canadien. Retourne uniquement la transcription, sans commentaire ni guillemets. Préserve les termes de trading et acronymes comme NQ, MNQ, BTC, FVG, OB, R.B., MSS, CHOCH, BOS, OTE, Key Open et RR."},
+      {inline_data:{mime_type:mimeType,data:audioBuffer.toString("base64")}}
+    ]}],
+    generationConfig:{temperature:0,maxOutputTokens:1200}
+  };
+  const response=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(process.env.GEMINI_AUDIO_MODEL||GEMINI_MODEL)+":generateContent",{
+    method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":GEMINI_API_KEY},body:JSON.stringify(body)
+  });
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok) throw new Error(data?.error?.message||"Gemini transcription failed ("+response.status+").");
+  return String(data?.candidates?.[0]?.content?.parts?.map(p=>p?.text||"").join("")||"").trim();
+}
+function pcm24ToWavBase64(pcmBase64){
+  const pcm=Buffer.from(pcmBase64,"base64"),header=Buffer.alloc(44);
+  header.write("RIFF",0);header.writeUInt32LE(36+pcm.length,4);header.write("WAVE",8);
+  header.write("fmt ",12);header.writeUInt32LE(16,16);header.writeUInt16LE(1,20);header.writeUInt16LE(1,22);
+  header.writeUInt32LE(24000,24);header.writeUInt32LE(48000,28);header.writeUInt16LE(2,32);header.writeUInt16LE(16,34);
+  header.write("data",36);header.writeUInt32LE(pcm.length,40);
+  return Buffer.concat([header,pcm]).toString("base64");
+}
+async function synthesizeAudioWithGemini(text){
+  if(!GEMINI_API_KEY) return "";
+  const model=process.env.GEMINI_TTS_MODEL||"gemini-3.8-flash-tts";
+  const voice=process.env.GEMINI_TTS_VOICE||"Algenib";
+  const response=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{
+    method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":GEMINI_API_KEY},
+    body:JSON.stringify({
+      contents:[{role:"user",parts:[{text:"Speak naturally in French Canadian with a calm, deep, precise AI-assistant style. Restrained, intelligent and composed. "+text}]}],
+      generationConfig:{responseModalities:["AUDIO"],speechConfig:{voiceConfig:{voice}}},
+    })
+  });
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok) throw new Error(data?.error?.message||"Gemini TTS failed ("+response.status+").");
+  const part=data?.candidates?.[0]?.content?.parts?.find(p=>p?.inlineData?.data);
+  if(!part?.inlineData?.data) throw new Error("Gemini TTS n'a retourné aucun audio.");
+  return pcm24ToWavBase64(part.inlineData.data);
+}
+
 app.get("/api/voice/status",requirePrivateRequest,async(req,res)=>{
   const cfg=await loadVoiceConfig();
-  const configured=Boolean(process.env.ELEVENLABS_API_KEY);
-  res.json({
-    ok:true,
-    configured,
-    engine:configured?"ElevenLabs":"Browser fallback",
-    model:process.env.ELEVENLABS_TTS_MODEL||"eleven_v4_turbo",
+  const eleven=Boolean(process.env.ELEVENLABS_API_KEY),gemini=Boolean(GEMINI_API_KEY);
+  res.json({ok:true,configured:eleven||gemini,engine:eleven?"ElevenLabs":gemini?"Gemini":"Browser fallback",
+    sttEngine:eleven?"ElevenLabs Scribe":gemini?"Gemini Audio":"Browser fallback",
+    ttsEngine:eleven?"ElevenLabs":gemini?"Gemini 3.8 TTS":"Browser fallback",
+    model:eleven?(process.env.ELEVENLABS_TTS_MODEL||"eleven_v4_turbo"):(process.env.GEMINI_TTS_MODEL||"gemini-3.8-flash-tts"),
     voiceId:Boolean(process.env.ELEVENLABS_VOICE_ID||cfg.voiceId),
-    voiceName:cfg.voiceName||"JARVIS Original",
-    designReady:configured
-  });
+    voiceName:eleven?(cfg.voiceName||"JARVIS Original"):"JARVIS Algenib",designReady:eleven});
 });
 
 app.post("/api/voice/design",requirePrivateRequest,async(req,res)=>{
@@ -1113,36 +1152,45 @@ app.post("/api/voice/design",requirePrivateRequest,async(req,res)=>{
   }catch(e){res.status(502).json({ok:false,error:e.message||"Impossible de créer la voix."});}
 });
 
-app.post("/api/voice/turn",requirePrivateRequest, async (req,res) => {
-  if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
-  if(!process.env.ELEVENLABS_API_KEY) return res.status(503).json({ok:false,error:"ELEVENLABS_API_KEY manquante. Ajoute-la au backend pour activer la vraie voix JARVIS."});
+app.post("/api/voice/turn",requirePrivateRequest,async(req,res)=>{
+  if(!openai&&!GEMINI_API_KEY)return res.status(503).json({ok:false,error:"Aucun moteur IA configuré."});
   try{
-    const audioBase64=String(req.body.audioBase64||"");
-    const mimeType=String(req.body.mimeType||"audio/webm");
-    if(!audioBase64) return res.status(400).json({ok:false,error:"Audio manquant."});
+    const audioBase64=String(req.body.audioBase64||""),mimeType=String(req.body.mimeType||"audio/webm");
+    if(!audioBase64)return res.status(400).json({ok:false,error:"Audio manquant."});
     const audioBuffer=Buffer.from(audioBase64,"base64");
-    if(audioBuffer.length>12*1024*1024) return res.status(413).json({ok:false,error:"Audio trop volumineux."});
-    const form=new FormData();
-    form.append("file",new Blob([audioBuffer],{type:mimeType}),"voice.webm");
-    form.append("model_id","scribe_v2");
-    form.append("language_code","fra");
-    const stt=await fetch("https://api.elevenlabs.io/v1/speech-to-text",{method:"POST",headers:{"xi-api-key":process.env.ELEVENLABS_API_KEY},body:form});
-    const sttData=await stt.json().catch(()=>({}));
-    if(!stt.ok) return res.status(502).json({ok:false,error:sttData.detail||sttData.message||"ElevenLabs STT failed."});
-    const transcript=String(sttData.text||"").trim();
-    if(!transcript) return res.status(400).json({ok:false,error:"Aucune parole détectée."});
+    if(audioBuffer.length>12*1024*1024)return res.status(413).json({ok:false,error:"Audio trop volumineux."});
+    let transcript="";
+    if(process.env.ELEVENLABS_API_KEY){
+      const form=new FormData();
+      form.append("file",new Blob([audioBuffer],{type:mimeType}),"voice.webm");
+      form.append("model_id","scribe_v2");form.append("language_code","fra");
+      const stt=await fetch("https://api.elevenlabs.io/v1/speech-to-text",{method:"POST",headers:{"xi-api-key":process.env.ELEVENLABS_API_KEY},body:form});
+      const sttData=await stt.json().catch(()=>({}));
+      if(!stt.ok)return res.status(502).json({ok:false,error:sttData.detail||sttData.message||"ElevenLabs STT failed."});
+      transcript=String(sttData.text||"").trim();
+    }else{
+      transcript=await transcribeAudioWithGemini(audioBuffer,mimeType);
+    }
+    if(!transcript)return res.status(400).json({ok:false,error:"Aucune parole détectée."});
     const model=normalizeModel(req.body.model);
     const previousTurns=Array.isArray(req.body.previousTurns)?req.body.previousTurns.slice(-12):[];
     const reply=String(await askVoiceCoach({model,userText:transcript,previousTurns})||"").trim();
-    const voiceConfig=await loadVoiceConfig();
-    const voiceId=process.env.ELEVENLABS_VOICE_ID||voiceConfig.voiceId||"s3TPKV1kjDlVtZbl4Ksh";
-    const ttsModel=process.env.ELEVENLABS_TTS_MODEL||"eleven_v4_turbo";
-    const speechText="[calm][confident] "+reply;
-    const tts=await fetch("https://api.elevenlabs.io/v1/text-to-speech/"+encodeURIComponent(voiceId)+"?output_format=mp3_44100_128",{method:"POST",headers:{"xi-api-key":process.env.ELEVENLABS_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({text:speechText,model_id:ttsModel,language_code:"fr",voice_settings:{stability:.65,similarity_boost:.82}})});
-    if(!tts.ok) return res.status(502).json({ok:false,error:"ElevenLabs TTS failed: "+(await tts.text()).slice(0,500)});
-    const audio=Buffer.from(await tts.arrayBuffer()).toString("base64");
-    res.json({ok:true,model,transcript,reply,audioBase64:audio,voice:"JARVIS-style",ttsModel});
-  }catch(e){res.status(502).json({ok:false,error:e.message});}
+    let audio="",voiceEngine="none";
+    if(process.env.ELEVENLABS_API_KEY){
+      const voiceConfig=await loadVoiceConfig();
+      const voiceId=process.env.ELEVENLABS_VOICE_ID||voiceConfig.voiceId||"s3TPKV1kjDlVtZbl4Ksh";
+      const ttsModel=process.env.ELEVENLABS_TTS_MODEL||"eleven_v4_turbo";
+      const tts=await fetch("https://api.elevenlabs.io/v1/text-to-speech/"+encodeURIComponent(voiceId)+"?output_format=mp3_44100_128",{
+        method:"POST",headers:{"xi-api-key":process.env.ELEVENLABS_API_KEY,"Content-Type":"application/json"},
+        body:JSON.stringify({text:"[calm][confident] "+reply,model_id:ttsModel,language_code:"fr",voice_settings:{stability:.65,similarity_boost:.82}})
+      });
+      if(tts.ok){audio=Buffer.from(await tts.arrayBuffer()).toString("base64");voiceEngine="ElevenLabs";}
+    }
+    if(!audio&&GEMINI_API_KEY){
+      try{audio=await synthesizeAudioWithGemini(reply);voiceEngine="Gemini TTS";}catch(e){console.error("[EDGEFLOW][GEMINI_TTS]",e.message);}
+    }
+    res.json({ok:true,model,transcript,reply,audioBase64:audio||null,audioMimeType:audio?"audio/wav":"",voice:voiceEngine});
+  }catch(e){res.status(502).json({ok:false,error:e.message||"Erreur vocale."});}
 });
 
 app.post("/api/detect-screen-trade",requirePrivateRequest, async (req,res) => {
