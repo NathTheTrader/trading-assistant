@@ -69,7 +69,7 @@ jobs:
             await click("#navBotCrypto");await expectVisible("crypto");
             if(await page.locator("#crypto .connection-card").count()!==0)throw new Error("Bot Crypto has unexpected connection cards");
             if(await page.locator("#crypto #btiming").count()!==0||await page.locator("#crypto #bbacktest").count()!==0)throw new Error("Futures checklist leaked into Crypto Bot");
-            if(await page.locator("#crypto #cryptoInstrumentBot").count()!==1||await page.locator("#crypto #cryptoKOBot").count()!==1)throw new Error("Crypto Bot controls incomplete");
+            if(await page.locator("#crypto #cryptoInstrumentBot").count()!==1||await page.locator("#crypto #cDirection").count()!==1||await page.locator("#crypto #cKeyOpen").count()!==1)throw new Error("Crypto Bot controls incomplete");
             await page.screenshot({path:"/tmp/edgeflow-crypto-bot.png",fullPage:true});
             await click("#navJournal");await expectVisible("journal");
             await click("#modeNQ");await expectVisible("journal");
