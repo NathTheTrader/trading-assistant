@@ -572,7 +572,39 @@ button:active{transform:translateY(1px)}
 
 .observer-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.observer-card{background:#0b0f15;border:1px solid #1d2430;border-radius:12px;padding:12px}.observer-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.observer-title{font-size:12px;font-weight:900}.observer-state{font-size:9px;font-weight:900;color:#8f9aaa}.observer-card p{font-size:10px;color:#8f9aaa;line-height:1.5;margin:7px 0 0}.trade-question{margin-top:12px;display:grid;gap:8px}.trade-question label{font-size:9px;color:#7f8999;font-weight:850;text-transform:uppercase;letter-spacing:.7px}.trade-question select,.trade-question textarea{width:100%}.trade-question textarea{min-height:70px}.observer-live{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:10px;color:#8f9aaa}.observer-live i{width:7px;height:7px;border-radius:50%;background:#697487;box-shadow:0 0 10px currentColor}.observer-live.live i{background:var(--green)}
 @media(max-width:760px){.observer-grid{grid-template-columns:1fr}}
+/* EDGEFLOW — 2026 FINAL UI PASS */
+:root{--red:#e12d39;--red2:#b91f2a;--red3:#71151d;--redSoft:rgba(225,45,57,.10);--accent:var(--red);--accentSoft:var(--redSoft);--text:#f5f7fa;--muted:#8b95a4;--dim:#687281;--hairline:rgba(255,255,255,.065);--hairline2:rgba(255,255,255,.11);--radius:12px}
+html{scroll-behavior:auto}
+body{font-family:"Manrope",Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-feature-settings:"cv11" 1,"ss01" 1;background:radial-gradient(760px 430px at 86% -8%,rgba(225,45,57,.055),transparent 68%),linear-gradient(180deg,#07090c 0%,#090c11 100%)}
+body.crypto-mode{--accent:#4b9cff;--accentSoft:rgba(75,156,255,.10);--blue:#4b9cff;background:radial-gradient(760px 430px at 86% -8%,rgba(75,156,255,.07),transparent 68%),linear-gradient(180deg,#07090c 0%,#090c11 100%)}
+.side{width:216px;flex-basis:216px;padding:18px 10px;background:rgba(7,9,12,.92);border-right:1px solid rgba(255,255,255,.055)}
+.brand{padding:3px 8px 19px;gap:10px}.brand-mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(145deg,#f0444d 0%,#d51f2d 52%,#92151f 100%);box-shadow:0 10px 28px rgba(225,45,57,.20),inset 0 1px 0 rgba(255,255,255,.20)}
+body.crypto-mode .brand-mark{background:linear-gradient(145deg,#67b2ff,#2878df 55%,#19498e);box-shadow:0 10px 28px rgba(75,156,255,.18),inset 0 1px 0 rgba(255,255,255,.20)}
+.brand-title{font-family:"Manrope",sans-serif;font-size:14px;font-weight:850;letter-spacing:.7px}.brand-title span{color:var(--red)}body.crypto-mode .brand-title span{color:var(--blue)}
+.brand-sub{font-size:8px;letter-spacing:1.65px}.mode-switch{margin:0 4px 17px;padding:3px;border-radius:10px}.mode-switch button{min-height:33px;font-size:9px}
+.nav-title{font-size:8px;letter-spacing:1.7px;padding:0 10px 7px}nav{gap:2px}nav button{min-height:38px;padding:8px 10px;border-radius:8px;font-size:11.5px;font-weight:650}
+nav button.active{background:linear-gradient(90deg,rgba(225,45,57,.12),rgba(225,45,57,.025) 75%,transparent);border-color:rgba(255,255,255,.045)}nav button.active:before{background:var(--red);box-shadow:0 0 12px var(--red)}
+body.crypto-mode nav button.active{background:linear-gradient(90deg,rgba(75,156,255,.12),rgba(75,156,255,.025) 75%,transparent)}body.crypto-mode nav button.active:before{background:var(--blue);box-shadow:0 0 12px var(--blue)}nav button.active .nav-icon{color:var(--red)}body.crypto-mode nav button.active .nav-icon{color:var(--blue)}
+.connection-mini{border-radius:10px;padding:10px}.mini-sub{font-size:8.5px}
+.main{width:min(100%,1380px);max-width:1380px;padding:24px 24px 48px}.topbar{margin-bottom:17px}.eyebrow{color:var(--red);font-size:8.5px;letter-spacing:1.8px}body.crypto-mode .eyebrow{color:var(--blue)}
+h1{font-family:"Manrope",sans-serif;font-size:25px;font-weight:780;letter-spacing:-1.05px}.sub{font-size:11px}.grid{gap:9px}
+.card,.section,.model-card{border-radius:12px;background:linear-gradient(145deg,rgba(15,19,25,.96),rgba(10,13,18,.96));border-color:var(--hairline);box-shadow:0 9px 28px rgba(0,0,0,.13)}.card{padding:14px}.section{padding:14px}.section h2{font-size:12.5px;font-weight:750;margin-bottom:10px}.label{font-size:8.5px}.value{font-size:22px}.layout{gap:10px;margin-top:10px}
+.hero{padding:19px;min-height:145px;border-radius:13px}.hero-title{font-size:20px}.hero p{font-size:11px}
+button.primary{min-height:38px;background:linear-gradient(135deg,#e83a45,#c9222f);box-shadow:0 7px 20px rgba(225,45,57,.13)}button.secondary{min-height:38px}body.crypto-mode button.primary{background:linear-gradient(135deg,#55a8ff,#2875df);box-shadow:0 7px 20px rgba(75,156,255,.13)}
+input,textarea,select{min-height:40px}textarea{min-height:96px}.form{gap:7px}.form label{padding:9px 10px;font-size:10.5px}.table th,.table td{padding:8px 9px}.table{font-size:10.5px}
+.kpi-grid{gap:7px}.kpi{padding:9px}.dashboard-kpis{gap:8px}.dashboard-kpis .card{min-height:88px}.dashboard-kpis .card .value{margin-top:7px}.dashboard-kpis .value{font-size:21px}
+.check-grid{gap:7px}.check-card{min-height:56px;padding:10px 11px!important;border-radius:10px!important}.check-icon{width:28px;height:28px;border-radius:8px}.check-title{font-size:11px}.check-meta{font-size:8.5px}.image-drop{padding:11px}.image-inputs{gap:7px}.image-input{padding:8px}.image-input input[type=file]{min-height:35px}.ai-analysis{font-size:11.5px;line-height:1.65}
+main>section.hidden{display:none!important}main>section:not(.hidden){animation:edgeViewIn .16s ease-out}@keyframes edgeViewIn{from{opacity:.35;transform:translateY(3px)}to{opacity:1;transform:none}}
+#journal{width:min(100%,1120px);margin:0 auto}#journal .topbar{margin-bottom:14px}#journal>.grid{grid-template-columns:1.25fr .8fr .8fr .8fr}#journal>.grid .card{min-height:78px;padding:12px 13px}#journal>.grid .value{font-size:19px}#journal>.section{margin-top:10px!important;padding:13px}
+#journal .form{grid-template-columns:repeat(2,minmax(0,1fr))}#journal .form label{min-height:46px}#journal textarea{min-height:82px}#journal .photo-grid{gap:7px}#journal .photo-box{padding:8px}#journal .photo-box img{max-height:210px}#journal .actions{gap:6px}#journal .table-wrap{max-height:460px}#journal .table{min-width:680px}
+#settings{width:min(100%,1160px);margin:0 auto}#review{width:min(100%,1180px);margin:0 auto}#bot{width:min(100%,1240px);margin:0 auto}#chat{width:min(100%,1120px);margin:0 auto}#chat .chat-shell{height:calc(100vh - 175px);min-height:480px}
+#journal .section h2,#settings .section h2,#review .section h2{letter-spacing:-.15px}.connection-card{padding:12px}.connection-card p{margin:8px 0 10px}.connection-actions a,.connection-actions button{min-height:34px}
+.status,.pill{background:rgba(225,45,57,.07);border-color:rgba(225,45,57,.18);color:#ef6670}.tag{background:rgba(225,45,57,.07);border-color:rgba(225,45,57,.14);color:#ef6972}.circle{border-color:var(--red);box-shadow:0 0 30px rgba(225,45,57,.07)}.grade{color:var(--red)}.card:before{background:linear-gradient(90deg,transparent,rgba(225,45,57,.18),transparent)}
+input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}.trade-pop{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+@media(max-width:760px){.side{width:100%;padding:8px}.main{padding:16px 12px 32px}#journal,#settings,#review,#bot,#chat{width:100%}#journal>.grid{grid-template-columns:repeat(2,1fr)}#journal .form{grid-template-columns:1fr}#chat .chat-shell{height:68vh;min-height:430px}}
+
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 <div class="app">
@@ -902,6 +934,7 @@ function show(id,btn){
  }
  if(id==="journal"){renderJournal();updateJournalMarket();restoreJournalDraft();}
  if(id==="dash")renderStats();
+ window.scrollTo({top:0,left:0,behavior:"auto"});
 }
 async function sendChat(){
  const input=$("chatInput"),msg=String(input?.value||"").trim();if(!msg)return;
