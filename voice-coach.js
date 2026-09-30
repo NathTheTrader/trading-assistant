@@ -1,4 +1,4 @@
-/* EDGEFLOW_VOICE_V8 — Talk only + original JARVIS voice */
+/* EDGEFLOW_VOICE_V9 — talk only + safe voice playback */
 (function(){
   const css=document.createElement("style");
   css.textContent=`
@@ -257,7 +257,7 @@ setState("idle","JARVIS PRÊT");
         stopVoiceMonitor();
         try{stream?.getTracks().forEach(t=>t.stop())}catch(e){}
         stream=null;
-        panel.querySelector("#taTalk").textContent="◉ PARLER";
+        const talkButton=panel?.querySelector("#taTalk");if(talkButton)talkButton.textContent="◉ PARLER";
         setState("thinking","JARVIS TRAITE");
         const blob=new Blob(chunks,{type:recorder.mimeType||m||"audio/webm"});
         send(blob);
@@ -293,7 +293,7 @@ setState("idle","JARVIS PRÊT");
       turns.push({role:"user",content:String(d.transcript||"")},{role:"assistant",content:String(d.reply||"")});
       turns=turns.slice(-12);renderConversation();
 setState("idle","RÉPONSE PRÊTE");setStatus("JARVIS répond selon le modèle "+modelLabel()+".");
-      speakWithJarvisVoice(d.reply||"");
+      Promise.resolve(speakWithJarvisVoice(d.reply||"")).catch(err=>{console.warn("[EDGEFLOW][VOICE_PLAY]",err);speak(d.reply||"");setStatus("JARVIS prêt.");});
     }catch(e){setState("idle","JARVIS PRÊT");setStatus(e.message)}
   }
   function init(){
