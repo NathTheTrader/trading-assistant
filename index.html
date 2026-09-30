@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1945-jarvis-voice9"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2005-chart-zero-premium-bg-v18"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><style>
@@ -984,6 +984,23 @@ body:after{
 
 .bot-live-cards{grid-template-columns:repeat(4,minmax(0,1fr))}.live-card{min-height:118px}.live-card .label{margin-bottom:5px}.live-card .value.small{display:inline-block;margin-top:2px}.live-divider{display:inline-block;margin:0 8px;color:#5f6978;font-size:13px;font-weight:500}.live-card .sub{min-height:18px}.live-card .actions{margin-top:8px}
 @media(max-width:980px){.bot-live-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:620px){.bot-live-cards{grid-template-columns:1fr}}
+
+/* EDGEFLOW — premium ultra-clean background */
+body{
+ background:
+   radial-gradient(760px 500px at 78% -14%,rgba(255,54,93,.030),transparent 72%),
+   radial-gradient(760px 520px at 12% 112%,rgba(75,156,255,.012),transparent 76%),
+   linear-gradient(180deg,#040507 0%,#07090c 48%,#05070a 100%) !important;
+}
+body.crypto-mode{
+ background:
+   radial-gradient(760px 500px at 78% -14%,rgba(75,156,255,.035),transparent 72%),
+   radial-gradient(760px 520px at 12% 112%,rgba(75,156,255,.014),transparent 76%),
+   linear-gradient(180deg,#040507 0%,#07090c 48%,#05070a 100%) !important;
+}
+body:before{opacity:.018 !important;background-size:120px 120px !important;background-image:linear-gradient(rgba(255,255,255,.010) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.010) 1px,transparent 1px) !important;mask-image:linear-gradient(to bottom,rgba(0,0,0,.22),transparent 82%) !important}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(1000px 700px at 50% 40%,rgba(255,255,255,.006),transparent 72%);opacity:.8}
+.pnl-zero-dot{fill:#aeb8c5}.pnl-line{stroke-width:2.4}.pnl-area{opacity:.18}
 </style>
 </head><body>
 <div class="app">
@@ -1949,18 +1966,50 @@ function renderPnlChart(prefix,stats){
  if(peak)peak.textContent=stats.pnlCount?formatMoneyShort(stats.peak):"—";
  if(dd)dd.textContent=stats.pnlCount?formatMoneyShort(-stats.drawdown):"—";
  if(badge){badge.textContent=stats.pnl!==null?formatMoneyShort(stats.pnl):"—";badge.className="pnl-net "+(stats.pnl>0?"positive":stats.pnl<0?"negative":"neutral");}
- if(caption)caption.textContent=stats.pnlCount?stats.pnlCount+" trade(s) · cumul final "+formatMoneyShort(stats.pnl):"Aucun P&L renseigné pour ce mois.";
+ if(caption)caption.textContent=stats.pnlCount?stats.pnlCount+" trade(s) · départ 0 · cumul final "+formatMoneyShort(stats.pnl):"Aucun P&L renseigné pour ce mois.";
  if(!stats.series.length){el.innerHTML='<div class="empty">Aucun P&L renseigné pour ce mois.</div>';return;}
- const w=940,h=300,padL=52,padR=20,padT=18,padB=34;
- const vals=[0,...stats.series.map(p=>p.cumulative)],min=Math.min(...vals),max=Math.max(...vals),spread=Math.max(1,max-min),lo=min-spread*.08,hi=max+spread*.08;
- const x=i=>padL+(i/(Math.max(1,stats.series.length-1)))*(w-padL-padR),y=v=>padT+(1-(v-lo)/(hi-lo))*(h-padT-padB),zeroY=y(0);
- const line=stats.series.map((p,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(p.cumulative).toFixed(1)).join(" ");
- const area=line+" L "+x(stats.series.length-1).toFixed(1)+" "+zeroY.toFixed(1)+" L "+x(0).toFixed(1)+" "+zeroY.toFixed(1)+" Z";
+
+ // Explicit baseline point at 0, followed by one point per realized P&L trade.
+ const points=[{cumulative:0,trade:null,pnl:0},...stats.series];
+ const w=940,h=300,padL=58,padR=20,padT=22,padB=36;
+ const vals=points.map(p=>p.cumulative),min=Math.min(0,...vals),max=Math.max(0,...vals);
+ const spread=Math.max(1,max-min),lo=min-spread*.10,hi=max+spread*.10;
+ const x=i=>padL+(i/(Math.max(1,points.length-1)))*(w-padL-padR);
+ const y=v=>padT+(1-(v-lo)/(hi-lo))*(h-padT-padB);
+ const zeroY=y(0);
+ const line=points.map((p,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(p.cumulative).toFixed(1)).join(" ");
+ const area=line+" L "+x(points.length-1).toFixed(1)+" "+zeroY.toFixed(1)+" L "+x(0).toFixed(1)+" "+zeroY.toFixed(1)+" Z";
+
  const grid=[];
- for(let i=0;i<4;i++){const v=lo+(hi-lo)*(i/3),yy=y(v);grid.push('<line x1="'+padL+'" y1="'+yy.toFixed(1)+'" x2="'+(w-padR)+'" y2="'+yy.toFixed(1)+'" class="pnl-grid-line"/>');grid.push('<text x="'+(padL-10)+'" y="'+(yy+3).toFixed(1)+'" text-anchor="end" class="pnl-axis">'+esc(formatMoneyShort(v))+'</text>');}
- const dots=stats.series.map((p,i)=>'<g class="pnl-point"><circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.cumulative).toFixed(1)+'" r="4" class="pnl-dot"/><title>'+pnlTooltipPoint(p)+'</title></g>').join("");
- const labels=stats.series.length>1?[0,Math.floor((stats.series.length-1)/2),stats.series.length-1].filter((v,i,a)=>a.indexOf(v)===i).map(i=>'<text x="'+x(i).toFixed(1)+'" y="'+(h-8)+'" text-anchor="middle" class="pnl-axis">'+esc(formatDateShort(tradeDateISO(stats.series[i].trade)))+'</text>').join(""):"";
- el.innerHTML='<svg class="pnl-svg" viewBox="0 0 '+w+" "+h+'" role="img" aria-label="Courbe P&L cumulée du mois">'+grid.join("")+'<line x1="'+padL+'" y1="'+zeroY.toFixed(1)+'" x2="'+(w-padR)+'" y2="'+zeroY.toFixed(1)+'" class="pnl-zero"/><path d="'+area+'" class="pnl-area"/><path d="'+line+'" class="pnl-line"/>'+dots+labels+'<text x="'+padL+'" y="12" class="pnl-axis">P&L cumulé · '+esc(monthLabel(stats.month||""))+'</text></svg>';
+ for(let i=0;i<4;i++){
+   const v=lo+(hi-lo)*(i/3),yy=y(v);
+   grid.push('<line x1="'+padL+'" y1="'+yy.toFixed(1)+'" x2="'+(w-padR)+'" y2="'+yy.toFixed(1)+'" class="pnl-grid-line"/>');
+   grid.push('<text x="'+(padL-10)+'" y="'+(yy+3).toFixed(1)+'" text-anchor="end" class="pnl-axis">'+esc(formatMoneyShort(v))+'</text>');
+ }
+ const dots=stats.series.map((p,i)=>{
+   const idx=i+1;
+   return '<g class="pnl-point"><circle cx="'+x(idx).toFixed(1)+'" cy="'+y(p.cumulative).toFixed(1)+'" r="4" class="pnl-dot"/><title>'+pnlTooltipPoint(p)+'</title></g>';
+ }).join("");
+
+ const labels=[];
+ if(points.length>1){
+   labels.push('<text x="'+x(0).toFixed(1)+'" y="'+(h-8)+'" text-anchor="middle" class="pnl-axis">0</text>');
+   const tradeIndexes=[1,Math.floor((points.length-1)/2),points.length-1].filter((v,i,a)=>a.indexOf(v)===i);
+   tradeIndexes.forEach(idx=>{
+     const t=points[idx].trade;
+     labels.push('<text x="'+x(idx).toFixed(1)+'" y="'+(h-8)+'" text-anchor="middle" class="pnl-axis">'+esc(formatDateShort(tradeDateISO(t)))+'</text>');
+   });
+ }
+
+ el.innerHTML='<svg class="pnl-svg" viewBox="0 0 '+w+" "+h+'" role="img" aria-label="Courbe P&L cumulée du mois">'+
+   grid.join("")+
+   '<line x1="'+padL+'" y1="'+zeroY.toFixed(1)+'" x2="'+(w-padR)+'" y2="'+zeroY.toFixed(1)+'" class="pnl-zero"/>'+
+   '<path d="'+area+'" class="pnl-area"/>'+
+   '<path d="'+line+'" class="pnl-line"/>'+
+   '<circle cx="'+x(0).toFixed(1)+'" cy="'+zeroY.toFixed(1)+'" r="3.5" class="pnl-zero-dot"/>'+
+   dots+labels.join("")+
+   '<text x="'+padL+'" y="14" class="pnl-axis">P&L cumulé · '+esc(monthLabel(stats.month||""))+'</text>'+
+   '</svg>';
 }
 function renderDashboardActivity(prefix,arr){
  const el=$(prefix+"Latest");if(!el)return;
