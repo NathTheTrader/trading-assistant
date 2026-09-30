@@ -205,13 +205,116 @@ button.danger{min-height:42px}
   .chat-input textarea{font-size:16px}
   input,textarea,select{font-size:16px}
 }
-</style>
+<style>
+/* EDGEFLOW 2026 visual system */
+:root{
+  --bg:#07080b;--bg2:#0a0c10;--panel:#0d1015;--panel2:#11151c;--panel3:#0a0d12;
+  --line:rgba(255,255,255,.075);--line2:rgba(255,255,255,.13);
+  --text:#f2f4f7;--muted:#858e9d;
+  --red:#ff3158;--red2:#e31b45;--red3:#7f102b;--redSoft:rgba(255,49,88,.10);
+  --green:#35e39b;--orange:#ffbd5a;--blue:#5fa0ff;
+  --shadow:0 24px 70px rgba(0,0,0,.38);--radius:14px;
+}
+body{
+  background:
+    radial-gradient(900px 500px at 78% -8%,rgba(255,49,88,.055),transparent 62%),
+    radial-gradient(700px 450px at 18% 100%,rgba(80,120,255,.025),transparent 65%),
+    var(--bg);
+  font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  letter-spacing:-.01em;
+}
+.side{
+  width:248px;flex-basis:248px;
+  background:rgba(8,10,14,.94);
+  border-right:1px solid rgba(255,255,255,.065);
+  backdrop-filter:blur(18px);
+  padding:20px 13px;
+}
+.brand{gap:12px;padding:3px 9px 27px}
+.brand-mark{
+  width:38px;height:38px;border-radius:12px;
+  display:grid;place-items:center;color:#fff;
+  background:linear-gradient(145deg,#ff3158 0%,#b3123a 100%);
+  box-shadow:0 10px 30px rgba(255,49,88,.18),inset 0 1px 0 rgba(255,255,255,.25);
+}
+.brand-mark svg{width:28px;height:28px}
+.brand-title{font-size:14px;font-weight:850;letter-spacing:.8px}
+.brand-title span{color:#ff3158}
+.brand-sub{font-size:8px;letter-spacing:1.55px;color:#687281;margin-top:3px}
+.nav-title{color:#596271;font-size:8px;letter-spacing:1.7px;padding:0 11px 9px}
+nav{gap:3px}
+nav button{
+  padding:10px 11px;border-radius:9px;font-size:12px;font-weight:620;
+  color:#7f8896;transition:background .16s,border-color .16s,color .16s,transform .16s;
+}
+nav button:hover{background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.06);color:#e9edf3}
+nav button.active{
+  background:linear-gradient(90deg,rgba(255,49,88,.12),rgba(255,49,88,.025));
+  color:#f7f8fa;border-color:rgba(255,49,88,.16);
+  box-shadow:inset 2px 0 0 #ff3158;
+}
+.nav-icon{width:18px;color:#687281;font-size:14px}
+nav button.active .nav-icon{color:#ff5b78}
+.main{padding:30px 34px 60px;max-width:1480px}
+.topbar{margin-bottom:25px}
+.eyebrow{font-size:9px;letter-spacing:1.8px;color:#ff4c6e;margin-bottom:8px}
+h1{font-size:27px;letter-spacing:-1px;font-weight:820}
+.sub{font-size:11.5px;color:#818b99}
+.status,.pill{
+  border-radius:8px;padding:6px 9px;font-size:9px;letter-spacing:.5px;
+  background:rgba(255,49,88,.075);border-color:rgba(255,49,88,.18);color:#ff6680;
+}
+.card,.section,.model-card{
+  background:linear-gradient(145deg,rgba(16,19,25,.96),rgba(11,14,19,.96));
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:13px;box-shadow:0 12px 35px rgba(0,0,0,.15);
+}
+.card{padding:17px}
+.card:before{background:linear-gradient(90deg,transparent,rgba(255,49,88,.18),transparent)}
+.label{color:#727c8b;font-size:9px;letter-spacing:1px}
+.value{font-size:24px;font-weight:800;letter-spacing:-.8px}
+.layout{gap:16px}
+.section{padding:17px}
+.section h2{font-size:13px;font-weight:780}
+.row{background:rgba(255,255,255,.018);border-color:rgba(255,255,255,.065);border-radius:9px}
+button.primary{
+  background:linear-gradient(135deg,#ff3158,#e51d48);
+  border-radius:9px;padding:10px 14px;font-size:11px;
+  box-shadow:0 8px 22px rgba(255,49,88,.14);
+}
+button.secondary{
+  background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.11);
+  border-radius:9px;padding:9px 12px;font-size:11px;
+}
+button.secondary:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18)}
+.form label{background:rgba(255,255,255,.018);border-color:rgba(255,255,255,.065)}
+input,textarea,select{
+  background:#090c11;border-color:rgba(255,255,255,.10);border-radius:8px;
+}
+input:focus,textarea:focus,select:focus{
+  border-color:rgba(255,49,88,.48);box-shadow:0 0 0 3px rgba(255,49,88,.065)
+}
+.hero{
+  background:
+    radial-gradient(500px 220px at 90% 0%,rgba(255,49,88,.09),transparent 70%),
+    linear-gradient(145deg,#11151c,#0b0e13);
+  border:1px solid rgba(255,255,255,.075);border-radius:15px;padding:24px;
+}
+.hero-title{font-size:20px;font-weight:800;letter-spacing:-.5px}
+.model-card:hover{border-color:rgba(255,49,88,.38)}
+.table-wrap{border-color:rgba(255,255,255,.075);border-radius:10px}
+.table th{background:#0b0e13;color:#6f7887}
+.table th,.table td{border-color:rgba(255,255,255,.065)}
+.ai-box{background:rgba(255,255,255,.018);border-color:rgba(255,255,255,.075)}
+.divider{background:rgba(255,255,255,.07)}
+.hidden{display:none!important}
+</style></style>
 </head>
 <body>
 <div class="app">
 <aside class="side">
   <div class="brand">
-    <div class="brand-mark">E</div>
+    <div class="brand-mark" aria-label="EDGEFLOW"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3 35 11.5v17L20 37 5 28.5v-17L20 3Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M26.8 11.5H14.2v17h12.6M14.2 20h9.4" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M28.5 13.2 33 15.8v8.4l-4.5 2.6" fill="none" stroke="currentColor" stroke-width="1.3" opacity=".55"/></svg></div>
     <div><div class="brand-title">EDGE<span>FLOW</span></div><div class="brand-sub">NQ • CRYPTO • AI</div></div>
   </div>
   <div class="mode-switch" aria-label="Mode du site"><button id="modeNQ" type="button" data-site-mode="NQ" aria-pressed="false">NQ / FUTURES</button><button id="modeCrypto" type="button" data-site-mode="CRYPTO" aria-pressed="false">CRYPTO</button></div>
