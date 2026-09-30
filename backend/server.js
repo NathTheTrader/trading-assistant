@@ -1085,7 +1085,7 @@ async function transcribeAudioWithGemini(audioBuffer,mimeType="audio/webm"){
   const body={
     contents:[{role:"user",parts:[
       {text:"Transcris exactement la parole en français canadien. Retourne uniquement la transcription, sans commentaire ni guillemets. Préserve les termes de trading et acronymes comme NQ, MNQ, BTC, FVG, OB, R.B., MSS, CHOCH, BOS, OTE, Key Open et RR."},
-      {inline_data:{mime_type:mimeType,data:audioBuffer.toString("base64")}}
+      {inlineData:{mimeType:mimeType,data:audioBuffer.toString("base64")}}
     ]}],
     generationConfig:{temperature:0,maxOutputTokens:1200}
   };
