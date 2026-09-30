@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1655-final-visual-system-v19"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2005-chart-zero-premium-bg-v18"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><style>
@@ -1002,117 +1002,14 @@ body:before{opacity:.018 !important;background-size:120px 120px !important;backg
 body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(1000px 700px at 50% 40%,rgba(255,255,255,.006),transparent 72%);opacity:.8}
 .pnl-zero-dot{fill:#aeb8c5}.pnl-line{stroke-width:2.4}.pnl-area{opacity:.18}
 
-/* EDGEFLOW — FINAL VISUAL PASS 2026-09-30 */
-:root{
-  --ef-bg:#050609;
-  --ef-bg2:#090b10;
-  --ef-surface:rgba(13,16,22,.86);
-  --ef-surface2:rgba(17,21,29,.78);
-  --ef-border:rgba(255,255,255,.075);
-  --ef-border-hi:rgba(255,255,255,.14);
-  --ef-red:#ff3b63;
-  --ef-blue:#4da3ff;
-  --ef-text:#f4f6f9;
-  --ef-muted:#7f8998;
-}
-body{
-  font-family:"Manrope",Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:
-    radial-gradient(900px 600px at 86% -12%,color-mix(in srgb,var(--accent) 11%,transparent),transparent 68%),
-    radial-gradient(700px 500px at -8% 82%,rgba(255,255,255,.018),transparent 70%),
-    linear-gradient(135deg,#040508 0%,#080a0f 46%,#050609 100%);
-}
-body:before{
-  opacity:.12;
-  background-image:
-    linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
-  background-size:96px 96px;
-  mask-image:linear-gradient(to bottom,rgba(0,0,0,.8),rgba(0,0,0,.35) 58%,transparent 100%);
-}
-body:after{
-  content:"";
-  position:fixed;
-  inset:0;
-  z-index:-1;
-  pointer-events:none;
-  opacity:.7;
-  background:
-    linear-gradient(115deg,transparent 0 34%,color-mix(in srgb,var(--accent) 2.5%,transparent) 48%,transparent 63%),
-    radial-gradient(520px 420px at 72% 18%,color-mix(in srgb,var(--accent) 4%,transparent),transparent 72%);
-}
-.side{
-  background:linear-gradient(180deg,rgba(7,9,13,.94),rgba(5,7,10,.88));
-  border-right:1px solid var(--ef-border);
-  box-shadow:24px 0 80px rgba(0,0,0,.24);
-}
-.brand-mark{
-  position:relative;
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,.18);
-}
-.brand-mark:after{
-  content:"";
-  position:absolute;
-  inset:-45%;
-  background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.25) 50%,transparent 62%);
-  transform:translateX(-35%);
-  animation:efLogoSweep 5s ease-in-out infinite;
-}
-@keyframes efLogoSweep{0%,70%{transform:translateX(-35%)}85%,100%{transform:translateX(35%)}}
-.main{position:relative}
-.topbar{position:relative}
-.topbar:after{
-  content:"";
-  position:absolute;
-  left:0;right:0;bottom:-11px;
-  height:1px;
-  background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 35%,transparent),rgba(255,255,255,.045) 45%,transparent);
-}
-.card,.section,.model-card{
-  background:
-    linear-gradient(145deg,rgba(18,22,29,.88),rgba(9,12,17,.91)),
-    radial-gradient(500px 220px at 100% 0%,color-mix(in srgb,var(--accent) 4%,transparent),transparent 70%);
-  border-color:var(--ef-border);
-  box-shadow:0 18px 55px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.018);
-  backdrop-filter:blur(14px);
-}
-.card:hover,.section:hover,.model-card:hover{
-  border-color:var(--ef-border-hi);
-  box-shadow:0 22px 65px rgba(0,0,0,.27),inset 0 1px 0 rgba(255,255,255,.025);
-}
-.hero{
-  background:
-    radial-gradient(600px 280px at 88% 0%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 70%),
-    linear-gradient(135deg,rgba(21,26,35,.94),rgba(8,11,16,.96));
-  border-color:color-mix(in srgb,var(--accent) 22%,var(--ef-border));
-  box-shadow:0 28px 80px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.025);
-}
-.hero:before{
-  content:"";
-  position:absolute;
-  left:0;top:0;bottom:0;width:2px;
-  background:linear-gradient(180deg,var(--accent),transparent 82%);
-  box-shadow:0 0 24px color-mix(in srgb,var(--accent) 28%,transparent);
-}
-.value,h1,.hero-title,.model-card h2,.section h2,.brand-title{
-  font-family:"Manrope",Inter,ui-sans-serif,sans-serif;
-}
-h1{font-weight:800}
-.value{font-weight:800}
-button.primary{
-  background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 94%,white),color-mix(in srgb,var(--accent) 78%,#000));
-  box-shadow:0 10px 30px color-mix(in srgb,var(--accent) 15%,transparent),inset 0 1px 0 rgba(255,255,255,.18);
-}
-button.primary:hover{box-shadow:0 14px 34px color-mix(in srgb,var(--accent) 22%,transparent)}
-.status.green{box-shadow:0 0 18px rgba(46,220,145,.07)}
-.mode-switch{box-shadow:0 10px 30px rgba(0,0,0,.18)}
-body.crypto-mode .hero:before{background:linear-gradient(180deg,var(--blue),transparent 82%);box-shadow:0 0 24px rgba(75,156,255,.28)}
-@media(max-width:760px){
-  body:before{background-size:64px 64px}
-  .main{padding-top:18px}
-}
-
+/* EDGEFLOW CLEAN UI — no grid, no decorative frames */
+body{background:#07090d !important;background-image:none !important}
+body:before,body:after{display:none !important;content:none !important}
+.card,.section,.model-card{background:#0f1319 !important;border:1px solid rgba(255,255,255,.06) !important;box-shadow:0 10px 28px rgba(0,0,0,.16) !important}
+.card:before{display:none !important}
+.hero{background:#12171e !important;border-color:rgba(255,255,255,.08) !important;box-shadow:0 18px 45px rgba(0,0,0,.2) !important}
+.side{background:#090b10 !important;box-shadow:none !important}
+.date-entry{display:flex;gap:8px;align-items:center}.date-entry input[type=date]{flex:1;min-width:0}
 </style>
 </head><body>
 <div class="app">
@@ -1144,7 +1041,7 @@ body.crypto-mode .hero:before{background:linear-gradient(180deg,var(--blue),tran
 </aside>
 <main class="main">
 
-<section id="models" class="workspace hidden" hidden>
+<section id="models" class="workspace">
   <div class="workspace-header"><div><div class="eyebrow">EDGEFLOW</div><h1>Choisis ton modèle</h1><div class="sub">Deux environnements distincts. Le contexte, le journal, le bot et les règles restent séparés.</div></div><div class="status green">● SYSTÈME PRÊT</div></div>
   <div class="model-select">
     <div class="model-card" onclick="selectModel('NQ')"><div class="tag">FUTURES</div><h2>Modèle Futures</h2><p>HTF bias · POI · liquidité/manipulation · retracement Fibonacci · Rejection Block · entrée limite.</p><div class="sub">Ouvrir Futures →</div></div>
@@ -1152,7 +1049,7 @@ body.crypto-mode .hero:before{background:linear-gradient(180deg,var(--blue),tran
   </div>
 </section>
 
-<section id="dash" class="workspace" data-model="NQ">
+<section id="dash" class="workspace hidden" data-model="NQ">
   <div class="workspace-header">
     <div><div class="eyebrow" id="dashMarketEyebrow">FUTURES</div><h1>Dashboard Futures</h1><div class="sub">Performance du mois actif · <strong id="dashMonthLabel">—</strong> · les mois précédents restent accessibles.</div></div>
     <div class="status green">● FUTURES ACTIF</div>
@@ -1275,7 +1172,7 @@ body.crypto-mode .hero:before{background:linear-gradient(180deg,var(--blue),tran
         <label class="check-card imperfection"><span class="check-main"><span class="check-icon">M</span><span class="check-copy"><span class="check-title">Structure messy</span><span class="check-meta">-5 · IMPERFECTION</span></span></span><input id="bmessy" type="checkbox"><span class="check-switch"></span></label>
         <label class="check-card killer"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Entrée trop tôt / trop tard</span><span class="check-meta">KILLER</span></span></span><input id="btimebad" type="checkbox"><span class="check-switch"></span></label>
         <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">KILLER comportemental</span></span></span><input id="btilt" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER comportemental</span></span></span><input id="revenge" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER comportemental</span></span></span><input id="brev" type="checkbox"><span class="check-switch"></span></label>
       </div>
       <div id="botLiveScore" class="live-check-score"><span>PRÉ-CHECK</span><strong id="botLiveScoreValue">30/30</strong><em id="botLiveScoreGrade">A+</em></div>
       <textarea id="bnotes" placeholder="HTF bias → POI → liquidité / sweep → retracement → R.B. → entrée → SL/TP → news…"></textarea>
@@ -1382,7 +1279,7 @@ body.crypto-mode .hero:before{background:linear-gradient(180deg,var(--blue),tran
   </div>
   <div class="section" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:15px"><div><h2>Nouvelle entrée</h2><div class="sub">Le marché est verrouillé sur le modèle actif.</div></div><span class="tag" id="journalModeBadge">FUTURES</span></div>
     <div class="field-grid" style="margin-top:12px">
-      <label>Date<div style="display:flex;gap:7px"><div id="jDateDisplay" style="flex:1;background:#0b0f15;border:1px solid var(--line2);border-radius:9px;padding:10px;min-height:40px"></div><button type="button" class="secondary" onclick="$('jDate').showPicker?$('jDate').showPicker():$('jDate').click()">📅</button></div><input id="jDate" type="date" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none"></label>
+      <label>Date<div class="date-entry"><input id="jDate" type="date"><button type="button" class="secondary" onclick="setJournalViewDate(localDateISO())">AUJOURD’HUI</button></div><div id="jDateDisplay" class="sub" style="margin-top:6px"></div></label>
       <label>Marché<select id="jMarket" disabled><option value="FUTURES">FUTURES</option><option value="CRYPTO">CRYPTO</option></select></label>
       <label>Instrument<select id="jInstrument"></select></label>
       <label>Session<input id="jSession" placeholder="NY AM / NY PM / London / Asia…"></label>
@@ -1465,21 +1362,12 @@ function setSiteMode(mode){
   if(typeof renderChatHistory==="function" && $("chat") && !$("chat").classList.contains("hidden")) renderChatHistory(siteMode);
 }
 function switchMode(mode){
-  const activeNav=document.querySelector("nav button.active")?.id||"";
-  const visible=[...document.querySelectorAll("main>.workspace")].find(s=>!s.hidden&&s.style.display!=="none"&&!s.classList.contains("hidden"));
-  let current="";
-  if(activeNav==="navJournal")current="journal";
-  else if(activeNav==="navSettings")current="settings";
-  else if(activeNav==="navChat")current="chat";
-  else if(activeNav==="navBotFutures")current="bot";
-  else if(activeNav==="navBotCrypto")current="crypto";
-  else current=visible?.id||"dash";
+  const current=document.querySelector("main>.workspace:not(.hidden)")?.id||"dash";
   setSiteMode(mode);
   if(current==="journal") show("journal");
   else if(current==="settings") show("settings");
   else if(current==="chat") show("chat");
   else if(current==="bot"||current==="crypto") show(mode==="CRYPTO"?"crypto":"bot");
-  else if(current==="models") show(mode==="CRYPTO"?"cryptoDash":"dash");
   else show(mode==="CRYPTO"?"cryptoDash":"dash");
 }
 async function botFetch(path,options={}){
@@ -1541,7 +1429,7 @@ function show(id,btn){
  target.classList.remove("hidden");target.hidden=false;target.style.display="block";target.setAttribute("aria-hidden","false");
  document.querySelectorAll("nav button").forEach(b=>{b.classList.remove("active");b.removeAttribute("aria-current");});
  if(btn){btn.classList.add("active");btn.setAttribute("aria-current","page");}
- if(id==="journal"){updateJournalMarket();renderJournal();restoreJournalDraft();}
+ if(id==="journal"){updateJournalMarket();renderJournal();restoreJournalDraft();hydrateJournalFromServer();}
  if(id==="chat"){renderChatHistory(activeModel);}
  if(id==="dash"||id==="cryptoDash")renderStats();
  const main=document.querySelector(".main"); if(main)main.scrollTop=0;
@@ -1664,10 +1552,10 @@ const FUTURES_CHECKLIST_IDS={
  messy:"messy",
  timebad:"timebad",
  tilt:"tilt",
- revenge:""
+ revenge:"revenge"
 };
 function checklistChecked(prefix,key){
- const id=(prefix==="b" && key==="revenge")?"revenge":prefix+FUTURES_CHECKLIST_IDS[key];
+ const id=prefix+FUTURES_CHECKLIST_IDS[key];
  const el=$(id);
  return el instanceof HTMLInputElement && el.type==="checkbox" && el.checked===true;
 }
@@ -1837,6 +1725,24 @@ async function journalPopupTrade(){
  if($("journalSyncStatus"))$("journalSyncStatus").textContent=synced?"● SERVEUR SYNC":"● LOCAL · SERVEUR INDISPONIBLE";
 }
 function getJournal(){try{return JSON.parse(localStorage.getItem("journal")||"[]")}catch(e){return[]}}
+let journalHydrating=false;
+async function hydrateJournalFromServer(){
+  if(!BOT_API||journalHydrating)return;
+  journalHydrating=true;
+  try{
+    const server=await botFetch("/api/trades");
+    if(!Array.isArray(server)||!server.length)return;
+    const local=getJournal(),map=new Map();
+    [...server,...local].forEach(t=>{
+      const key=String(t.id??((t.timestamp||t.dateISO||t.date||"")+"|"+(t.model||"")+"|"+(t.instrument||"")));
+      map.set(key,{...(map.get(key)||{}),...t});
+    });
+    const merged=[...map.values()].sort((a,b)=>String(b.timestamp||b.id||"").localeCompare(String(a.timestamp||a.id||"")));
+    localStorage.setItem("journal",JSON.stringify(merged.slice(0,500)));
+    renderJournal();
+    renderStats();
+  }catch(e){}finally{journalHydrating=false;}
+}
 function journalKey(x){return String(x.dateISO||x.date||"").slice(0,7)||"unknown"}
 function compressImage(file){return new Promise(resolve=>{if(!file){resolve("");return}const reader=new FileReader();reader.onload=e=>{const img=new Image();img.onload=()=>{const max=1400,scale=Math.min(1,max/img.width),c=document.createElement("canvas");c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext("2d").drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL("image/jpeg",.72))};img.src=e.target.result};reader.readAsDataURL(file)})}
 function previewJournalImage(input,id){const f=input?.files?.[0],img=$(id);if(!f||!img)return;const url=URL.createObjectURL(f);img.onload=()=>{img.style.display="block";URL.revokeObjectURL(url)};img.onerror=()=>{img.style.display="none";URL.revokeObjectURL(url)};img.src=url;img.style.display="block"}
@@ -2151,37 +2057,24 @@ function populateDashboardMonthControls(model,data){
  if(title)title.textContent=monthLabelLong(selected);
  if(label)label.textContent=monthLabelLong(selected);
 }
-async function localDashboardTrades(model){
- const local=getJournal().filter(x=>x.model===model);
- const month=dashboardMonthKey(model);
- return {trades:local.filter(t=>tradeMonthKey(t)===month),allTrades:local,localCount:local.length,serverCount:0,serverOk:false,month};
-}
-function applyDashboardStats(prefix,data){
- data.trades.forEach(t=>{t.__dashboardMonth=data.month;});
- const s=calcDashboardStats(data.trades);s.month=data.month;
- if($(prefix+"Trades"))$(prefix+"Trades").textContent=s.trades;
- if($(prefix+"Winrate"))$(prefix+"Winrate").textContent=s.winrate!==null?s.winrate.toFixed(1)+"%":"—";
- if($(prefix+"AvgR"))$(prefix+"AvgR").textContent=s.avgR!==null?((s.avgR>=0?"+":"")+s.avgR.toFixed(2)+"R"):"—";
- if($(prefix+"TotalR"))$(prefix+"TotalR").textContent=s.totalR!==null?((s.totalR>=0?"+":"")+s.totalR.toFixed(2)+"R"):"—";
- if($(prefix+"Pnl"))$(prefix+"Pnl").textContent=s.pnl!==null?formatMoneyShort(s.pnl):"—";
- if($(prefix+"PnlMeta"))$(prefix+"PnlMeta").textContent=s.pnlCount?s.pnlCount+" trade(s) avec P&L":"P&L renseigné dans le Journal";
- populateDashboardMonthControls(prefix==="cryptoDash"?"CRYPTO":"NQ",data);
- renderDashboardActivity(prefix,data.trades);
- renderPnlChart(prefix,s);
- const status=$(prefix+"DataStatus");if(status){status.textContent=data.serverOk?"● JOURNAL + SERVEUR":"● JOURNAL LOCAL";status.className=data.serverOk?"status green":"status";}
- const source=$(prefix+"SourceLabel");if(source)source.textContent=data.serverOk?"Journal + serveur":"Journal local";
-}
-let dashboardRenderVersion=0;
-function renderStats(){
- const renderVersion=++dashboardRenderVersion;
- // Paint the critical local trade counters synchronously. Rich dashboard rendering can follow asynchronously.
- const nqLocal=localDashboardTrades("NQ"),cryptoLocal=localDashboardTrades("CRYPTO");
- if($("dashTrades"))$("dashTrades").textContent=String(nqLocal.trades.length);
- if($("cryptoDashTrades"))$("cryptoDashTrades").textContent=String(cryptoLocal.trades.length);
- try{applyDashboardStats("dash",nqLocal);applyDashboardStats("cryptoDash",cryptoLocal);}catch(_){}
- Promise.all([loadDashboardTrades("NQ"),loadDashboardTrades("CRYPTO")])
-   .then(datasets=>{if(renderVersion!==dashboardRenderVersion)return;try{applyDashboardStats("dash",datasets[0]);applyDashboardStats("cryptoDash",datasets[1]);}catch(_){} })
-   .catch(()=>{});
+async function renderStats(){
+ const datasets=await Promise.all([loadDashboardTrades("NQ"),loadDashboardTrades("CRYPTO")]);
+ const put=(prefix,data)=>{
+   data.trades.forEach(t=>{t.__dashboardMonth=data.month;});
+   const s=calcDashboardStats(data.trades);s.month=data.month;
+   if($(prefix+"Trades"))$(prefix+"Trades").textContent=s.trades;
+   if($(prefix+"Winrate"))$(prefix+"Winrate").textContent=s.winrate!==null?s.winrate.toFixed(1)+"%":"—";
+   if($(prefix+"AvgR"))$(prefix+"AvgR").textContent=s.avgR!==null?((s.avgR>=0?"+":"")+s.avgR.toFixed(2)+"R"):"—";
+   if($(prefix+"TotalR"))$(prefix+"TotalR").textContent=s.totalR!==null?((s.totalR>=0?"+":"")+s.totalR.toFixed(2)+"R"):"—";
+   if($(prefix+"Pnl"))$(prefix+"Pnl").textContent=s.pnl!==null?formatMoneyShort(s.pnl):"—";
+   if($(prefix+"PnlMeta"))$(prefix+"PnlMeta").textContent=s.pnlCount?s.pnlCount+" trade(s) avec P&L":"P&L renseigné dans le Journal";
+   populateDashboardMonthControls(prefix==="cryptoDash"?"CRYPTO":"NQ",data);
+   renderDashboardActivity(prefix,data.trades);
+   renderPnlChart(prefix,s);
+   const status=$(prefix+"DataStatus");if(status){status.textContent=data.serverOk?"● JOURNAL + SERVEUR":"● JOURNAL LOCAL";status.className=data.serverOk?"status green":"status";}
+   const source=$(prefix+"SourceLabel");if(source)source.textContent=data.serverOk?"Journal + serveur":"Journal local";
+ };
+ put("dash",datasets[0]);put("cryptoDash",datasets[1]);
 }
 async function refreshConnectionCenter(){
   if(!BOT_API)return;
@@ -2465,14 +2358,14 @@ async function designJarvisVoice(){
 }
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");localStorage.removeItem("edgeflowAccessKey");location.reload()}}
 
-function showActiveDashboard(btn){show(String(siteMode||"NQ").toUpperCase()==="CRYPTO"?"cryptoDash":"dash",btn||$("navDash"))}
+function showActiveDashboard(btn){show(activeModel==="CRYPTO"?"cryptoDash":"dash",btn||$("navDash"))}
 if(!VALID_MODES.has(siteMode))siteMode="NQ";
 activeModel=siteMode;
 setSiteMode(siteMode);
 showActiveDashboard($("navDash"));
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
-renderJournal();resetJournalForm();restoreJournalDraft();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();refreshAIEngineStatus();refreshJarvisVoiceStatus();renderStats();bindLiveChecklist();
+renderJournal();resetJournalForm();restoreJournalDraft();hydrateJournalFromServer();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();refreshAIEngineStatus();refreshJarvisVoiceStatus();renderStats();bindLiveChecklist();
 document.querySelectorAll("[data-image-preview]").forEach(input=>input.addEventListener("change",()=>previewJournalImage(input,input.dataset.imagePreview)));
 JOURNAL_DRAFT_FIELDS.forEach(id=>{const el=$(id);if(!el)return;el.addEventListener("input",saveJournalDraft);el.addEventListener("change",saveJournalDraft);});
 window.addEventListener("beforeunload",saveJournalDraft);
