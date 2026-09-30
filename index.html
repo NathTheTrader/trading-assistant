@@ -903,10 +903,11 @@ function scoreFrom(prefix=""){
  const liq=checklistChecked(prefix,"liq");
  const tilt=checklistChecked(prefix,"tilt");
  const revenge=checklistChecked(prefix,"revenge");
- const score=(timing?5:-5)+(high?15:-15)+(recentLoss?-10:0)+(goodWithoutKO?10:-10);
+ const rawScore=(timing?5:-5)+(high?15:-15)+(recentLoss?-10:0)+(goodWithoutKO?10:-10);
+ const score=Math.max(0,Math.min(30,rawScore));
  const killer=!backtest||liq||tilt||revenge;
- const grade=killer?"PAS DE TRADE":score>=27?"A+":score>=23?"A":score>=20?"A-":score>=16?"B+":score>=12?"B":score>=8?"B-":score>=4?"C+":"C";
- return{score,killer,grade};
+ const grade=killer?"PAS DE TRADE":rawScore>=27?"A+":rawScore>=23?"A":rawScore>=20?"A-":rawScore>=16?"B+":rawScore>=12?"B":rawScore>=8?"B-":rawScore>=4?"C+":"C";
+ return{score,rawScore,killer,grade};
 }
 function updateLiveChecklist(prefix=""){
  const r=scoreFrom(prefix),base=prefix==="b"?"botLiveScore":"reviewLiveScore";
