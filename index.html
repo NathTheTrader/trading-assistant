@@ -1465,12 +1465,23 @@ function setSiteMode(mode){
   if(typeof renderChatHistory==="function" && $("chat") && !$("chat").classList.contains("hidden")) renderChatHistory(siteMode);
 }
 function switchMode(mode){
-  const current=document.querySelector("main>.workspace:not(.hidden)")?.id||"dash";
+  const visible=[...document.querySelectorAll("main>.workspace")].find(s=>!s.hidden&&s.style.display!=="none"&&!s.classList.contains("hidden"));
+  const activeNav=document.querySelector("nav button.active")?.id||"";
+  let current=visible?.id||"";
+  if(!current){
+    if(activeNav==="navJournal")current="journal";
+    else if(activeNav==="navSettings")current="settings";
+    else if(activeNav==="navChat")current="chat";
+    else if(activeNav==="navBotFutures")current="bot";
+    else if(activeNav==="navBotCrypto")current="crypto";
+    else current="dash";
+  }
   setSiteMode(mode);
   if(current==="journal") show("journal");
   else if(current==="settings") show("settings");
   else if(current==="chat") show("chat");
   else if(current==="bot"||current==="crypto") show(mode==="CRYPTO"?"crypto":"bot");
+  else if(current==="models") show(mode==="CRYPTO"?"cryptoDash":"dash");
   else show(mode==="CRYPTO"?"cryptoDash":"dash");
 }
 async function botFetch(path,options={}){
