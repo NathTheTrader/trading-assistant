@@ -22,9 +22,10 @@ jobs:
           node - <<'NODE'
           const fs=require("fs");
           const html=fs.readFileSync("index.html","utf8");
-          const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+          const scripts=[...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)]
+            .filter(m=>!/<script[^>]+src=/i.test(m[0]));
           if(!scripts.length) throw new Error("No inline script found");
-          fs.writeFileSync("/tmp/index-inline.js",scripts[scripts.length-1][1]);
+          fs.writeFileSync("/tmp/index-inline.js",scripts.map(m=>m[1]).join("\n"));
           NODE
           node --check /tmp/index-inline.js
       - name: Check Edgeflow invariants
