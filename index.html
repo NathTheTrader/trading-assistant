@@ -1061,7 +1061,7 @@ function scoreFrom(prefix=""){
  const score=Math.max(0,Math.min(30,positive));
  const killer=!backtest||liq||messy||timebad||tilt||revenge;
  const grade=killer?"PAS DE TRADE":score>=27?"A+":score>=24?"A":score>=21?"A-":score>=18?"B+":score>=15?"B":score>=12?"B-":score>=9?"C+":"C";
- return{score,rawScore,killer,grade};
+ return{score,rawScore:score,killer,grade};
 }
 function updateLiveChecklist(prefix=""){
  const r=scoreFrom(prefix),base=prefix==="b"?"botLiveScore":"reviewLiveScore";
