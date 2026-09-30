@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1700-crypto-parity-v9"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1745-crypto-bot-parity-v11"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><style>
@@ -1159,22 +1159,60 @@ body:after{
 </section>
 
 <section id="crypto" class="workspace hidden" data-model="CRYPTO">
-  <div class="workspace-header"><div><div class="eyebrow">CRYPTO · BOT</div><h1>Bot Crypto</h1><div class="sub">Modèle Crypto indépendant. KCEX est observé en lecture seule.</div></div><div class="status green">● CRYPTO</div></div>
-  <div class="section"><div class="status-strip"><b>MODÈLE</b><span>Direction du marché → Key Open manipulé / sweep → POI HTF aligné → entrée → high RR. OTE/Fib secondaire.</span></div><div class="field-grid" style="margin-top:12px">
-    <label>Instrument<select id="cryptoInstrumentBot"><option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>XRP</option><option>HYPE</option><option>FLOKI</option></select></label>
-    <label>Direction<select id="cryptoDirectionBot"><option value="">À déterminer</option><option value="Haussière">Haussière</option><option value="Baissière">Baissière</option></select></label>
-    <label>Key Open<select id="cryptoKOBot"><option value="">Non confirmé</option><option value="Confirmé">Confirmé</option><option value="Absent">Absent</option></select></label>
-    <label>POI HTF<select id="cryptoPOIBot"><option value="">Non confirmé</option><option value="Confirmé">Confirmé</option><option value="Absent">Absent</option></select></label>
-    <label>Entrée<select id="cryptoEntryBot"><option value="">Non confirmé</option><option value="Confirmée">Confirmée</option><option value="Hors modèle">Hors modèle</option></select></label>
-    <label>High RR<select id="cryptoRRBot"><option value="">Non défini</option><option value="Oui">Oui</option><option value="Non">Non</option></select></label>
-    <div class="full"><textarea id="cryptoBotContext" placeholder="Direction, Key Open manipulé/sweep, POI HTF, entrée, high RR, contexte du marché…"></textarea></div>
-    <div class="full image-drop"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots Crypto</div><div class="image-drop-sub">JARVIS utilise le graphique visible comme preuve principale.</div></div><span class="pill">2 max</span></div><div class="image-inputs">
-      <div class="image-input"><label for="cBefore">AVANT / SETUP</label><input id="cBefore" type="file" accept="image/*" data-image-preview="cBeforePreview" onchange="previewJournalImage(this,'cBeforePreview')"><img id="cBeforePreview" class="image-preview"></div>
-      <div class="image-input"><label for="cAfter">APRÈS / RÉSULTAT</label><input id="cAfter" type="file" accept="image/*" data-image-preview="cAfterPreview" onchange="previewJournalImage(this,'cAfterPreview')"><img id="cAfterPreview" class="image-preview"></div>
-    </div></div>
-  </div><div class="actions"><button class="primary" onclick="runBotTest()">ANALYSER LE SETUP CRYPTO</button></div></div>
-  <div class="section" style="margin-top:12px"><h2>JARVIS · analyse Crypto</h2><div id="cryptoBotOutput"><div class="empty">Aucun setup analysé.</div></div></div>
-  <div class="section" style="margin-top:12px"><h2>KCEX · observateur</h2><div class="ai-box"><b>Lecture seule par partage d’écran</b><div class="sub" style="margin-top:6px">Partage uniquement l’onglet KCEX. EDGEFLOW ne stocke pas ton mot de passe et ne passe aucun ordre.</div></div><div class="actions"><button class="primary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button><button class="secondary" onclick="startKCEXScreenShare()">PARTAGER KCEX</button><button class="secondary" onclick="stopKCEXScreenShare()">ARRÊTER</button><button class="secondary" onclick="analyzeKCEXScreen()">ANALYSER</button><button class="secondary" onclick="toggleKCEXAuto()">AUTO 15s</button></div><div id="kcexScreenStatus" class="sub" style="margin-top:8px">Pas de partage actif.</div><video id="kcexScreenPreview" autoplay muted playsinline style="display:none;width:100%;max-height:400px;margin-top:9px;background:#07090d;border-radius:9px"></video><div id="kcexObserverState" class="observer-live"><i></i><span>Observateur désarmé</span></div><div id="kcexAIOutput" class="ai-box" style="margin-top:9px">Aucune capture analysée.</div></div>
+  <div class="workspace-header"><div><div class="eyebrow">CRYPTO · BOT</div><h1>Bot Crypto</h1><div class="sub">Analyse du modèle Crypto. KCEX reste en lecture seule et aucune exécution n’est effectuée.</div></div><div id="cryptoLiveStatus" class="status green">● CRYPTO</div></div>
+  <div class="grid">
+    <div class="card"><div class="label">KCEX</div><div class="value small">Crypto</div><div id="kcexConnectionText" class="sub">Order Watch · lecture seule</div><div class="actions"><button class="primary" onclick="startKCEXScreenShare()">SURVEILLER</button><button class="secondary" onclick="analyzeKCEXScreen()">ACTUALISER</button></div></div>
+    <div class="card"><div class="label">Risque de référence</div><div class="value">$100</div><div class="sub">Lecture seule</div></div>
+    <div class="card"><div class="label">État</div><div id="cryptoBotState" class="value small green">PRÊT</div><div class="sub">Flux Crypto</div></div>
+    <div class="card"><div class="label">Modèle</div><div class="value small blue">CRYPTO</div><div class="sub">Aucune exécution</div></div>
+  </div>
+
+  <div class="workspace-grid" style="margin-top:12px">
+    <div class="section">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+        <div><h2>Tester le modèle Crypto</h2><div class="sub">Direction du marché · Key Open manipulé · POI HTF · entrée · high RR.</div></div>
+        <label style="display:flex;align-items:center;gap:7px;font-size:9px;color:#8a95a4">INSTRUMENT <select id="cryptoInstrumentBot" style="width:125px"><option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>XRP</option><option>HYPE</option><option>FLOKI</option></select></label>
+      </div>
+      <div class="check-grid" style="margin-top:10px">
+        <label class="check-card"><span class="check-main"><span class="check-icon">D</span><span class="check-copy"><span class="check-title">Direction du marché</span><span class="check-meta">+5 · biais clair</span></span></span><input id="cDirection" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card"><span class="check-main"><span class="check-icon">K</span><span class="check-copy"><span class="check-title">Key Open manipulé</span><span class="check-meta">+5 · sweep / manipulation</span></span></span><input id="cKeyOpen" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card"><span class="check-main"><span class="check-icon">P</span><span class="check-copy"><span class="check-title">POI HTF propre</span><span class="check-meta">+5 · zone alignée</span></span></span><input id="cPOI" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card"><span class="check-main"><span class="check-icon">L</span><span class="check-copy"><span class="check-title">Liquidité / sweep clair</span><span class="check-meta">+5 · contexte</span></span></span><input id="cLiquidity" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card"><span class="check-main"><span class="check-icon">E</span><span class="check-copy"><span class="check-title">Entrée propre</span><span class="check-meta">+5 · pas forcée</span></span></span><input id="cEntry" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card"><span class="check-main"><span class="check-icon">R</span><span class="check-copy"><span class="check-title">High RR</span><span class="check-meta">+5 · asymétrie</span></span></span><input id="cRR" type="checkbox" checked><span class="check-switch"></span></label>
+
+        <label class="check-card imperfection"><span class="check-main"><span class="check-icon">O</span><span class="check-copy"><span class="check-title">OTE / Fib secondaire</span><span class="check-meta">-3 · pas requis</span></span></span><input id="cOTE" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card imperfection"><span class="check-main"><span class="check-icon">M</span><span class="check-copy"><span class="check-title">Structure messy</span><span class="check-meta">-5 · imperfection</span></span></span><input id="cMessy" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card imperfection"><span class="check-main"><span class="check-icon">K</span><span class="check-copy"><span class="check-title">Key Open faible / tardif</span><span class="check-meta">-5 · qualité réduite</span></span></span><input id="cKOWeak" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card imperfection"><span class="check-main"><span class="check-icon">P</span><span class="check-copy"><span class="check-title">POI HTF moyen</span><span class="check-meta">-5 · qualité réduite</span></span></span><input id="cPOIWeak" type="checkbox"><span class="check-switch"></span></label>
+
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Key Open absent</span><span class="check-meta">KILLER · modèle</span></span></span><input id="cKOAbsent" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">POI HTF absent</span><span class="check-meta">KILLER · modèle</span></span></span><input id="cPOIAbsent" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Entrée hors modèle</span><span class="check-meta">KILLER · exécution</span></span></span><input id="cEntryBad" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">High RR insuffisant</span><span class="check-meta">KILLER · asymétrie</span></span></span><input id="cRRBad" type="checkbox"><span class="check-switch"></span></label>
+      </div>
+      <div id="cryptoLiveScore" class="live-check-score" style="margin-top:10px"><span>PRÉ-CHECK CRYPTO</span><strong id="cryptoLiveScoreValue">30/30</strong><em id="cryptoLiveScoreGrade">A+</em></div>
+      <textarea id="cryptoBotContext" placeholder="Direction du marché · Key Open manipulé/sweep · POI HTF · entrée · high RR · contexte réel…"></textarea>
+      <div class="image-drop" style="margin-top:10px"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots Crypto</div><div class="image-drop-sub">AVANT = setup. APRÈS = résultat.</div></div><span class="pill">2 max</span></div><div class="image-inputs">
+        <div class="image-input"><label for="cBefore">AVANT / SETUP</label><input id="cBefore" type="file" accept="image/*" data-image-preview="cBeforePreview" onchange="previewJournalImage(this,'cBeforePreview')"><img id="cBeforePreview" class="image-preview"></div>
+        <div class="image-input"><label for="cAfter">APRÈS / RÉSULTAT</label><input id="cAfter" type="file" accept="image/*" data-image-preview="cAfterPreview" onchange="previewJournalImage(this,'cAfterPreview')"><img id="cAfterPreview" class="image-preview"></div>
+      </div></div>
+      <div class="actions"><button class="primary" onclick="runBotTest()">ANALYSER AVEC JARVIS</button></div>
+    </div>
+    <div class="section">
+      <h2>Analyse</h2>
+      <div id="cryptoBotOutput"><div class="empty">Aucun setup analysé.</div></div>
+      <div class="divider"></div>
+      <h2>KCEX · observateur</h2>
+      <div class="rows">
+        <div class="row"><span>État</span><span id="kcexStateRow">Écran non partagé</span></div>
+        <div class="row"><span>Dernier ordre</span><span id="kcexLastOrderRow">—</span></div>
+        <div class="row"><span>Mode</span><span>READ ONLY</span></div>
+      </div>
+      <div id="kcexAI" class="ai-box" style="margin-top:8px">Aucune analyse live.</div>
+    </div>
+  </div>
+  <div class="section" style="margin-top:12px"><h2>KCEX · observateur live</h2><div class="ai-box"><b>Lecture seule</b><div class="sub" style="margin-top:6px">Partage uniquement l’onglet KCEX. Edgeflow compare les captures et cherche un nouvel ordre/position visible.</div></div><div class="actions"><button class="primary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button><button class="secondary" onclick="startKCEXScreenShare()">PARTAGER KCEX</button><button class="secondary" onclick="stopKCEXScreenShare()">ARRÊTER</button><button class="secondary" onclick="analyzeKCEXScreen()">ANALYSER</button><button class="secondary" onclick="toggleKCEXAuto()">AUTO 15s</button></div><div id="kcexScreenStatus" class="sub" style="margin-top:8px">Pas de partage actif.</div><video id="kcexScreenPreview" autoplay muted playsinline style="display:none;width:100%;max-height:400px;margin-top:9px;background:#07090d;border-radius:9px"></video><div id="kcexObserverState" class="observer-live"><i></i><span>Observateur désarmé</span></div><div id="kcexAIOutput" class="ai-box" style="margin-top:9px">Aucune capture analysée.</div></div>
 </section>
 
 <section id="chat" class="workspace hidden">
@@ -1565,13 +1603,22 @@ async function runBotTest(){
  const isCrypto=activeModel==="CRYPTO";
  const outputId=isCrypto?"cryptoBotOutput":"botOutput";
  const notes=isCrypto?($("cryptoBotContext")?.value.trim()||""):($("bnotes")?.value.trim()||"");
- const r=isCrypto?null:scoreFrom("b");
+ const r=isCrypto?scoreFromCrypto():scoreFrom("b");
  const checklist=isCrypto?{
-   direction:$("cryptoDirectionBot")?.value||"",
-   keyOpen:$("cryptoKOBot")?.value||"",
-   poi:$("cryptoPOIBot")?.value||"",
-   entry:$("cryptoEntryBot")?.value||"",
-   highRR:$("cryptoRRBot")?.value||""
+   direction:!!$("cDirection")?.checked,
+   keyOpen:!!$("cKeyOpen")?.checked,
+   htfPOI:!!$("cPOI")?.checked,
+   liquiditySweep:!!$("cLiquidity")?.checked,
+   entryQuality:!!$("cEntry")?.checked,
+   highRR:!!$("cRR")?.checked,
+   oteSecondary:!!$("cOTE")?.checked,
+   messyStructure:!!$("cMessy")?.checked,
+   keyOpenWeak:!!$("cKOWeak")?.checked,
+   poiWeak:!!$("cPOIWeak")?.checked,
+   keyOpenAbsent:!!$("cKOAbsent")?.checked,
+   poiAbsent:!!$("cPOIAbsent")?.checked,
+   entryOutOfModel:!!$("cEntryBad")?.checked,
+   highRRInsufficient:!!$("cRRBad")?.checked
  }:{
    timing:checklistChecked("b","timing"),htfBias:checklistChecked("b","htf"),poi:checklistChecked("b","poi"),fibonacciRetracement:checklistChecked("b","fib"),
    rejectionBlock:checklistChecked("b","rb"),entryRR:checklistChecked("b","rr"),backtested:checklistChecked("b","backtest"),liquidityNearSL:checklistChecked("b","liq"),messyStructure:checklistChecked("b","messy"),timingError:checklistChecked("b","timebad"),tilt:checklistChecked("b","tilt"),revenge:checklistChecked("b","revenge")
@@ -1584,21 +1631,36 @@ async function runBotTest(){
  try{
    const trade={model:isCrypto?"CRYPTO":"NQ",instrument:isCrypto?($("cryptoInstrumentBot")?.value||"CRYPTO"):"NQ",direction:isCrypto?($("cryptoDirectionBot")?.value||""):"",risk:100,result:"OPEN",context:notes,setupPattern:isCrypto?"Direction → Key Open sweep → HTF POI → high RR":"HTF bias → POI → sweep → retracement → R.B. → limit entry",checklist,screenshots:images,timestamp:new Date().toISOString()};
    const out=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade})});
-   const scoreHtml=r?'<div class="check-score-head"><span class="check-score-label">Pré-check Futures</span><strong>'+r.score+'/30 · '+esc(r.grade)+'</strong></div>':"";
+   const scoreHtml=r?'<div class="check-score-head"><span class="check-score-label">'+(isCrypto?"Pré-check Crypto":"Pré-check Futures")+'</span><strong>'+r.score+'/30 · '+esc(r.killer?"NO TRADE":r.grade)+'</strong></div>':"";
    outEl.innerHTML=scoreHtml+renderAIAnalysis(out.text||"Analyse terminée.",isCrypto?"CRYPTO":"FUTURES","JARVIS");
    speakAIText(out.text||"");
  }catch(e){outEl.innerHTML='<div class="decision bad">IA indisponible</div><div class="sub" style="margin-top:10px">'+esc(e?.message||"Erreur backend")+'</div>'}
 }
 
+function scoreFromCrypto(){
+ const positive=["cDirection","cKeyOpen","cPOI","cLiquidity","cEntry","cRR"].filter(id=>$(id)?.checked).length*5;
+ const penalty=($("cOTE")?.checked?3:0)+($("cMessy")?.checked?5:0)+($("cKOWeak")?.checked?5:0)+($("cPOIWeak")?.checked?5:0);
+ const killer=["cKOAbsent","cPOIAbsent","cEntryBad","cRRBad"].some(id=>$(id)?.checked);
+ const score=Math.max(0,Math.min(30,positive-penalty));
+ const grade=killer?"PAS DE TRADE":score>=27?"A+":score>=24?"A":score>=21?"A-":score>=18?"B+":score>=15?"B":score>=12?"B-":score>=9?"C+":"C";
+ return{score,rawScore:score,killer,grade};
+}
+function updateCryptoLiveScore(){
+ const r=scoreFromCrypto(),v=$("cryptoLiveScoreValue"),g=$("cryptoLiveScoreGrade"),box=$("cryptoLiveScore");
+ if(!v||!g||!box)return;
+ v.textContent=String(r.score)+"/30";g.textContent=r.killer?"NO TRADE":r.grade;g.className=r.killer?"red":r.score>=20?"green":"orange";
+ box.dataset.score=String(r.score);box.dataset.grade=r.killer?"NO TRADE":r.grade;box.classList.toggle("is-killer",r.killer);
+ box.style.borderColor=r.killer?"rgba(255,73,107,.55)":r.score>=20?"rgba(55,226,154,.45)":"rgba(255,255,255,.16)";
+}
 function bindLiveChecklist(){
  const botIds=["btiming","bhtf","bpoi","bfib","brb","brr","bbacktest","bliq","bmessy","btimebad","btilt","brev"];
- botIds.forEach(id=>{
-   const el=$(id);
-   if(!el||el.dataset.liveBound==="1")return;
-   el.addEventListener("change",()=>updateLiveChecklist("b"));
+ const cryptoIds=["cDirection","cKeyOpen","cPOI","cLiquidity","cEntry","cRR","cOTE","cMessy","cKOWeak","cPOIWeak","cKOAbsent","cPOIAbsent","cEntryBad","cRRBad"];
+ [...botIds,...cryptoIds].forEach(id=>{
+   const el=$(id);if(!el||el.dataset.liveBound==="1")return;
+   el.addEventListener("change",()=>id.startsWith("c")?updateCryptoLiveScore():updateLiveChecklist("b"));
    el.dataset.liveBound="1";
  });
- updateLiveChecklist("b");
+ updateLiveChecklist("b");updateCryptoLiveScore();
 }
 function showTradePopup(data={}){
  $("tradePopup")?.classList.add("show");
