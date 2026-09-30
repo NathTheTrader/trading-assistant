@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2415-mode-routing-isolated-v28"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2430-safe-journal-data-v29"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><script>
@@ -1799,26 +1799,13 @@ async function journalPopupTrade(){
  const synced=await syncTradeToBot(entry);
  if($("journalSyncStatus"))$("journalSyncStatus").textContent=synced?"● SERVEUR SYNC":"● LOCAL · SERVEUR INDISPONIBLE";
 }
-function getJournal(){try{return JSON.parse(localStorage.getItem("journal")||"[]")}catch(e){return[]}}
-let journalHydrating=false;
-async function hydrateJournalFromServer(){
-  if(!BOT_API||journalHydrating)return;
-  journalHydrating=true;
-  try{
-    const server=await botFetch("/api/trades");
-    if(!Array.isArray(server)||!server.length)return;
-    const local=getJournal(),map=new Map();
-    [...server,...local].forEach(t=>{
-      const key=String(t.id??((t.timestamp||t.dateISO||t.date||"")+"|"+(t.model||"")+"|"+(t.instrument||"")));
-      map.set(key,{...(map.get(key)||{}),...t});
-    });
-    const merged=[...map.values()].sort((a,b)=>String(b.timestamp||b.id||"").localeCompare(String(a.timestamp||a.id||"")));
-    localStorage.setItem("journal",JSON.stringify(merged.slice(0,500)));
-    renderJournal();
-    renderStats();
-  }catch(e){}finally{journalHydrating=false;}
+function getJournal(){
+ try{
+   const value=JSON.parse(localStorage.getItem("journal")||"[]");
+   return Array.isArray(value)?value.filter(x=>x&&typeof x==="object"):[];
+ }catch(e){return[]}
 }
-function journalKey(x){return String(x.dateISO||x.date||"").slice(0,7)||"unknown"}
+function journalKey(x){if(!x||typeof x!=="object")return"unknown";return String(x.dateISO||x.date||"").slice(0,7)||"unknown"}
 function compressImage(file){return new Promise(resolve=>{if(!file){resolve("");return}const reader=new FileReader();reader.onload=e=>{const img=new Image();img.onload=()=>{const max=1400,scale=Math.min(1,max/img.width),c=document.createElement("canvas");c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext("2d").drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL("image/jpeg",.72))};img.src=e.target.result};reader.readAsDataURL(file)})}
 function previewJournalImage(input,id){const f=input?.files?.[0],img=$(id);if(!f||!img)return;const url=URL.createObjectURL(f);img.onload=()=>{img.style.display="block";URL.revokeObjectURL(url)};img.onerror=()=>{img.style.display="none";URL.revokeObjectURL(url)};img.src=url;img.style.display="block"}
 async function prepareAIJournal(){
@@ -1960,6 +1947,7 @@ function localDateISO(date=new Date()){
 }
 function localMonthKey(date=new Date()){return localDateISO(date).slice(0,7);}
 function tradeDateISO(t){
+ if(!t||typeof t!=="object")return"";
  const explicit=String(t.dateISO||"").slice(0,10);
  if(/^\d{4}-\d{2}-\d{2}$/.test(explicit))return explicit;
  const raw=String(t.timestamp||t.date||"");
@@ -1968,7 +1956,7 @@ function tradeDateISO(t){
  return Number.isNaN(d.getTime())?"":localDateISO(d);
 }
 function tradeMonthKey(t){return tradeDateISO(t).slice(0,7);}
-function tradeTimestamp(t){return String(t.timestamp||t.dateISO||t.date||"");}
+function tradeTimestamp(t){return !t||typeof t!=="object"?"":String(t.timestamp||t.dateISO||t.date||"")}
 function mergeDashboardTrades(local,server){
  const map=new Map();
  [...server,...local].forEach(t=>{
