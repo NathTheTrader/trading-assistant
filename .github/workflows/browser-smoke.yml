@@ -81,7 +81,11 @@ jobs:
             const journalTop=await page.locator("#journal").evaluate(el=>el.getBoundingClientRect().top);
             if(journalTop<0||journalTop>100)throw new Error("Journal not positioned at workspace top: "+journalTop);
             await click("#modeNQ");
-            console.log("MODE DEBUG",await page.evaluate(()=>({mode:document.documentElement.getAttribute("data-site-mode"),body:document.body.className,visible:[...document.querySelectorAll("main>.workspace:not(.hidden)")].map(x=>x.id)})));
+            const dbg1=await page.evaluate(()=>({mode:document.documentElement.getAttribute("data-site-mode"),body:document.body.className,visible:[...document.querySelectorAll("main>.workspace:not(.hidden)")].map(x=>x.id)}));
+            console.log("MODE AFTER CLICK",JSON.stringify(dbg1));
+            await page.evaluate(()=>setSiteMode("NQ"));
+            const dbg2=await page.evaluate(()=>({mode:document.documentElement.getAttribute("data-site-mode"),body:document.body.className,visible:[...document.querySelectorAll("main>.workspace:not(.hidden)")].map(x=>x.id),type:typeof setSiteMode}));
+            console.log("MODE AFTER DIRECT",JSON.stringify(dbg2));
             await click("#navDash");await expectVisible("dash");
             await click("#modeCRYPTO");await click("#navDash");await expectVisible("cryptoDash");
             await click("#navSettings");await expectVisible("settings");
