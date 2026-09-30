@@ -1,3 +1,4 @@
+bindLiveChecklist();
 <!doctype html>
 <html lang="fr">
 <head>
@@ -537,6 +538,10 @@ button:active{transform:translateY(1px)}
 .chat-shell{min-height:calc(100vh - 185px);height:calc(100vh - 185px)}
 @media(max-width:760px){.chat-shell{height:calc(100vh - 245px);min-height:500px}}
 
+<style>
+.weight{font-size:9px;letter-spacing:.5px;color:#8f99aa;margin-left:auto;margin-right:8px}.weight.killer{color:#ff496b}
+.live-check-score{margin-top:12px;padding:12px 14px;border:1px solid var(--hairline2);border-radius:10px;background:linear-gradient(135deg,rgba(255,255,255,.035),rgba(255,255,255,.015));display:flex;align-items:center;gap:12px}.live-check-score span{font-size:9px;letter-spacing:1.2px;color:#778291;font-weight:850}.live-check-score strong{font-size:24px;line-height:1}.live-check-score em{font-style:normal;font-size:11px;font-weight:900;margin-left:auto}
+</style>
 </style>
 </head>
 <body>
@@ -641,10 +646,11 @@ button:active{transform:translateY(1px)}
   </div>
   <div class="layout">
     <div class="section"><h2 id="botChecklistTitle">Tester le modèle NQ</h2><div id="botNQChecklist"><div class="form">
-      <label>Timing / Session <input id="btiming" type="checkbox" checked></label><label>Haute probabilité <input id="bhigh" type="checkbox" checked></label>
-      <label>Perte récente <input id="bloss" type="checkbox"></label><label>Bon sans Key Open <input id="bko" type="checkbox" checked></label>
-      <label>Setup backtesté <input id="bbacktest" type="checkbox" checked></label><label>Liquidité près du SL <input id="bliq" type="checkbox"></label>
-      <label>Tilt <input id="btilt" type="checkbox"></label><label>Trade pour récupérer <input id="brev" type="checkbox"></label>
+      <label>Timing / Session <small class="weight">+5</small><input id="btiming" type="checkbox" checked></label><label>Haute probabilité <small class="weight">+15</small><input id="bhigh" type="checkbox" checked></label>
+      <label>Perte récente <small class="weight">−10</small><input id="bloss" type="checkbox"></label><label>Bon sans Key Open <small class="weight">+10</small><input id="bko" type="checkbox" checked></label>
+      <label>Setup backtesté <small class="weight killer">KILLER</small><input id="bbacktest" type="checkbox" checked></label><label>Liquidité près du SL <small class="weight killer">KILLER</small><input id="bliq" type="checkbox"></label>
+      <label>Tilt <small class="weight killer">KILLER</small><input id="btilt" type="checkbox"></label><label>Trade pour récupérer <small class="weight killer">KILLER</small><input id="brev" type="checkbox"></label>
+      <div id="botLiveScore" class="live-check-score"><span>NOTE EN DIRECT</span><strong id="botLiveScoreValue">30</strong><em id="botLiveScoreGrade">A+</em></div>
       <div class="full"><textarea id="bnotes" placeholder="Ex. HTF bullish → POI 15m → sweep → retracement 0.705 → RB → fill limite..."></textarea></div>
     </div></div><div id="botCryptoPanel" class="hidden"><div class="ai-box"><b>MODÈLE CRYPTO</b><div class="sub" style="margin-top:8px">Direction du marché → Key Open manipulé / sweep → POI HTF aligné → entrée → laisser le trade jouer en high RR. OTE / Fib secondaire.</div></div><textarea id="cryptoBotContext" placeholder="Décris le setup Crypto : direction du marché, Key Open, sweep/manipulation, POI HTF, zone d'entrée et contexte."></textarea></div><div class="actions"><button class="primary" onclick="runBotTest()">LANCER L'ANALYSE</button></div></div>
     <div class="section"><h2>Sortie du bot</h2><div id="botOutput"><div class="empty">Aucun trade analysé.</div></div></div>
@@ -674,10 +680,11 @@ button:active{transform:translateY(1px)}
   <div class="topbar"><div><div class="eyebrow">Contrôle avant décision</div><h1>Revue de trade <span id="reviewModel" class="pill"></span></h1><div class="sub">Cette revue est strictement cloisonnée au modèle actif.</div></div></div>
   <div id="reviewNQ">
     <div class="section"><div class="form">
-      <label>Timing / Session <input id="timing" type="checkbox" checked></label><label>Haute probabilité <input id="high" type="checkbox" checked></label>
-      <label>Perte récente <input id="loss" type="checkbox"></label><label>Bon sans Key Open <input id="ko" type="checkbox" checked></label>
-      <label>Setup backtesté <input id="backtest" type="checkbox" checked></label><label>Liquidité près du SL <input id="liq" type="checkbox"></label>
-      <label>Tilt <input id="tilt" type="checkbox"></label><label>Trade pour récupérer <input id="revenge" type="checkbox"></label>
+      <label>Timing / Session <small class="weight">+5</small><input id="timing" type="checkbox" checked></label><label>Haute probabilité <small class="weight">+15</small><input id="high" type="checkbox" checked></label>
+      <label>Perte récente <small class="weight">−10</small><input id="loss" type="checkbox"></label><label>Bon sans Key Open <small class="weight">+10</small><input id="ko" type="checkbox" checked></label>
+      <label>Setup backtesté <small class="weight killer">KILLER</small><input id="backtest" type="checkbox" checked></label><label>Liquidité près du SL <small class="weight killer">KILLER</small><input id="liq" type="checkbox"></label>
+      <label>Tilt <small class="weight killer">KILLER</small><input id="tilt" type="checkbox"></label><label>Trade pour récupérer <small class="weight killer">KILLER</small><input id="revenge" type="checkbox"></label>
+      <div id="reviewLiveScore" class="live-check-score"><span>NOTE EN DIRECT</span><strong id="reviewLiveScoreValue">30</strong><em id="reviewLiveScoreGrade">A+</em></div>
       <div class="full"><textarea id="notes" placeholder="Notes du setup NQ : sweep → impulse → retracement → RB → fill..."></textarea></div>
     </div><div class="actions"><button class="primary" onclick="analyze()">ANALYSER LE TRADE</button><button class="secondary" onclick="resetReview()">RÉINITIALISER</button></div></div>
   </div>
@@ -882,6 +889,14 @@ function scoreFrom(prefix){
  const grade=score>=27?"A+":score>=23?"A":score>=20?"A-":score>=16?"B+":score>=12?"B":score>=8?"B-":score>=4?"C+":"C";
  return{score,killer,grade};
 }
+function updateLiveChecklist(prefix){
+ const r=scoreFrom(prefix);
+ const base=prefix==="b"?"botLiveScore":"reviewLiveScore";
+ const v=$(base+"Value"),g=$(base+"Grade");
+ if(v)v.textContent=r.score;
+ if(g)g.textContent=r.killer?"NO TRADE":r.grade;
+ const box=$(base); if(box)box.style.borderColor=r.killer?"rgba(255,73,107,.45)":r.score>=20?"rgba(55,226,154,.35)":"rgba(255,255,255,.10)";
+}
 async function runBotTest(){
   if(activeModel==="CRYPTO"){
     const context=$("cryptoBotContext").value.trim();
@@ -915,7 +930,14 @@ function analyze(){
  $("result").innerHTML='<div class="score"><div class="circle" style="border-color:'+(r.killer?'var(--red)':'var(--green)')+'">'+r.score+'</div><div><div class="'+(r.killer?'red':'grade')+'">'+r.grade+'</div><div class="sub">'+decision+'</div></div></div><div class="decision '+(r.killer?'bad':'')+'">'+(r.killer?'🔴 PAS DE TRADE — un killer est actif':'🟢 TRADE VALIDE')+'</div>';
  renderJournal();renderStats();
 }
-function resetReview(){["loss","liq","tilt","revenge"].forEach(id=>$(id).checked=false);["timing","high","ko","backtest"].forEach(id=>$(id).checked=true);["cryptoDirection","cryptoKO","cryptoPOI","cryptoEntry","cryptoRR"].forEach(id=>{if($(id))$(id).value=""});$("notes").value="";$("cryptoNotes").value="";$("result").innerHTML='<div class="empty">Aucune analyse.</div>'}
+function bindLiveChecklist(){
+ ["btiming","bhigh","bloss","bko","bbacktest","bliq","btilt","brev","timing","high","loss","ko","backtest","liq","tilt","revenge"].forEach(id=>{
+   const el=$(id); if(el && !el.dataset.liveBound){el.addEventListener("change",()=>updateLiveChecklist(id.startsWith("b")?"b":""));el.dataset.liveBound="1";}
+ });
+ updateLiveChecklist("b"); updateLiveChecklist("");
+}
+
+function resetReview(){["loss","liq","tilt","revenge"].forEach(id=>$(id).checked=false);["timing","high","ko","backtest"].forEach(id=>$(id).checked=true);["cryptoDirection","cryptoKO","cryptoPOI","cryptoEntry","cryptoRR"].forEach(id=>{if($(id))$(id).value=""});$("notes").value="";$("cryptoNotes").value="";$("result").innerHTML='<div class="empty">Aucune analyse.</div>';updateLiveChecklist("b");updateLiveChecklist("")}
 function showTradePopup(data={}){
  $("tradePopup").classList.add("show");$("popModel").textContent=data.model||activeModel||"NQ";$("popInstrument").textContent=data.instrument||"NQ";$("popDirection").textContent=data.direction||"LONG";$("popRisk").textContent=data.risk||"$100";$("popAnalysis").textContent="⏳ EN ATTENTE D'ANALYSE";$("popAnalysis").className="decision bad";
 }
