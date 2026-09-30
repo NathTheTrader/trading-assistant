@@ -252,7 +252,7 @@
       panel.querySelector("#taVQ").textContent=d.reply||"Réponse reçue.";
       setState("idle","RÉPONSE PRÊTE");setStatus("JARVIS répond selon le modèle "+modelLabel()+".");
       if(d.audioBase64){
-        const a=new Audio("data:audio/mpeg;base64,"+d.audioBase64);
+        const a=new Audio("data:"+(d.audioMimeType||"audio/mpeg")+";base64,"+d.audioBase64);
         a.play().catch(()=>speak(d.reply||""));
       }else speak(d.reply||"");
     }catch(e){setState("idle","JARVIS PRÊT");setStatus(e.message)}
