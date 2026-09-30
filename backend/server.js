@@ -45,7 +45,7 @@ const MODEL = process.env.OPENROUTER_MODEL || "openrouter/free";
 const FALLBACK_MODELS = String(process.env.OPENROUTER_FALLBACK_MODELS || "").split(",").map(x=>x.trim()).filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i);
 const AI_PROVIDER = GEMINI_API_KEY ? "gemini" : (process.env.OPENROUTER_API_KEY ? "openrouter" : "none");
 const AI_PRIMARY_MODEL = AI_PROVIDER==="gemini" ? GEMINI_MODEL : MODEL;
-const AI_ENGINE_VERSION = "2.3";
+const AI_ENGINE_VERSION = "2.4";
 const AI_GRADE_SCALE = "A+ exceptionnellement propre; A solide; A- solide avec petite imperfection; B+ bon avec imperfection claire; B bon mais faiblesse identifiable; B- limite; C+/C qualité limite; NO TRADE uniquement si un vrai killer/invalidation ou non-respect majeur du modèle. Structure messy seule = imperfection qui coûte des points, jamais un NO TRADE automatique.";
 const MODEL_CONTRACTS = {
   NQ:{
@@ -1054,16 +1054,51 @@ async function buildAIHistory(model) {
 }
 
 async function askVoiceCoach({model,userText,previousTurns=[]}) {
-  const aiData=await buildAIHistory(model);
-  const profile=await loadProfile();
-  const response=await openai.responses.create({
-    model:MODEL, reasoning:{effort:"high"},
-    input:[
-      {role:"system",content:BASE_SYSTEM+"\nVOICE SESSION: act as JARVIS, not a generic motivational coach. Ask exactly ONE useful question at a time, stay concise, use the active model contract only, and reference exact evidence counts when available. Never invent a setup, trade, or result."},
-      {role:"user",content:JSON.stringify({mode:"BUSINESS_COACH",model,traderProfile:profile,historicalData:aiData,previousTurns:previousTurns.slice(-12),userText})}
-    ]
+  if(!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY manquante pour JARVIS vocal rapide.");
+  const scopedModel=normalizeModel(model);
+  const contract=MODEL_CONTRACTS[scopedModel];
+  const allTrades=await loadTrades();
+  const recent=allTrades.filter(t=>normalizeModel(t?.model||scopedModel)===scopedModel).slice(-25).map(t=>({
+    date:t.dateISO||t.date||t.timestamp||"",
+    instrument:t.instrument||"",
+    session:t.session||"",
+    result:t.result||"",
+    grade:t.grade||"",
+    R:t.R||"",
+    pnl:t.pnl||"",
+    errors:t.errors||"",
+    lesson:t.lesson||""
+  }));
+  const system=[
+    "JARVIS VOICE — réponse rapide.",
+    "Réponds directement à ce que le trader vient de dire. Ne transforme pas chaque phrase en question.",
+    "Réponds en français, naturellement, de façon concise et utile. Maximum 180 mots sauf si le trader demande une analyse détaillée.",
+    "Le trader veut une aide de trading réelle, pas des encouragements génériques. Ne lui dis pas ce qu'il veut entendre.",
+    "Pour NQ/Futures : respecte HTF, POI, liquidité/manipulation, displacement, retracement Fibonacci 0.5/0.62/0.705/0.79, Rejection Block, limit entry, timing, news et R:R.",
+    "Pour CRYPTO : respecte direction du marché, Key Open manipulé/sweep, POI HTF, entrée et logique high RR. OTE/Fib est secondaire.",
+    "Structure messy = imperfection qui coûte des points, jamais NO TRADE automatique.",
+    "Pas de hindsight et n'invente jamais un trade, une statistique ou une exécution.",
+    "MODELE ACTIF: "+JSON.stringify(contract)
+  ].join("\n");
+  const history=previousTurns.slice(-8).map(t=>({role:t.role==="assistant"?"model":"user",parts:[{text:String(t.content||"")}]}));
+  const endpoint="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(process.env.GEMINI_VOICE_MODEL||"gemini-3.5-flash-lite")+":generateContent";
+  const response=await fetch(endpoint,{
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-goog-api-key":GEMINI_API_KEY},
+    body:JSON.stringify({
+      system_instruction:{parts:[{text:system}]},
+      contents:[
+        ...history,
+        {role:"user",parts:[{text:JSON.stringify({message:String(userText||""),model:scopedModel,recentTrades:recent})}]}
+      ],
+      generationConfig:{temperature:0.25,maxOutputTokens:520}
+    })
   });
-  return response.output_text;
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data?.error?.message||("Gemini voice model error "+response.status));
+  const reply=String(data?.candidates?.[0]?.content?.parts?.map(x=>x?.text||"").join("")||"").trim();
+  if(!reply)throw new Error("JARVIS n’a retourné aucune réponse.");
+  return reply;
 }
 
 app.get("/api/ai/status",requirePrivateRequest,(req,res)=>res.json({
@@ -1309,21 +1344,9 @@ app.post("/api/voice/turn",requirePrivateRequest,async(req,res)=>{
     const model=normalizeModel(req.body.model);
     const previousTurns=Array.isArray(req.body.previousTurns)?req.body.previousTurns.slice(-12):[];
     const reply=String(await askVoiceCoach({model,userText:transcript,previousTurns})||"").trim();
-    let audio="",voiceEngine="none";
-    if(process.env.ELEVENLABS_API_KEY){
-      const voiceConfig=await loadVoiceConfig();
-      const voiceId=process.env.ELEVENLABS_VOICE_ID||voiceConfig.voiceId||"s3TPKV1kjDlVtZbl4Ksh";
-      const ttsModel=process.env.ELEVENLABS_TTS_MODEL||"eleven_v4_turbo";
-      const tts=await fetch("https://api.elevenlabs.io/v1/text-to-speech/"+encodeURIComponent(voiceId)+"?output_format=mp3_44100_128",{
-        method:"POST",headers:{"xi-api-key":process.env.ELEVENLABS_API_KEY,"Content-Type":"application/json"},
-        body:JSON.stringify({text:"[calm][confident] "+reply,model_id:ttsModel,language_code:"fr",voice_settings:{stability:.65,similarity_boost:.82}})
-      });
-      if(tts.ok){audio=Buffer.from(await tts.arrayBuffer()).toString("base64");voiceEngine="ElevenLabs";}
-    }
-    if(!audio&&GEMINI_API_KEY){
-      try{audio=await synthesizeAudioWithGemini(reply);voiceEngine="Gemini TTS";}catch(e){console.error("[EDGEFLOW][GEMINI_TTS]",e.message);}
-    }
-    res.json({ok:true,model,transcript,reply,audioBase64:audio||null,audioMimeType:audio?"audio/wav":"",voice:voiceEngine});
+    // Fast path: do not block on server-side TTS.
+    // The browser speaks the JARVIS reply immediately.
+    res.json({ok:true,model,transcript,reply,audioBase64:null,audioMimeType:"",voice:"Browser TTS",latencyMode:"fast"});
   }catch(e){res.status(502).json({ok:false,error:e.message||"Erreur vocale."});}
 });
 
