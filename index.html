@@ -2172,11 +2172,11 @@ function applyDashboardStats(prefix,data){
  const source=$(prefix+"SourceLabel");if(source)source.textContent=data.serverOk?"Journal + serveur":"Journal local";
 }
 function renderStats(){
- // Paint local journal data synchronously, but never allow dashboard rendering to block navigation.
- try{
-   applyDashboardStats("dash",localDashboardTrades("NQ"));
-   applyDashboardStats("cryptoDash",localDashboardTrades("CRYPTO"));
- }catch(_){}
+ // Paint the critical local trade counters synchronously. Rich dashboard rendering can follow asynchronously.
+ const nqLocal=localDashboardTrades("NQ"),cryptoLocal=localDashboardTrades("CRYPTO");
+ if($("dashTrades"))$("dashTrades").textContent=String(nqLocal.trades.length);
+ if($("cryptoDashTrades"))$("cryptoDashTrades").textContent=String(cryptoLocal.trades.length);
+ try{applyDashboardStats("dash",nqLocal);applyDashboardStats("cryptoDash",cryptoLocal);}catch(_){}
  Promise.all([loadDashboardTrades("NQ"),loadDashboardTrades("CRYPTO")])
    .then(datasets=>{try{applyDashboardStats("dash",datasets[0]);applyDashboardStats("cryptoDash",datasets[1]);}catch(_){} })
    .catch(()=>{});
