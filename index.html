@@ -480,13 +480,11 @@ function updateBotMode(){
   modelInputs.forEach(x=>x.textContent=crypto?"CRYPTO":"NQ");
 }
 function applyModeVisibility(){
-  const isNQ=activeModel==="NQ";
   document.querySelectorAll('[data-mode]').forEach(el=>{
     const m=el.getAttribute("data-mode");
     el.classList.toggle("hidden",m!=="ALL"&&m!==siteMode);
   });
-  if($("bot"))$("bot").classList.remove("hidden"); updateBotMode();
-  if($("cryptoBot"))$("cryptoBot").classList.toggle("hidden",isNQ);
+  updateBotMode();
 }
 function show(id,btn){
  if(!VALID_MODES.has(activeModel)){setSiteMode(siteMode||"NQ");}
