@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#090b10">
+<meta name="edgeflow-build" content="2026-09-30-journal-router-v2">
 <title>EDGEFLOW — Trading Intelligence</title>
 <style>
 :root{
@@ -822,7 +823,7 @@ main>section{width:100%;max-width:1380px;margin:0 auto;padding:34px 24px 60px;mi
   </div>
   <div class="journal-panel"><div class="panel-head"><div><h2>Historique mensuel</h2><div class="sub">Uniquement les trades du modèle actif.</div></div></div><div id="journalMonths"></div></div>
   <div class="journal-panel"><div class="panel-head"><div><h2>Analyse du journal</h2><div class="sub">Recherche locale des résultats et erreurs enregistrées.</div></div></div><div class="journal-actions"><button class="secondary" onclick="askJournalAI()">ANALYSER MON JOURNAL</button></div><div id="journalAI" class="journal-ai-output"></div></div>
-</section>>
+</section>
 
 <section id="settings" class="hidden">
   <div class="topbar"><div><div class="eyebrow">Configuration</div><h1>Paramètres</h1><div class="sub">Les connexions réelles restent séparées de l'interface et utilisent des permissions contrôlées.</div></div></div>
@@ -932,8 +933,15 @@ function show(id,btn){
  if($("journal")&&!$("journal").classList.contains("hidden")&&id!=="journal")saveJournalDraft();
  if(!VALID_MODES.has(activeModel))setSiteMode(siteMode||"NQ");
  const app=document.querySelector(".app"),main=document.querySelector(".main");
- document.querySelectorAll("main>section").forEach(section=>{section.classList.add("hidden");section.setAttribute("aria-hidden","true");section.style.removeProperty("display");});
- target.classList.remove("hidden");target.setAttribute("aria-hidden","false");target.style.removeProperty("display");
+ const sections=[...document.querySelectorAll("main>section")];
+ sections.forEach(section=>{
+   section.classList.remove("hidden");
+   section.style.setProperty("display","none","important");
+   section.setAttribute("aria-hidden","true");
+ });
+ target.classList.remove("hidden");
+ target.style.setProperty("display","block","important");
+ target.setAttribute("aria-hidden","false");
  if(app)app.dataset.view=id;
  document.querySelectorAll("nav button").forEach(b=>{b.classList.remove("active");b.removeAttribute("aria-current");});
  if(btn){btn.classList.add("active");btn.setAttribute("aria-current","page");}else{const navBtn=[...document.querySelectorAll("nav button")].find(b=>String(b.getAttribute("onclick")||"").includes("show('"+id+"'"));if(navBtn){navBtn.classList.add("active");navBtn.setAttribute("aria-current","page");}}
@@ -1345,7 +1353,7 @@ async function analyzeRithmicScreen(){const img=captureSharedFrame($("rithmicScr
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");localStorage.removeItem("edgeflowAccessKey");location.reload()}}
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
-if(!VALID_MODES.has(siteMode))siteMode="NQ"; setSiteMode(siteMode); $("models").classList.add("hidden"); $("dash").classList.remove("hidden"); document.querySelector(".app").dataset.view="dash"; updateModelUI(); document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode)));
+if(!VALID_MODES.has(siteMode))siteMode="NQ"; setSiteMode(siteMode); updateModelUI(); document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode))); show("dash",$("navDash"));
 renderJournal();resetJournalForm();restoreJournalDraft();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();renderStats();$("navDash")?.classList.add("active");
 bindLiveChecklist();
 JOURNAL_DRAFT_FIELDS.forEach(id=>{
