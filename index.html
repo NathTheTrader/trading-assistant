@@ -1629,7 +1629,7 @@ async function runBotTest(){
  outEl.innerHTML='<div class="empty">JARVIS analyse le setup…</div>';
  if(!BOT_API){outEl.innerHTML='<div class="decision bad">Backend non configuré.</div>';return;}
  try{
-   const trade={model:isCrypto?"CRYPTO":"NQ",instrument:isCrypto?($("cryptoInstrumentBot")?.value||"CRYPTO"):"NQ",direction:isCrypto?($("cryptoDirectionBot")?.value||""):"",risk:100,result:"OPEN",context:notes,setupPattern:isCrypto?"Direction → Key Open sweep → HTF POI → high RR":"HTF bias → POI → sweep → retracement → R.B. → limit entry",checklist,screenshots:images,timestamp:new Date().toISOString()};
+   const trade={model:isCrypto?"CRYPTO":"NQ",instrument:isCrypto?($("cryptoInstrumentBot")?.value||"CRYPTO"):"NQ",direction:isCrypto?"":"",risk:100,result:"OPEN",context:notes,setupPattern:isCrypto?"Direction → Key Open sweep → HTF POI → high RR":"HTF bias → POI → sweep → retracement → R.B. → limit entry",checklist,screenshots:images,timestamp:new Date().toISOString()};
    const out=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade})});
    const scoreHtml=r?'<div class="check-score-head"><span class="check-score-label">'+(isCrypto?"Pré-check Crypto":"Pré-check Futures")+'</span><strong>'+r.score+'/30 · '+esc(r.killer?"NO TRADE":r.grade)+'</strong></div>':"";
    outEl.innerHTML=scoreHtml+renderAIAnalysis(out.text||"Analyse terminée.",isCrypto?"CRYPTO":"FUTURES","JARVIS");
