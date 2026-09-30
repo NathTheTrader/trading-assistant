@@ -130,7 +130,7 @@ async function callGemini({model,input,reasoning}) {
   // Use Gemini's OpenAI-compatible endpoint with Bearer authentication.
   // This is the supported path for current Gemini authorization (AQ/auth) keys
   // and also accepts the same OpenAI-style multimodal message format Edgeflow already uses.
-  const geminiBase=(process.env.GEMINI_OPENAI_BASE_URL||"https://generativelanguage.googleapis.com/v1beta/openai/").replace(/\\/+$/,"");
+  const geminiBase=(process.env.GEMINI_OPENAI_BASE_URL||"https://generativelanguage.googleapis.com/v1beta/openai/").replace(/\/+$/,"");
   const endpoint=geminiBase+"/chat/completions";
   const messages=convertAIInput(input);
   const body={
