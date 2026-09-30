@@ -874,7 +874,7 @@ app.get("/api/ai/status",requirePrivateRequest,(req,res)=>res.json({
   ok:true,
   engine:"JARVIS",
   engineVersion:AI_ENGINE_VERSION,
-  configured:!!openrouter,
+  configured:!!openai,
   primaryModel:MODEL,
   fallbackModels:FALLBACK_MODELS,
   freeModelMode:/^openrouter\/free$/i.test(MODEL),
@@ -908,7 +908,7 @@ If sample size is insufficient, say so.`,
 });
 
 app.post("/api/coach/question",requirePrivateRequest,  async (req,res) => {
-  if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
+  if(!openai) return res.status(503).json({ok:false,error:"Aucun fournisseur IA configuré."});
   const model=normalizeModel(req.body.model);
   const snapshot=await buildOptimizationSnapshot(model);
   const response=await openai.responses.create({
@@ -1075,7 +1075,7 @@ app.get("/health", (req,res) => res.json({
   ok:true,
   service:"trading-assistant-bot",
   mode:"READ_ONLY",
-  ai:!!openrouter,
+  ai:!!openai,
   model:MODEL,
   multimodalTradeAnalysis:true,
   timestamp:new Date().toISOString()
