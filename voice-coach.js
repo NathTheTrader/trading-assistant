@@ -80,7 +80,7 @@
   `;
   document.head.appendChild(css);
 
-  let panel,button,recorder,stream,chunks=[],turns=[],voiceAudioContext=null,voiceAnalyser=null,voiceMonitorTimer=null,voiceSilenceSince=0,voiceSpeechStarted=false,voiceStartedAt=0,voiceStopRequested=false;
+  let panel,button,recorder,stream,chunks=[],turns=[],lastReply="",voiceAudioContext=null,voiceAnalyser=null,voiceMonitorTimer=null,voiceSilenceSince=0,voiceSpeechStarted=false,voiceStartedAt=0,voiceStopRequested=false;
   const api=()=>String(localStorage.getItem("botApiUrl")||"https://trading-assistant-production.up.railway.app").replace(/\/$/,"");
   const model=()=>String(localStorage.getItem("activeModel")||"NQ").toUpperCase()==="CRYPTO"?"CRYPTO":"NQ";
   const access=()=>String(localStorage.getItem("edgeflowAccessKey")||"");
@@ -127,7 +127,8 @@
         <div id="taConvo" class="ta-voice-convo"></div>
         <div id="taVA" class="ta-voice-answer" style="display:none"></div>
         <div class="ta-voice-actions">
-          <button id="taTalk" class="primary" type="button">◉ PARLER</button>
+          <button id="taTalk" class="primary" type="button">🎙 MICRO</button>
+          <button id="taRead" type="button">🔊 LIRE</button>
 </div>
         <div id="taVS" class="ta-voice-status">JARVIS utilise uniquement le contexte ${m}.</div>
       </div>
@@ -136,6 +137,7 @@
     panel.querySelector("#taModelF").onclick=()=>setVoiceModel("NQ");
     panel.querySelector("#taModelC").onclick=()=>setVoiceModel("CRYPTO");
     panel.querySelector("#taTalk").onclick=toggle;
+    panel.querySelector("#taRead").onclick=()=>{if(lastReply)speakWithJarvisVoice(lastReply);else setStatus("Aucune réponse à lire.");};
 setState("idle","JARVIS PRÊT");
     renderConversation();
   }
@@ -173,13 +175,7 @@ setState("idle","JARVIS PRÊT");
     return voices.slice().sort((a,b)=>score(b)-score(a))[0]||null;
   }
   function speak(t){
-    if(!("speechSynthesis" in window))return;
-    window.speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(String(t||""));
-    u.lang="fr-CA";
-    const voice=chooseBrowserVoice();if(voice)u.voice=voice;
-    u.rate=.91;u.pitch=.84;u.volume=1;
-    window.speechSynthesis.speak(u);
+    setStatus("Voix JARVIS serveur indisponible.");
   }
   async function speakWithJarvisVoice(text){
     const value=String(text||"").trim();if(!value)return;
@@ -194,8 +190,7 @@ setState("idle","JARVIS PRÊT");
       await audio.play();
     }catch(e){
       console.warn("[EDGEFLOW][VOICE_TTS]",e);
-      speak(value);
-      setStatus("JARVIS répond selon le modèle "+modelLabel()+".");
+      setStatus("Voix JARVIS indisponible : "+String(e?.message||"erreur"));
     }
   }
   if("speechSynthesis" in window)window.speechSynthesis.onvoiceschanged=()=>chooseBrowserVoice();
@@ -292,8 +287,9 @@ setState("idle","JARVIS PRÊT");
       const d=await r.json();if(!r.ok)throw new Error(d.error||"Erreur backend");
       turns.push({role:"user",content:String(d.transcript||"")},{role:"assistant",content:String(d.reply||"")});
       turns=turns.slice(-12);renderConversation();
-setState("idle","RÉPONSE PRÊTE");setStatus("JARVIS répond selon le modèle "+modelLabel()+".");
-      Promise.resolve(speakWithJarvisVoice(d.reply||"")).catch(err=>{console.warn("[EDGEFLOW][VOICE_PLAY]",err);speak(d.reply||"");setStatus("JARVIS prêt.");});
+      lastReply=String(d.reply||"");
+      setState("idle","RÉPONSE PRÊTE");
+      setStatus("Réponse prête · clique sur LIRE pour lancer la voix JARVIS.");
     }catch(e){setState("idle","JARVIS PRÊT");setStatus(e.message)}
   }
   function init(){
