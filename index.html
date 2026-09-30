@@ -2057,7 +2057,7 @@ function populateDashboardMonthControls(model,data){
  if(title)title.textContent=monthLabelLong(selected);
  if(label)label.textContent=monthLabelLong(selected);
 }
-async let dashboardRenderVersion=0;
+let dashboardRenderVersion=0;
 function renderStats(){
  const version=++dashboardRenderVersion;
  const renderOne=(prefix,data)=>{
