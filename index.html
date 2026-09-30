@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1600-daily-dashboard-v6"><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1615-monthly-dashboard-v7"><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><style>
@@ -957,6 +957,12 @@ body:after{
  background:radial-gradient(520px 390px at 70% 25%,rgba(255,255,255,.008),transparent 76%);
  opacity:.75;mix-blend-mode:screen;
 }
+
+/* EDGEFLOW — monthly dashboard controls */
+.dashboard-period-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin:0 0 10px;padding:10px 12px;border:1px solid var(--hairline);border-radius:11px;background:rgba(255,255,255,.018)}
+.dashboard-period-bar>div:first-child{display:flex;align-items:baseline;gap:9px}.dashboard-period-kicker{font-size:8px;letter-spacing:1.4px;font-weight:850;color:#687382}.dashboard-period-bar strong{font-size:12px;text-transform:capitalize}
+.dashboard-period-actions{display:flex;align-items:center;gap:6px}.dashboard-month-select{min-width:150px;height:36px;padding:0 10px;font-size:10px;font-weight:750}.dashboard-month-btn{width:36px;min-width:36px;padding:0!important;font-size:17px!important;line-height:1}
+@media(max-width:760px){.dashboard-period-bar{display:block}.dashboard-period-actions{margin-top:9px}.dashboard-month-select{flex:1;min-width:0}}
 </style>
 </head><body>
 <div class="app">
@@ -999,8 +1005,17 @@ body:after{
 
 <section id="dash" class="workspace hidden" data-model="NQ">
   <div class="workspace-header">
-    <div><div class="eyebrow" id="dashMarketEyebrow">FUTURES</div><h1>Dashboard Futures</h1><div class="sub">Performance de la journée en cours · <strong id="dashDayLabel">—</strong> · l’historique complet reste dans le Journal.</div></div>
+    <div><div class="eyebrow" id="dashMarketEyebrow">FUTURES</div><h1>Dashboard Futures</h1><div class="sub">Performance du mois actif · <strong id="dashMonthLabel">—</strong> · les mois précédents restent accessibles.</div></div>
     <div class="status green">● FUTURES ACTIF</div>
+  </div>
+  <div class="dashboard-period-bar">
+    <div><span class="dashboard-period-kicker">PÉRIODE</span><strong id="dashPeriodTitle">Septembre 2026</strong></div>
+    <div class="dashboard-period-actions">
+      <button class="secondary dashboard-month-btn" type="button" onclick="changeDashboardMonth('NQ',-1)">‹</button>
+      <select id="dashMonthSelect" class="dashboard-month-select" onchange="setDashboardMonth('NQ',this.value)" aria-label="Mois Futures"></select>
+      <button class="secondary dashboard-month-btn" type="button" onclick="changeDashboardMonth('NQ',1)">›</button>
+      <button class="secondary" type="button" onclick="setDashboardMonth('NQ',localDateISO().slice(0,7))">MOIS ACTUEL</button>
+    </div>
   </div>
   <div class="grid dashboard-kpis">
     <div class="card"><div class="label">Trades</div><div class="value" id="dashTrades">0</div><div class="sub">Journal Futures</div></div>
@@ -1040,8 +1055,17 @@ body:after{
 
 <section id="cryptoDash" class="workspace hidden">
   <div class="workspace-header">
-    <div><div class="eyebrow" id="cryptoDashMarketEyebrow">CRYPTO</div><h1>Dashboard Crypto</h1><div class="sub">Performance de la journée en cours · <strong id="cryptoDashDayLabel">—</strong> · l’historique complet reste dans le Journal.</div></div>
+    <div><div class="eyebrow" id="cryptoDashMarketEyebrow">CRYPTO</div><h1>Dashboard Crypto</h1><div class="sub">Performance du mois actif · <strong id="cryptoDashMonthLabel">—</strong> · les mois précédents restent accessibles.</div></div>
     <div class="status green">● CRYPTO ACTIF</div>
+  </div>
+  <div class="dashboard-period-bar">
+    <div><span class="dashboard-period-kicker">PÉRIODE</span><strong id="cryptoDashPeriodTitle">Septembre 2026</strong></div>
+    <div class="dashboard-period-actions">
+      <button class="secondary dashboard-month-btn" type="button" onclick="changeDashboardMonth('CRYPTO',-1)">‹</button>
+      <select id="cryptoDashMonthSelect" class="dashboard-month-select" onchange="setDashboardMonth('CRYPTO',this.value)" aria-label="Mois Crypto"></select>
+      <button class="secondary dashboard-month-btn" type="button" onclick="changeDashboardMonth('CRYPTO',1)">›</button>
+      <button class="secondary" type="button" onclick="setDashboardMonth('CRYPTO',localDateISO().slice(0,7))">MOIS ACTUEL</button>
+    </div>
   </div>
   <div class="grid dashboard-kpis">
     <div class="card"><div class="label">Trades</div><div class="value" id="cryptoDashTrades">0</div><div class="sub">Journal Crypto</div></div>
@@ -1728,6 +1752,7 @@ function localDateISO(date=new Date()){
  const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,"0"),d=String(date.getDate()).padStart(2,"0");
  return y+"-"+m+"-"+d;
 }
+function localMonthKey(date=new Date()){return localDateISO(date).slice(0,7);}
 function tradeDateISO(t){
  const explicit=String(t.dateISO||"").slice(0,10);
  if(/^\d{4}-\d{2}-\d{2}$/.test(explicit))return explicit;
@@ -1736,9 +1761,8 @@ function tradeDateISO(t){
  const d=new Date(raw);
  return Number.isNaN(d.getTime())?"":localDateISO(d);
 }
-function tradeTimestamp(t){
- return String(t.timestamp||t.dateISO||t.date||"");
-}
+function tradeMonthKey(t){return tradeDateISO(t).slice(0,7);}
+function tradeTimestamp(t){return String(t.timestamp||t.dateISO||t.date||"");}
 function mergeDashboardTrades(local,server){
  const map=new Map();
  [...server,...local].forEach(t=>{
@@ -1746,6 +1770,35 @@ function mergeDashboardTrades(local,server){
    map.set(id,{...(map.get(id)||{}),...t});
  });
  return [...map.values()].sort((a,b)=>tradeTimestamp(a).localeCompare(tradeTimestamp(b)));
+}
+function dashboardMonthKey(model){
+ return localStorage.getItem("edgeflow.dashboardMonth."+model)||localMonthKey();
+}
+function setDashboardMonth(model,month){
+ if(!/^\d{4}-\d{2}$/.test(month))month=localMonthKey();
+ localStorage.setItem("edgeflow.dashboardMonth."+model,month);
+ renderStats();
+}
+function changeDashboardMonth(model,delta){
+ const current=dashboardMonthKey(model),[y,m]=current.split("-").map(Number);
+ const d=new Date(y,m-1+delta,1);
+ setDashboardMonth(model,localDateISO(d).slice(0,7));
+}
+function monthLabel(month){
+ const [y,m]=month.split("-").map(Number);
+ const d=new Date(y,m-1,1);
+ return Number.isNaN(d.getTime())?month:d.toLocaleDateString("fr-CA",{month:"long",year:"numeric"});
+}
+function monthLabelLong(month){
+ const [y,m]=month.split("-").map(Number);
+ const d=new Date(y,m-1,1);
+ return Number.isNaN(d.getTime())?month:d.toLocaleDateString("fr-CA",{month:"long",year:"numeric"});
+}
+function buildMonthOptions(model,allTrades){
+ const current=localMonthKey();
+ const months=new Set([current,dashboardMonthKey(model)]);
+ allTrades.forEach(t=>{const k=tradeMonthKey(t);if(/^\d{4}-\d{2}$/.test(k))months.add(k);});
+ return [...months].sort().reverse();
 }
 async function loadDashboardTrades(model){
  const local=getJournal().filter(x=>x.model===model);
@@ -1757,15 +1810,24 @@ async function loadDashboardTrades(model){
    }
  }catch(e){}
  const merged=mergeDashboardTrades(local,server);
- const today=localDateISO();
+ const month=dashboardMonthKey(model);
  return{
-   trades:merged.filter(t=>tradeDateISO(t)===today),
+   trades:merged.filter(t=>tradeMonthKey(t)===month),
    allTrades:merged,
    localCount:local.length,
    serverCount:server.length,
    serverOk,
-   today
+   month
  };
+}
+function parseNumericAmount(value){
+ const s=String(value??"").replace(/\s/g,"").replace(/,/g,".");
+ const m=s.match(/[-+]?\d+(?:\.\d+)?/);
+ return m?Number(m[0]):NaN;
+}
+function parseNumericR(value){
+ const m=String(value??"").replace(",",".").match(/[-+]?\d+(?:\.\d+)?/);
+ return m?Number(m[0]):NaN;
 }
 function formatMoneyShort(n){
  if(!Number.isFinite(n))return"—";
@@ -1775,10 +1837,6 @@ function formatDateShort(v){
  const d=new Date(String(v).length===10?v+"T12:00:00":v);
  return Number.isNaN(d.getTime())?"—":d.toLocaleDateString("fr-CA",{month:"short",day:"2-digit"});
 }
-function formatCurrentDayLabel(iso){
- const d=new Date(iso+"T12:00:00");
- return Number.isNaN(d.getTime())?"Aujourd'hui":d.toLocaleDateString("fr-CA",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
-}
 function calcDashboardStats(arr){
  const wins=arr.filter(x=>/^WIN/i.test(String(x.result||""))).length;
  const losses=arr.filter(x=>/^LOSS/i.test(String(x.result||""))).length;
@@ -1786,84 +1844,71 @@ function calcDashboardStats(arr){
  const pnlTrades=arr.map((x,index)=>({trade:x,pnl:parseNumericAmount(x.pnl),index})).filter(x=>Number.isFinite(x.pnl));
  let cumulative=0,peak=0,maxDD=0;
  const series=pnlTrades.map(x=>{
-   cumulative+=x.pnl;
-   peak=Math.max(peak,cumulative);
-   maxDD=Math.min(maxDD,cumulative-peak);
+   cumulative+=x.pnl;peak=Math.max(peak,cumulative);maxDD=Math.min(maxDD,cumulative-peak);
    return{...x,cumulative};
  });
  const totalR=rr.reduce((a,b)=>a+b,0);
- return{
-   wins,losses,trades:arr.length,
-   winrate:wins+losses?wins/(wins+losses)*100:null,
-   avgR:rr.length?totalR/rr.length:null,totalR:rr.length?totalR:null,
-   pnl:pnlTrades.length?series[series.length-1].cumulative:null,
-   pnlCount:pnlTrades.length,series,peak,drawdown:Math.abs(maxDD)
- };
+ return{wins,losses,trades:arr.length,winrate:wins+losses?wins/(wins+losses)*100:null,avgR:rr.length?totalR/rr.length:null,totalR:rr.length?totalR:null,pnl:pnlTrades.length?series[series.length-1].cumulative:null,pnlCount:pnlTrades.length,series,peak,drawdown:Math.abs(maxDD)};
 }
 function pnlTooltipPoint(point){
  const t=point.trade||{};
- return esc(formatDateShort(tradeDateISO(t)))+" · "+esc(t.instrument||"")+
-   " · "+esc(formatMoneyShort(point.pnl))+" · cumul "+esc(formatMoneyShort(point.cumulative));
+ return esc(formatDateShort(tradeDateISO(t)))+" · "+esc(t.instrument||"")+" · "+esc(formatMoneyShort(point.pnl))+" · cumul "+esc(formatMoneyShort(point.cumulative));
 }
 function renderPnlChart(prefix,stats){
  const el=$(prefix+"PnlChart");if(!el)return;
  const badge=$(prefix+"PnlBadge"),caption=$(prefix+"PnlCaption"),meta=$(prefix+"PnlMeta"),count=$(prefix+"PnlCount"),peak=$(prefix+"PeakPnl"),dd=$(prefix+"MaxDD");
- if(meta)meta.textContent=stats.pnlCount?stats.pnlCount+" trade(s) avec P&L aujourd'hui":"P&L renseigné dans le Journal";
+ if(meta)meta.textContent=stats.pnlCount?stats.pnlCount+" trade(s) avec P&L":"P&L renseigné dans le Journal";
  if(count)count.textContent=String(stats.pnlCount);
  if(peak)peak.textContent=stats.pnlCount?formatMoneyShort(stats.peak):"—";
  if(dd)dd.textContent=stats.pnlCount?formatMoneyShort(-stats.drawdown):"—";
  if(badge){badge.textContent=stats.pnl!==null?formatMoneyShort(stats.pnl):"—";badge.className="pnl-net "+(stats.pnl>0?"positive":stats.pnl<0?"negative":"neutral");}
- if(caption)caption.textContent=stats.pnlCount?stats.pnlCount+" trade(s) · cumul final "+formatMoneyShort(stats.pnl):"Aucun P&L renseigné pour aujourd'hui.";
- if(!stats.series.length){
-   el.innerHTML='<div class="empty">Aucun P&L renseigné pour aujourd'hui.</div>';return;
- }
+ if(caption)caption.textContent=stats.pnlCount?stats.pnlCount+" trade(s) · cumul final "+formatMoneyShort(stats.pnl):"Aucun P&L renseigné pour ce mois.";
+ if(!stats.series.length){el.innerHTML='<div class="empty">Aucun P&L renseigné pour ce mois.</div>';return;}
  const w=940,h=300,padL=52,padR=20,padT=18,padB=34;
- const vals=[0,...stats.series.map(p=>p.cumulative)],min=Math.min(...vals),max=Math.max(...vals);
- const spread=Math.max(1,max-min),lo=min-spread*.08,hi=max+spread*.08;
- const x=i=>padL+(i/(Math.max(1,stats.series.length-1)))*(w-padL-padR);
- const y=v=>padT+(1-(v-lo)/(hi-lo))*(h-padT-padB);
- const zeroY=y(0);
+ const vals=[0,...stats.series.map(p=>p.cumulative)],min=Math.min(...vals),max=Math.max(...vals),spread=Math.max(1,max-min),lo=min-spread*.08,hi=max+spread*.08;
+ const x=i=>padL+(i/(Math.max(1,stats.series.length-1)))*(w-padL-padR),y=v=>padT+(1-(v-lo)/(hi-lo))*(h-padT-padB),zeroY=y(0);
  const line=stats.series.map((p,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(p.cumulative).toFixed(1)).join(" ");
  const area=line+" L "+x(stats.series.length-1).toFixed(1)+" "+zeroY.toFixed(1)+" L "+x(0).toFixed(1)+" "+zeroY.toFixed(1)+" Z";
  const grid=[];
- for(let i=0;i<4;i++){
-   const v=lo+(hi-lo)*(i/3),yy=y(v);
-   grid.push('<line x1="'+padL+'" y1="'+yy.toFixed(1)+'" x2="'+(w-padR)+'" y2="'+yy.toFixed(1)+'" class="pnl-grid-line"/>');
-   grid.push('<text x="'+(padL-10)+'" y="'+(yy+3).toFixed(1)+'" text-anchor="end" class="pnl-axis">'+esc(formatMoneyShort(v))+'</text>');
- }
+ for(let i=0;i<4;i++){const v=lo+(hi-lo)*(i/3),yy=y(v);grid.push('<line x1="'+padL+'" y1="'+yy.toFixed(1)+'" x2="'+(w-padR)+'" y2="'+yy.toFixed(1)+'" class="pnl-grid-line"/>');grid.push('<text x="'+(padL-10)+'" y="'+(yy+3).toFixed(1)+'" text-anchor="end" class="pnl-axis">'+esc(formatMoneyShort(v))+'</text>');}
  const dots=stats.series.map((p,i)=>'<g class="pnl-point"><circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.cumulative).toFixed(1)+'" r="4" class="pnl-dot"/><title>'+pnlTooltipPoint(p)+'</title></g>').join("");
  const labels=stats.series.length>1?[0,Math.floor((stats.series.length-1)/2),stats.series.length-1].filter((v,i,a)=>a.indexOf(v)===i).map(i=>'<text x="'+x(i).toFixed(1)+'" y="'+(h-8)+'" text-anchor="middle" class="pnl-axis">'+esc(formatDateShort(tradeDateISO(stats.series[i].trade)))+'</text>').join(""):"";
- el.innerHTML='<svg class="pnl-svg" viewBox="0 0 '+w+" "+h+'" role="img" aria-label="Courbe P&L cumulée du jour">'+grid.join("")+
-   '<line x1="'+padL+'" y1="'+zeroY.toFixed(1)+'" x2="'+(w-padR)+'" y2="'+zeroY.toFixed(1)+'" class="pnl-zero"/>'+
-   '<path d="'+area+'" class="pnl-area"/><path d="'+line+'" class="pnl-line"/>'+dots+labels+
-   '<text x="'+padL+'" y="12" class="pnl-axis">P&L cumulé</text></svg>';
+ el.innerHTML='<svg class="pnl-svg" viewBox="0 0 '+w+" "+h+'" role="img" aria-label="Courbe P&L cumulée du mois">'+grid.join("")+'<line x1="'+padL+'" y1="'+zeroY.toFixed(1)+'" x2="'+(w-padR)+'" y2="'+zeroY.toFixed(1)+'" class="pnl-zero"/><path d="'+area+'" class="pnl-area"/><path d="'+line+'" class="pnl-line"/>'+dots+labels+'<text x="'+padL+'" y="12" class="pnl-axis">P&L cumulé · '+esc(monthLabel(stats.month||""))+'</text></svg>';
 }
 function renderDashboardActivity(prefix,arr){
  const el=$(prefix+"Latest");if(!el)return;
  const rows=arr.slice().sort((a,b)=>tradeTimestamp(b).localeCompare(tradeTimestamp(a))).slice(0,6);
- if(!rows.length){el.innerHTML='<div class="empty">Aucun trade aujourd\'hui.</div>';return;}
+ if(!rows.length){el.innerHTML='<div class="empty">Aucun trade dans ce mois.</div>';return;}
  el.innerHTML=rows.map(t=>{
-   const result=String(t.result||"").toUpperCase();
-   const resultClass=result.includes("WIN")?"win":result.includes("LOSS")?"loss":"open";
-   const pnl=parseNumericAmount(t.pnl);
-   return '<div class="dashboard-activity-row"><div class="activity-main"><div class="activity-top"><strong>'+esc(t.instrument||"—")+'</strong><span class="activity-result '+resultClass+'">'+esc(result||"OPEN")+'</span></div><div class="sub">'+esc(t.session||"Session non définie")+'</div></div><div class="activity-right"><strong class="'+(pnl>0?"green":pnl<0?"red":"")+'">'+(Number.isFinite(pnl)?esc(formatMoneyShort(pnl)):"—")+'</strong><span>'+esc(t.R||"—")+'</span></div></div>';
+   const result=String(t.result||"").toUpperCase(),resultClass=result.includes("WIN")?"win":result.includes("LOSS")?"loss":"open",pnl=parseNumericAmount(t.pnl);
+   return '<div class="dashboard-activity-row"><div class="activity-main"><div class="activity-top"><strong>'+esc(t.instrument||"—")+'</strong><span class="activity-result '+resultClass+'">'+esc(result||"OPEN")+'</span></div><div class="sub">'+esc(formatDateShort(tradeDateISO(t)))+' · '+esc(t.session||"Session non définie")+'</div></div><div class="activity-right"><strong class="'+(pnl>0?"green":pnl<0?"red":"")+'">'+(Number.isFinite(pnl)?esc(formatMoneyShort(pnl)):"—")+'</strong><span>'+esc(t.R||"—")+'</span></div></div>';
  }).join("");
+}
+function populateDashboardMonthControls(model,data){
+ const prefix=model==="CRYPTO"?"cryptoDash":"dash",select=$(prefix+"MonthSelect"),title=$(prefix+"PeriodTitle"),label=$(prefix+"MonthLabel");
+ const months=buildMonthOptions(model,data.allTrades),selected=data.month;
+ if(select){
+   select.innerHTML=months.map(m=>'<option value="'+esc(m)+'" '+(m===selected?"selected":"")+'>'+esc(monthLabelLong(m))+'</option>').join("");
+   select.value=selected;
+ }
+ if(title)title.textContent=monthLabelLong(selected);
+ if(label)label.textContent=monthLabelLong(selected);
 }
 async function renderStats(){
  const datasets=await Promise.all([loadDashboardTrades("NQ"),loadDashboardTrades("CRYPTO")]);
  const put=(prefix,data)=>{
-   const s=calcDashboardStats(data.trades);
+   data.trades.forEach(t=>{t.__dashboardMonth=data.month;});
+   const s=calcDashboardStats(data.trades);s.month=data.month;
    if($(prefix+"Trades"))$(prefix+"Trades").textContent=s.trades;
    if($(prefix+"Winrate"))$(prefix+"Winrate").textContent=s.winrate!==null?s.winrate.toFixed(1)+"%":"—";
    if($(prefix+"AvgR"))$(prefix+"AvgR").textContent=s.avgR!==null?((s.avgR>=0?"+":"")+s.avgR.toFixed(2)+"R"):"—";
    if($(prefix+"TotalR"))$(prefix+"TotalR").textContent=s.totalR!==null?((s.totalR>=0?"+":"")+s.totalR.toFixed(2)+"R"):"—";
    if($(prefix+"Pnl"))$(prefix+"Pnl").textContent=s.pnl!==null?formatMoneyShort(s.pnl):"—";
-   if($(prefix+"PnlMeta"))$(prefix+"PnlMeta").textContent=s.pnlCount?s.pnlCount+" trade(s) avec P&L aujourd'hui":"P&L renseigné dans le Journal";
-   const dayLabel=$(prefix+"DayLabel");if(dayLabel)dayLabel.textContent=formatCurrentDayLabel(data.today);
+   if($(prefix+"PnlMeta"))$(prefix+"PnlMeta").textContent=s.pnlCount?s.pnlCount+" trade(s) avec P&L":"P&L renseigné dans le Journal";
+   populateDashboardMonthControls(prefix==="cryptoDash"?"CRYPTO":"NQ",data);
    renderDashboardActivity(prefix,data.trades);
    renderPnlChart(prefix,s);
-   const status=$(prefix+"DataStatus");
-   if(status){status.textContent=data.serverOk?"● JOURNAL + SERVEUR":"● JOURNAL LOCAL";status.className=data.serverOk?"status green":"status";}
+   const status=$(prefix+"DataStatus");if(status){status.textContent=data.serverOk?"● JOURNAL + SERVEUR":"● JOURNAL LOCAL";status.className=data.serverOk?"status green":"status";}
    const source=$(prefix+"SourceLabel");if(source)source.textContent=data.serverOk?"Journal + serveur":"Journal local";
  };
  put("dash",datasets[0]);put("cryptoDash",datasets[1]);
