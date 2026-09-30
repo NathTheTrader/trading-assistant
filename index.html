@@ -1172,7 +1172,7 @@ body:before,body:after{display:none !important;content:none !important}
         <label class="check-card imperfection"><span class="check-main"><span class="check-icon">M</span><span class="check-copy"><span class="check-title">Structure messy</span><span class="check-meta">-5 · IMPERFECTION</span></span></span><input id="bmessy" type="checkbox"><span class="check-switch"></span></label>
         <label class="check-card killer"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Entrée trop tôt / trop tard</span><span class="check-meta">KILLER</span></span></span><input id="btimebad" type="checkbox"><span class="check-switch"></span></label>
         <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">KILLER comportemental</span></span></span><input id="btilt" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER comportemental</span></span></span><input id="brev" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER comportemental</span></span></span><input id="revenge" type="checkbox"><span class="check-switch"></span></label>
       </div>
       <div id="botLiveScore" class="live-check-score"><span>PRÉ-CHECK</span><strong id="botLiveScoreValue">30/30</strong><em id="botLiveScoreGrade">A+</em></div>
       <textarea id="bnotes" placeholder="HTF bias → POI → liquidité / sweep → retracement → R.B. → entrée → SL/TP → news…"></textarea>
@@ -1682,7 +1682,7 @@ function updateCryptoLiveScore(){
  box.style.borderColor=r.killer?"rgba(255,73,107,.55)":r.score>=20?"rgba(55,226,154,.45)":"rgba(255,255,255,.16)";
 }
 function bindLiveChecklist(){
- const botIds=["btiming","bhtf","bpoi","bfib","brb","brr","bbacktest","bliq","bmessy","btimebad","btilt","brev"];
+ const botIds=["btiming","bhtf","bpoi","bfib","brb","brr","bbacktest","bliq","bmessy","btimebad","btilt","revenge"];
  const cryptoIds=["cDirection","cKeyOpen","cPOI","cLiquidity","cEntry","cRR","cOTE","cMessy","cKOWeak","cPOIWeak","cKOAbsent","cPOIAbsent","cEntryBad","cRRBad"];
  [...botIds,...cryptoIds].forEach(id=>{
    const el=$(id);if(!el||el.dataset.liveBound==="1")return;
