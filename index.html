@@ -1497,11 +1497,22 @@ function applyModeVisibility(){
 function show(id,btn){
  if($("journal")&&!$("journal").classList.contains("hidden")&&id!=="journal")saveJournalDraft();
  if(!VALID_MODES.has(activeModel))setSiteMode(siteMode||"NQ");
+
+ // HARD WORKSPACE ISOLATION: exactly one top-level workspace may be visible.
  const sections=[...document.querySelectorAll("main>.workspace")];
- sections.forEach(s=>{s.classList.add("hidden");s.hidden=true;s.style.display="none";s.setAttribute("aria-hidden","true");});
+ sections.forEach(s=>{
+   s.classList.add("hidden");
+   s.hidden=true;
+   s.style.setProperty("display","none","important");
+   s.setAttribute("aria-hidden","true");
+ });
  const target=$(id);
  if(!target)return;
- target.classList.remove("hidden");target.hidden=false;target.style.display="block";target.setAttribute("aria-hidden","false");
+ target.classList.remove("hidden");
+ target.hidden=false;
+ target.style.setProperty("display","block","important");
+ target.setAttribute("aria-hidden","false");
+
  document.querySelectorAll("nav button").forEach(b=>{b.classList.remove("active");b.removeAttribute("aria-current");});
  if(btn){btn.classList.add("active");btn.setAttribute("aria-current","page");}
  if(id==="journal"){updateJournalMarket();renderJournal();restoreJournalDraft();hydrateJournalFromServer();}
