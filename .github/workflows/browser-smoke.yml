@@ -55,7 +55,8 @@ jobs:
             await click("#navBotFutures");await expectVisible("bot");
             if(await page.locator("#bot #btiming").count()!==1||await page.locator("#bot #bhtf").count()!==1||await page.locator("#bot #bpoi").count()!==1||await page.locator("#bot #bfib").count()!==1||await page.locator("#bot #brb").count()!==1||await page.locator("#bot #brr").count()!==1||await page.locator("#bot #bbacktest").count()!==1)throw new Error("Futures checklist incomplete");
 
-            await click("#modeCRYPTO");await expectVisible("cryptoDash");
+            await click("#modeCRYPTO");await expectVisible("crypto");
+            await click("#navDash");await expectVisible("cryptoDash");
             await click("#navBotCrypto");await expectVisible("crypto");
             if(await page.locator("#crypto #cryptoInstrumentBot").count()!==1||await page.locator("#crypto #cDirection").count()!==1||await page.locator("#crypto #cKeyOpen").count()!==1)throw new Error("Crypto Bot controls incomplete");
 
