@@ -65,7 +65,9 @@ const HISTORICAL_CONTEXT_FILE = process.env.HISTORICAL_CONTEXT_FILE || path.join
 const OBSIDIAN_DIR = process.env.OBSIDIAN_DIR || path.join(process.cwd(), "data", "obsidian");
 const OBSIDIAN_TRADES_FILE = path.join(OBSIDIAN_DIR, "trades.json");
 const OBSIDIAN_STATUS_FILE = path.join(OBSIDIAN_DIR, "status.json");
+const OBSIDIAN_JOB_FILE = path.join(OBSIDIAN_DIR, "analysis-job.json");
 const LEARNING_FILE = process.env.LEARNING_FILE || path.join(process.cwd(), "data", "ai-learning.json");
+const OBSIDIAN_DAILY_REQUEST_BUDGET = Number(process.env.OBSIDIAN_DAILY_REQUEST_BUDGET || 35);
 let obsidianJob = { running:false, phase:"idle", total:0, processed:0, analyzedImages:0, error:null, startedAt:null, finishedAt:null };
 
 const BASE_SYSTEM = `
@@ -300,6 +302,23 @@ function parseObsidianTrade(rel, text) {
     context:context.slice(0,6000),errors:errors.slice(0,3000),lesson:lesson.slice(0,3000),
     images:embeds.slice(0,20),imageAnalyses:[]
   };
+}
+async function loadObsidianJob() {
+  try { return JSON.parse(await fs.readFile(OBSIDIAN_JOB_FILE,"utf8")); }
+  catch { return obsidianJob; }
+}
+async function saveObsidianJob() {
+  await fs.mkdir(OBSIDIAN_DIR,{recursive:true});
+  await fs.writeFile(OBSIDIAN_JOB_FILE,JSON.stringify(obsidianJob,null,2));
+}
+async function normalizePersistedObsidianJob() {
+  const saved=await loadObsidianJob();
+  if(saved?.running){
+    obsidianJob={...saved,running:false,phase:"paused",error:"Analyse interrompue par un redémarrage du serveur. Les images déjà analysées ne seront pas retraitées."};
+    await saveObsidianJob();
+  } else if(saved) {
+    obsidianJob={...obsidianJob,...saved};
+  }
 }
 async function loadObsidianTrades() {
   try { return JSON.parse(await fs.readFile(OBSIDIAN_TRADES_FILE,"utf8")); } catch { return []; }
