@@ -112,9 +112,13 @@
       try{window.speechSynthesis?.cancel()}catch{}
       try{currentAudio?.pause()}catch{}
       currentAudio=null;
+      updateAutoVoiceToggle();
+      setStatus("Lecture automatique désactivée.");
+      return;
     }
     updateAutoVoiceToggle();
-    setStatus(on?"Lecture automatique activée.":"Lecture automatique désactivée.");
+    setStatus("Lecture automatique activée · test de la voix JARVIS…");
+    Promise.resolve(speakWithJarvisVoice("Voix JARVIS activée.")).catch(()=>{});
   }
   window.edgeflowAutoVoiceEnabled=autoVoiceEnabled;
 
