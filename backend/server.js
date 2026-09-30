@@ -36,10 +36,7 @@ const openrouter = process.env.OPENROUTER_API_KEY ? new OpenAI({
   }
 }) : null;
 
-const GEMINI_API_KEY = String(process.env.GEMINI_API_KEY || "")
-  .trim()
-  .replace(/^(['"])(.*)\\1$/s,"$2")
-  .replace(/\\s+/g,"");
+const GEMINI_API_KEY = String(process.env.GEMINI_API_KEY || "").trim();
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 const GEMINI_FALLBACK_MODELS = String(process.env.GEMINI_FALLBACK_MODELS || "gemini-3.5-flash-lite,gemini-3.6-flash,gemini-3.5-flash")
   .split(",").map(x=>x.trim()).filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i);
@@ -137,29 +134,59 @@ function mapGeminiThinking(reasoning) {
   const effort=String(reasoning?.effort||"medium").toLowerCase();
   return effort==="high"?"high":effort==="low"?"low":effort==="minimal"?"minimal":"medium";
 }
-async function callGeminiNative({model,input}) {
-  const endpoint="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent?key="+encodeURIComponent(GEMINI_API_KEY);
-  const body=buildGeminiRequest(input);
-  body.generationConfig={
-    maxOutputTokens:Number(process.env.GEMINI_MAX_OUTPUT_TOKENS||8000),
-    thinkingConfig:{thinkingLevel:"medium"}
+function buildGeminiInteractionInput(content) {
+  const out=[];
+  const items=Array.isArray(content)?content:[{type:"input_text",text:String(content||"")}];
+  for(const item of items){
+    if(item?.type==="input_text" || item?.type==="text"){
+      const text=String(item.text||"");
+      if(text) out.push({type:"text",text});
+      continue;
+    }
+    if(item?.type==="input_image"){
+      const image=parseGeminiDataUrl(item.image_url);
+      if(image) out.push({type:"image",data:image.data,mime_type:image.mimeType});
+      continue;
+    }
+    if(item?.type==="image_url"){
+      const image=parseGeminiDataUrl(item.image_url?.url);
+      if(image) out.push({type:"image",data:image.data,mime_type:image.mimeType});
+    }
+  }
+  return out;
+}
+
+async function callGeminiInteraction({model,content,systemInstruction}) {
+  const endpoint="https://generativelanguage.googleapis.com/v1beta/interactions";
+  const body={
+    model,
+    system_instruction:String(systemInstruction||""),
+    input:buildGeminiInteractionInput(content),
+    generation_config:{max_output_tokens:Number(process.env.GEMINI_MAX_OUTPUT_TOKENS||8000)},
+    store:false
   };
   const response=await fetch(endpoint,{
     method:"POST",
-    headers:{"Content-Type":"application/json"},
+    headers:{
+      "Content-Type":"application/json",
+      "x-goog-api-key":GEMINI_API_KEY
+    },
     body:JSON.stringify(body)
   });
   const data=await response.json().catch(()=>({}));
   if(!response.ok){
-    const error=new Error(data?.error?.message||("Gemini native API error "+response.status));
+    const error=new Error(data?.error?.message||("Gemini Interactions API error "+response.status));
     error.status=response.status;
     error.code=data?.error?.status||data?.error?.code||null;
     throw error;
   }
-  const outputText=(data?.candidates||[]).flatMap(c=>c?.content?.parts||[]).map(p=>String(p?.text||"")).join("");
+  const outputText=aiText(data?.output_text) || (data?.steps||[])
+    .filter(step=>step?.type==="model_output")
+    .flatMap(step=>step?.content||[])
+    .map(item=>String(item?.text||""))
+    .join("");
   if(!outputText){
-    const reason=String(data?.candidates?.[0]?.finishReason||"EMPTY_RESPONSE");
-    const error=new Error("Gemini native API returned no text (finishReason="+reason+").");
+    const error=new Error("Gemini Interactions API returned no text.");
     error.status=502;
     throw error;
   }
@@ -692,12 +719,10 @@ async function obsidianImageAnalysisLoop() {
 
       let response;
       try {
-        response=await callGemini({
+        response=await callGeminiInteraction({
           model:GEMINI_MODEL,
-          input:[
-            {role:"system",content:BASE_SYSTEM+"\nHISTORICAL SCREENSHOT REVIEW: inspect only visible evidence and keep NQ/CRYPTO separated."},
-            {role:"user",content}
-          ]
+          systemInstruction:BASE_SYSTEM+"\nHISTORICAL SCREENSHOT REVIEW: inspect only visible evidence and keep NQ/CRYPTO separated.",
+          content
         });
       } catch(e) {
         if(e?.status===429 || /rate.?limit|too many requests|free.*limit/i.test(String(e?.message||""))) {
