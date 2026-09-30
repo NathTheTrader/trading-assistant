@@ -497,11 +497,15 @@ async function obsidianImageAnalysisLoop() {
         throw e;
       }
 
-      const analysis=response.output_text||"";
+      const analysis=String(response.output_text||"");
+      const imageSections=analysis.split(/\n(?=\s*(?:IMAGE_INDEX\s*=\s*|IMAGE\s*(?:INDEX|#)?\s*)\d+)/i).map(x=>x.trim()).filter(Boolean);
       for(const [n,x] of batch.entries()) {
         const trade=trades.find(t=>t.id===x.trade.id);
-        if(trade) (trade.imageAnalyses ||= []).push({
-          file:x.file,imageIndex:n+1,analysis,analyzedAt:new Date().toISOString()
+        if(!trade) continue;
+        const marker=new RegExp("^(?:IMAGE_INDEX\\s*=\\s*|IMAGE\\s*(?:INDEX|#)?\\s*)"+(n+1)+"\\b","i");
+        const section=imageSections.find(part=>marker.test(part)) || analysis;
+        (trade.imageAnalyses ||= []).push({
+          file:x.file,imageIndex:n+1,analysis:section.slice(0,14000),analyzedAt:new Date().toISOString()
         });
       }
       obsidianJob.processed=Math.min(items.length,i+batch.length);
@@ -820,6 +824,7 @@ app.post("/api/trades",requirePrivateRequest, async (req,res) => {
 });
 
 app.post("/api/analyze-trade",requirePrivateRequest,  async (req,res) => {
+  if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
   const trades=await loadTrades();
   const trade=cleanTrade(req.body.trade || req.body);
   trade.model = String(trade.model || "NQ").toUpperCase() === "CRYPTO" ? "CRYPTO" : "NQ";
@@ -832,6 +837,10 @@ app.post("/api/analyze-trade",requirePrivateRequest,  async (req,res) => {
 });
 
 app.post("/api/chat",requirePrivateRequest,  async (req,res) => {
+  if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
+  const message=String(req.body.message||"").trim();
+  if(!message) return res.status(400).json({ok:false,error:"Message vide."});
+  if(message.length>12000) return res.status(413).json({ok:false,error:"Message trop long."});
   const trades=await loadTrades();
   const model=String(req.body.model||"NQ").toUpperCase()==="CRYPTO"?"CRYPTO":"NQ";
   const result=await askAI({
