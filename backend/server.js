@@ -38,6 +38,7 @@ const openrouter = process.env.OPENROUTER_API_KEY ? new OpenAI({
 
 const GEMINI_API_KEY = String(process.env.GEMINI_API_KEY || "").trim();
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-3.5-flash-lite";
 const GEMINI_FALLBACK_MODELS = String(process.env.GEMINI_FALLBACK_MODELS || "gemini-3.5-flash-lite,gemini-3.6-flash,gemini-3.5-flash")
   .split(",").map(x=>x.trim()).filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i);
 const MODEL = process.env.OPENROUTER_MODEL || "openrouter/free";
@@ -280,7 +281,7 @@ const OBSIDIAN_STATUS_FILE = path.join(OBSIDIAN_DIR,"status.json");
 const OBSIDIAN_JOB_FILE = path.join(OBSIDIAN_DIR,"analysis-job.json");
 const LEARNING_FILE = process.env.LEARNING_FILE || path.join(EDGEFLOW_STORAGE_ROOT,"ai-learning.json");
 const OBSIDIAN_DAILY_REQUEST_BUDGET = Number(process.env.OBSIDIAN_DAILY_REQUEST_BUDGET || 35);
-const OBSIDIAN_IMAGE_BATCH_SIZE = Math.max(1,Math.min(2,Number(process.env.OBSIDIAN_IMAGE_BATCH_SIZE || 1)));
+const OBSIDIAN_IMAGE_BATCH_SIZE = Math.max(1,Math.min(2,Number(process.env.OBSIDIAN_IMAGE_BATCH_SIZE || 2)));
 let obsidianJob = { running:false, phase:"idle", total:0, processed:0, analyzedImages:0, error:null, startedAt:null, finishedAt:null,currentFile:null,currentModel:null };
 async function reserveAIRequest() {
   const limit = Number(process.env.OPENROUTER_DAILY_REQUEST_LIMIT || 0);
@@ -701,7 +702,7 @@ async function obsidianImageAnalysisLoop() {
 
       const batch=items.slice(i,i+OBSIDIAN_IMAGE_BATCH_SIZE);
       obsidianJob.currentFile=batch.map(x=>path.basename(x.file)).join(", ");
-      obsidianJob.currentModel=batch[0]?.trade?.model||null;
+      obsidianJob.currentModel=GEMINI_IMAGE_MODEL+" · "+(batch[0]?.trade?.model||"UNKNOWN");
       await saveObsidianJob();
       const content=[{type:"input_text",text:JSON.stringify({
         task:"Analyze these historical trading screenshots for visual evidence only. Return one clearly separated section per IMAGE_INDEX. Do not infer hidden data. Identify chart-visible instrument/timeframe if readable, visible direction/structure, liquidity/sweep, Key Open, FVG/OB/RB, Fib/OTE, entry/SL/TP if visible, and execution quality. Separate FACTS, INTERPRETATION, UNKNOWN.",
@@ -720,7 +721,7 @@ async function obsidianImageAnalysisLoop() {
       let response;
       try {
         response=await callGeminiInteraction({
-          model:GEMINI_MODEL,
+          model:GEMINI_IMAGE_MODEL,
           systemInstruction:BASE_SYSTEM+"\nHISTORICAL SCREENSHOT REVIEW: inspect only visible evidence and keep NQ/CRYPTO separated.",
           content
         });
