@@ -46,7 +46,7 @@ const FALLBACK_MODELS = String(process.env.OPENROUTER_FALLBACK_MODELS || "").spl
 const AI_PROVIDER = GEMINI_API_KEY ? "gemini" : (process.env.OPENROUTER_API_KEY ? "openrouter" : "none");
 const AI_PRIMARY_MODEL = AI_PROVIDER==="gemini" ? GEMINI_MODEL : MODEL;
 const AI_ENGINE_VERSION = "2.1";
-const AI_GRADE_SCALE = "A+ exceptionnellement propre; A solide; A- solide avec petite imperfection; B+ bon avec imperfection claire; B bon mais faiblesse identifiable; B- limite; C+/C qualité limite; NO TRADE si killer ou modele non respecte.";
+const AI_GRADE_SCALE = "A+ exceptionnellement propre; A solide; A- solide avec petite imperfection; B+ bon avec imperfection claire; B bon mais faiblesse identifiable; B- limite; C+/C qualité limite; NO TRADE uniquement si un vrai killer/invalidation ou non-respect majeur du modèle. Structure messy seule = imperfection qui coûte des points, jamais un NO TRADE automatique.";
 const MODEL_CONTRACTS = {
   NQ:{
     label:"FUTURES / NQ",
@@ -426,6 +426,15 @@ Treat trading as a business process, not just chart reading. When the trader ask
 
 VOICE COACH
 In voice/business-coach mode, behave like a demanding but concise interviewer. Ask ONE question at a time. Turn vague impressions into measurable actions. If the trader gives a vague answer, ask a precise follow-up. After enough answers, summarize OBSERVATION, EVIDENCE, HYPOTHESIS, NEXT TEST, and ONE COMMITMENT.
+
+LIVE OUTPUT STYLE
+For setup/trade analysis, keep the answer compact and decision-focused. Target 250-450 words maximum unless the trader explicitly asks for a deep research review. Do not use arrow chains or decorative symbols such as "→", "➜", "⇒". Use short headings and short paragraphs. Prefer this order: LECTURE LIVE, MODÈLE, ENTRÉE, RISQUE/RR, IMPERFECTION, NOTE FINALE, ACTION. Give the main conclusion early. Do not repeat the same fact in multiple sections.
+
+FUTURES GRADING DETAIL
+A messy structure is an imperfection, not a trade killer. Penalize the setup according to severity, but keep grading possible from A+ through C/C+. Only use NO TRADE for a genuine killer or model invalidation. A small imperfection should lower the grade rather than erase the setup.
+
+CRYPTO GRADING DETAIL
+Use the Crypto model only: market direction, Key Open manipulation/sweep, HTF POI alignment, entry quality and high-RR logic. Fibonacci/OTE is secondary. Do not import Futures Rejection Block requirements into Crypto.
 
 COMMUNICATION
 Respond in French unless asked otherwise. Be concise during live/voice interaction and more detailed for research. Never tell the trader what they want to hear. If evidence is weak, say so plainly.
@@ -967,12 +976,13 @@ async function askAI({task, trade, history=[], chatHistory=[]}) {
     "- Analyze the setup as it exists NOW. Do not use hindsight.",
     "- The trade result is an outcome, not proof of setup quality. Never upgrade/downgrade because it won or lost.",
     "- The trader is learning. Grade A, B and borderline setups honestly; do not force A.",
+    "- Structure messy is an IMPERFECTION, not a killer. Subtract quality/grade points when it matters, but never return NO TRADE solely because the structure is messy.",
     "- Be nuanced: one small imperfection should lower the grade without automatically invalidating the setup.",
     model==="NQ" ? "- Futures: explicitly judge entry timing EARLY / WELL-PLACED / LATE and retracement SHALLOW / ADEQUATE / DEEP / TOO DEEP when evidence permits." : "- Crypto: prioritize market direction, Key Open manipulation/sweep and aligned HTF POI. OTE/Fib is secondary.",
     "- FACTS must come from the screenshot/data. Unknown or unreadable = UNKNOWN.",
     "- Separate FACT, INTERPRETATION, HYPOTHESIS and TEST.",
     "- FINAL GRADE must use this scale: "+AI_GRADE_SCALE,
-    "OUTPUT ORDER: LIVE READ -> MODEL CHECK -> ENTRY QUALITY -> RISK / R:R -> TIMING + NEWS -> MAIN ERROR / IMPERFECTION -> FINAL GRADE -> ONE NEXT ACTION",
+    "OUTPUT FORMAT: keep it concise (target 250-450 words), no arrow symbols, short headings only: LECTURE LIVE / MODÈLE / ENTRÉE / RISQUE-RR / IMPERFECTION / NOTE FINALE / ACTION. Lead with the useful conclusion and avoid repetition.",
     "- Prefer evidence with meaningful sample size. When a recurring error appears, report its count and win/loss split; do not call it causal without supporting evidence.",
     "- Grade setup quality at the decision point. A WIN can contain bad process and a LOSS can still be a valid setup.",
     "- For claims about what works, use intelligenceSignals and state the sample size before concluding.",
