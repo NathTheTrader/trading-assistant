@@ -116,8 +116,10 @@ jobs:
             await click("#navSettings");await expectVisible("settings");
             if(await page.locator("#settings .connection-card").count()!==3)throw new Error("Connection center incomplete");
 
-            await switchMode("NQ");await click("#navBotFutures");await expectVisible("bot");
-            await switchMode("CRYPTO");await expectVisible("crypto");
+            await switchMode("NQ");await expectVisible("dash");
+            await click("#navBotFutures");await expectVisible("bot");
+            await switchMode("CRYPTO");await expectVisible("cryptoDash");
+            await click("#navBotCrypto");await expectVisible("crypto");
             await switchMode("NQ");await expectVisible("dash");
             await click("#navBotFutures");await expectVisible("bot");
             if(errors.length)throw new Error(errors.join("\n"));
