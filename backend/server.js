@@ -361,6 +361,57 @@ const LEARNING_FILE = process.env.LEARNING_FILE || path.join(EDGEFLOW_STORAGE_RO
 const OBSIDIAN_DAILY_REQUEST_BUDGET = Number(process.env.OBSIDIAN_DAILY_REQUEST_BUDGET || 35);
 const OBSIDIAN_IMAGE_BATCH_SIZE = Math.max(1,Math.min(1,Number(process.env.OBSIDIAN_IMAGE_BATCH_SIZE || 1)));
 let obsidianJob = { running:false, phase:"idle", total:0, processed:0, analyzedImages:0, error:null, startedAt:null, finishedAt:null,currentFile:null,currentModel:null };
+const FINANCIAL_JUICE_RSS="https://www.financialjuice.com/feed.ashx?xy=rss";
+let financialJuiceCache={at:0,items:[]};
+
+function decodeXmlText(value=""){
+  return String(value)
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/gi,"$1")
+    .replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&#39;/g,"'")
+    .replace(/&lt;/g,"<").replace(/&gt;/g,">").trim();
+}
+async function fetchFinancialJuiceNews(limit=25){
+  const now=Date.now();
+  if(financialJuiceCache.items.length && now-financialJuiceCache.at<30000){
+    return {ok:true,source:"FinancialJuice",items:financialJuiceCache.items.slice(0,limit),cached:true};
+  }
+  const response=await fetch(FINANCIAL_JUICE_RSS,{
+    headers:{
+      "User-Agent":"EDGEFLOW/1.0",
+      "Accept":"application/rss+xml, application/xml, text/xml"
+    }
+  });
+  if(!response.ok) throw new Error("FinancialJuice RSS HTTP "+response.status);
+  const xml=await response.text();
+  const blocks=xml.match(/<item>[\s\S]*?<\/item>/gi)||[];
+  const items=blocks.map(block=>{
+    const get=(tag)=>decodeXmlText((block.match(new RegExp("<"+tag+"(?:\\s[^>]*)?>([\\s\\S]*?)<\\/"+tag+">","i"))||[])[1]||"");
+    const title=get("title");
+    const link=get("link");
+    const pubDate=get("pubDate");
+    const description=get("description").replace(/<[^>]+>/g," ").replace(/\\s+/g," ").trim();
+    const category=get("category");
+    return {title,link,pubDate,description,category};
+  }).filter(x=>x.title).slice(0,50);
+  financialJuiceCache={at:now,items};
+  return {ok:true,source:"FinancialJuice",items:items.slice(0,limit),cached:false};
+}
+async function buildFinancialJuiceContext(limit=18){
+  try{
+    const feed=await fetchFinancialJuiceNews(limit);
+    if(!feed.items.length) return "FINANCIAL JUICE: aucun headline disponible.";
+    return "FINANCIAL JUICE — headlines récentes (source live, non exhaustive):\n"+
+      feed.items.map((x,i)=>[
+        (i+1)+". "+x.title,
+        x.pubDate?("Date: "+x.pubDate):"",
+        x.category?("Catégorie: "+x.category):"",
+        x.description?("Détail: "+x.description.slice(0,420)):""
+      ].filter(Boolean).join(" | ")).join("\n");
+  }catch(error){
+    return "FINANCIAL JUICE: flux indisponible actuellement ("+String(error?.message||"erreur") +"). N'invente aucune news.";
+  }
+}
+
 async function reserveAIRequest() {
   const limit = Number(process.env.OPENROUTER_DAILY_REQUEST_LIMIT || 0);
   if (!Number.isFinite(limit) || limit <= 0) return { unlimited: true };
@@ -1601,14 +1652,27 @@ app.post("/api/chat",requirePrivateRequest,  async (req,res) => {
   const trades=await loadTrades();
   const model=String(req.body.model||"NQ").toUpperCase()==="CRYPTO"?"CRYPTO":"NQ";
   const previousTurns=Array.isArray(req.body.previousTurns)?req.body.previousTurns.slice(-12).map(x=>({role:String(x?.role)==="assistant"?"assistant":"user",content:String(x?.content||"").slice(0,2400)})):[];
+  const financialJuiceContext=await buildFinancialJuiceContext(18);
   const result=await askAI({
-    task:`Answer the trader's question using ONLY the ${model} model and its stored trading history. Never import rules or trades from the other model. User question: ${String(req.body.message || "")}`,
+    task:`Answer the trader's question using ONLY the ${model} model and its stored trading history. Never import rules or trades from the other model. Use the live FinancialJuice context below when the question involves current market/news context. Treat headlines as source material, not as guaranteed truth. Do not invent missing details. Always distinguish a reported headline from your own interpretation. User question: ${String(req.body.message || "")}
+
+LIVE FINANCIAL JUICE CONTEXT
+${financialJuiceContext}`,
     trade:null,
     history:trades.filter(t=>t.model===model),
     chatHistory:previousTurns
   });
   if(!result.ok) return res.status(result.code==="AI_DAILY_QUOTA"?429:503).json(result);
   res.json(result);
+});
+
+app.get("/api/news/financialjuice",requirePrivateRequest, async (req,res) => {
+  try{
+    const limit=Math.max(1,Math.min(50,Number(req.query.limit||25)));
+    res.json(await fetchFinancialJuiceNews(limit));
+  }catch(error){
+    res.status(502).json({ok:false,source:"FinancialJuice",error:error.message||"Flux FinancialJuice indisponible."});
+  }
 });
 
 app.get("/api/patterns",requirePrivateRequest,  async (req,res) => {
