@@ -36,7 +36,7 @@ const openrouter = process.env.OPENROUTER_API_KEY ? new OpenAI({
   }
 }) : null;
 
-const GEMINI_API_KEY = String(GEMINI_API_KEY || "")
+const GEMINI_API_KEY = String(process.env.GEMINI_API_KEY || "")
   .trim()
   .replace(/^(['"])(.*)\\1$/s,"$2")
   .replace(/\\s+/g,"");
