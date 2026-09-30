@@ -610,7 +610,15 @@ input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--acc
 .app[data-view="review"] main>section:not(#review),
 .app[data-view="settings"] main>section:not(#settings){display:none!important}
 .app[data-view="journal"] #journal{display:block!important}
+.app[data-view="settings"] #settings{display:block!important}
+.app[data-view="dash"] #dash{display:block!important}
+.app[data-view="review"] #review{display:block!important}
+.app[data-view="chat"] #chat{display:block!important}
+.app[data-view="models"] #models{display:block!important}
 .app[data-view="bot"] #bot{display:block!important}
+/* Navigation workspaces always begin at the top of the main viewport. */
+.main{scroll-margin-top:0}
+main>section{scroll-margin-top:0}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -932,9 +940,29 @@ function applyModeVisibility(){
 function show(id,btn){
  if($("journal")&&!$("journal").classList.contains("hidden")&&id!=="journal") saveJournalDraft();
  if(!VALID_MODES.has(activeModel)){setSiteMode(siteMode||"NQ");}
+
+ /* Every navigation click is a new workspace: force the viewport to the top. */
+ window.scrollTo({top:0,left:0,behavior:"auto"});
+ document.documentElement.scrollTop=0;
+ document.body.scrollTop=0;
+ const main=document.querySelector(".main");
+ if(main)main.scrollTop=0;
+
  const app=document.querySelector(".app"); if(app)app.dataset.view=id;
- document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));
- const target=$(id); if(target)target.classList.remove("hidden");
+ document.querySelectorAll("main>section").forEach(s=>{
+   s.classList.add("hidden");
+   s.setAttribute("aria-hidden","true");
+ });
+ const target=$(id);
+ if(target){
+   target.classList.remove("hidden");
+   target.setAttribute("aria-hidden","false");
+   target.scrollIntoView({block:"start",inline:"nearest"});
+   window.scrollTo({top:0,left:0,behavior:"auto"});
+   document.documentElement.scrollTop=0;
+   document.body.scrollTop=0;
+   if(main)main.scrollTop=0;
+ }
  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
  if(btn)btn.classList.add("active");
  else{
