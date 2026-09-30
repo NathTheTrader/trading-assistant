@@ -96,7 +96,7 @@ jobs:
             await click("#navJournal");await expectVisible("journal");
             const journalTop=await page.locator("#journal").evaluate(el=>el.getBoundingClientRect().top);
             if(journalTop<0||journalTop>100)throw new Error("Journal not positioned at workspace top: "+journalTop);
-            await click("#modeNQ");await expectVisible("journal");
+            await click("#modeNQ");await click("#navJournal");await expectVisible("journal");
             const modeNQ=await page.evaluate(()=>({mode:document.documentElement.getAttribute("data-site-mode"),body:document.body.className}));
             if(modeNQ.mode!=="NQ"||!modeNQ.body.includes("nq-mode"))throw new Error("Futures mode state invalid: "+JSON.stringify(modeNQ));
             await click("#modeCRYPTO");await expectVisible("journal");
@@ -109,7 +109,7 @@ jobs:
             await page.screenshot({path:"/tmp/edgeflow-settings.png",fullPage:true});
             if(await page.locator("#settings .connection-card").count()!==3)throw new Error("Settings connection center incomplete");
             await click("#navJournal");await expectVisible("journal");
-            await click("#modeNQ");await expectVisible("journal");
+            await click("#modeNQ");await click("#navJournal");await expectVisible("journal");
             if(await page.locator("#jMarket").inputValue()!=="FUTURES")throw new Error("Journal did not switch to Futures");
             await page.locator("#jResult").fill("WIN");
             await page.locator("#jR").fill("+2R");
@@ -135,7 +135,7 @@ jobs:
             const split=await page.evaluate(()=>{const a=JSON.parse(localStorage.getItem("journal")||"[]");return {nq:a.filter(x=>x.model==="NQ").length,crypto:a.filter(x=>x.model==="CRYPTO").length}});
             if(split.nq!==1||split.crypto!==1)throw new Error("Futures/Crypto Journal data not isolated: "+JSON.stringify(split));
             if(await page.locator("#dashTrades").count()!==1)throw new Error("Futures dashboard metric target missing");
-            await click("#modeNQ");await expectVisible("journal");
+            await click("#modeNQ");await click("#navJournal");await expectVisible("journal");
             await click("#navDash");await expectVisible("dash");
             if((await page.locator("#dashTrades").textContent()).trim()!=="1")throw new Error("Dashboard Futures did not read Journal entry");
             await click("#modeCRYPTO");await click("#navDash");await expectVisible("cryptoDash");
