@@ -81,6 +81,7 @@ jobs:
             if(await page.locator("#cryptoReview #timing").count()!==0)throw new Error("Futures checklist leaked into Crypto Review");
             if(await page.locator("#cryptoReview #cryptoDirection").count()!==1||await page.locator("#cryptoReview #cryptoKO").count()!==1)throw new Error("Crypto Review controls incomplete");
             await page.screenshot({path:"/tmp/edgeflow-crypto-review.png",fullPage:true});
+            await click("#modeNQ");await expectVisible("cryptoReview");
             await click("#navChat");await expectVisible("chat");
             if(!await page.locator("#chat .jarvis-chat-top").isVisible())throw new Error("JARVIS command center missing");
             await page.locator("#chatInput").fill("Test Futures");
