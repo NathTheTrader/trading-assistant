@@ -105,7 +105,8 @@ const OBSIDIAN_STATUS_FILE = path.join(OBSIDIAN_DIR, "status.json");
 const OBSIDIAN_JOB_FILE = path.join(OBSIDIAN_DIR, "analysis-job.json");
 const LEARNING_FILE = process.env.LEARNING_FILE || path.join(process.cwd(), "data", "ai-learning.json");
 const OBSIDIAN_DAILY_REQUEST_BUDGET = Number(process.env.OBSIDIAN_DAILY_REQUEST_BUDGET || 35);
-let obsidianJob = { running:false, phase:"idle", total:0, processed:0, analyzedImages:0, error:null, startedAt:null, finishedAt:null };
+const OBSIDIAN_IMAGE_BATCH_SIZE = Math.max(1,Math.min(2,Number(process.env.OBSIDIAN_IMAGE_BATCH_SIZE || 1)));
+let obsidianJob = { running:false, phase:"idle", total:0, processed:0, analyzedImages:0, error:null, startedAt:null, finishedAt:null,currentFile:null,currentModel:null };
 async function reserveAIRequest() {
   const limit = Number(process.env.OPENROUTER_DAILY_REQUEST_LIMIT || 0);
   if (!Number.isFinite(limit) || limit <= 0) return { unlimited: true };
@@ -476,9 +477,12 @@ async function obsidianImageAnalysisLoop() {
     }
   }
 
+  const savedJob=await loadObsidianJob();
+  const previousProcessed=Number(savedJob?.processed||0);
   obsidianJob={
-    running:true,phase:"analyzing",total:items.length,processed:0,
-    analyzedImages:0,error:null,startedAt:new Date().toISOString(),finishedAt:null
+    running:true,phase:"analyzing",total:items.length,processed:Math.min(previousProcessed,items.length),
+    analyzedImages:0,error:null,startedAt:savedJob?.startedAt||new Date().toISOString(),finishedAt:null,
+    currentFile:null,currentModel:null
   };
   await saveObsidianJob();
 
@@ -489,7 +493,7 @@ async function obsidianImageAnalysisLoop() {
   }
 
   try {
-    for(let i=0;i<items.length;i+=4) {
+    for(let i=0;i<items.length;i+=OBSIDIAN_IMAGE_BATCH_SIZE) {
       const usageFile=path.join(path.dirname(OBSIDIAN_JOB_FILE),"../ai-usage.json");
       let usage={date:new Date().toISOString().slice(0,10),requests:0};
       try {
@@ -503,7 +507,10 @@ async function obsidianImageAnalysisLoop() {
         return;
       }
 
-      const batch=items.slice(i,i+4);
+      const batch=items.slice(i,i+OBSIDIAN_IMAGE_BATCH_SIZE);
+      obsidianJob.currentFile=batch.map(x=>path.basename(x.file)).join(", ");
+      obsidianJob.currentModel=batch[0]?.trade?.model||null;
+      await saveObsidianJob();
       const content=[{type:"input_text",text:JSON.stringify({
         task:"Analyze these historical trading screenshots for visual evidence only. Return one clearly separated section per IMAGE_INDEX. Do not infer hidden data. Identify chart-visible instrument/timeframe if readable, visible direction/structure, liquidity/sweep, Key Open, FVG/OB/RB, Fib/OTE, entry/SL/TP if visible, and execution quality. Separate FACTS, INTERPRETATION, UNKNOWN.",
         modelSeparation:"NQ and CRYPTO remain separate.",
@@ -534,6 +541,12 @@ async function obsidianImageAnalysisLoop() {
           await saveObsidianJob();
           return;
         }
+        if(e?.status===400 && /context.?length|token|too large/i.test(String(e?.message||""))) {
+          obsidianJob={...obsidianJob,running:false,phase:"paused-context-limit",
+            error:"Une image est trop lourde pour le contexte du modèle. Compression/lot réduit requis : "+path.basename(batch[0]?.file||"inconnu")};
+          await saveObsidianJob();
+          return;
+        }
         throw e;
       }
 
@@ -550,11 +563,12 @@ async function obsidianImageAnalysisLoop() {
       }
       obsidianJob.processed=Math.min(items.length,i+batch.length);
       obsidianJob.analyzedImages+=batch.length;
+      obsidianJob.currentFile=null;obsidianJob.currentModel=null;
       await fs.writeFile(OBSIDIAN_TRADES_FILE,JSON.stringify(trades,null,2));
       await saveObsidianJob();
     }
 
-    obsidianJob={...obsidianJob,running:false,phase:"complete",finishedAt:new Date().toISOString(),error:null};
+    obsidianJob={...obsidianJob,running:false,phase:"complete",finishedAt:new Date().toISOString(),error:null,currentFile:null,currentModel:null};
     await saveObsidianJob();
   } catch(e) {
     obsidianJob={...obsidianJob,running:false,phase:"error",error:e.message,finishedAt:new Date().toISOString()};
@@ -918,9 +932,13 @@ app.post("/api/obsidian/analyze-images",requirePrivateRequest,  async (req,res) 
   if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
   const status=await loadObsidianStatus();
   if(!status.imported) return res.status(400).json({ok:false,error:"Import Obsidian requis avant l'analyse visuelle."});
-  if(obsidianJob.running) return res.json({ok:true,started:false,job:obsidianJob});
+  const saved=await loadObsidianJob();
+  if(obsidianJob.running) return res.json({ok:true,started:false,resumed:false,job:obsidianJob});
+  if(saved?.phase==="paused-rate-limit" || saved?.phase==="paused-context-limit" || saved?.phase==="paused" || saved?.phase==="error"){
+    obsidianJob={...saved,running:false};
+  }
   obsidianImageAnalysisLoop().catch(()=>{});
-  res.json({ok:true,started:true,job:obsidianJob});
+  res.json({ok:true,started:true,resumed:Boolean(saved?.processed),job:obsidianJob});
 });
 app.get("/api/obsidian/job",requirePrivateRequest,  async (req,res)=>{
   const saved=await loadObsidianJob();
