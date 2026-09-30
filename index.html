@@ -851,13 +851,19 @@ function setSiteMode(mode){
   if($("journal")&&!$("journal").classList.contains("hidden")) saveJournalDraft();
   mode=String(mode||"NQ").toUpperCase();
   if(!VALID_MODES.has(mode)) mode="NQ";
+  const visible=document.querySelector("main>.workspace:not(.hidden)")?.id||"";
   siteMode=mode; activeModel=mode;
   localStorage.setItem("siteMode",mode); localStorage.setItem("activeModel",mode);
   document.documentElement.setAttribute("data-site-mode",mode);
   document.body.classList.remove("nq-mode","crypto-mode");
   document.body.classList.add(mode==="CRYPTO"?"crypto-mode":"nq-mode");
   ["NQ","CRYPTO"].forEach(m=>{const b=$("mode"+m);if(b){const on=m===mode;b.classList.toggle("active",on);b.setAttribute("aria-pressed",String(on));}});
-  updateModelUI(); updateBotMode(); applyModeVisibility(); const mini=$("connectionMiniSub"); if(mini) mini.textContent=siteMode==="CRYPTO"?"Crypto : KCEX · observateur lecture seule.":"Futures : Tradovate / Rithmic · lecture seule."; renderJournal(); refreshAIDataAccess(); refreshObsidianStatus();
+  updateModelUI(); updateBotMode(); applyModeVisibility();
+  const mini=$("connectionMiniSub"); if(mini) mini.textContent=siteMode==="CRYPTO"?"Crypto : KCEX · observateur lecture seule.":"Futures : Tradovate / Rithmic · lecture seule.";
+  renderJournal(); refreshAIDataAccess(); refreshObsidianStatus();
+  if(visible==="dash"||visible==="cryptoDash") showActiveDashboard($("navDash"));
+  else if(visible==="bot"||visible==="crypto") show(mode==="CRYPTO"?"crypto":"bot");
+  else if(visible==="review"||visible==="cryptoReview") show(mode==="CRYPTO"?"cryptoReview":"review");
 }
 async function botFetch(path,options={}){
   if(!BOT_API) throw new Error("BOT_API_NOT_CONFIGURED");
