@@ -632,8 +632,8 @@ input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--acc
     <div><div class="brand-title">EDGE<span>FLOW</span></div><div class="brand-sub">TRADING INTELLIGENCE</div></div>
   </div>
   <div class="mode-switch" role="group" aria-label="Modèle actif">
-    <button id="modeNQ" data-site-mode="NQ" type="button">FUTURES</button>
-    <button id="modeCRYPTO" data-site-mode="CRYPTO" type="button">CRYPTO</button>
+    <button id="modeNQ" data-site-mode="NQ" type="button" onclick="setSiteMode('NQ')">FUTURES</button>
+    <button id="modeCRYPTO" data-site-mode="CRYPTO" type="button" onclick="setSiteMode('CRYPTO')">CRYPTO</button>
   </div>
   <div class="nav-title">WORKSPACE</div>
   <nav>
@@ -1401,7 +1401,6 @@ setSiteMode(siteMode);
 showActiveDashboard($("navDash"));
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
-document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode)));
 renderJournal();resetJournalForm();restoreJournalDraft();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();renderStats();bindLiveChecklist();
 document.querySelectorAll("[data-image-preview]").forEach(input=>input.addEventListener("change",()=>previewJournalImage(input,input.dataset.imagePreview)));
 JOURNAL_DRAFT_FIELDS.forEach(id=>{const el=$(id);if(!el)return;el.addEventListener("input",saveJournalDraft);el.addEventListener("change",saveJournalDraft);});
