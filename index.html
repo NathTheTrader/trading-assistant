@@ -895,6 +895,7 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
 @media(max-width:760px){.side{width:100%;padding:8px}.jarvis-console-head{align-items:flex-start;flex-direction:column}.jarvis-header-right{width:100%;justify-content:space-between}.jarvis-model-tabs{flex:1}.jarvis-model-tab{flex:1}.main{padding:12px}}
 
 .bubble-content strong{color:#fff;font-weight:800}.bubble-content h2,.bubble-content h3,.bubble-content h4{font-family:"Manrope","Inter",sans-serif;margin:9px 0 5px;color:#f7f9fc}.bubble-content h2{font-size:14px}.bubble-content h3{font-size:12px}.bubble-content h4{font-size:11px}.md-bullet{position:relative;padding-left:13px;margin:3px 0}.md-bullet:before{content:"";position:absolute;left:1px;top:.65em;width:4px;height:4px;border-radius:50%;background:var(--accent)}.md-gap{height:7px}
+.voice-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.jarvis-voice-settings .ai-box{min-height:68px}@media(max-width:760px){.voice-settings-grid{grid-template-columns:1fr}}
 </style>
 </head><body>
 <div class="app">
@@ -1127,7 +1128,8 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
     <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Crypto · observateur</div></div></div><span id="connKcex" class="connection-status warn">ÉCRAN</span></div><p>Partage d’onglet pour observation visuelle. Aucun ordre automatique.</p><div class="actions"><button class="primary" onclick="setSiteMode('CRYPTO');show('crypto',this)">OUVRIR OBSERVATEUR</button><button class="secondary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button></div></div>
   </div></div>
   <div class="section" style="margin-top:12px"><h2>Obsidian · mémoire historique</h2><div id="obsidianStatusBox" class="ai-box">Aucun journal Obsidian importé sur le backend.</div><div class="actions"><input id="obsidianZip" type="file" accept=".zip,application/zip" style="flex:1"><button type="button" class="primary" onclick="importObsidianJournal()">IMPORTER</button><button type="button" class="secondary" onclick="analyzeObsidianImages()">ANALYSER LES IMAGES</button></div><div id="obsidianProgress" class="sub" style="margin-top:8px">Analyse visuelle en lecture seule.</div></div>
-  <div class="section" style="margin-top:12px"><h2>Sécurité</h2><div class="rows"><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div><div class="row"><span>Lecture seule</span><span class="yes">ACTIVE</span></div><div class="row"><span>Journal</span><span class="neutral">NAVIGATEUR LOCAL</span></div></div></div>
+  <div class="section jarvis-voice-settings" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h2>Voix JARVIS</h2><div class="sub">Synthèse vocale du coach. ElevenLabs prend le relais lorsqu'une clé serveur est configurée.</div></div><span id="jarvisVoiceStatus" class="status">● VÉRIFICATION</span></div><div class="voice-settings-grid" style="margin-top:10px"><div class="ai-box"><div class="label">PROFIL VOCAL</div><div id="jarvisVoiceName" style="margin-top:6px;font-weight:850">JARVIS Original</div><div id="jarvisVoiceEngine" class="sub" style="margin-top:4px">—</div></div><div class="ai-box"><div class="label">MOTEUR</div><div id="jarvisVoiceModel" style="margin-top:6px;font-weight:850">Eleven v4 Turbo</div><div class="sub" style="margin-top:4px">Voix temps réel · faible latence.</div></div></div><div class="actions" style="margin-top:10px"><button type="button" class="primary" onclick="designJarvisVoice()">GÉNÉRER VOIX JARVIS</button></div><div id="jarvisVoiceHelp" class="sub" style="margin-top:8px">Ajoute ELEVENLABS_API_KEY dans Railway pour activer la synthèse vocale serveur et générer une voix JARVIS originale.</div></div>
+<div class="section" style="margin-top:12px"><h2>Sécurité</h2><div class="rows"><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div><div class="row"><span>Lecture seule</span><span class="yes">ACTIVE</span></div><div class="row"><span>Journal</span><span class="neutral">NAVIGATEUR LOCAL</span></div></div></div>
   <div class="section" style="margin-top:12px"><h2>Modèle actif</h2><div id="settingsModel" class="tag">MODÈLE NQ</div><div id="settingsModelDesc" class="sub"></div><div class="actions"><button class="secondary" onclick="chooseModel()">CHANGER DE MODÈLE</button><button class="danger" onclick="clearLocalData()">EFFACER LES DONNÉES LOCALES</button></div></div>
 </section>
 
@@ -1801,6 +1803,27 @@ async function startRithmicScreenShare(){if(!navigator.mediaDevices?.getDisplayM
 function stopRithmicScreenShare(){stopObserver("RITHMIC");if(rithmicScreenStream){rithmicScreenStream.getTracks().forEach(t=>t.stop());rithmicScreenStream=null}const v=$("rithmicScreenPreview");if(v){v.srcObject=null;v.style.display="none"}setScreenStatus("rithmicScreenStatus","Partage Rithmic arrêté.");}
 function toggleRithmicObserver(){if(rithmicObserverTimer){stopObserver("RITHMIC");setScreenStatus("rithmicScreenStatus","Observateur arrêté.");return}if(!rithmicScreenStream){setScreenStatus("rithmicScreenStatus","Partage Rithmic requis.");return}startObserverLoop("RITHMIC");}
 async function analyzeRithmicScreen(){const img=captureSharedFrame($("rithmicScreenPreview"),rithmicScreenStream);if(!img){setScreenStatus("rithmicScreenStatus","Partage Rithmic actif requis.");return}if(!BOT_API){setScreenStatus("rithmicScreenStatus","Backend non configuré.");return}try{const r=await botFetch("/api/analyze-screen",{method:"POST",body:JSON.stringify({model:"NQ",imageDataUrl:img,context:"Observation live de Rithmic. Décrire uniquement ce qui est visible et pertinent pour le modèle Futures."})});$("rithmicAIOutput").innerHTML="<b>JARVIS — FUTURES</b><div class='sub' style='margin-top:8px'>"+esc(r.text||"Analyse terminée.")+"</div>"}catch(e){$("rithmicAIOutput").innerHTML="<div class='decision bad'>Analyse impossible</div><div class='sub' style='margin-top:8px'>"+esc(e.message||"Erreur backend")+"</div>"}}
+async function refreshJarvisVoiceStatus(){
+  if(!BOT_API)return;
+  try{
+    const r=await botFetch("/api/voice/status");
+    const st=$("jarvisVoiceStatus"),name=$("jarvisVoiceName"),eng=$("jarvisVoiceEngine"),mdl=$("jarvisVoiceModel"),help=$("jarvisVoiceHelp");
+    if(st){st.textContent=r.configured?"● ELEVENLABS ONLINE":"● BROWSER FALLBACK";st.className=r.configured?"status green":"status"}
+    if(name)name.textContent=r.voiceName||"JARVIS Original";
+    if(eng)eng.textContent=r.configured?"ElevenLabs · voix serveur":"Synthèse vocale navigateur · clé serveur manquante";
+    if(mdl)mdl.textContent=r.model||"eleven_v4_turbo";
+    if(help)help.textContent=r.configured?(r.voiceId?"Voix JARVIS active.":"Clé active · générez la voix JARVIS."):"Ajoutez ELEVENLABS_API_KEY dans Railway pour la vraie synthèse vocale JARVIS.";
+  }catch(e){}
+}
+async function designJarvisVoice(){
+  const help=$("jarvisVoiceHelp");if(!help)return;
+  help.textContent="Création du profil vocal JARVIS…";
+  try{
+    const r=await botFetch("/api/voice/design",{method:"POST",body:"{}"});
+    help.textContent="Voix créée et activée : "+(r.voiceName||"JARVIS Original")+".";
+    refreshJarvisVoiceStatus();
+  }catch(e){help.textContent=e.message||"Création impossible.";}
+}
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");localStorage.removeItem("edgeflowAccessKey");location.reload()}}
 
 function showActiveDashboard(btn){show(activeModel==="CRYPTO"?"cryptoDash":"dash",btn||$("navDash"))}
@@ -1810,7 +1833,7 @@ setSiteMode(siteMode);
 showActiveDashboard($("navDash"));
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
-renderJournal();resetJournalForm();restoreJournalDraft();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();refreshAIEngineStatus();renderStats();bindLiveChecklist();
+renderJournal();resetJournalForm();restoreJournalDraft();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();refreshAIEngineStatus();refreshJarvisVoiceStatus();renderStats();bindLiveChecklist();
 document.querySelectorAll("[data-image-preview]").forEach(input=>input.addEventListener("change",()=>previewJournalImage(input,input.dataset.imagePreview)));
 JOURNAL_DRAFT_FIELDS.forEach(id=>{const el=$(id);if(!el)return;el.addEventListener("input",saveJournalDraft);el.addEventListener("change",saveJournalDraft);});
 window.addEventListener("beforeunload",saveJournalDraft);
