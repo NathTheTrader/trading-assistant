@@ -515,6 +515,28 @@ button:active{transform:translateY(1px)}
 #journal .actions .primary:first-child{background:rgba(255,255,255,.055);color:#f2f4f7;border:1px solid rgba(255,255,255,.10);box-shadow:none}
 #journal .actions .primary:first-child:hover{background:rgba(255,255,255,.085)}
 .mode-switch{background:rgba(255,255,255,.025)!important;border-color:rgba(255,255,255,.065)!important}
+
+/* CONNECTIONS / LIVE DATA HUB */
+.connection-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.connection-card{position:relative;overflow:hidden;padding:15px;border:1px solid var(--hairline);border-radius:12px;background:linear-gradient(145deg,rgba(18,22,29,.92),rgba(10,13,18,.92));box-shadow:0 10px 30px rgba(0,0,0,.12)}
+.connection-card:before{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.22}
+.connection-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.connection-brand{display:flex;align-items:center;gap:10px}
+.connection-logo{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.045);border:1px solid var(--hairline2);font-weight:900;font-size:12px}
+.connection-name{font-size:12px;font-weight:800}.connection-type{font-size:9px;color:var(--dim);margin-top:2px}
+.connection-status{font-size:8px;font-weight:850;letter-spacing:.7px;padding:5px 7px;border-radius:6px;border:1px solid var(--hairline2);color:#9aa4b2;background:rgba(255,255,255,.025)}
+.connection-status.live{color:var(--green);border-color:rgba(46,220,145,.18);background:rgba(46,220,145,.06)}
+.connection-status.ready{color:var(--blue);border-color:rgba(75,156,255,.18);background:rgba(75,156,255,.06)}
+.connection-status.warn{color:var(--orange);border-color:rgba(255,189,90,.18);background:rgba(255,189,90,.06)}
+.connection-card p{font-size:10px;line-height:1.55;color:#778291;margin:11px 0 12px}
+.connection-actions{display:flex;gap:6px;flex-wrap:wrap}
+.connection-actions button,.connection-actions a{font:inherit;font-size:9px;font-weight:750;text-decoration:none}
+.connection-actions a{display:inline-flex;align-items:center;min-height:36px;padding:8px 10px;border:1px solid var(--hairline2);border-radius:8px;color:#dfe4eb;background:rgba(255,255,255,.035)}
+.connection-meta{margin-top:9px;font-size:8px;color:#5f6977}
+@media(max-width:760px){.connection-grid{grid-template-columns:1fr}.connection-card{padding:13px}}
+.chat-shell{min-height:calc(100vh - 185px);height:calc(100vh - 185px)}
+@media(max-width:760px){.chat-shell{height:calc(100vh - 245px);min-height:500px}}
+
 </style>
 </head>
 <body>
@@ -528,7 +550,7 @@ button:active{transform:translateY(1px)}
   <div class="nav-title">ESPACE DE TRADING</div>
   <nav>
     <button id="navDash" onclick="show('dash',this)"><span class="nav-icon">⌂</span>Tableau de bord</button>
-    <button id="navBot" type="button" onclick="show('bot',this)"><span class="nav-icon">◉</span><span id="navBotText">Bot NQ</span></button>
+    <button id="navBot" type="button" onclick="show('bot',this)"><span class="nav-icon">◉</span><span id="navBotText">Bot Futures</span></button>
     <button onclick="show('chat',this)"><span class="nav-icon">◇</span>Assistant IA</button>
     <button onclick="show('journal',this)"><span class="nav-icon">▤</span>Journal</button>
     
@@ -577,7 +599,7 @@ button:active{transform:translateY(1px)}
 </section>
 
 <section id="dash" class="hidden">
-  <div class="topbar"><div><div class="eyebrow">Vue d'ensemble</div><h1>Tableau de bord <span id="modelPill" class="pill"></span></h1><div class="sub">Ton espace de contrôle pour le modèle actif.</div></div><div class="top-actions"><div class="status green">● SYSTÈME PRÊT</div><button class="secondary" onclick="show('review')">Nouvelle revue</button></div></div>
+  <div class="topbar"><div><div class="eyebrow" id="dashMarketEyebrow">FUTURES</div><h1>Tableau de bord</h1><div class="sub">Ton espace de contrôle pour le modèle actif.</div></div><div class="top-actions"><div class="status green">● SYSTÈME PRÊT</div><button class="secondary" onclick="show('review')">Nouvelle revue</button></div></div>
   <div class="grid dashboard-kpis">
     <div class="card"><div class="label">Trades</div><div class="value" id="trades">0</div><div class="sub">Modèle actif</div></div>
     <div class="card"><div class="label">Winrate</div><div class="value green" id="dashWinrate">—</div><div class="sub">WIN / (WIN + LOSS)</div></div>
@@ -589,7 +611,12 @@ button:active{transform:translateY(1px)}
     <div class="section"><h2>Modèle actif</h2><div class="tag" id="dashModelTag">—</div><div id="modelDescription" class="sub"></div><div class="divider"></div><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div></div>
   </div>
   <div class="layout">
-    <div class="section"><h2>Connexions</h2><div class="rows"><div class="row"><span>Futures — Tradovate</span><span class="neutral">À connecter</span></div><div class="row"><span>Crypto — KCEX</span><span class="neutral">Autorisation requise</span></div></div></div>
+    <div class="section"><h2>Connexions live</h2><div class="connection-grid">
+    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TV</div><div><div class="connection-name">Tradovate</div><div class="connection-type">Futures · lecture seule</div></div></div><span id="dashConnTradovate" class="connection-status">—</span></div><p>Flux compte, positions, ordres et fills via le WebSocket officiel Tradovate.</p></div>
+    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">R</div><div><div class="connection-name">Rithmic</div><div class="connection-type">Futures · R|Protocol</div></div></div><span id="dashConnRithmic" class="connection-status">—</span></div><p>Prévu pour le flux Rithmic direct. L'accès production dépend des identifiants et de l'accès API Rithmic.</p></div>
+    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TS</div><div><div class="connection-name">TradeSea</div><div class="connection-type">Rithmic · plateforme</div></div></div><span class="connection-status ready">LIÉ À RITHMIC</span></div><p>TradeSea utilise Rithmic pour ses comptes. Edgeflow ne scrape pas TradeSea et ne stocke pas ton login TradeSea.</p></div>
+    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Crypto · observateur</div></div></div><span id="dashConnKcex" class="connection-status warn">ÉCRAN</span></div><p>Observation de l'interface KCEX par partage d'onglet. Aucun ordre n'est envoyé.</p></div>
+  </div></div>
     <div class="section"><h2>Raccourcis</h2><div class="actions"><button class="primary" onclick="show('review')">Analyser un trade</button><button class="secondary" onclick="show('journal')">Ouvrir le journal</button><button class="secondary" onclick="show('chat')">Parler à l'assistant</button></div></div>
   </div>
 </section>
@@ -605,7 +632,7 @@ button:active{transform:translateY(1px)}
 </section>
 
 <section id="bot" class="hidden">
-  <div class="topbar"><div><div class="eyebrow">Automatisation contrôlée</div><h1>Bot NQ <span class="pill">MODÈLE NQ</span></h1><div class="sub">Détection et analyse en lecture seule. Aucune exécution d'ordre.</div></div><div id="tvLiveStatus" class="status">● DÉCONNECTÉ</div></div>
+  <div class="topbar"><div><div class="eyebrow">Automatisation contrôlée</div><h1>Bot Futures</h1><div class="sub">Détection et analyse en lecture seule. Aucune exécution d'ordre.</div></div><div id="tvLiveStatus" class="status">● DÉCONNECTÉ</div></div>
   <div class="grid">
     <div class="card"><div class="label">Broker</div><div class="value small">Tradovate</div><div id="tvConnectionText" class="sub">Backend non connecté</div><div class="actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER TRADOVATE</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
     <div class="card"><div class="label">Mode</div><div class="value small red">LECTURE SEULE</div><div class="sub">Aucune exécution</div></div>
@@ -699,10 +726,13 @@ button:active{transform:translateY(1px)}
 <section id="settings" class="hidden">
   <div class="topbar"><div><div class="eyebrow">Configuration</div><h1>Paramètres</h1><div class="sub">Les connexions réelles restent séparées de l'interface et utilisent des permissions contrôlées.</div></div></div>
   <div class="layout">
-    <div class="section"><h2>Serveur du bot</h2><div class="rows"><div class="row"><span>Backend IA</span><span class="neutral" id="backendStatus">NON CONFIGURÉ</span></div></div><div class="actions"><input id="botApiUrl" placeholder="https://ton-backend.example.com" style="flex:1"><input id="edgeflowAccessKey" type="password" placeholder="Clé d’accès privée" autocomplete="off" style="flex:1"><button class="secondary" onclick="saveBotUrl()">ENREGISTRER</button><button class="secondary" onclick="testBotConnection()">TESTER</button></div><div class="sub" style="margin-top:8px">La clé d’accès protège tes données privées du backend. Ce n’est pas une clé OpenAI/Tradovate et elle n’est jamais envoyée à GitHub.</div></div><div class="section"><h2>Connexions de comptes</h2><div class="rows">
-      <div class="row"><span>Tradovate — Futures</span><span class="neutral">À connecter</span></div>
-      <div class="row"><span>KCEX — Crypto</span><span class="neutral">Autorisation / méthode officielle requise</span></div>
-    </div><div class="divider"></div><div class="sub">Le site GitHub Pages reste l'interface. Les clés/API et connexions sensibles devront être gérées par le backend, jamais stockées directement dans le navigateur.</div></div>
+    <div class="section"><h2>Serveur du bot</h2><div class="rows"><div class="row"><span>Backend IA</span><span class="neutral" id="backendStatus">NON CONFIGURÉ</span></div></div><div class="actions"><input id="botApiUrl" placeholder="https://ton-backend.example.com" style="flex:1"><input id="edgeflowAccessKey" type="password" placeholder="Clé d’accès privée" autocomplete="off" style="flex:1"><button class="secondary" onclick="saveBotUrl()">ENREGISTRER</button><button class="secondary" onclick="testBotConnection()">TESTER</button></div><div class="sub" style="margin-top:8px">La clé d’accès protège tes données privées du backend. Ce n’est pas une clé OpenAI/Tradovate et elle n’est jamais envoyée à GitHub.</div></div><div class="section"><h2>Connexions de comptes</h2>
+    <div class="connection-grid">
+      <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TV</div><div><div class="connection-name">Tradovate</div><div class="connection-type">Futures · WebSocket</div></div></div><span id="connTradovate" class="connection-status">—</span></div><p>Connexion serveur déjà implémentée. Elle reste en lecture seule et synchronise les événements du compte.</p><div class="connection-actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
+      <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">R</div><div><div class="connection-name">Rithmic</div><div class="connection-type">Futures · R|Protocol API</div></div></div><span id="connRithmic" class="connection-status">—</span></div><p>Rithmic expose officiellement R|Protocol en WebSocket + Protobuf. L'intégration production nécessite l'accès API/dev kit et les paramètres fournis par Rithmic.</p><div class="connection-actions"><a href="https://www.rithmic.com/apis" target="_blank" rel="noopener noreferrer">VOIR API RITHMIC</a></div><div class="connection-meta">Aucun mot de passe Rithmic ne doit être mis dans GitHub.</div></div>
+      <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TS</div><div><div class="connection-name">TradeSea</div><div class="connection-type">Plateforme · comptes Rithmic</div></div></div><span class="connection-status ready">DISPONIBLE</span></div><p>TradeSea connecte tes comptes Rithmic et synchronise les fills dans Compass. Edgeflow garde TradeSea comme plateforme externe, pas comme API privée à scraper.</p><div class="connection-actions"><a href="https://app.tradesea.ai/" target="_blank" rel="noopener noreferrer">OUVRIR TRADESEA</a></div></div>
+      <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Crypto · observateur live</div></div></div><span id="connKcex" class="connection-status warn">ÉCRAN</span></div><p>Le module actuel utilise le partage d'onglet pour l'observation IA. Tant que l'API officielle de compte n'est pas suffisamment documentée, on ne branche pas d'endpoint non vérifié.</p><div class="connection-actions"><button class="primary" onclick="setSiteMode('CRYPTO');show('bot',$('navBot'))">OUVRIR OBSERVATEUR</button><button class="secondary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button></div></div>
+    </div><div class="divider"></div><div class="sub">GitHub Pages reste l'interface. Les identifiants sensibles vivent côté backend. Aucun ordre automatique n'est activé.</div></div>
     <div class="section"><h2>Sécurité</h2><div class="rows">
       <div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div>
       <div class="row"><span>Mode lecture seule</span><span class="yes">ACTIF</span></div>
@@ -772,21 +802,21 @@ function updateModelUI(){
 function updateBotMode(){
   const crypto=activeModel==="CRYPTO";
   const title=document.querySelector("#bot h1");
-  if(title) title.innerHTML=crypto?'Bot Crypto <span class="pill">MODÈLE CRYPTO</span>':'Bot NQ <span class="pill">MODÈLE NQ</span>';
+  if(title) title.textContent=crypto?"Bot Crypto":"Bot Futures";
   const checklist=document.querySelector("#botChecklistTitle");
   if(checklist) checklist.textContent=crypto?"Analyser un setup Crypto":"Tester le modèle NQ";
-  $("navBotText")?.replaceChildren(document.createTextNode(crypto?"Bot Crypto":"Bot NQ"));
+  $("navBotText")?.replaceChildren(document.createTextNode(crypto?"Bot Crypto":"Bot Futures"));
   $("botNQChecklist")?.classList.toggle("hidden",crypto);
   $("botCryptoPanel")?.classList.toggle("hidden",!crypto);
   const eyebrow=document.querySelector("#bot .eyebrow");
-  if(eyebrow) eyebrow.textContent=crypto?"Bot live crypto contrôlé":"Bot live NQ contrôlé";
+  if(eyebrow) eyebrow.textContent=crypto?"CRYPTO · BOT CONTRÔLÉ":"FUTURES · BOT CONTRÔLÉ";
   const sub=document.querySelector("#bot .topbar .sub");
   if(sub) sub.textContent=crypto?"Analyse Crypto séparée du modèle NQ. Aucune exécution automatique.":"Tradovate en lecture seule : détection des événements, analyse IA et mémoire des trades. Aucun ordre automatique.";
   const connect=document.querySelector("#bot .primary[onclick*='connectTradovate']");
   if(connect) connect.style.display=crypto?"none":"inline-block";
   const refresh=document.querySelector("#bot .secondary[onclick*='refreshTradovateUI']"); if(refresh) refresh.style.display=crypto?"none":"inline-block";
   const broker=document.querySelector("#bot .card .value.small");
-  if(broker) broker.textContent=crypto?"KCEX / CRYPTO":"Tradovate";
+  if(broker) broker.textContent=crypto?"KCEX / CRYPTO":"Tradovate + Rithmic";
   const modelInputs=document.querySelectorAll("#bot [data-bot-model]");
   modelInputs.forEach(x=>x.textContent=crypto?"CRYPTO":"NQ");
 }
@@ -984,6 +1014,17 @@ function renderStats(){
    $("latest").innerHTML='<b>'+esc(arr[0].model||"TRADE")+' — '+esc(arr[0].instrument||"")+' — '+esc(arr[0].result||"EN COURS")+'</b><div class="sub" style="margin-top:8px">RR : <b>'+esc(arr[0].R||"—")+'</b> · P&L : <b>'+esc(arr[0].pnl||"—")+'</b></div><div class="sub" style="margin-top:6px">'+esc(arr[0].notes||arr[0].context||"Aucune note.")+'</div>';
  }
 }
+async function refreshConnectionCenter(){
+  if(!BOT_API)return;
+  try{
+    const r=await botFetch("/api/connections/status");
+    const set=(id,textValue,kind)=>{const el=$(id);if(el){el.textContent=textValue;el.className="connection-status "+(kind||"")}};
+    set("connTradovate",r.tradovate?.connected?"LIVE":r.tradovate?.configured?"PRÊT":"CONFIG À FAIRE",r.tradovate?.connected?"live":r.tradovate?.configured?"ready":"warn");
+    set("dashConnTradovate",r.tradovate?.connected?"LIVE":r.tradovate?.configured?"PRÊT":"À CONFIGURER",r.tradovate?.connected?"live":r.tradovate?.configured?"ready":"warn");
+    set("connRithmic",r.rithmic?.configured?"CONFIGURÉ":"ACCÈS API REQUIS",r.rithmic?.configured?"ready":"warn");
+    set("dashConnRithmic",r.rithmic?.configured?"PRÊT":"API REQUISE",r.rithmic?.configured?"ready":"warn");
+  }catch(e){}
+}
 async function refreshAIDataAccess(){const el=document.getElementById("aiDataAccess");if(!el)return;const api=String(localStorage.getItem("botApiUrl")||"").replace(/\/$/,"");if(!api){el.textContent="Backend non configuré — aucune donnée serveur n’est accessible à l’IA.";return}try{const r=await fetch(api+"/api/history/ai-context?model="+encodeURIComponent(activeModel));const d=await r.json();el.innerHTML="<b>"+activeModel+"</b> · "+(d.sampleSize||0)+" trades serveur<br><span class='sub'>Mémoire historique + journal + contexte vérifié. Obsidian est importé séparément et reste cloisonné par modèle.</span>"}catch(e){el.textContent="Backend hors ligne.";}}
 async function refreshObsidianStatus(){
   const box=$("obsidianStatusBox"),progress=$("obsidianProgress");
@@ -1123,7 +1164,7 @@ function clearLocalData(){if(confirm("Effacer toutes les données locales du jou
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
 if(!VALID_MODES.has(siteMode))siteMode="NQ"; setSiteMode(siteMode); $("models").classList.add("hidden"); $("dash").classList.remove("hidden"); updateModelUI(); document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode)));
-renderJournal();resetJournalForm();restoreJournalDraft();refreshAIDataAccess();refreshObsidianStatus();renderStats();$("navDash")?.classList.add("active");
+renderJournal();resetJournalForm();restoreJournalDraft();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();renderStats();$("navDash")?.classList.add("active");
 JOURNAL_DRAFT_FIELDS.forEach(id=>{
  const el=$(id); if(!el)return;
  el.addEventListener("input",saveJournalDraft);
