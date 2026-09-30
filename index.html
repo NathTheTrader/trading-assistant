@@ -205,7 +205,6 @@ button.danger{min-height:42px}
   .chat-input textarea{font-size:16px}
   input,textarea,select{font-size:16px}
 }
-<style>
 /* EDGEFLOW 2026 visual system */
 :root{
   --bg:#07080b;--bg2:#0a0c10;--panel:#0d1015;--panel2:#11151c;--panel3:#0a0d12;
@@ -535,7 +534,7 @@ function setSiteMode(mode){
   document.body.classList.remove("nq-mode","crypto-mode");
   document.body.classList.add(mode==="CRYPTO"?"crypto-mode":"nq-mode");
   ["NQ","CRYPTO"].forEach(m=>{const b=$("mode"+m);if(b){const on=m===mode;b.classList.toggle("active",on);b.setAttribute("aria-pressed",String(on));}});
-  updateModelUI(); updateBotMode(); applyModeVisibility(); renderJournal();  resetJournalForm(); refreshAIDataAccess(); refreshObsidianStatus();
+  updateModelUI(); updateBotMode(); applyModeVisibility(); renderJournal(); refreshAIDataAccess(); refreshObsidianStatus();
 }
 async function botFetch(path,options={}){
   if(!BOT_API) throw new Error("BOT_API_NOT_CONFIGURED");
@@ -719,7 +718,18 @@ function updateJournalMarket(){
  const options=market==="FUTURES"?["MNQ","MES","MGC","Autre"]:["BTC","ETH","BNB","SOL","XRP","HYPE","FLOKI","Autre"];
  $("jInstrument").innerHTML=options.map(x=>'<option value="'+x+'">'+x+"</option>").join("");
 }
+const JOURNAL_DRAFT_KEY=()=> "edgeflow.journalDraft."+activeModel;
+function saveJournalDraft(){
+ const ids=["jDate","jSession","jResult","jGrade","jR","jPnL","jContext","jErrors","jLesson","jAI"];
+ const draft={};ids.forEach(id=>{const el=$(id);if(el)draft[id]=el.value});localStorage.setItem(JOURNAL_DRAFT_KEY(),JSON.stringify(draft));
+}
+function restoreJournalDraft(){
+ try{const draft=JSON.parse(localStorage.getItem(JOURNAL_DRAFT_KEY())||"{}");Object.entries(draft).forEach(([id,v])=>{if($(id)&&v!==undefined)$(id).value=v});}catch(e){}
+ updateJournalDate();
+}
+function clearJournalDraft(){localStorage.removeItem(JOURNAL_DRAFT_KEY());}
 function resetJournalForm(){
+ clearJournalDraft();
  $("jDate").value=new Date().toISOString().slice(0,10);$("jMarket").value=activeModel==="CRYPTO"?"CRYPTO":"FUTURES";updateJournalMarket();updateJournalDate();
  ["jSession","jResult","jGrade","jR","jPnL","jContext","jErrors","jLesson","jAI"].forEach(id=>$(id).value="");
  ["jBefore","jAfter"].forEach(id=>$(id).value="");["jBeforePreview","jAfterPreview"].forEach(id=>{$(id).src="";$(id).style.display="none"});
@@ -895,7 +905,8 @@ function clearLocalData(){if(confirm("Effacer toutes les données locales du jou
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
 if(!VALID_MODES.has(siteMode))siteMode="NQ"; setSiteMode(siteMode); $("models").classList.add("hidden"); $("dash").classList.remove("hidden"); updateModelUI(); document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode)));
-renderJournal();resetJournalForm();refreshAIDataAccess();refreshObsidianStatus();renderStats();$("navDash")?.classList.add("active");
+renderJournal();resetJournalForm();restoreJournalDraft();refreshAIDataAccess();refreshObsidianStatus();renderStats();$("navDash")?.classList.add("active");
+["jDate","jSession","jResult","jGrade","jR","jPnL","jContext","jErrors","jLesson"].forEach(id=>$(id)?.addEventListener("input",saveJournalDraft));
 $("jDate").addEventListener("change",updateJournalDate);$("jBefore").addEventListener("change",()=>previewJournalImage($("jBefore"),"jBeforePreview"));$("jAfter").addEventListener("change",()=>previewJournalImage($("jAfter"),"jAfterPreview"));
 const chatDraftKey=()=> "edgeflow.chatDraft."+activeModel;
 $("chatInput")?.addEventListener("input",e=>localStorage.setItem(chatDraftKey(),e.target.value));
