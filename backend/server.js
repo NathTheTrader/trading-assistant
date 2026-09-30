@@ -1226,7 +1226,7 @@ app.post("/api/voice/turn",requirePrivateRequest,async(req,res)=>{
 });
 
 app.post("/api/detect-screen-trade",requirePrivateRequest, async (req,res) => {
-  if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
+  if(!openai) return res.status(503).json({ok:false,error:"Aucun fournisseur IA configuré."});
   try{
     const broker=String(req.body.broker||"").toUpperCase()==="KCEX"?"KCEX":"RITHMIC";
     const model=broker==="KCEX"?"CRYPTO":"NQ";
@@ -1377,6 +1377,10 @@ app.get("/api/trades",requirePrivateRequest,  async (req,res) => {
 app.post("/api/trades",requirePrivateRequest, async (req,res) => {
   const trades=await loadTrades();
   const trade=cleanTrade(req.body);
+  if(trade.id!=null){
+    const existing=trades.find(t=>String(t.id)===String(trade.id));
+    if(existing) return res.status(200).json(existing);
+  }
   trades.push(trade);
   await saveTrades(trades);
   res.status(201).json(trade);
