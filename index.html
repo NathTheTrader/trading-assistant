@@ -8,8 +8,6 @@
 })();
 </script>
 <style>
-html[data-edgeflow-initial-mode="NQ"] #dash,
-html[data-edgeflow-initial-mode="CRYPTO"] #cryptoDash{display:block!important;visibility:visible!important}
 :root{
   --accent:var(--red);--accentSoft:rgba(255,49,88,.12);
   --bg:#07090d;--bg2:#0b0e14;--panel:#10141c;--panel2:#151a23;--panel3:#0d1118;
@@ -1063,11 +1061,7 @@ html body:before,html body:after{display:none !important;content:none !important
 .card:before,.model-card:after{display:none !important;}
 .hero{background:linear-gradient(145deg,rgba(18,23,31,.98),rgba(10,13,18,.98)) !important;border-color:rgba(255,255,255,.07) !important;}
 
-/* INITIAL MODE FALLBACK — prevents a blank workspace during refresh */
-html[data-edgeflow-initial-mode="NQ"] #cryptoDash,html[data-edgeflow-initial-mode="NQ"] #crypto{display:none!important}
-html[data-edgeflow-initial-mode="CRYPTO"] #dash{display:none!important}
-
-/* MODE-SAFE removed: workspace visibility is controlled only by .hidden/show(). */
+/* WORKSPACE VISIBILITY: controlled exclusively by initializeActiveWorkspace()/show(). */
 </style>
 </head><body>
 <div class="app">
