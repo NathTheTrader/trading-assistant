@@ -1275,7 +1275,7 @@ body.crypto-mode .hero:before{background:linear-gradient(180deg,var(--blue),tran
         <label class="check-card imperfection"><span class="check-main"><span class="check-icon">M</span><span class="check-copy"><span class="check-title">Structure messy</span><span class="check-meta">-5 · IMPERFECTION</span></span></span><input id="bmessy" type="checkbox"><span class="check-switch"></span></label>
         <label class="check-card killer"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Entrée trop tôt / trop tard</span><span class="check-meta">KILLER</span></span></span><input id="btimebad" type="checkbox"><span class="check-switch"></span></label>
         <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">KILLER comportemental</span></span></span><input id="btilt" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER comportemental</span></span></span><input id="brev" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER comportemental</span></span></span><input id="revenge" type="checkbox"><span class="check-switch"></span></label>
       </div>
       <div id="botLiveScore" class="live-check-score"><span>PRÉ-CHECK</span><strong id="botLiveScoreValue">30/30</strong><em id="botLiveScoreGrade">A+</em></div>
       <textarea id="bnotes" placeholder="HTF bias → POI → liquidité / sweep → retracement → R.B. → entrée → SL/TP → news…"></textarea>
@@ -1655,10 +1655,10 @@ const FUTURES_CHECKLIST_IDS={
  messy:"messy",
  timebad:"timebad",
  tilt:"tilt",
- revenge:"revenge"
+ revenge:""
 };
 function checklistChecked(prefix,key){
- const id=prefix+FUTURES_CHECKLIST_IDS[key];
+ const id=(prefix==="b" && key==="revenge")?"revenge":prefix+FUTURES_CHECKLIST_IDS[key];
  const el=$(id);
  return el instanceof HTMLInputElement && el.type==="checkbox" && el.checked===true;
 }
