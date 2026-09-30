@@ -141,7 +141,7 @@ jobs:
             await click("#modeCRYPTO");await click("#navDash");await expectVisible("cryptoDash");
             await click("#navDash");await expectVisible("cryptoDash");
             if((await page.locator("#cryptoDashTrades").textContent()).trim()!=="1")throw new Error("Dashboard Crypto did not read isolated Journal entry");
-            await click("#modeNQ");await click("#navDash");await expectVisible("dash");
+            await click("#navBotFutures");await click("#navDash");await expectVisible("dash");
             if((await page.locator("#dashTrades").textContent()).trim()!=="1")throw new Error("Crypto entry leaked into Futures Dashboard");
             if(await page.locator("#journalMonths").count()!==1)throw new Error("Journal history target missing");
             
