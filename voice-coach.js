@@ -1,4 +1,4 @@
-/* EDGEFLOW_VOICE_V3 — auto-stop on speech silence */
+/* EDGEFLOW_VOICE_V6 — talk only */
 (function(){
   const css=document.createElement("style");
   css.textContent=`
@@ -68,9 +68,6 @@
   .ta-voice-msg .who{font:900 8px/1 "Inter",sans-serif;letter-spacing:1px;color:#697586;margin-bottom:5px}
   .ta-voice-msg.user{background:rgba(255,255,255,.024);align-self:flex-end;max-width:92%}
   .ta-voice-msg.ai{background:color-mix(in srgb,var(--accent,#ff2b2b) 6%,transparent);border-color:color-mix(in srgb,var(--accent,#ff2b2b) 12%,transparent);align-self:flex-start;max-width:94%}
-  .ta-voice-qa{margin-top:10px;padding:10px 11px;border:1px solid rgba(255,255,255,.07);background:#090c11;border-radius:10px}
-  .ta-voice-qa .qa-label{font:900 8px/1 "Inter",sans-serif;letter-spacing:1px;color:#697586;margin-bottom:6px}
-  .ta-voice-qa .qa-text{font-size:11px;line-height:1.55;color:#e7ecf3}
   .ta-voice-answer{margin-top:9px;padding:10px 11px;border:1px solid rgba(255,255,255,.065);background:rgba(255,255,255,.018);border-radius:10px;font-size:10px;line-height:1.55;color:#bfc8d4}
   .ta-voice-actions{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:6px;margin-top:10px}
   .ta-voice-actions button{border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.025);color:#eaf0f7;border-radius:8px;padding:9px 8px;font:900 8px/1 "Inter",sans-serif;letter-spacing:.7px}
@@ -79,7 +76,7 @@
   .ta-voice-status{margin-top:8px;font-size:8px;line-height:1.45;color:#667282;text-align:center}
   .ta-voice-foot{display:flex;justify-content:space-between;gap:8px;padding:9px 13px;border-top:1px solid rgba(255,255,255,.055);color:#556172;font-size:8px;letter-spacing:.6px}
   .ta-voice-foot strong{color:#7d8897}
-  @media(max-width:600px){.ta-voice-panel{right:10px;bottom:68px;width:calc(100vw - 20px)}.ta-voice-fab{right:12px;bottom:12px}.ta-voice-actions{grid-template-columns:1fr 1fr}.ta-voice-actions #taDaily{grid-column:1/-1}}
+  @media(max-width:600px){.ta-voice-panel{right:10px;bottom:68px;width:calc(100vw - 20px)}.ta-voice-fab{right:12px;bottom:12px}.ta-voice-actions{grid-template-columns:1fr 1fr}}
   `;
   document.head.appendChild(css);
 
@@ -97,7 +94,7 @@
     panel.dataset.state=state||"idle";
     const title=panel.querySelector("#taStateTitle"),copy=panel.querySelector("#taStateCopy");
     if(title)title.textContent=text||"JARVIS PRÊT";
-    if(copy)copy.textContent=state==="listening"?"Micro actif · parle naturellement puis appuie sur STOP.":state==="thinking"?"Transcription, mémoire et analyse du modèle actif…":"Une seule question à la fois · lecture seule";
+    if(copy)copy.textContent=state==="listening"?"Micro actif · parle naturellement puis appuie sur STOP.":state==="thinking"?"Transcription, mémoire et analyse du modèle actif…":"Parle naturellement · lecture seule";
   }
   function render(){
     if(!panel)return;
@@ -125,15 +122,13 @@
         </div>
         <div class="ta-voice-state">
           <div class="ta-state-orb"><i></i></div>
-          <div class="ta-state-copy"><b id="taStateTitle">JARVIS PRÊT</b><span id="taStateCopy">Une seule question à la fois · lecture seule</span><div class="ta-wave">${Array.from({length:8},()=>"<i></i>").join("")}</div></div>
+          <div class="ta-state-copy"><b id="taStateTitle">JARVIS PRÊT</b><span id="taStateCopy">Parle naturellement · lecture seule</span><div class="ta-wave">${Array.from({length:8},()=>"<i></i>").join("")}</div></div>
         </div>
-        <div class="ta-voice-qa"><div class="qa-label">QUESTION ACTIVE</div><div id="taVQ" class="qa-text">Appuie sur « QUESTION » pour que JARVIS choisisse le point le plus utile à traiter pour ${m}.</div></div>
         <div id="taConvo" class="ta-voice-convo"></div>
         <div id="taVA" class="ta-voice-answer" style="display:none"></div>
         <div class="ta-voice-actions">
           <button id="taTalk" class="primary" type="button">◉ PARLER</button>
-          <button id="taDaily" type="button">REVUE DU JOUR</button>
-        </div>
+</div>
         <div id="taVS" class="ta-voice-status">JARVIS utilise uniquement le contexte ${m}.</div>
       </div>
       <div class="ta-voice-foot"><span>EDGEFLOW · ${m}</span><strong>IA séparée par modèle</strong></div>`;
@@ -141,8 +136,7 @@
     panel.querySelector("#taModelF").onclick=()=>setVoiceModel("NQ");
     panel.querySelector("#taModelC").onclick=()=>setVoiceModel("CRYPTO");
     panel.querySelector("#taTalk").onclick=toggle;
-    panel.querySelector("#taDaily").onclick=daily;
-    setState("idle","JARVIS PRÊT");
+setState("idle","JARVIS PRÊT");
     renderConversation();
   }
 
@@ -160,33 +154,6 @@
     if(typeof window.setSiteMode==="function") window.setSiteMode(m);
     render();
     setStatus("JARVIS bascule sur le contexte "+modelLabel()+".");
-  }
-  async function start(){
-    if(!api()){setStatus("Backend IA non configuré.");return}
-    setState("thinking","JARVIS CHERCHE");
-    setStatus("Recherche de la question la plus utile pour "+modelLabel()+"…");
-    try{
-      const r=await fetch(api()+"/api/coach/question",{method:"POST",headers:headers(),body:JSON.stringify({model:model()})});
-      const d=await r.json();if(!r.ok)throw new Error(d.error||"Erreur backend");
-      const q=String(d.question||"").trim();
-      panel.querySelector("#taVQ").textContent=q||"Aucune question générée.";
-      setState("idle","QUESTION ACTIVE");
-      setStatus("Question prête · réponse vocale disponible.");
-      speak(q);
-    }catch(e){setState("idle","JARVIS PRÊT");setStatus("Erreur vocale : "+(e?.message||"réessaie."))}
-  }
-  async function daily(){
-    if(!api()){setStatus("Backend IA non configuré.");return}
-    setState("thinking","JARVIS ANALYSE");
-    setStatus("Analyse des données "+modelLabel()+"…");
-    try{
-      const r=await fetch(api()+"/api/optimization/daily?model="+encodeURIComponent(model()),{headers:headers()});
-      const d=await r.json();if(!r.ok)throw new Error(d.error||"Erreur backend");
-      const text=String(d.text||"Aucune conclusion.");
-      turns.push({role:"assistant",content:text});turns=turns.slice(-12);renderConversation();
-      setState("idle","REVUE TERMINÉE");setStatus("Revue du jour terminée · modèle "+modelLabel()+".");
-      speak(text);
-    }catch(e){setState("idle","JARVIS PRÊT");setStatus(e.message)}
   }
   function chooseBrowserVoice(){
     if(!("speechSynthesis" in window))return null;
