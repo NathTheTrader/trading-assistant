@@ -1088,7 +1088,7 @@ async function refreshConnectionCenter(){
     set("dashConnRithmic",r.rithmic?.configured?"PRÊT":"API REQUISE",r.rithmic?.configured?"ready":"warn");
   }catch(e){}
 }
-async function refreshAIDataAccess(){const el=document.getElementById("aiDataAccess");if(!el)return;const api=String(localStorage.getItem("botApiUrl")||"").replace(/\/$/,"");if(!api){el.textContent="Backend non configuré — aucune donnée serveur n’est accessible à l’IA.";return}try{const r=await fetch(api+"/api/history/ai-context?model="+encodeURIComponent(activeModel));const d=await r.json();el.innerHTML="<b>"+activeModel+"</b> · "+(d.sampleSize||0)+" trades serveur<br><span class='sub'>Mémoire historique + journal + contexte vérifié. Obsidian est importé séparément et reste cloisonné par modèle.</span>"}catch(e){el.textContent="Backend hors ligne.";}}
+async function refreshAIDataAccess(){const el=document.getElementById("aiDataAccess");if(!el)return;if(!BOT_API){el.textContent="Backend non configuré — aucune donnée serveur n’est accessible à l’IA.";return}try{const d=await botFetch("/api/history/ai-context?model="+encodeURIComponent(activeModel));el.innerHTML="<b>"+activeModel+"</b> · "+(d.sampleSize||0)+" trades serveur<br><span class='sub'>Mémoire historique + journal + contexte vérifié. Obsidian est importé séparément et reste cloisonné par modèle.</span>"}catch(e){el.textContent="Backend hors ligne.";}}
 async function refreshObsidianStatus(){
   const box=$("obsidianStatusBox"),progress=$("obsidianProgress");
   if(!box||!BOT_API){if(box)box.textContent="Configure d'abord le backend IA.";return;}
