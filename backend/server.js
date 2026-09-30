@@ -16,6 +16,15 @@ app.use(express.json({ limit: "15mb" }));
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 90 * 1024 * 1024 } });
 
 const PORT = Number(process.env.PORT || 3000);
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "https://naththetrader.github.io";
+function requirePrivateRequest(req,res,next){
+  const accessKey=process.env.EDGEFLOW_ACCESS_KEY || "";
+  const provided=String(req.get("x-edgeflow-access")||"");
+  const origin=String(req.get("origin")||"");
+  if(accessKey && provided===accessKey) return next();
+  if(origin===FRONTEND_ORIGIN) return next();
+  return res.status(403).json({ok:false,error:"EDGEFLOW private endpoint."});
+}
 const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), "data", "trades.json");
 const openrouter = process.env.OPENROUTER_API_KEY ? new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
@@ -669,13 +678,13 @@ async function askVoiceCoach({model,userText,previousTurns=[]}) {
   return response.output_text;
 }
 
-app.get("/api/history/ai-context", async (req,res) => {
+app.get("/api/history/ai-context",requirePrivateRequest,  async (req,res) => {
   const model=normalizeModel(req.query.model);
   const data=await buildAIHistory(model);
   res.json({model,sampleSize:data.allTradesCount,dateRange:data.snapshot.dateRange,historicalContext:(await loadHistoricalContext()).models?.[model]||{},snapshot:data.snapshot,obsidian:data.obsidian});
 });
 
-app.get("/api/optimization/daily", async (req,res) => {
+app.get("/api/optimization/daily",requirePrivateRequest,  async (req,res) => {
   const model=normalizeModel(req.query.model);
   const snapshot=await buildOptimizationSnapshot(model);
   const result=await askAI({
@@ -694,7 +703,7 @@ If sample size is insufficient, say so.`,
   res.json({...result,model,snapshot,learning:(await loadLearning()).entries.filter(x=>x.model===model).slice(-40)});
 });
 
-app.post("/api/coach/question", async (req,res) => {
+app.post("/api/coach/question",requirePrivateRequest,  async (req,res) => {
   if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
   const model=normalizeModel(req.body.model);
   const snapshot=await buildOptimizationSnapshot(model);
@@ -713,7 +722,7 @@ app.post("/api/voice/turn", async (req,res) => {
   return res.status(501).json({ok:false,error:"Le coach vocal nécessite un moteur audio dédié. Le moteur IA texte/images OpenRouter Free est actif; aucune facturation OpenAI n'est utilisée."});
 });
 
-app.post("/api/analyze-screen", async (req,res) => {
+app.post("/api/analyze-screen",requirePrivateRequest,  async (req,res) => {
   if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
   try{
     const model=normalizeModel(req.body.model);
@@ -745,25 +754,25 @@ app.post("/api/analyze-screen", async (req,res) => {
   }catch(e){res.status(502).json({ok:false,error:e.message});}
 });
 
-app.get("/api/tradovate/status",(req,res)=>res.json(tradovateStatus()));
-app.get("/api/tradovate/events",(req,res)=>res.json(liveEvents.slice(-100)));
-app.get("/api/tradovate/snapshot",(req,res)=>res.json(tradovateStatus()));
-app.post("/api/tradovate/connect",async(req,res)=>{try{await connectTradovate();res.json(tradovateStatus())}catch(e){res.status(502).json({ok:false,error:e.message,status:tradovateStatus()})}});
-app.post("/api/tradovate/renew",async(req,res)=>{try{await renewTradovate();res.json(tradovateStatus())}catch(e){res.status(502).json({ok:false,error:e.message})}});
+app.get("/api/tradovate/status",requirePrivateRequest, (req,res)=>res.json(tradovateStatus()));
+app.get("/api/tradovate/events",requirePrivateRequest, (req,res)=>res.json(liveEvents.slice(-100)));
+app.get("/api/tradovate/snapshot",requirePrivateRequest, (req,res)=>res.json(tradovateStatus()));
+app.post("/api/tradovate/connect",requirePrivateRequest, async(req,res)=>{try{await connectTradovate();res.json(tradovateStatus())}catch(e){res.status(502).json({ok:false,error:e.message,status:tradovateStatus()})}});
+app.post("/api/tradovate/renew",requirePrivateRequest, async(req,res)=>{try{await renewTradovate();res.json(tradovateStatus())}catch(e){res.status(502).json({ok:false,error:e.message})}});
 
-app.get("/api/learning", async (req,res) => {
+app.get("/api/learning",requirePrivateRequest,  async (req,res) => {
   const model=normalizeModel(req.query.model);
   const data=await loadLearning();
   res.json({model,entries:data.entries.filter(x=>x.model===model).slice(-100)});
 });
-app.get("/api/obsidian/status", async (req,res) => {
+app.get("/api/obsidian/status",requirePrivateRequest,  async (req,res) => {
   const status=await loadObsidianStatus();
   const trades=await loadObsidianTrades();
   const model=normalizeModel(req.query.model);
   const scoped=trades.filter(t=>t.model===model);
   res.json({...status,model,modelTradeRecords:scoped.length,imageAnalyses:scoped.reduce((n,t)=>n+(t.imageAnalyses?.length||0),0),job:obsidianJob});
 });
-app.post("/api/obsidian/import", upload.single("file"), async (req,res) => {
+app.post("/api/obsidian/import",requirePrivateRequest,  upload.single("file"), async (req,res) => {
   if(!req.file) return res.status(400).json({ok:false,error:"ZIP Obsidian manquant."});
   try {
     const status=await importObsidianZip(req.file.buffer);
@@ -772,7 +781,7 @@ app.post("/api/obsidian/import", upload.single("file"), async (req,res) => {
     res.status(400).json({ok:false,error:e.message});
   }
 });
-app.post("/api/obsidian/analyze-images", async (req,res) => {
+app.post("/api/obsidian/analyze-images",requirePrivateRequest,  async (req,res) => {
   if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
   const status=await loadObsidianStatus();
   if(!status.imported) return res.status(400).json({ok:false,error:"Import Obsidian requis avant l'analyse visuelle."});
@@ -780,7 +789,7 @@ app.post("/api/obsidian/analyze-images", async (req,res) => {
   obsidianImageAnalysisLoop().catch(()=>{});
   res.json({ok:true,started:true,job:obsidianJob});
 });
-app.get("/api/obsidian/job", async (req,res)=>{
+app.get("/api/obsidian/job",requirePrivateRequest,  async (req,res)=>{
   const saved=await loadObsidianJob();
   res.json(saved||obsidianJob);
 });
@@ -794,9 +803,9 @@ app.get("/health", (req,res) => res.json({
   timestamp:new Date().toISOString()
 }));
 
-app.get("/api/profile", async (req,res) => { res.json(await loadProfile()); });
+app.get("/api/profile",requirePrivateRequest,  async (req,res) => { res.json(await loadProfile()); });
 
-app.get("/api/trades", async (req,res) => {
+app.get("/api/trades",requirePrivateRequest,  async (req,res) => {
   const trades=await loadTrades();
   const model=req.query.model;
   res.json(model ? trades.filter(t=>t.model===model) : trades);
@@ -810,7 +819,7 @@ app.post("/api/trades", async (req,res) => {
   res.status(201).json(trade);
 });
 
-app.post("/api/analyze-trade", async (req,res) => {
+app.post("/api/analyze-trade",requirePrivateRequest,  async (req,res) => {
   const trades=await loadTrades();
   const trade=cleanTrade(req.body.trade || req.body);
   trade.model = String(trade.model || "NQ").toUpperCase() === "CRYPTO" ? "CRYPTO" : "NQ";
@@ -822,7 +831,7 @@ app.post("/api/analyze-trade", async (req,res) => {
   res.json(result);
 });
 
-app.post("/api/chat", async (req,res) => {
+app.post("/api/chat",requirePrivateRequest,  async (req,res) => {
   const trades=await loadTrades();
   const model=String(req.body.model||"NQ").toUpperCase()==="CRYPTO"?"CRYPTO":"NQ";
   const result=await askAI({
@@ -833,7 +842,7 @@ app.post("/api/chat", async (req,res) => {
   res.json(result);
 });
 
-app.get("/api/patterns", async (req,res) => {
+app.get("/api/patterns",requirePrivateRequest,  async (req,res) => {
   const trades=await loadTrades();
   const model=req.query.model;
   const scoped=model ? trades.filter(t=>t.model===model) : trades;
