@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2445-journal-recovery-safe-v30"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1825-mode-refresh-bot-routing-v31"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><script>
@@ -1432,7 +1432,10 @@ function switchMode(mode){
   if(!VALID_MODES.has(mode))mode="NQ";
   const target=new URL(location.href);
   target.searchParams.set("mode",mode);
-  location.assign(target.pathname+"?"+target.searchParams.toString());
+  target.hash="";
+  localStorage.setItem("siteMode",mode);
+  localStorage.setItem("activeModel",mode);
+  window.location.replace(target.href);
 }
 function openBotWorkspace(mode,id,btn){
   mode=String(mode||"NQ").toUpperCase();
@@ -2452,12 +2455,15 @@ function clearLocalData(){if(confirm("Effacer toutes les données locales du jou
 
 function showActiveDashboard(btn){show(activeModel==="CRYPTO"?"cryptoDash":"dash",btn||$("navDash"))}
 function initializeActiveWorkspace(){
-  if(!VALID_MODES.has(siteMode))siteMode="NQ";
-  activeModel=siteMode;
-  setSiteMode(siteMode);
+  const urlMode=String(new URLSearchParams(location.search).get("mode")||"").toUpperCase();
+  const mode=VALID_MODES.has(urlMode)?urlMode:(VALID_MODES.has(siteMode)?siteMode:"NQ");
+  siteMode=mode;
+  activeModel=mode;
+  setSiteMode(mode);
   showActiveDashboard($("navDash"));
 }
 initializeActiveWorkspace();
+window.addEventListener("pageshow",()=>initializeActiveWorkspace());
 if(document.readyState==="loading"){
   document.addEventListener("DOMContentLoaded",()=>initializeActiveWorkspace(),{once:true});
 }
