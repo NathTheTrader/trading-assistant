@@ -515,24 +515,28 @@ function show(id,btn){
  if(id==="dash")renderStats();
 }
 async function sendChat(){
- const input=$("chatInput"),msg=input.value.trim();if(!msg)return;
- const box=$("chatMessages");
+ const input=$("chatInput"),msg=String(input?.value||"").trim();if(!msg)return;
+ const box=$("chatMessages"),sendBtn=document.querySelector(".chat-input .primary");
  box.insertAdjacentHTML("beforeend",'<div class="bubble me"><b>TOI</b><div style="margin-top:5px">'+esc(msg)+'</div></div>');
  input.value="";box.scrollTop=box.scrollHeight;
- if(BOT_API){
-   box.insertAdjacentHTML("beforeend",'<div id="aiThinking" class="bubble ai"><b>TRADING ASSISTANT</b><div class="sub" style="margin-top:5px">Analyse de ton historique…</div></div>');
-   try{
-     const r=await botFetch("/api/chat",{method:"POST",body:JSON.stringify({message:msg,model:activeModel})});
-     $("aiThinking")?.remove();
-     box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>TRADING ASSISTANT</b><div class="sub" style="margin-top:5px">'+esc(r.text||"Aucune réponse.")+'</div></div>');
-   }catch(e){
-     $("aiThinking")?.remove();
-     box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>TRADING ASSISTANT</b><div class="sub" style="margin-top:5px">Backend indisponible. Analyse locale : '+getJournalAwareReply(msg)+'</div></div>');
-   }
- }else{
-   box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>TRADING ASSISTANT</b><div class="sub" style="margin-top:5px">'+getJournalAwareReply(msg)+'</div></div>');
+ if(!BOT_API){
+   box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>EDGEFLOW</b><div class="sub" style="margin-top:5px">'+getJournalAwareReply(msg)+'</div></div>');
+   return;
  }
- box.scrollTop=box.scrollHeight;
+ if(sendBtn)sendBtn.disabled=true;
+ box.insertAdjacentHTML("beforeend",'<div id="aiThinking" class="bubble ai"><b>EDGEFLOW</b><div class="sub" style="margin-top:5px">Analyse en cours…</div></div>');
+ try{
+   const r=await botFetch("/api/chat",{method:"POST",body:JSON.stringify({message:msg,model:activeModel})});
+   $("aiThinking")?.remove();
+   box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>EDGEFLOW</b><div class="sub" style="margin-top:5px">'+esc(r.text||"Aucune réponse.")+'</div></div>');
+ }catch(e){
+   $("aiThinking")?.remove();
+   const err=String(e?.message||"Erreur inconnue");
+   box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>EDGEFLOW</b><div class="sub" style="margin-top:5px"><b>IA indisponible :</b> '+esc(err)+'<br><br>'+getJournalAwareReply(msg)+'</div></div>');
+ }finally{
+   if(sendBtn)sendBtn.disabled=false;
+   box.scrollTop=box.scrollHeight;
+ }
 }
 function getJournalAwareReply(msg){
  const arr=getJournal(),scope=activeModel==="NQ"||activeModel==="CRYPTO"?activeModel:null,data=scope?arr.filter(x=>x.model===scope):arr;
@@ -558,7 +562,7 @@ async function runBotTest(){
     try{
       const r=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade:{model:"CRYPTO",instrument:"CRYPTO",direction:"",risk:100,result:"OPEN",context,setupPattern:"Key Open → sweep → HTF POI → high RR",timestamp:new Date().toISOString()}})});
       $("botOutput").innerHTML='<div class="ai-box"><b>TRADING ASSISTANT — CRYPTO</b><div class="sub" style="margin-top:9px">'+esc(r.text||"Analyse terminée.")+'</div></div>';
-    }catch(e){$("botOutput").innerHTML='<div class="decision bad">Backend indisponible.</div>'}
+    }catch(e){$("botOutput").innerHTML='<div class="decision bad">IA indisponible</div><div class="sub" style="margin-top:10px">'+esc(e?.message||"Erreur backend")+'</div>'}
     return;
   }
   const r=scoreFrom("b");const decision=r.killer?"PAS DE TRADE":"TRADE VALIDE";const note=$("bnotes").value||"Analyse basée sur la checklist NQ.";
@@ -585,7 +589,7 @@ async function analyzePopupTrade(){
    const r=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade})});
    $("popAnalysis").textContent=r.text||"Analyse terminée."; $("popAnalysis").className="decision";
    await syncTradeToBot(trade);
- }catch(e){$("popAnalysis").textContent="⚠️ Backend indisponible."; $("popAnalysis").className="decision bad";}
+ }catch(e){$("popAnalysis").textContent="⚠️ IA indisponible : "+(e?.message||"erreur"); $("popAnalysis").className="decision bad";}
 }
 function journalPopupTrade(){
  const d=new Date().toISOString().slice(0,10),arr=getJournal();arr.unshift({id:Date.now(),dateISO:d,date:d,model:$("popModel").textContent,market:$("popModel").textContent==="CRYPTO"?"CRYPTO":"FUTURES",instrument:$("popInstrument").textContent,session:"",result:"",grade:"",R:"",pnl:"",context:"Trade détecté automatiquement.",errors:"",lesson:"",score:null,decision:null,notes:"Trade détecté automatiquement."});
