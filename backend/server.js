@@ -479,9 +479,11 @@ async function obsidianImageAnalysisLoop() {
 
   const savedJob=await loadObsidianJob();
   const previousProcessed=Number(savedJob?.processed||0);
+  const allImageCount=trades.reduce((n,t)=>n+((t.images||[]).filter(Boolean).length),0);
+  const completedBeforeRun=Math.max(0,allImageCount-items.length);
   obsidianJob={
-    running:true,phase:"analyzing",total:items.length,processed:Math.min(previousProcessed,items.length),
-    analyzedImages:0,error:null,startedAt:savedJob?.startedAt||new Date().toISOString(),finishedAt:null,
+    running:true,phase:"analyzing",total:allImageCount,processed:completedBeforeRun,
+    analyzedImages:completedBeforeRun,error:null,startedAt:savedJob?.startedAt||new Date().toISOString(),finishedAt:null,
     currentFile:null,currentModel:null
   };
   await saveObsidianJob();
@@ -561,8 +563,8 @@ async function obsidianImageAnalysisLoop() {
           file:x.file,imageIndex:n+1,analysis:section.slice(0,14000),analyzedAt:new Date().toISOString()
         });
       }
-      obsidianJob.processed=Math.min(items.length,i+batch.length);
-      obsidianJob.analyzedImages+=batch.length;
+      obsidianJob.processed=Math.min(obsidianJob.total,obsidianJob.processed+batch.length);
+      obsidianJob.analyzedImages=Math.min(obsidianJob.total,obsidianJob.analyzedImages+batch.length);
       obsidianJob.currentFile=null;obsidianJob.currentModel=null;
       await fs.writeFile(OBSIDIAN_TRADES_FILE,JSON.stringify(trades,null,2));
       await saveObsidianJob();
