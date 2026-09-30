@@ -72,7 +72,14 @@ function convertAIContent(content) {
 }
 function convertAIInput(input) {
   if (!Array.isArray(input)) return [{ role:"user", content:String(input || "") }];
-  return input.map(message => ({ role:message?.role || "user", content:convertAIContent(message?.content) }));
+  return input.map(message => {
+    const role=message?.role || "user";
+    const content=convertAIContent(message?.content);
+    // Gemini OpenAI compatibility expects plain text for text-only messages
+    // and an array only when multimodal content (images) is actually present.
+    const multimodal=content.some(item => item?.type==="image_url");
+    return { role, content: multimodal ? content : content.map(item => String(item?.text||"")).join("\n") };
+  });
 }
 function aiText(content) {
   if (typeof content === "string") return content;
