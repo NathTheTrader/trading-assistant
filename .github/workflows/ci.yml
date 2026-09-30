@@ -27,3 +27,21 @@ jobs:
           fs.writeFileSync("/tmp/index-inline.js",scripts[scripts.length-1][1]);
           NODE
           node --check /tmp/index-inline.js
+      - name: Check Edgeflow invariants
+        run: |
+          node - <<'NODE'
+          const fs=require("fs");
+          const html=fs.readFileSync("index.html","utf8");
+          const backend=fs.readFileSync("backend/server.js","utf8");
+          const voice=fs.readFileSync("voice-coach.js","utf8");
+          const fail=(m)=>{throw new Error(m)};
+          if(html.includes("async async function")) fail("Invalid duplicate async syntax remains");
+          if(html.includes("TradeSea")||backend.includes("TradeSea")) fail("Removed broker TradeSea still referenced");
+          if((html.match(/id="revenge"/g)||[]).length!==1) fail("Futures revenge checkbox invariant failed");
+          if(!html.includes('data-mode="NQ"')||!html.includes('data-mode="CRYPTO"')) fail("Futures/Crypto mode separation missing");
+          if(!html.includes('id="connTradovate"')||!html.includes('id="connRithmic"')||!html.includes('id="connKcex"')) fail("Connection center IDs missing");
+          if(!backend.includes('OPENROUTER_DAILY_REQUEST_LIMIT')) fail("AI request limit must be configurable, not hard-coded");
+          if(!backend.includes('status !== 429')) fail("AI transient 429 retry missing");
+          if(!voice.includes("trading-assistant-production.up.railway.app")) fail("Voice backend default missing");
+          console.log("Edgeflow invariants OK");
+          NODE
