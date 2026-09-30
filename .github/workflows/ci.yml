@@ -22,7 +22,7 @@ jobs:
           node - <<'NODE'
           const fs=require("fs");
           const html=fs.readFileSync("index.html","utf8");
-          const scripts=[...html.matchAll(/<script>([\\s\\S]*?)<\\/script>/g)];
+          const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
           if(!scripts.length) throw new Error("No inline script found");
           fs.writeFileSync("/tmp/index-inline.js",scripts[scripts.length-1][1]);
           NODE
