@@ -67,27 +67,44 @@ jobs:
             if(!(await page.locator("#chat .bubble.me").count()===1))throw new Error("JARVIS user bubble missing");
             if(!(await page.locator("#chat .bubble.ai").count()>=2))throw new Error("JARVIS response missing");
 
-            await click("#navJournal");await expectVisible("journal");
+            await click("#modeNQ");await click("#navJournal");await expectVisible("journal");
             if(await page.locator("#jDate").count()!==1)throw new Error("Journal date input missing");
-            const initialDate=await page.locator("#jDate").inputValue();
             await page.locator("#jDate").fill("2026-09-15");
             await page.locator("#jDate").dispatchEvent("change");
             if((await page.locator("#jDate").inputValue())!=="2026-09-15")throw new Error("Journal date cannot be changed");
+            await page.locator("#jDate").fill("2026-09-16");
+            await page.locator("#jDate").dispatchEvent("change");
+            if((await page.locator("#jDate").inputValue())!=="2026-09-16")throw new Error("Journal date cannot move forward");
             if(!await page.locator("#journalDaySelect").isVisible())throw new Error("Journal day selector missing");
-
             await page.locator("#jResult").fill("WIN");
             await page.locator("#jR").fill("+2R");
             await page.locator("#jPnL").fill("+200");
-            await page.locator("#jContext").fill("Date and journal smoke test");
+            await page.locator("#jContext").fill("Futures date and journal smoke test");
             await page.click("button:has-text('ENREGISTRER')");
             await page.waitForTimeout(350);
+
+            await click("#modeCRYPTO");await click("#navJournal");await expectVisible("journal");
+            await page.locator("#jDate").fill("2026-09-16");
+            await page.locator("#jDate").dispatchEvent("change");
+            await page.locator("#jResult").fill("LOSS");
+            await page.locator("#jR").fill("-1R");
+            await page.locator("#jPnL").fill("-100");
+            await page.locator("#jContext").fill("Crypto journal smoke test");
+            await page.click("button:has-text('ENREGISTRER')");
+            await page.waitForTimeout(350);
+
             const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem("journal")||"[]"));
-            if(stored.length!==1||stored[0].dateISO!=="2026-09-15")throw new Error("Journal did not persist selected date");
+            const split=stored.reduce((a,x)=>(a[x.model]=(a[x.model]||0)+1,a),{});
+            if(split.NQ!==1||split.CRYPTO!==1)throw new Error("Journal model split invalid: "+JSON.stringify(split));
+            if(!stored.some(x=>x.model==="NQ"&&x.dateISO==="2026-09-16"))throw new Error("Futures selected date not persisted");
+            if(!stored.some(x=>x.model==="CRYPTO"&&x.dateISO==="2026-09-16"))throw new Error("Crypto selected date not persisted");
 
             await click("#modeNQ");await click("#navDash");await expectVisible("dash");
-            if((await page.locator("#dashTrades").textContent()).trim()!=="1")throw new Error("Futures Dashboard did not read Journal");
+            if((await page.locator("#dashTrades").textContent()).trim()!=="1")throw new Error("Futures Dashboard did not read Futures Journal");
             await click("#modeCRYPTO");await click("#navDash");await expectVisible("cryptoDash");
-            if((await page.locator("#cryptoDashTrades").textContent()).trim()!=="0")throw new Error("Crypto Dashboard leaked Futures journal data");
+            if((await page.locator("#cryptoDashTrades").textContent()).trim()!=="1")throw new Error("Crypto Dashboard did not read Crypto Journal");
+            await click("#modeNQ");await click("#navDash");await expectVisible("dash");
+            if((await page.locator("#dashTrades").textContent()).trim()!=="1")throw new Error("Crypto journal leaked into Futures Dashboard");
 
             await click("#navSettings");await expectVisible("settings");
             if(await page.locator("#settings .connection-card").count()!==3)throw new Error("Connection center incomplete");
