@@ -572,6 +572,8 @@ async function askAI({task, trade, history=[]}) {
   const historicalContext = await loadHistoricalContext();
   const obsidianStatus = await loadObsidianStatus();
   const obsidianTrades = (await loadObsidianTrades()).filter(t=>t.model===model);
+  const backtestTrades = obsidianTrades.filter(t=>t.type === "BACKTEST");
+  const liveJournalTrades = obsidianTrades.filter(t=>t.type !== "BACKTEST");
   const learning = (await loadLearning()).entries.filter(x=>x.model===model).slice(-40);
   const payload = {
     traderProfile: profile,
@@ -581,6 +583,12 @@ async function askAI({task, trade, history=[]}) {
     currentTrade: trade || null,
     recentHistory: history.slice(-500),
     obsidian: { status: obsidianStatus, tradeRecords: obsidianTrades.slice(-250) },
+    backtests: {
+      source: "Obsidian BACKTEST folder imported from the trader ZIP",
+      sampleSize: backtestTrades.length,
+      records: backtestTrades.slice(-1000),
+      liveJournalSampleSize: liveJournalTrades.length
+    },
     learningMemory: learning
   };
   const response = await openai.responses.create({
@@ -603,6 +611,7 @@ async function buildOptimizationSnapshot(model) {
   const all = await loadTrades();
   const trades = all.filter(t => t.model === model);
   const imported = (await loadObsidianTrades()).filter(t => t.model === model);
+  const importedBacktests = imported.filter(t => t.type === "BACKTEST");
   const wins = trades.filter(t => /WIN/i.test(String(t.result || ""))).length;
   const losses = trades.filter(t => /LOSS/i.test(String(t.result || ""))).length;
   const breakeven = trades.filter(t => /BE|BREAK/i.test(String(t.result || ""))).length;
@@ -627,6 +636,8 @@ async function buildOptimizationSnapshot(model) {
   return {
     model, sampleSize:trades.length, wins, losses, breakeven,
     importedSampleSize:imported.length,
+    importedBacktestSampleSize:importedBacktests.length,
+    importedBacktestOutcomes:Object.entries(importedBacktests.reduce((a,t)=>{a[t.outcome]=(a[t.outcome]||0)+1;return a},{})).sort((a,b)=>b[1]-a[1]),
     importedOutcomes:Object.entries(imported.reduce((a,t)=>{a[t.outcome]=(a[t.outcome]||0)+1;return a},{})).sort((a,b)=>b[1]-a[1]),
     winRate:trades.length?wins/trades.length:null, avgR, totalR,
     dateRange:trades.length?[trades[0].timestamp,trades[trades.length-1].timestamp]:null,
@@ -642,7 +653,7 @@ async function buildAIHistory(model) {
   const trades=(await loadTrades()).filter(t=>t.model===model);
   const snapshot=await buildOptimizationSnapshot(model);
   const obsidianTrades=(await loadObsidianTrades()).filter(t=>t.model===model);
-  return {model,snapshot,allTradesCount:trades.length,recentDetailedTrades:trades.slice(-200),obsidian:{status:await loadObsidianStatus(),tradeRecords:obsidianTrades.slice(-250)}};
+  return {model,snapshot,allTradesCount:trades.length,recentDetailedTrades:trades.slice(-200),obsidian:{status:await loadObsidianStatus(),tradeRecords:obsidianTrades.slice(-250),backtests:obsidianTrades.filter(t=>t.type==="BACKTEST").slice(-1000)}};
 }
 
 async function askVoiceCoach({model,userText,previousTurns=[]}) {
