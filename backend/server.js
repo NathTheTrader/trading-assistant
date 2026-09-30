@@ -721,9 +721,34 @@ app.post("/api/coach/question",requirePrivateRequest,  async (req,res) => {
   res.json({ok:true,model,question:response.output_text});
 });
 
-app.post("/api/voice/turn", async (req,res) => {
+app.post("/api/voice/turn",requirePrivateRequest, async (req,res) => {
   if(!openrouter) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
-  return res.status(501).json({ok:false,error:"Le coach vocal nécessite un moteur audio dédié. Le moteur IA texte/images OpenRouter Free est actif; aucune facturation OpenAI n'est utilisée."});
+  if(!process.env.ELEVENLABS_API_KEY) return res.status(503).json({ok:false,error:"ELEVENLABS_API_KEY manquante. Ajoute-la au backend pour activer la vraie voix JARVIS."});
+  try{
+    const audioBase64=String(req.body.audioBase64||"");
+    const mimeType=String(req.body.mimeType||"audio/webm");
+    if(!audioBase64) return res.status(400).json({ok:false,error:"Audio manquant."});
+    const audioBuffer=Buffer.from(audioBase64,"base64");
+    if(audioBuffer.length>12*1024*1024) return res.status(413).json({ok:false,error:"Audio trop volumineux."});
+    const form=new FormData();
+    form.append("file",new Blob([audioBuffer],{type:mimeType}),"voice.webm");
+    form.append("model_id","scribe_v2");
+    form.append("language_code","fra");
+    const stt=await fetch("https://api.elevenlabs.io/v1/speech-to-text",{method:"POST",headers:{"xi-api-key":process.env.ELEVENLABS_API_KEY},body:form});
+    const sttData=await stt.json().catch(()=>({}));
+    if(!stt.ok) return res.status(502).json({ok:false,error:sttData.detail||sttData.message||"ElevenLabs STT failed."});
+    const transcript=String(sttData.text||"").trim();
+    if(!transcript) return res.status(400).json({ok:false,error:"Aucune parole détectée."});
+    const model=normalizeModel(req.body.model);
+    const previousTurns=Array.isArray(req.body.previousTurns)?req.body.previousTurns.slice(-12):[];
+    const reply=String(await askVoiceCoach({model,userText:transcript,previousTurns})||"").trim();
+    const voiceId=process.env.ELEVENLABS_VOICE_ID||"JBFqnCBsd6RMkjVDRZzb";
+    const ttsModel=process.env.ELEVENLABS_TTS_MODEL||"eleven_v4_turbo";
+    const tts=await fetch("https://api.elevenlabs.io/v1/text-to-speech/"+encodeURIComponent(voiceId)+"?output_format=mp3_44100_128",{method:"POST",headers:{"xi-api-key":process.env.ELEVENLABS_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({text:reply,model_id:ttsModel,language_code:"fr",voice_settings:{stability:.62,similarity_boost:.78,style:.18,use_speaker_boost:true,speed:.94}})});
+    if(!tts.ok) return res.status(502).json({ok:false,error:"ElevenLabs TTS failed: "+(await tts.text()).slice(0,500)});
+    const audio=Buffer.from(await tts.arrayBuffer()).toString("base64");
+    res.json({ok:true,model,transcript,reply,audioBase64:audio,voice:"JARVIS-style",ttsModel});
+  }catch(e){res.status(502).json({ok:false,error:e.message});}
 });
 
 app.post("/api/analyze-screen",requirePrivateRequest,  async (req,res) => {
