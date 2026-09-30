@@ -44,7 +44,7 @@ jobs:
           if(!backend.includes('status !== 429')) fail("AI transient 429 retry missing");
           if(!html.includes('function edgeflowAutoUpdate()')) fail("Frontend auto-update watcher missing");
           if(!html.includes('classList.add("hidden")')) fail("Stable class-based workspace router missing");
-          if(!html.includes('document.querySelectorAll("main>section")')) fail("Workspace isolation selector missing");
+          if(!html.includes('document.querySelectorAll("main>.workspace")')) fail("Workspace isolation selector missing");
           if(!voice.includes("trading-assistant-production.up.railway.app")) fail("Voice backend default missing");
           const sections=[...html.matchAll(/<section id="([^"]+)"/g)].map(m=>m[1]);
           for(const id of ["models","dash","cryptoDash","bot","crypto","review","cryptoReview","chat","journal","settings"]) if(!sections.includes(id)) fail("Missing workspace: "+id);
