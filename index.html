@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2400-stable-mode-initialization-v27"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2415-mode-routing-isolated-v28"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><script>
@@ -1406,22 +1406,26 @@ let activeModel=initialMode;
 let edgeflowBusy=false;
 let siteMode=initialMode;
 function setSiteMode(mode){
-  if($("journal")&&!$("journal").classList.contains("hidden")) saveJournalDraft();
+  if($("journal")&&!$("journal").classList.contains("hidden")){try{saveJournalDraft()}catch(e){}}
   mode=String(mode||"NQ").toUpperCase();
-  if(!VALID_MODES.has(mode)) mode="NQ";
+  if(!VALID_MODES.has(mode))mode="NQ";
   siteMode=mode; activeModel=mode;
   localStorage.setItem("siteMode",mode); localStorage.setItem("activeModel",mode);
   document.documentElement.setAttribute("data-site-mode",mode);
   document.body.classList.remove("nq-mode","crypto-mode");
   document.body.classList.add(mode==="CRYPTO"?"crypto-mode":"nq-mode");
-  ["NQ","CRYPTO"].forEach(m=>{const b=$("mode"+m);if(b){const on=m===mode;b.classList.toggle("active",on);b.setAttribute("aria-pressed",String(on));}});
-  updateModelUI(); updateBotMode(); applyModeVisibility();
-  const mini=$("connectionMiniSub"); if(mini) mini.textContent=siteMode==="CRYPTO"?"Crypto : KCEX · Order Watch lecture seule.":"Futures : Tradovate API · Rithmic Order Watch lecture seule.";
-  renderJournal();
-  if($("journal")&&!$("journal").classList.contains("hidden")) updateJournalMarket();
-  refreshAIDataAccess(); refreshObsidianStatus();
-  window.dispatchEvent(new CustomEvent("edgeflow:model-change",{detail:{model:siteMode}}));
-  if(typeof renderChatHistory==="function" && $("chat") && !$("chat").classList.contains("hidden")) renderChatHistory(siteMode);
+  try{
+    ["NQ","CRYPTO"].forEach(m=>{const b=$("mode"+m);if(b){const on=m===mode;b.classList.toggle("active",on);b.setAttribute("aria-pressed",String(on));}});
+    updateModelUI(); updateBotMode(); applyModeVisibility();
+  }catch(e){}
+  try{
+    const mini=$("connectionMiniSub"); if(mini) mini.textContent=siteMode==="CRYPTO"?"Crypto : KCEX · Order Watch lecture seule.":"Futures : Tradovate API · Rithmic Order Watch lecture seule.";
+  }catch(e){}
+  try{renderJournal();}catch(e){}
+  try{if($("journal")&&!$("journal").classList.contains("hidden")) updateJournalMarket();}catch(e){}
+  try{refreshAIDataAccess(); refreshObsidianStatus();}catch(e){}
+  try{window.dispatchEvent(new CustomEvent("edgeflow:model-change",{detail:{model:siteMode}}));}catch(e){}
+  try{if(typeof renderChatHistory==="function" && $("chat") && !$("chat").classList.contains("hidden")) renderChatHistory(siteMode);}catch(e){}
 }
 function switchMode(mode){
   mode=String(mode||"NQ").toUpperCase();
