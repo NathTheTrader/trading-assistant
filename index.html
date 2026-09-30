@@ -2171,14 +2171,16 @@ function applyDashboardStats(prefix,data){
  const status=$(prefix+"DataStatus");if(status){status.textContent=data.serverOk?"● JOURNAL + SERVEUR":"● JOURNAL LOCAL";status.className=data.serverOk?"status green":"status";}
  const source=$(prefix+"SourceLabel");if(source)source.textContent=data.serverOk?"Journal + serveur":"Journal local";
 }
+let dashboardRenderVersion=0;
 function renderStats(){
+ const renderVersion=++dashboardRenderVersion;
  // Paint the critical local trade counters synchronously. Rich dashboard rendering can follow asynchronously.
  const nqLocal=localDashboardTrades("NQ"),cryptoLocal=localDashboardTrades("CRYPTO");
  if($("dashTrades"))$("dashTrades").textContent=String(nqLocal.trades.length);
  if($("cryptoDashTrades"))$("cryptoDashTrades").textContent=String(cryptoLocal.trades.length);
  try{applyDashboardStats("dash",nqLocal);applyDashboardStats("cryptoDash",cryptoLocal);}catch(_){}
  Promise.all([loadDashboardTrades("NQ"),loadDashboardTrades("CRYPTO")])
-   .then(datasets=>{try{applyDashboardStats("dash",datasets[0]);applyDashboardStats("cryptoDash",datasets[1]);}catch(_){} })
+   .then(datasets=>{if(renderVersion!==dashboardRenderVersion)return;try{applyDashboardStats("dash",datasets[0]);applyDashboardStats("cryptoDash",datasets[1]);}catch(_){} })
    .catch(()=>{});
 }
 async function refreshConnectionCenter(){
