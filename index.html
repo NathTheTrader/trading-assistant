@@ -1747,14 +1747,8 @@ async function speakChatMessage(text){
    await audio.play();
  }catch(e){
    console.warn("[EDGEFLOW][CHAT_VOICE]",e);
-   if("speechSynthesis" in window){
-     window.speechSynthesis.cancel();
-     const u=new SpeechSynthesisUtterance(value);
-     u.lang="fr-CA";
-     const voice=chooseChatSpeechVoice(); if(voice)u.voice=voice;
-     u.rate=.91;u.pitch=.84;u.volume=1;
-     window.speechSynthesis.speak(u);
-   }
+   window.speechSynthesis?.cancel();
+   alert("Voix JARVIS indisponible : "+String(e?.message||"erreur"));
  }
 }
 function renderChatHistory(model=activeModel){
