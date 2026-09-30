@@ -158,36 +158,63 @@ function buildGeminiInteractionInput(content) {
 }
 
 async function callGeminiInteraction({model,content,systemInstruction}) {
-  const endpoint="https://generativelanguage.googleapis.com/v1beta/interactions";
+  // Historical screenshot path: use the documented generateContent multimodal
+  // endpoint. This avoids the Interactions request-shape differences while
+  // keeping the same Gemini model and API key.
+  const endpoint="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent";
+  const parts=[];
+  for(const item of (Array.isArray(content)?content:[{type:"input_text",text:String(content||"")}])) {
+    if(item?.type==="input_text" || item?.type==="text"){
+      const text=String(item.text||"");
+      if(text) parts.push({text});
+      continue;
+    }
+    if(item?.type==="input_image"){
+      const image=parseGeminiDataUrl(item.image_url);
+      if(image) parts.push({inline_data:{mime_type:image.mimeType,data:image.data}});
+      continue;
+    }
+    if(item?.type==="image_url"){
+      const image=parseGeminiDataUrl(item.image_url?.url);
+      if(image) parts.push({inline_data:{mime_type:image.mimeType,data:image.data}});
+    }
+  }
+  if(!parts.length) throw Object.assign(new Error("Gemini image request has no valid content."),{status:400});
   const body={
-    model,
-    system_instruction:String(systemInstruction||""),
-    input:buildGeminiInteractionInput(content),
-    generation_config:{max_output_tokens:Number(process.env.GEMINI_MAX_OUTPUT_TOKENS||8000)},
-    store:false
+    system_instruction:{parts:[{text:String(systemInstruction||"")}]},
+    contents:[{role:"user",parts}],
+    generationConfig:{maxOutputTokens:Number(process.env.GEMINI_MAX_OUTPUT_TOKENS||8000)}
   };
+  const serialized=JSON.stringify(body);
+  // Gemini documents a 20 MB total request limit for inline image data.
+  if(Buffer.byteLength(serialized,"utf8")>19*1024*1024){
+    const error=new Error("Gemini inline image request too large ("+Math.round(Buffer.byteLength(serialized,"utf8")/1024/1024)+" MB).");
+    error.status=413;
+    throw error;
+  }
   const response=await fetch(endpoint,{
     method:"POST",
     headers:{
       "Content-Type":"application/json",
       "x-goog-api-key":GEMINI_API_KEY
     },
-    body:JSON.stringify(body)
+    body:serialized
   });
   const data=await response.json().catch(()=>({}));
   if(!response.ok){
-    const error=new Error(data?.error?.message||("Gemini Interactions API error "+response.status));
+    const detail=data?.error?.message
+      || data?.error?.details?.map(x=>x?.message||x?.reason).filter(Boolean).join("; ")
+      || (data?.errors||[]).map(x=>x?.message||x?.reason).filter(Boolean).join("; ")
+      || ("Gemini generateContent API error "+response.status);
+    const error=new Error(detail);
     error.status=response.status;
     error.code=data?.error?.status||data?.error?.code||null;
     throw error;
   }
-  const outputText=aiText(data?.output_text) || (data?.steps||[])
-    .filter(step=>step?.type==="model_output")
-    .flatMap(step=>step?.content||[])
-    .map(item=>String(item?.text||""))
-    .join("");
+  const outputText=String(data?.candidates?.[0]?.content?.parts?.map(x=>x?.text||"").join("")||"").trim();
   if(!outputText){
-    const error=new Error("Gemini Interactions API returned no text.");
+    const finishReason=String(data?.candidates?.[0]?.finishReason||"EMPTY_RESPONSE");
+    const error=new Error("Gemini returned no text (finishReason="+finishReason+").");
     error.status=502;
     throw error;
   }
@@ -281,7 +308,7 @@ const OBSIDIAN_STATUS_FILE = path.join(OBSIDIAN_DIR,"status.json");
 const OBSIDIAN_JOB_FILE = path.join(OBSIDIAN_DIR,"analysis-job.json");
 const LEARNING_FILE = process.env.LEARNING_FILE || path.join(EDGEFLOW_STORAGE_ROOT,"ai-learning.json");
 const OBSIDIAN_DAILY_REQUEST_BUDGET = Number(process.env.OBSIDIAN_DAILY_REQUEST_BUDGET || 35);
-const OBSIDIAN_IMAGE_BATCH_SIZE = Math.max(1,Math.min(2,Number(process.env.OBSIDIAN_IMAGE_BATCH_SIZE || 2)));
+const OBSIDIAN_IMAGE_BATCH_SIZE = Math.max(1,Math.min(1,Number(process.env.OBSIDIAN_IMAGE_BATCH_SIZE || 1)));
 let obsidianJob = { running:false, phase:"idle", total:0, processed:0, analyzedImages:0, error:null, startedAt:null, finishedAt:null,currentFile:null,currentModel:null };
 async function reserveAIRequest() {
   const limit = Number(process.env.OPENROUTER_DAILY_REQUEST_LIMIT || 0);
@@ -732,9 +759,9 @@ async function obsidianImageAnalysisLoop() {
           await saveObsidianJob();
           return;
         }
-        if(e?.status===400 && /context.?length|token|too large/i.test(String(e?.message||""))) {
+        if((e?.status===400 || e?.status===413) && /context|token|too large|request/i.test(String(e?.message||""))) {
           obsidianJob={...obsidianJob,running:false,phase:"paused-context-limit",
-            error:"Une image est trop lourde pour le contexte du modèle. Compression/lot réduit requis : "+path.basename(batch[0]?.file||"inconnu")};
+            error:"Image trop lourde pour Gemini : "+path.basename(batch[0]?.file||"inconnu")+" — "+String(e?.message||"requête trop grande").slice(0,420)};
           await saveObsidianJob();
           return;
         }
@@ -762,7 +789,9 @@ async function obsidianImageAnalysisLoop() {
     obsidianJob={...obsidianJob,running:false,phase:"complete",finishedAt:new Date().toISOString(),error:null,currentFile:null,currentModel:null};
     await saveObsidianJob();
   } catch(e) {
-    obsidianJob={...obsidianJob,running:false,phase:"error",error:e.message,finishedAt:new Date().toISOString()};
+    const message=String(e?.message||"Erreur inconnue Gemini");
+    console.error("[EDGEFLOW][OBSIDIAN_IMAGE_ANALYSIS]",message);
+    obsidianJob={...obsidianJob,running:false,phase:"error",error:message.slice(0,1200),finishedAt:new Date().toISOString()};
     await saveObsidianJob();
   }
 }
