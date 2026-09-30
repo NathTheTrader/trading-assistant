@@ -13,6 +13,22 @@
     transition:.18s;
   }
   .ta-voice-fab:hover{transform:translateY(-2px);border-color:rgba(255,43,43,.55);box-shadow:0 18px 42px rgba(0,0,0,.5),0 0 30px rgba(255,43,43,.11)}
+  .ta-auto-voice{
+    position:fixed;right:124px;bottom:20px;z-index:10001;
+    display:flex;align-items:center;gap:5px;
+    border:1px solid rgba(255,255,255,.09);background:rgba(8,11,16,.94);
+    color:#6f7a89;border-radius:7px;padding:5px 7px;
+    font:900 7px/1 "Inter",sans-serif;letter-spacing:.7px;
+    box-shadow:0 8px 20px rgba(0,0,0,.32);
+    cursor:pointer;opacity:.88;transition:.15s;
+  }
+  .ta-auto-voice:hover{opacity:1;color:#fff;border-color:rgba(255,255,255,.17)}
+  .ta-auto-voice.on{color:#6fe3ad;border-color:rgba(53,227,155,.22);background:rgba(53,227,155,.055)}
+  body.crypto-mode .ta-auto-voice.on{color:#73b1ff;border-color:rgba(47,140,255,.24);background:rgba(47,140,255,.055)}
+  .ta-auto-voice-dot{width:5px;height:5px;border-radius:50%;background:#566170}
+  .ta-auto-voice.on .ta-auto-voice-dot{background:#35e39b;box-shadow:0 0 9px rgba(53,227,155,.65)}
+  body.crypto-mode .ta-auto-voice.on .ta-auto-voice-dot{background:#4da3ff;box-shadow:0 0 9px rgba(77,163,255,.65)}
+  @media(max-width:600px){.ta-auto-voice{right:82px;bottom:12px}}
   .ta-voice-fab .ta-fab-orb{
     width:9px;height:9px;border-radius:50%;background:#ff2b2b;
     box-shadow:0 0 14px rgba(255,43,43,.75)
@@ -80,7 +96,28 @@
   `;
   document.head.appendChild(css);
 
-  let panel,button,recorder,stream,chunks=[],turns=[],lastReply="",voiceAudioContext=null,voiceAnalyser=null,voiceMonitorTimer=null,voiceSilenceSince=0,voiceSpeechStarted=false,voiceStartedAt=0,voiceStopRequested=false;
+  let panel,button,recorder,stream,chunks=[],turns=[],lastReply="",currentAudio=null,voiceAudioContext=null,voiceAnalyser=null,voiceMonitorTimer=null,voiceSilenceSince=0,voiceSpeechStarted=false,voiceStartedAt=0,voiceStopRequested=false;
+  const autoVoiceEnabled=()=>localStorage.getItem("edgeflowAutoVoice")==="1";
+  function updateAutoVoiceToggle(){
+    const t=document.querySelector(".ta-auto-voice"); if(!t)return;
+    const on=autoVoiceEnabled();
+    t.classList.toggle("on",on);
+    t.innerHTML='<span class="ta-auto-voice-dot"></span><span>VOIX '+(on?"ON":"OFF")+'</span>';
+    t.setAttribute("aria-pressed",String(on));
+  }
+  function toggleAutoVoice(){
+    const on=!autoVoiceEnabled();
+    localStorage.setItem("edgeflowAutoVoice",on?"1":"0");
+    if(!on){
+      try{window.speechSynthesis?.cancel()}catch{}
+      try{currentAudio?.pause()}catch{}
+      currentAudio=null;
+    }
+    updateAutoVoiceToggle();
+    setStatus(on?"Lecture automatique activée.":"Lecture automatique désactivée.");
+  }
+  window.edgeflowAutoVoiceEnabled=autoVoiceEnabled;
+
   const api=()=>String(localStorage.getItem("botApiUrl")||"https://trading-assistant-production.up.railway.app").replace(/\/$/,"");
   const model=()=>String(localStorage.getItem("activeModel")||"NQ").toUpperCase()==="CRYPTO"?"CRYPTO":"NQ";
   const access=()=>String(localStorage.getItem("edgeflowAccessKey")||"");
@@ -184,15 +221,26 @@ setState("idle","JARVIS PRÊT");
       const r=await fetch(api()+"/api/voice/speak",{method:"POST",headers:headers(),body:JSON.stringify({model:model(),text:value})});
       const d=await r.json().catch(()=>({}));
       if(!r.ok||!d.audioBase64)throw new Error(d.error||"Voix JARVIS indisponible.");
-      const audio=new Audio("data:"+(d.audioMimeType||"audio/mpeg")+";base64,"+d.audioBase64);
-      audio.onplay=()=>setStatus("JARVIS répond selon le modèle "+modelLabel()+".");
-      audio.onended=()=>setStatus("JARVIS prêt.");
-      await audio.play();
+      try{window.speechSynthesis?.cancel()}catch{}
+      try{currentAudio?.pause()}catch{}
+      currentAudio=new Audio("data:"+(d.audioMimeType||"audio/mpeg")+";base64,"+d.audioBase64);
+      currentAudio.onplay=()=>setStatus("JARVIS parle · "+modelLabel()+".");
+      currentAudio.onended=()=>{currentAudio=null;setStatus("JARVIS prêt.");};
+      currentAudio.onerror=()=>{currentAudio=null;setStatus("Erreur de lecture vocale.");};
+      await currentAudio.play();
     }catch(e){
       console.warn("[EDGEFLOW][VOICE_TTS]",e);
       setStatus("Voix JARVIS indisponible : "+String(e?.message||"erreur"));
+      throw e;
     }
   }
+  async function speakJarvis(text,force=false){
+    if(!force&&!autoVoiceEnabled())return false;
+    await speakWithJarvisVoice(text);
+    return true;
+  }
+  window.edgeflowSpeakJarvis=speakWithJarvisVoice;
+  window.edgeflowAutoSpeakJarvis=speakJarvis;
   if("speechSynthesis" in window)window.speechSynthesis.onvoiceschanged=()=>chooseBrowserVoice();
   function mime(){const a=["audio/webm;codecs=opus","audio/webm","audio/ogg;codecs=opus","audio/mp4"];return a.find(x=>window.MediaRecorder?.isTypeSupported(x))||""}
   function stopVoiceMonitor(){
@@ -289,7 +337,11 @@ setState("idle","JARVIS PRÊT");
       turns=turns.slice(-12);renderConversation();
       lastReply=String(d.reply||"");
       setState("idle","RÉPONSE PRÊTE");
-      setStatus("Réponse prête · clique sur LIRE pour lancer la voix JARVIS.");
+      if(autoVoiceEnabled()){
+        Promise.resolve(speakWithJarvisVoice(lastReply)).catch(()=>{});
+      }else{
+        setStatus("Réponse prête · clique sur LIRE pour lancer la voix JARVIS.");
+      }
     }catch(e){setState("idle","JARVIS PRÊT");setStatus(e.message)}
   }
   function init(){
@@ -298,9 +350,16 @@ setState("idle","JARVIS PRÊT");
     button.type="button";
     button.innerHTML='<span class="ta-fab-orb"></span><span>JARVIS</span><span id="taFabMode">'+modelLabel()+'</span>';
     document.body.appendChild(button);
+    const autoToggle=document.createElement("button");
+    autoToggle.type="button";
+    autoToggle.className="ta-auto-voice";
+    autoToggle.setAttribute("aria-label","Activer ou désactiver la lecture automatique de JARVIS");
+    autoToggle.onclick=toggleAutoVoice;
+    document.body.appendChild(autoToggle);
+    updateAutoVoiceToggle();
     panel=document.createElement("div");panel.className="ta-voice-panel";panel.style.display="none";panel.dataset.state="idle";document.body.appendChild(panel);
     button.onclick=()=>{panel.style.display=panel.style.display==="none"?"block":"none";if(panel.style.display==="block")render();};
-    window.addEventListener("edgeflow:model-change",()=>{if(panel.style.display==="block")render();const x=button?.querySelector("#taFabMode");if(x)x.textContent=modelLabel();});
+    window.addEventListener("edgeflow:model-change",()=>{if(panel.style.display==="block")render();const x=button?.querySelector("#taFabMode");if(x)x.textContent=modelLabel();});updateAutoVoiceToggle();
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
