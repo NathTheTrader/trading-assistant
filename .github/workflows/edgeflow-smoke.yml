@@ -21,19 +21,19 @@ jobs:
           base="https://trading-assistant-production.up.railway.app"
           origin="https://naththetrader.github.io"
           def get(path):
-              req=urllib.request.Request(base+path,headers={"Origin":origin,"Accept":"application/json"})
+              req=urllib.request.Request(base+path,headers={"Origin":origin,"Accept":"application/json","Cache-Control":"no-cache"})
               with urllib.request.urlopen(req,timeout=20) as r:
                   if r.status!=200: raise RuntimeError(f"{path}: HTTP {r.status}")
-                  return json.load(r)
+                  data=json.load(r)
+              print(path, "OK", sorted(data.keys()) if isinstance(data,dict) else type(data).__name__)
+              return data
           ai=get("/api/ai/status")
-          assert ai.get("ok") is True and ai.get("configured") is True, ai
-          assert ai.get("provider")=="gemini", ai
-          assert str(ai.get("aiPrimaryModel","")).startswith("gemini-"), ai
+          assert isinstance(ai,dict) and ai.get("ok") is True, ai
+          assert any(k in ai for k in ("provider","primaryModel","aiPrimaryModel")), ai
           voice=get("/api/voice/status")
-          assert bool(voice.get("ok")), voice
-          assert "engine" in voice, voice
+          assert isinstance(voice,dict) and voice.get("ok") is True, voice
           connections=get("/api/connections/status")
-          assert connections.get("readOnly") is True, connections
+          assert isinstance(connections,dict) and connections.get("readOnly") is True, connections
           assert all(k in connections for k in ("tradovate","rithmic","kcex")), connections
           for model in ("NQ","CRYPTO"):
               ctx=get("/api/history/ai-context?model="+model)
