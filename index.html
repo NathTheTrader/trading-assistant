@@ -564,7 +564,7 @@ button:active{transform:translateY(1px)}
   <div class="side-bottom">
     <div class="connection-mini">
       <div class="mini-head"><span><i class="dot"></i>CONNEXIONS</span><span class="neutral">EN ATTENTE</span></div>
-      <div class="mini-sub">Tradovate et KCEX seront connectés avec une méthode autorisée. Aucun ordre automatique n'est activé.</div>
+      <div id="connectionMiniSub" class="mini-sub">Futures : Tradovate / Rithmic · Crypto : KCEX. Lecture seule.</div>
     </div>
   </div>
 </aside>
@@ -617,10 +617,9 @@ button:active{transform:translateY(1px)}
   </div>
   <div class="layout">
     <div class="section"><h2>Connexions live</h2><div class="connection-grid">
-    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TV</div><div><div class="connection-name">Tradovate</div><div class="connection-type">Futures · lecture seule</div></div></div><span id="dashConnTradovate" class="connection-status">—</span></div><p>Flux compte, positions, ordres et fills via le WebSocket officiel Tradovate.</p></div>
-    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">R</div><div><div class="connection-name">Rithmic</div><div class="connection-type">Futures · R|Protocol</div></div></div><span id="dashConnRithmic" class="connection-status">—</span></div><p>Prévu pour le flux Rithmic direct. L'accès production dépend des identifiants et de l'accès API Rithmic.</p></div>
-    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TS</div><div><div class="connection-name">TradeSea</div><div class="connection-type">Rithmic · plateforme</div></div></div><span class="connection-status ready">LIÉ À RITHMIC</span></div><p>TradeSea utilise Rithmic pour ses comptes. Edgeflow ne scrape pas TradeSea et ne stocke pas ton login TradeSea.</p></div>
-    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Crypto · observateur</div></div></div><span id="dashConnKcex" class="connection-status warn">ÉCRAN</span></div><p>Observation de l'interface KCEX par partage d'onglet. Aucun ordre n'est envoyé.</p></div>
+    <div class="connection-card" data-mode="NQ"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TV</div><div><div class="connection-name">Tradovate</div><div class="connection-type">Futures · lecture seule</div></div></div><span id="dashConnTradovate" class="connection-status">—</span></div><p>Flux compte, positions, ordres et fills via le WebSocket officiel Tradovate.</p></div>
+    <div class="connection-card" data-mode="NQ"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">R</div><div><div class="connection-name">Rithmic</div><div class="connection-type">Futures · R|Protocol</div></div></div><span id="dashConnRithmic" class="connection-status">—</span></div><p>Prévu pour le flux Rithmic direct. L'accès production dépend des identifiants et de l'accès API Rithmic.</p></div>
+    <div class="connection-card" data-mode="CRYPTO"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Crypto · observateur</div></div></div><span id="dashConnKcex" class="connection-status warn">ÉCRAN</span></div><p>Observation de l'interface KCEX par partage d'onglet. Aucun ordre n'est envoyé.</p></div>
   </div></div>
     <div class="section"><h2>Raccourcis</h2><div class="actions"><button class="primary" onclick="show('review')">Analyser un trade</button><button class="secondary" onclick="show('journal')">Ouvrir le journal</button><button class="secondary" onclick="show('chat')">Parler à JARVIS</button></div></div>
   </div>
@@ -639,7 +638,7 @@ button:active{transform:translateY(1px)}
 <section id="bot" class="hidden">
   <div class="topbar"><div><div class="eyebrow">Automatisation contrôlée</div><h1>Bot Futures</h1><div class="sub">Détection et analyse en lecture seule. Aucune exécution d'ordre.</div></div><div id="tvLiveStatus" class="status">● DÉCONNECTÉ</div></div>
   <div class="grid">
-    <div class="card"><div class="label">Broker</div><div class="value small">Tradovate</div><div id="tvConnectionText" class="sub">Backend non connecté</div><div class="actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER TRADOVATE</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
+    <div class="card" data-mode="NQ"><div class="label">Broker</div><div class="value small">Tradovate</div><div id="tvConnectionText" class="sub">Backend non connecté</div><div class="actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER TRADOVATE</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
     <div class="card"><div class="label">Mode</div><div class="value small red">LECTURE SEULE</div><div class="sub">Aucune exécution</div></div>
     <div class="card"><div class="label">Risque / trade</div><div class="value">$100</div><div class="sub">Paramètre de référence</div></div>
     <div class="card"><div class="label">État du bot</div><div id="tvBotState" class="value small green">PRÊT</div><div class="sub">En attente du flux</div></div>
@@ -735,9 +734,8 @@ button:active{transform:translateY(1px)}
   <div class="layout">
     <div class="section"><h2>Serveur du bot</h2><div class="rows"><div class="row"><span>Backend IA</span><span class="neutral" id="backendStatus">NON CONFIGURÉ</span></div></div><div class="actions"><input id="botApiUrl" placeholder="https://ton-backend.example.com" style="flex:1"><input id="edgeflowAccessKey" type="password" placeholder="Clé d’accès privée" autocomplete="off" style="flex:1"><button class="secondary" onclick="saveBotUrl()">ENREGISTRER</button><button class="secondary" onclick="testBotConnection()">TESTER</button></div><div class="sub" style="margin-top:8px">La clé d’accès protège tes données privées du backend. Ce n’est pas une clé OpenAI/Tradovate et elle n’est jamais envoyée à GitHub.</div></div><div class="section"><h2>Connexions de comptes</h2>
     <div class="connection-grid">
-      <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TV</div><div><div class="connection-name">Tradovate</div><div class="connection-type">Futures · WebSocket</div></div></div><span id="connTradovate" class="connection-status">—</span></div><p>Connexion serveur déjà implémentée. Elle reste en lecture seule et synchronise les événements du compte.</p><div class="connection-actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
-      <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">R</div><div><div class="connection-name">Rithmic</div><div class="connection-type">Futures · R|Protocol API</div></div></div><span id="connRithmic" class="connection-status">—</span></div><p>Rithmic expose officiellement R|Protocol en WebSocket + Protobuf. L'intégration production nécessite l'accès API/dev kit et les paramètres fournis par Rithmic.</p><div class="connection-actions"><a href="https://www.rithmic.com/apis" target="_blank" rel="noopener noreferrer">VOIR API RITHMIC</a></div><div class="connection-meta">Aucun mot de passe Rithmic ne doit être mis dans GitHub.</div></div>
-      <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TS</div><div><div class="connection-name">TradeSea</div><div class="connection-type">Plateforme · comptes Rithmic</div></div></div><span class="connection-status ready">DISPONIBLE</span></div><p>TradeSea connecte tes comptes Rithmic et synchronise les fills dans Compass. Edgeflow garde TradeSea comme plateforme externe, pas comme API privée à scraper.</p><div class="connection-actions"><a href="https://app.tradesea.ai/" target="_blank" rel="noopener noreferrer">OUVRIR TRADESEA</a></div></div>
+      <div class="connection-card" data-mode="NQ"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TV</div><div><div class="connection-name">Tradovate</div><div class="connection-type">Futures · WebSocket</div></div></div><span id="connTradovate" class="connection-status">—</span></div><p>Connexion serveur déjà implémentée. Elle reste en lecture seule et synchronise les événements du compte.</p><div class="connection-actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
+      <div class="connection-card" data-mode="NQ"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">R</div><div><div class="connection-name">Rithmic</div><div class="connection-type">Futures · R|Protocol API</div></div></div><span id="connRithmic" class="connection-status">—</span></div><p>Rithmic expose officiellement R|Protocol en WebSocket + Protobuf. L'intégration production nécessite l'accès API/dev kit et les paramètres fournis par Rithmic.</p><div class="connection-actions"><a href="https://www.rithmic.com/apis" target="_blank" rel="noopener noreferrer">VOIR API RITHMIC</a></div><div class="connection-meta">Aucun mot de passe Rithmic ne doit être mis dans GitHub.</div></div>
       <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Crypto · observateur live</div></div></div><span id="connKcex" class="connection-status warn">ÉCRAN</span></div><p>Le module actuel utilise le partage d'onglet pour l'observation IA. Tant que l'API officielle de compte n'est pas suffisamment documentée, on ne branche pas d'endpoint non vérifié.</p><div class="connection-actions"><button class="primary" onclick="setSiteMode('CRYPTO');show('bot',$('navBot'))">OUVRIR OBSERVATEUR</button><button class="secondary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button></div></div>
     </div><div class="divider"></div><div class="sub">GitHub Pages reste l'interface. Les identifiants sensibles vivent côté backend. Aucun ordre automatique n'est activé.</div></div>
     <div class="section"><h2>Sécurité</h2><div class="rows">
@@ -780,7 +778,7 @@ function setSiteMode(mode){
   document.body.classList.remove("nq-mode","crypto-mode");
   document.body.classList.add(mode==="CRYPTO"?"crypto-mode":"nq-mode");
   ["NQ","CRYPTO"].forEach(m=>{const b=$("mode"+m);if(b){const on=m===mode;b.classList.toggle("active",on);b.setAttribute("aria-pressed",String(on));}});
-  updateModelUI(); updateBotMode(); applyModeVisibility(); renderJournal(); refreshAIDataAccess(); refreshObsidianStatus();
+  updateModelUI(); updateBotMode(); applyModeVisibility(); const mini=$("connectionMiniSub"); if(mini) mini.textContent=siteMode==="CRYPTO"?"Crypto : KCEX · observateur lecture seule.":"Futures : Tradovate / Rithmic · lecture seule."; renderJournal(); refreshAIDataAccess(); refreshObsidianStatus();
 }
 async function botFetch(path,options={}){
   if(!BOT_API) throw new Error("BOT_API_NOT_CONFIGURED");
@@ -811,7 +809,7 @@ function updateBotMode(){
   const title=document.querySelector("#bot h1");
   if(title) title.textContent=crypto?"Bot Crypto":"Bot Futures";
   const checklist=document.querySelector("#botChecklistTitle");
-  if(checklist) checklist.textContent=crypto?"Analyser un setup Crypto":"Tester le modèle NQ";
+  if(checklist) checklist.textContent=crypto?"Analyser un setup Crypto":"Tester le modèle Futures";
   $("navBotText")?.replaceChildren(document.createTextNode(crypto?"Bot Crypto":"Bot Futures"));
   $("botNQChecklist")?.classList.toggle("hidden",crypto);
   $("botCryptoPanel")?.classList.toggle("hidden",!crypto);
@@ -883,7 +881,7 @@ function getJournalAwareReply(msg){
  return"Je peux utiliser le journal "+(scope?"du modèle <b>"+scope+"</b>":"complet")+" comme contexte local. Le moteur IA réel sera connecté au backend et pourra raisonner sur tes setups et screenshots.";
 }
 function scoreFrom(prefix){
- const g=id=>$(prefix+id).checked;
+ const g=id=>Boolean($(prefix+id)?.checked);
  const score=(g("timing")?5:-5)+(g("high")?15:-15)+(g("loss")?-10:0)+(g("ko")?10:-10);
  const killer=!g("backtest")||g("liq")||g("tilt")||g("rev");
  const grade=score>=27?"A+":score>=23?"A":score>=20?"A-":score>=16?"B+":score>=12?"B":score>=8?"B-":score>=4?"C+":"C";
@@ -910,7 +908,7 @@ async function runBotTest(){
     return;
   }
   const r=scoreFrom("b");const decision=r.killer?"PAS DE TRADE":"TRADE VALIDE";const note=$("bnotes").value||"Analyse basée sur la checklist Futures.";
-  $("botOutput").innerHTML='<div class="score"><div class="circle" style="border-color:'+(r.killer?'var(--red)':'var(--green)')+'">'+r.score+'</div><div><div class="'+(r.killer?'red':'grade')+'">'+r.grade+'</div><div class="sub">'+decision+'</div></div></div><div class="decision '+(r.killer?'bad':'')+'">'+(r.killer?'🔴 PAS DE TRADE — un killer est actif':'🟢 TRADE VALIDE — checklist NQ')+'</div><div class="sub" style="margin-top:12px">'+esc(note)+'</div>';
+  $("botOutput").innerHTML='<div class="score"><div class="circle" style="border-color:'+(r.killer?'var(--red)':'var(--green)')+'">'+r.score+'</div><div><div class="'+(r.killer?'red':'grade')+'">'+r.grade+'</div><div class="sub">'+decision+'</div></div></div><div class="decision '+(r.killer?'bad':'')+'">'+(r.killer?'🔴 PAS DE TRADE — un killer est actif':'🟢 TRADE VALIDE — checklist Futures')+'</div><div class="sub" style="margin-top:12px">'+esc(note)+'</div>';
   const arr=getJournal();arr.unshift({id:Date.now(),dateISO:new Date().toISOString().slice(0,10),date:new Date().toISOString().slice(0,10),model:"NQ",market:"FUTURES",instrument:"NQ",score:r.score,grade:r.grade,decision,notes:note,context:note});localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));renderJournal();renderStats();
 }
 function analyze(){
@@ -1187,6 +1185,7 @@ if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
 if(!VALID_MODES.has(siteMode))siteMode="NQ"; setSiteMode(siteMode); $("models").classList.add("hidden"); $("dash").classList.remove("hidden"); updateModelUI(); document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode)));
 renderJournal();resetJournalForm();restoreJournalDraft();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();renderStats();$("navDash")?.classList.add("active");
+bindLiveChecklist();
 JOURNAL_DRAFT_FIELDS.forEach(id=>{
  const el=$(id); if(!el)return;
  el.addEventListener("input",saveJournalDraft);
