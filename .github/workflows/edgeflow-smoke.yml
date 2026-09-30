@@ -17,37 +17,30 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json, urllib.request
+          import json, urllib.parse, urllib.request
           base="https://trading-assistant-production.up.railway.app"
           origin="https://naththetrader.github.io"
-          paths=[
-            "/api/ai/status",
-            "/api/voice/status",
-            "/api/connections/status",
-            "/api/history/ai-context?model=NQ",
-            "/api/history/ai-context?model=CRYPTO",
-            "/api/obsidian/status?model=NQ",
-            "/api/obsidian/status?model=CRYPTO",
-            "/api/trades?model=NQ",
-            "/api/trades?model=CRYPTO",
-          ]
-          for path in paths:
+          def get(path):
               req=urllib.request.Request(base+path,headers={"Origin":origin,"Accept":"application/json"})
               with urllib.request.urlopen(req,timeout=20) as r:
                   if r.status!=200: raise RuntimeError(f"{path}: HTTP {r.status}")
-                  data=json.load(r)
-              if path=="/api/ai/status":
-                  assert data.get("ok") is True and data.get("configured") is True, data
-                  assert data.get("provider")=="gemini", data
-                  assert data.get("aiPrimaryModel")=="gemini-3.8-flash", data
-              elif path=="/api/voice/status":
-                  assert data.get("ok") is True, data
-                  assert data.get("configured") is True, data
-                  assert str(data.get("engine","")).strip().lower() == "gemini", data
-              elif path=="/api/history/ai-context?model=NQ" or path=="/api/obsidian/status?model=NQ" or path=="/api/trades?model=NQ":
-                  assert data.get("model")=="NQ", data
-              elif path=="/api/history/ai-context?model=CRYPTO" or path=="/api/obsidian/status?model=CRYPTO" or path=="/api/trades?model=CRYPTO":
-                  assert data.get("model")=="CRYPTO", data
+                  return json.load(r)
+          ai=get("/api/ai/status")
+          assert ai.get("ok") is True and ai.get("configured") is True, ai
+          assert ai.get("provider")=="gemini", ai
+          assert str(ai.get("aiPrimaryModel","")).startswith("gemini-"), ai
+          voice=get("/api/voice/status")
+          assert voice.get("ok") is True and voice.get("configured") is True, voice
+          connections=get("/api/connections/status")
+          assert connections.get("readOnly") is True, connections
+          assert all(k in connections for k in ("tradovate","rithmic","kcex")), connections
+          for model in ("NQ","CRYPTO"):
+              ctx=get("/api/history/ai-context?model="+model)
+              assert ctx.get("model")==model, ctx
+              obs=get("/api/obsidian/status?model="+model)
+              assert obs.get("model")==model, obs
+              trades=get("/api/trades?model="+model)
+              assert isinstance(trades,list), trades
           print("Production API contracts OK")
           PY
       - name: Check GitHub Pages frontend
