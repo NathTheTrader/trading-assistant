@@ -46,5 +46,15 @@ jobs:
           if(!html.includes('classList.add("hidden")')) fail("Stable class-based workspace router missing");
           if(!html.includes('document.querySelectorAll("main>section")')) fail("Workspace isolation selector missing");
           if(!voice.includes("trading-assistant-production.up.railway.app")) fail("Voice backend default missing");
+          const sections=[...html.matchAll(/<section id="([^"]+)"/g)].map(m=>m[1]);
+          for(const id of ["models","dash","cryptoDash","bot","crypto","review","cryptoReview","chat","journal","settings"]) if(!sections.includes(id)) fail("Missing workspace: "+id);
+          if(new Set(sections).size!==sections.length) fail("Duplicate workspace IDs");
+          if((html.match(/<style\\b/gi)||[]).length!==1 || !html.includes("<style>")) fail("Expected one stylesheet block");
+          if(html.indexOf("<style>")>html.indexOf("</head>")) fail("Stylesheet must be in head");
+          if(!html.includes('<script src="./voice-coach.js"></script>')) fail("Voice script tag malformed");
+          if(!html.includes('id="cryptoBotOutput"')||!html.includes('id="cryptoDashTrades"')||!html.includes('id="cryptoReviewResult"')) fail("Crypto workspace outputs missing");
+          if(!html.includes("let rithmicScreenStream=null")) fail("Rithmic screen observer state missing");
+          if(!html.includes("function showActiveDashboard")) fail("Independent dashboard routing missing");
+          if(html.includes("app[data-view]")) fail("Legacy data-view router still present");
           console.log("Edgeflow invariants OK");
           NODE
