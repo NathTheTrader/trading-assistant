@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#090b10">
-<meta name="edgeflow-build" content="2026-09-30-1000-journal-settings-v6">
+<meta name="edgeflow-build" content="2026-09-30-1015-scroll-owner-v7">
 <title>EDGEFLOW — Trading Intelligence</title>
 <style>
 :root{
@@ -666,6 +666,28 @@ main>section.hidden,main>section[hidden]{display:none!important}
   #settings .layout>.section:nth-child(2){display:block}
   #settings .layout>.section:nth-child(2) .rows{display:grid;grid-template-columns:1fr}
 }
+
+/* EDGEFLOW V7 — one scroll owner. Journal/Settings can never open vertically offset. */
+.main{height:100vh!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;padding:0!important;scroll-behavior:auto!important}
+main>section{height:auto!important;min-height:100%!important;overflow:visible!important;box-sizing:border-box!important}
+main>section.hidden,main>section[hidden]{display:none!important}
+#journal,#settings,#review{height:auto!important;min-height:100%!important;overflow:visible!important;overflow-y:visible!important}
+#journal{width:100%!important;max-width:none!important;margin:0!important}
+#journal .workspace-head{width:min(1180px,calc(100% - 68px))!important;margin:0 auto 18px!important;padding-top:30px!important}
+#journal .journal-kpis,#journal .journal-panel{width:min(1180px,calc(100% - 68px))!important;margin-left:auto!important;margin-right:auto!important}
+#journal .journal-kpis{margin-bottom:12px!important}
+#journal .journal-panel{margin-bottom:12px!important}
+#settings .topbar,#settings .layout{width:min(1180px,calc(100% - 68px))!important;margin-left:auto!important;margin-right:auto!important}
+#settings .topbar{padding-top:30px!important}
+@media(max-width:1050px){
+ .main{height:100vh!important;overflow-y:auto!important}
+ #journal .workspace-head,#journal .journal-kpis,#journal .journal-panel,#settings .topbar,#settings .layout{width:calc(100% - 44px)!important}
+}
+@media(max-width:760px){
+ .main{height:calc(100vh - 110px)!important;min-height:calc(100vh - 110px)!important;overflow-y:auto!important;padding:0!important}
+ main>section{min-height:100%!important;height:auto!important}
+ #journal .workspace-head,#journal .journal-kpis,#journal .journal-panel,#settings .topbar,#settings .layout{width:calc(100% - 28px)!important}
+}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -1004,7 +1026,9 @@ function show(id,btn){
  const main=document.querySelector(".main");
  if(main)main.scrollTop=0;
  if(target)target.scrollTop=0;
+ if(document.scrollingElement)document.scrollingElement.scrollTop=0;
  window.scrollTo(0,0);
+ requestAnimationFrame(()=>{if(main)main.scrollTop=0;if(target)target.scrollTop=0;if(document.scrollingElement)document.scrollingElement.scrollTop=0;});
  document.documentElement.scrollTop=0;
  document.body.scrollTop=0;
  if(id==="journal"){updateJournalMarket();renderJournal();restoreJournalDraft();if($("journalModeBadge"))$("journalModeBadge").textContent=activeModel==="CRYPTO"?"CRYPTO":"FUTURES";}
