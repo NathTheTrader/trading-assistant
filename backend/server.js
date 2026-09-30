@@ -688,7 +688,7 @@ async function obsidianImageAnalysisLoop() {
 
       let response;
       try {
-        response=await callGeminiNative({
+        response=await callGemini({
           model:GEMINI_MODEL,
           input:[
             {role:"system",content:BASE_SYSTEM+"\nHISTORICAL SCREENSHOT REVIEW: inspect only visible evidence and keep NQ/CRYPTO separated."},
