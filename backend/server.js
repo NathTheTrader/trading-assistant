@@ -1653,11 +1653,20 @@ app.post("/api/chat",requirePrivateRequest,  async (req,res) => {
   const model=String(req.body.model||"NQ").toUpperCase()==="CRYPTO"?"CRYPTO":"NQ";
   const previousTurns=Array.isArray(req.body.previousTurns)?req.body.previousTurns.slice(-12).map(x=>({role:String(x?.role)==="assistant"?"assistant":"user",content:String(x?.content||"").slice(0,2400)})):[];
   const financialJuiceContext=await buildFinancialJuiceContext(18);
-  const result=await askAI({
-    task:`Answer the trader's question using ONLY the ${model} model and its stored trading history. Never import rules or trades from the other model. Use the live FinancialJuice context below when the question involves current market/news context. Treat headlines as source material, not as guaranteed truth. Do not invent missing details. Always distinguish a reported headline from your own interpretation. User question: ${String(req.body.message || "")}
+  const newsIntent=/(^|\\s)(news|news\\s+d['’]?actualite|actualité|actualités|headline|headlines|breaking|macro|macroeconomic|économie|fed|fomc|cpi|nfp|pmi|rates|taux|ce soir|ce matin|aujourd'hui|today|tonight)(\\s|$)/i.test(message);
+
+  const task=newsIntent
+    ? `NEWS MODE — Answer the trader's news question directly from the live FinancialJuice context below. This is a news-information request, NOT a setup-analysis request. First give the relevant recent FinancialJuice headlines with their publication times when available. Then give a short factual summary of what appears market-relevant for the active ${model} model. Do NOT invent a scheduled event that is not present in the feed. Do NOT tell the trader to consult ForexFactory, another calendar, or another site unless the trader explicitly asks for another source. Do NOT turn the answer into generic trading coaching. If the feed does not contain a reliable schedule for "ce soir", say that the feed provides headlines rather than a complete scheduled calendar, and list the latest relevant headlines instead. Keep reported facts separate from interpretation. User question: ${message}
 
 LIVE FINANCIAL JUICE CONTEXT
-${financialJuiceContext}`,
+${financialJuiceContext}`
+    : `Answer the trader's question using ONLY the ${model} model and its stored trading history. Never import rules or trades from the other model. Use the live FinancialJuice context below when the question involves current market/news context. Treat headlines as source material, not as guaranteed truth. Do not invent missing details. Always distinguish a reported headline from your own interpretation. User question: ${message}
+
+LIVE FINANCIAL JUICE CONTEXT
+${financialJuiceContext}`;
+
+  const result=await askAI({
+    task,
     trade:null,
     history:trades.filter(t=>t.model===model),
     chatHistory:previousTurns
