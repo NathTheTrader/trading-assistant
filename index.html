@@ -792,7 +792,7 @@ function chooseModel(){document.querySelectorAll("main>section").forEach(s=>s.cl
 function updateModelUI(){
  if(!activeModel)return;
  $("reviewNQ")?.classList.toggle("hidden",activeModel!=="NQ"); $("reviewCrypto")?.classList.toggle("hidden",activeModel!=="CRYPTO");
- $("reviewModel").textContent=activeModel+" MODÈLE";
+ if($("dashMarketEyebrow")) $("dashMarketEyebrow").textContent=activeModel==="CRYPTO"?"CRYPTO":"FUTURES"; $("reviewModel").textContent=activeModel+" MODÈLE";
  $("chatModelPill").textContent=activeModel+" MODÈLE";$("chatModeText").textContent=activeModel;
  $("dashModelTag").textContent=activeModel==="NQ"?"MODÈLE NQ":"MODÈLE CRYPTO";
  $("settingsModel").textContent=activeModel==="NQ"?"MODÈLE NQ":"MODÈLE CRYPTO";
