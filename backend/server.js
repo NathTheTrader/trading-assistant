@@ -791,7 +791,6 @@ app.get("/api/connections/status",requirePrivateRequest, (req,res) => {
     readOnly:true,
     tradovate:tv,
     rithmic:{configured:rithmicConfigured,connected:false,system:process.env.RITHMIC_SYSTEM||null,transport:"R|Protocol / WebSocket + Protobuf"},
-    tradesea:{available:true,mode:"external-rithmic-platform",apiDirect:false},
     kcex:{available:true,mode:"screen-observer",apiDirect:false}
   });
 });
