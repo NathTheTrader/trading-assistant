@@ -1,7 +1,15 @@
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2330-stable-bot-routing-v25"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><script>
+(function(){
+  const m=String(new URLSearchParams(location.search).get("mode")||"NQ").toUpperCase()==="CRYPTO"?"CRYPTO":"NQ";
+  document.documentElement.setAttribute("data-edgeflow-initial-mode",m);
+})();
+</script>
+<style>
+html[data-edgeflow-initial-mode="NQ"] #dash,
+html[data-edgeflow-initial-mode="CRYPTO"] #cryptoDash{display:block!important;visibility:visible!important}
 :root{
   --accent:var(--red);--accentSoft:rgba(255,49,88,.12);
   --bg:#07090d;--bg2:#0b0e14;--panel:#10141c;--panel2:#151a23;--panel3:#0d1118;
@@ -1054,6 +1062,10 @@ html body:before,html body:after{display:none !important;content:none !important
 .card,.section,.model-card{background:linear-gradient(145deg,rgba(16,20,27,.96),rgba(11,14,19,.96)) !important;border-color:rgba(255,255,255,.055) !important;box-shadow:0 12px 30px rgba(0,0,0,.16) !important;}
 .card:before,.model-card:after{display:none !important;}
 .hero{background:linear-gradient(145deg,rgba(18,23,31,.98),rgba(10,13,18,.98)) !important;border-color:rgba(255,255,255,.07) !important;}
+
+/* INITIAL MODE FALLBACK — prevents a blank workspace during refresh */
+html[data-edgeflow-initial-mode="NQ"] #cryptoDash,html[data-edgeflow-initial-mode="NQ"] #crypto,html[data-edgeflow-initial-mode="NQ"] #bot{display:none!important}
+html[data-edgeflow-initial-mode="CRYPTO"] #dash,html[data-edgeflow-initial-mode="CRYPTO"] #bot{display:none!important}
 </style>
 </head><body>
 <div class="app">
