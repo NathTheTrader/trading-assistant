@@ -484,8 +484,10 @@ async function obsidianImageAnalysisLoop() {
   const items=[];
   for(const trade of trades) {
     if(!["NQ","CRYPTO"].includes(trade.model)) continue;
-    for(const imageName of (trade.images||[])) {
-      const file=path.join(OBSIDIAN_DIR,"images",path.basename(imageName));
+    const imageFiles=Array.isArray(trade.imageFiles)&&trade.imageFiles.length
+      ? trade.imageFiles
+      : (trade.images||[]).map(name=>path.join(OBSIDIAN_DIR,"images",path.basename(name)));
+    for(const file of imageFiles) {
       try { await fs.access(file); } catch { continue; }
       if(!(trade.imageAnalyses||[]).some(x=>x.file===file)) items.push({trade,file});
     }
