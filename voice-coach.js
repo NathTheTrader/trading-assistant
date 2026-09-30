@@ -1,3 +1,4 @@
+/* EDGEFLOW_VOICE_V3 — auto-stop on speech silence */
 (function(){
   const css=document.createElement("style");
   css.textContent=`
@@ -82,7 +83,7 @@
   `;
   document.head.appendChild(css);
 
-  let panel,button,recorder,stream,chunks=[],turns=[];
+  let panel,button,recorder,stream,chunks=[],turns=[],voiceAudioContext=null,voiceAnalyser=null,voiceMonitorTimer=null,voiceSilenceSince=0,voiceSpeechStarted=false,voiceStartedAt=0,voiceStopRequested=false;
   const api=()=>String(localStorage.getItem("botApiUrl")||"https://trading-assistant-production.up.railway.app").replace(/\/$/,"");
   const model=()=>String(localStorage.getItem("activeModel")||"NQ").toUpperCase()==="CRYPTO"?"CRYPTO":"NQ";
   const access=()=>String(localStorage.getItem("edgeflowAccessKey")||"");
@@ -215,24 +216,84 @@
   }
   if("speechSynthesis" in window)window.speechSynthesis.onvoiceschanged=()=>chooseBrowserVoice();
   function mime(){const a=["audio/webm;codecs=opus","audio/webm","audio/ogg;codecs=opus","audio/mp4"];return a.find(x=>window.MediaRecorder?.isTypeSupported(x))||""}
+  function stopVoiceMonitor(){
+    if(voiceMonitorTimer){clearInterval(voiceMonitorTimer);voiceMonitorTimer=null;}
+    try{voiceAudioContext?.close()}catch(e){}
+    voiceAudioContext=null;voiceAnalyser=null;voiceSilenceSince=0;voiceSpeechStarted=false;voiceStartedAt=0;voiceStopRequested=false;
+  }
+  function startVoiceMonitor(){
+    try{
+      voiceAudioContext=new (window.AudioContext||window.webkitAudioContext)();
+      voiceAnalyser=voiceAudioContext.createAnalyser();
+      voiceAnalyser.fftSize=2048;
+      const source=voiceAudioContext.createMediaStreamSource(stream);
+      source.connect(voiceAnalyser);
+      const buffer=new Uint8Array(voiceAnalyser.fftSize);
+      voiceStartedAt=Date.now();
+      voiceMonitorTimer=setInterval(()=>{
+        if(!recorder||recorder.state!=="recording"||!voiceAnalyser)return;
+        voiceAnalyser.getByteTimeDomainData(buffer);
+        let sum=0;
+        for(let i=0;i<buffer.length;i++){const x=(buffer[i]-128)/128;sum+=x*x;}
+        const rms=Math.sqrt(sum/buffer.length);
+        const now=Date.now();
+        const active=rms>0.018;
+        if(active){
+          voiceSpeechStarted=true;
+          voiceSilenceSince=0;
+          setStatus("Je t’écoute… continue, puis fais simplement une pause quand tu as terminé.");
+        }else if(voiceSpeechStarted){
+          if(!voiceSilenceSince)voiceSilenceSince=now;
+          if(now-voiceSilenceSince>=1200&&!voiceStopRequested){
+            voiceStopRequested=true;
+            setStatus("Fin détectée · JARVIS traite ta demande…");
+            try{recorder.stop()}catch(e){}
+          }
+        }
+        if(now-voiceStartedAt>=45000&&!voiceStopRequested){
+          voiceStopRequested=true;setStatus("Durée maximale atteinte · JARVIS traite…");
+          try{recorder.stop()}catch(e){}
+        }
+      },100);
+    }catch(e){
+      console.warn("Voice monitor unavailable",e);
+    }
+  }
   async function toggle(){
-    if(recorder?.state==="recording"){recorder.stop();return}
+    if(recorder?.state==="recording"){voiceStopRequested=true;recorder.stop();return}
     if(!api()){setStatus("Backend IA non configuré.");return}
     if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){setStatus("Micro non disponible dans ce navigateur.");return}
     try{
-      stream=await navigator.mediaDevices.getUserMedia({audio:true});
-      const m=mime();recorder=m?new MediaRecorder(stream,{mimeType:m}):new MediaRecorder(stream);
-      chunks=[];
+      stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+      const m=mime();
+      recorder=m?new MediaRecorder(stream,{mimeType:m}):new MediaRecorder(stream);
+      chunks=[];voiceStopRequested=false;voiceSpeechStarted=false;voiceSilenceSince=0;voiceStartedAt=Date.now();
       recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data)};
-      recorder.onstop=()=>{stream?.getTracks().forEach(t=>t.stop());stream=null;send(new Blob(chunks,{type:recorder.mimeType||m||"audio/webm"}));};
-      recorder.start();
-      panel.querySelector("#taTalk").textContent="■ STOP";
+      recorder.onstop=()=>{
+        stopVoiceMonitor();
+        try{stream?.getTracks().forEach(t=>t.stop())}catch(e){}
+        stream=null;
+        panel.querySelector("#taTalk").textContent="◉ PARLER";
+        setState("thinking","JARVIS TRAITE");
+        const blob=new Blob(chunks,{type:recorder.mimeType||m||"audio/webm"});
+        send(blob);
+      };
+      recorder.start(100);
+      panel.querySelector("#taTalk").textContent="■ ÉCOUTE";
       setState("listening","JARVIS ÉCOUTE");
-      setStatus("Parle maintenant. Reclique sur PARLER quand tu as terminé.");
-    }catch(e){setState("idle","JARVIS PRÊT");setStatus("Micro refusé : "+e.message)}
+      setStatus("Parle maintenant… JARVIS s’arrêtera automatiquement après une courte pause.");
+      startVoiceMonitor();
+    }catch(e){
+      stopVoiceMonitor();
+      try{stream?.getTracks().forEach(t=>t.stop())}catch{}
+      stream=null;setState("idle","JARVIS PRÊT");setStatus("Micro refusé : "+e.message);
+    }
   }
+
   function stopRecording(){
+    voiceStopRequested=true;
     try{if(recorder?.state==="recording")recorder.stop()}catch{}
+    stopVoiceMonitor();
     try{stream?.getTracks().forEach(t=>t.stop())}catch{}
     stream=null;
   }
