@@ -1125,7 +1125,7 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
     <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">R</div><div><div class="connection-name">Rithmic</div><div class="connection-type">Observateur live · R|Trader</div></div></div><span id="connRithmic" class="connection-status warn">ÉCRAN</span></div><p>Le mode actuel surveille uniquement les actions visibles dans R|Trader. L’API R|Protocol nécessite un accès développeur Rithmic.</p><div class="connection-actions"><button class="primary" onclick="setSiteMode('NQ');show('bot',this);startRithmicScreenShare()">PARTAGER</button><button class="secondary" onclick="setSiteMode('NQ');show('bot',this);toggleRithmicObserver()">ARMER</button></div></div>
   </div></div>
   <div class="section connection-center" style="margin-top:12px"><div class="workspace-header" style="margin-bottom:10px"><div><h2>Connexion Crypto</h2><div class="sub">KCEX est traité comme une source d’écran en lecture seule pour voir tes ordres au moment où tu les places.</div></div><span class="tag">CRYPTO</span></div><div class="connection-grid">
-    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Order Watch · onglet KCEX</div></div></div><span id="connKcex" class="connection-status warn">ÉCRAN</span></div><p>Partage uniquement l’onglet KCEX. Edgeflow compare les captures et alerte lorsqu’un nouvel ordre/position devient visible.</p><div class="actions"><button class="primary" onclick="setSiteMode('CRYPTO');show('crypto',this)">SURVEILLER MES ORDRES</button><button class="secondary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button></div></div>
+    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Order Watch · onglet KCEX</div></div></div><span id="connKcex" class="connection-status warn">ÉCRAN</span></div><p>Partage uniquement l’onglet KCEX. Edgeflow compare les captures et alerte lorsqu’un nouvel ordre/position devient visible.</p><div class="actions"><button class="primary" onclick="setSiteMode('CRYPTO');show('crypto',this);startKCEXScreenShare().then(()=>{if(kcexScreenStream)toggleKCEXAuto()})">SURVEILLER MES ORDRES</button><button class="secondary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button></div></div>
   </div></div>
   <div class="section" style="margin-top:12px"><h2>Obsidian · mémoire historique</h2><div id="obsidianStatusBox" class="ai-box">Aucun journal Obsidian importé sur le backend.</div><div class="actions"><input id="obsidianZip" type="file" accept=".zip,application/zip" style="flex:1"><button type="button" class="primary" onclick="importObsidianJournal()">IMPORTER</button><button type="button" class="secondary" onclick="analyzeObsidianImages()">ANALYSER LES IMAGES</button></div><div id="obsidianProgress" class="sub" style="margin-top:8px">Analyse visuelle en lecture seule.</div></div>
   <div class="section jarvis-voice-settings" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h2>Voix JARVIS</h2><div class="sub">Synthèse vocale du coach. ElevenLabs prend le relais lorsqu'une clé serveur est configurée.</div></div><span id="jarvisVoiceStatus" class="status">● VÉRIFICATION</span></div><div class="voice-settings-grid" style="margin-top:10px"><div class="ai-box"><div class="label">PROFIL VOCAL</div><div id="jarvisVoiceName" style="margin-top:6px;font-weight:850">JARVIS Original</div><div id="jarvisVoiceEngine" class="sub" style="margin-top:4px">—</div></div><div class="ai-box"><div class="label">MOTEUR</div><div id="jarvisVoiceModel" style="margin-top:6px;font-weight:850">Eleven v4 Turbo</div><div class="sub" style="margin-top:4px">Voix temps réel · faible latence.</div></div></div><div class="actions" style="margin-top:10px"><button type="button" class="primary" onclick="designJarvisVoice()">GÉNÉRER VOIX JARVIS</button></div><div id="jarvisVoiceHelp" class="sub" style="margin-top:8px">Ajoute ELEVENLABS_API_KEY dans Railway pour activer la synthèse vocale serveur et générer une voix JARVIS originale.</div></div>
@@ -1512,9 +1512,13 @@ async function analyzePopupTrade(){
    await syncTradeToBot(trade);
  }catch(e){$("popAnalysis").textContent="⚠️ IA indisponible : "+(e?.message||"erreur"); $("popAnalysis").className="decision bad";}
 }
-function journalPopupTrade(){
- const d=new Date().toISOString().slice(0,10),arr=getJournal();arr.unshift({id:Date.now(),dateISO:d,date:d,model:$("popModel").textContent,market:$("popModel").textContent==="CRYPTO"?"CRYPTO":"FUTURES",instrument:$("popInstrument").textContent,session:"",result:"",grade:"",R:"",pnl:"",context:"Trade détecté automatiquement.",errors:"",lesson:"",score:null,decision:null,notes:"Trade détecté automatiquement."});
- localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));renderJournal();renderStats();closeTradePopup();show("journal");
+async function journalPopupTrade(){
+ const d=new Date().toISOString().slice(0,10);
+ const entry={id:Date.now(),dateISO:d,date:d,model:$("popModel").textContent,market:$("popModel").textContent==="CRYPTO"?"CRYPTO":"FUTURES",instrument:$("popInstrument").textContent,session:"",result:"",grade:"",R:"",pnl:"",context:"Trade détecté automatiquement.",errors:"",lesson:"",score:null,decision:null,notes:"Trade détecté automatiquement."};
+ const arr=getJournal();arr.unshift(entry);localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));
+ renderJournal();renderStats();closeTradePopup();show("journal");
+ const synced=await syncTradeToBot(entry);
+ if($("journalSyncStatus"))$("journalSyncStatus").textContent=synced?"● SERVEUR SYNC":"● LOCAL · SERVEUR INDISPONIBLE";
 }
 function getJournal(){try{return JSON.parse(localStorage.getItem("journal")||"[]")}catch(e){return[]}}
 function journalKey(x){return String(x.dateISO||x.date||"").slice(0,7)||"unknown"}
@@ -1854,9 +1858,9 @@ async function refreshJarvisVoiceStatus(){
   try{
     const r=await botFetch("/api/voice/status");
     const st=$("jarvisVoiceStatus"),name=$("jarvisVoiceName"),eng=$("jarvisVoiceEngine"),mdl=$("jarvisVoiceModel"),help=$("jarvisVoiceHelp");
-    if(st){st.textContent=r.configured?"● ELEVENLABS ONLINE":"● BROWSER FALLBACK";st.className=r.configured?"status green":"status"}
+    if(st){st.textContent=r.engine==="ElevenLabs"?"● ELEVENLABS ONLINE":r.engine==="Gemini"?"● GEMINI VOICE ONLINE":"● BROWSER FALLBACK";st.className=r.configured?"status green":"status"}
     if(name)name.textContent=r.voiceName||"JARVIS Original";
-    if(eng)eng.textContent=r.configured?"ElevenLabs · voix serveur":"Synthèse vocale navigateur · clé serveur manquante";
+    if(eng)eng.textContent=r.engine==="ElevenLabs"?"ElevenLabs · voix serveur":r.engine==="Gemini"?"Gemini · voix serveur":"Synthèse vocale navigateur · moteur serveur non configuré";
     if(mdl)mdl.textContent=r.model||"eleven_v4_turbo";
     if(help)help.textContent=r.configured?(r.voiceId?"Voix JARVIS active.":"Clé active · générez la voix JARVIS."):"Ajoutez ELEVENLABS_API_KEY dans Railway pour la vraie synthèse vocale JARVIS.";
   }catch(e){}
