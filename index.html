@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#090b10">
-<meta name="edgeflow-build" content="2026-09-30-1030-full-rebuild-v8">
+<meta name="edgeflow-build" content="2026-09-30-1030-full-rebuild-v8>
 <title>EDGEFLOW — Trading Intelligence</title>
 <style>
 :root{
@@ -1302,6 +1302,11 @@ function updateJournalMarket(){
  $("jMarket").disabled=true;
  const options=market==="FUTURES"?["MNQ","MES","MGC","Autre"]:["BTC","ETH","BNB","SOL","XRP","HYPE","FLOKI","Autre"];
  $("jInstrument").innerHTML=options.map(x=>'<option value="'+x+'">'+x+"</option>").join("");
+ const title=$("journalModelTitle"),desc=$("journalModelDesc"),chip=$("journalModelChip"),badge=$("journalModeBadge");
+ if(title)title.textContent=market==="CRYPTO"?"CRYPTO · "+(options[0]||"BTC"):"FUTURES · "+(options[0]||"MNQ");
+ if(desc)desc.textContent=market==="CRYPTO"?"Direction → Key Open manipulé / sweep → POI HTF → entrée → high RR.":"HTF → POI → liquidité / sweep → retracement → R.B. → entrée limite.";
+ if(chip)chip.textContent=market;
+ if(badge)badge.textContent=market;
 }
 const JOURNAL_DRAFT_KEY=()=> "edgeflow.journalDraft."+activeModel;
 const JOURNAL_DRAFT_FIELDS=["jDate","jSession","jResult","jGrade","jR","jPnL","jContext","jErrors","jLesson","jAI","jInstrument"];
