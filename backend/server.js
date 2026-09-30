@@ -794,11 +794,43 @@ app.post("/api/voice/turn",requirePrivateRequest, async (req,res) => {
   }catch(e){res.status(502).json({ok:false,error:e.message});}
 });
 
+app.post("/api/detect-screen-trade",requirePrivateRequest, async (req,res) => {
+  if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
+  try{
+    const broker=String(req.body.broker||"").toUpperCase()==="KCEX"?"KCEX":"RITHMIC";
+    const model=broker==="KCEX"?"CRYPTO":"NQ";
+    const current=String(req.body.imageDataUrl||"");
+    const previous=String(req.body.previousImageDataUrl||"");
+    const valid=x=>/^data:image\\/(png|jpe?g|webp);base64,/i.test(x);
+    if(!valid(current)) return res.status(400).json({ok:false,error:"Capture courante invalide."});
+    if(current.length>9000000||previous.length>9000000) return res.status(413).json({ok:false,error:"Capture trop volumineuse."});
+    const previousInput=valid(previous)?[{type:"input_text",text:"IMAGE PRÉCÉDENTE — compare-la avec la capture actuelle pour détecter uniquement une nouvelle activité de trade."},{type:"input_image",image_url:previous,detail:"high"}]:[];
+    const response=await openai.responses.create({
+      model:MODEL,reasoning:{effort:"medium"},
+      input:[
+        {role:"system",content:BASE_SYSTEM+"\\nTRADE DETECTION MODE: You are a visual event detector for "+broker+". Return ONLY valid JSON with keys detected, confidence, instrument, direction, orderType, price, quantity, context. detected=true ONLY when the current screen contains credible visual evidence of a newly created/filled/changed trading order or position compared with the previous image. Ignore ordinary price movement, candles, DOM movement, P&L fluctuations, clocks, animations, and unrelated UI changes. If uncertain, detected=false. Never infer hidden account state."},
+        {role:"user",content:[
+          {type:"input_text",text:JSON.stringify({broker,model,task:"Compare current and previous screenshots. Detect a new user trading action only if visually supported. For Rithmic/Futures pay attention to a new order/fill/position. For KCEX/Crypto pay attention to a new order/fill/position. Do not call a chart candle movement a trade."})},
+          ...previousInput,
+          {type:"input_text",text:"IMAGE ACTUELLE — this is the authoritative current frame."},
+          {type:"input_image",image_url:current,detail:"high"}
+        ]}
+      ]
+    });
+    const raw=String(response.output_text||"").trim().replace(/^```(?:json)?\\s*/i,"").replace(/\\s*```$/,"");
+    let data;
+    try{data=JSON.parse(raw)}catch{data={detected:false,confidence:0,instrument:"",direction:"",orderType:"",price:null,quantity:null,context:"Réponse visuelle non exploitable."};}
+    const confidence=Number(data.confidence||0);
+    const detected=data.detected===true&&confidence>=0.75;
+    res.json({ok:true,broker,model,detected,confidence,instrument:String(data.instrument||""),direction:String(data.direction||""),orderType:String(data.orderType||""),price:data.price??null,quantity:data.quantity??null,context:String(data.context||"")});
+  }catch(e){res.status(502).json({ok:false,error:e.message||"Détection impossible."});}
+});
+
 app.post("/api/analyze-screen",requirePrivateRequest,  async (req,res) => {
   if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
   try{
     const model=normalizeModel(req.body.model);
-    if(model!=="CRYPTO") return res.status(400).json({ok:false,error:"Screen observer réservé au modèle CRYPTO."});
+    if(!["CRYPTO","NQ"].includes(model)) return res.status(400).json({ok:false,error:"Modèle d'observation invalide."});
     const imageDataUrl=String(req.body.imageDataUrl||"");
     if(!/^data:image\/(png|jpe?g|webp);base64,/i.test(imageDataUrl)) return res.status(400).json({ok:false,error:"Image invalide. Utilise une capture PNG/JPEG/WebP."});
     if(imageDataUrl.length>12000000) return res.status(413).json({ok:false,error:"Capture trop volumineuse."});
@@ -809,7 +841,7 @@ app.post("/api/analyze-screen",requirePrivateRequest,  async (req,res) => {
       model:MODEL,
       reasoning:{effort:"high"},
       input:[
-        {role:"system",content:BASE_SYSTEM+"\nLIVE SCREEN OBSERVATION MODE: Analyze only what is actually visible in the supplied KCEX screen capture. Do not invent prices, positions, orders, liquidity, or market structure that cannot be read. Separate visible facts from interpretation and hypothesis. Use the CRYPTO model only. This is read-only observation; never instruct automatic execution."},
+        {role:"system",content:BASE_SYSTEM+"\nLIVE SCREEN OBSERVATION MODE: Analyze only what is actually visible in the supplied trading-platform screen capture. Do not invent prices, positions, orders, liquidity, or market structure that cannot be read. Separate visible facts from interpretation and hypothesis. For CRYPTO use: market direction -> manipulated/swept Key Open -> aligned HTF POI -> entry -> high RR. For NQ/Futures use: HTF bias -> POI -> liquidity/manipulation -> Fibonacci retracement -> Rejection Block -> limit entry. This is read-only observation; never instruct automatic execution."},
         {role:"user",content:[
           {type:"input_text",text:JSON.stringify({
             model,
