@@ -577,7 +577,7 @@ function renderStats(){
  const all=getJournal(),arr=VALID_MODES.has(activeModel)?all.filter(x=>x.model===activeModel):all;
  const wins=arr.filter(x=>String(x.result||"").toUpperCase().includes("WIN")).length;
  const losses=arr.filter(x=>String(x.result||"").toUpperCase().includes("LOSS")).length;
- const rrValues=arr.map(x=>parseFloat(String(x.R??x.r??"").replace(",",".").replace(/[^0-9+-.]/g,""))).filter(Number.isFinite);
+ const rrValues=arr.map(x=>{const m=String(x.R??x.r??"").replace(",",".").match(/[-+]?\d+(?:\.\d+)?/);return m?Number(m[0]):NaN}).filter(Number.isFinite);
  const totalR=rrValues.reduce((a,b)=>a+b,0);
  const avgR=rrValues.length?totalR/rrValues.length:0;
  const wr=(wins+losses)?(wins/(wins+losses))*100:0;
