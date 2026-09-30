@@ -69,6 +69,24 @@ const OBSIDIAN_JOB_FILE = path.join(OBSIDIAN_DIR, "analysis-job.json");
 const LEARNING_FILE = process.env.LEARNING_FILE || path.join(process.cwd(), "data", "ai-learning.json");
 const OBSIDIAN_DAILY_REQUEST_BUDGET = Number(process.env.OBSIDIAN_DAILY_REQUEST_BUDGET || 35);
 let obsidianJob = { running:false, phase:"idle", total:0, processed:0, analyzedImages:0, error:null, startedAt:null, finishedAt:null };
+async function reserveAIRequest() {
+  const file=path.join(process.cwd(),"data","ai-usage.json");
+  const today=new Date().toISOString().slice(0,10);
+  let usage={date:today,requests:0};
+  try {
+    usage=JSON.parse(await fs.readFile(file,"utf8"));
+    if(usage.date!==today) usage={date:today,requests:0};
+  } catch {}
+  if(usage.requests>=50) {
+    const e=new Error("Daily AI request limit reached.");
+    e.status=429;
+    throw e;
+  }
+  usage.requests++;
+  await fs.mkdir(path.dirname(file),{recursive:true});
+  await fs.writeFile(file,JSON.stringify(usage,null,2));
+  return usage;
+}
 
 const BASE_SYSTEM = `
 You are TRADING ASSISTANT, the trader's analytical operating system and performance coach.
