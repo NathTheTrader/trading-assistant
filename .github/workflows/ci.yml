@@ -42,7 +42,7 @@ jobs:
           if(!html.includes('data-mode="NQ"')||!html.includes('data-mode="CRYPTO"')) fail("Futures/Crypto mode separation missing");
           if(!html.includes('id="connTradovate"')||!html.includes('id="connRithmic"')||!html.includes('id="connKcex"')) fail("Connection center IDs missing");
           if(!backend.includes('OPENROUTER_DAILY_REQUEST_LIMIT')) fail("AI request limit must be configurable, not hard-coded");
-          if(!backend.includes('status !== 429')) fail("AI transient 429 retry missing");
+          if(!backend.includes('const candidates=[model||MODEL,...FALLBACK_MODELS]')) fail("AI model fallback missing");
           if(!html.includes('function edgeflowAutoUpdate()')) fail("Frontend auto-update watcher missing");
           if(!html.includes('classList.add("hidden")')) fail("Stable class-based workspace router missing");
           if(!html.includes('document.querySelectorAll("main>.workspace")')) fail("Workspace isolation selector missing");
