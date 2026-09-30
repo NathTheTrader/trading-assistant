@@ -1809,7 +1809,7 @@ function toggleKCEXAuto(){
   if(kcexAutoTimer){stopKCEXAuto();setKCEXStatus("Order Watch arrêté.");return;}
   if(!kcexScreenStream){setKCEXStatus("Partage de l’onglet KCEX requis.");return;}
   analyzeKCEXScreen();
-  kcexAutoTimer=setInterval(()=>analyzeKCEXScreen(),3000);
+  kcexAutoTimer=setInterval(()=>analyzeKCEXScreen(),15000);
   setKCEXStatus("ORDER WATCH actif · vérification toutes les 3 secondes · ordres uniquement.");
 }
 
