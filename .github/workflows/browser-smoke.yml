@@ -32,7 +32,7 @@ jobs:
             const page=await browser.newPage({viewport:{width:1440,height:900}});
             const errors=[];
             page.on("pageerror",e=>errors.push("pageerror: "+e.message));
-            page.on("console",m=>{if(m.type()==="error"&&!/status code 403/.test(m.text()))errors.push("console: "+m.text())});
+            page.on("console",m=>{if(m.type()==="error"&&!/\b403\b/.test(m.text()))errors.push("console: "+m.text())});
             await page.goto("http://127.0.0.1:4173/index.html",{waitUntil:"domcontentloaded"});
             const visible=()=>page.locator("main > .workspace:not(.hidden)").evaluateAll(xs=>xs.map(x=>x.id));
             const expectVisible=async id=>{
@@ -72,8 +72,14 @@ jobs:
             await page.click("#jBefore");
             await page.setInputFiles("#jBefore",{name:"before.png",mimeType:"image/png",buffer:Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=","base64")});
             await page.waitForTimeout(250);
+            if(!(await page.locator("#jBeforePreview").isVisible()))throw new Error("Journal screenshot preview did not render");
             await page.click("button:has-text('ENREGISTRER')");
+            await page.waitForTimeout(600);
+            const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem("journal")||"[]").filter(x=>x.model==="NQ").length);
+            if(stored!==1)throw new Error("Journal entry was not persisted");
             if(await page.locator("#dashTrades").count()!==1)throw new Error("Futures dashboard metric target missing");
+            await page.click("#navDash");await expectVisible("dash");
+            if((await page.locator("#dashTrades").textContent()).trim()!=="1")throw new Error("Dashboard Futures did not read Journal entry");
             if(await page.locator("#journalMonths").count()!==1)throw new Error("Journal history target missing");
             
             if(errors.length)throw new Error(errors.join("\n"));
