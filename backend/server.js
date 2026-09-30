@@ -1137,7 +1137,7 @@ function pcm24ToWavBase64(pcmBase64){
   return Buffer.concat([header,pcm]).toString("base64");
 }
 async function synthesizeAudioWithGemini(text){
-  if(!GEMINI_API_KEY) return "";
+  if(!GEMINI_API_KEY)return "";
   const model=process.env.GEMINI_TTS_MODEL||"gemini-3.8-flash-tts";
   const voiceConfig=await loadVoiceConfig();
   const voice=process.env.GEMINI_TTS_VOICE||voiceConfig.voiceId||"Algenib";
@@ -1146,26 +1146,20 @@ async function synthesizeAudioWithGemini(text){
     headers:{"Content-Type":"application/json","x-goog-api-key":GEMINI_API_KEY},
     body:JSON.stringify({
       model,
-      input:[{
-        type:"user_input",
-        content:[{
-          type:"text",
-          text:String(text||""),
-          annotations:[{
-            type:"speech_metadata",
-            style:"calm, deep, precise, composed, intelligent British AI assistant speaking fluent French Canadian. Natural conversational cadence. Restrained authority. No theatrical acting."
-          }]
-        }]
-      }],
+      input:[{type:"user_input",content:[{
+        type:"text",
+        text:String(text||""),
+        annotations:[{type:"speech_metadata",style:"calm, deep, precise, composed, mature British AI assistant speaking fluent French Canadian. Natural conversational cadence. Restrained authority. Never theatrical."}]
+      }]}],
       response_format:{type:"audio"},
       generation_config:{speech_config:[{voice}]}
     })
   });
   const data=await response.json().catch(()=>({}));
-  if(!response.ok) throw new Error(data?.error?.message||"Gemini TTS failed ("+response.status+").");
+  if(!response.ok)throw new Error(data?.error?.message||"Gemini TTS failed ("+response.status+").");
   const audio=data?.output_audio?.data
     || data?.steps?.slice().reverse().find(step=>step?.type==="model_output")?.content?.slice().reverse().find(part=>part?.type==="audio")?.data;
-  if(!audio) throw new Error("Gemini TTS n'a retourné aucun audio.");
+  if(!audio)throw new Error("Gemini TTS n'a retourné aucun audio.");
   return String(audio);
 }
 
@@ -1177,7 +1171,7 @@ app.get("/api/voice/status",requirePrivateRequest,async(req,res)=>{
     ttsEngine:eleven?"ElevenLabs":gemini?"Gemini 3.8 TTS":"Browser fallback",
     model:eleven?(process.env.ELEVENLABS_TTS_MODEL||"eleven_v4_turbo"):(process.env.GEMINI_TTS_MODEL||"gemini-3.8-flash-tts"),
     voiceId:Boolean(process.env.ELEVENLABS_VOICE_ID||cfg.voiceId),
-    voiceName:eleven?(cfg.voiceName||"JARVIS Original"):"JARVIS Algenib",designReady:eleven});
+    voiceName:eleven?(cfg.voiceName||"JARVIS Original"):(cfg.voiceId?(cfg.voiceName||"JARVIS Original"):"JARVIS Algenib"),designReady:Boolean(gemini||eleven)});
 });
 
 app.post("/api/voice/design",requirePrivateRequest,async(req,res)=>{
