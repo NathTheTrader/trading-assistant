@@ -1139,19 +1139,34 @@ function pcm24ToWavBase64(pcmBase64){
 async function synthesizeAudioWithGemini(text){
   if(!GEMINI_API_KEY) return "";
   const model=process.env.GEMINI_TTS_MODEL||"gemini-3.8-flash-tts";
-  const voice=process.env.GEMINI_TTS_VOICE||"Algenib";
-  const response=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{
-    method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":GEMINI_API_KEY},
+  const voiceConfig=await loadVoiceConfig();
+  const voice=process.env.GEMINI_TTS_VOICE||voiceConfig.voiceId||"Algenib";
+  const response=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-goog-api-key":GEMINI_API_KEY},
     body:JSON.stringify({
-      contents:[{role:"user",parts:[{text:"Speak naturally in French Canadian with a calm, deep, precise AI-assistant style. Restrained, intelligent and composed. "+text}]}],
-      generationConfig:{responseModalities:["AUDIO"],speechConfig:{voiceConfig:{voice}}},
+      model,
+      input:[{
+        type:"user_input",
+        content:[{
+          type:"text",
+          text:String(text||""),
+          annotations:[{
+            type:"speech_metadata",
+            style:"calm, deep, precise, composed, intelligent British AI assistant speaking fluent French Canadian. Natural conversational cadence. Restrained authority. No theatrical acting."
+          }]
+        }]
+      }],
+      response_format:{type:"audio"},
+      generation_config:{speech_config:[{voice}]}
     })
   });
   const data=await response.json().catch(()=>({}));
   if(!response.ok) throw new Error(data?.error?.message||"Gemini TTS failed ("+response.status+").");
-  const part=data?.candidates?.[0]?.content?.parts?.find(p=>p?.inlineData?.data);
-  if(!part?.inlineData?.data) throw new Error("Gemini TTS n'a retourné aucun audio.");
-  return pcm24ToWavBase64(part.inlineData.data);
+  const audio=data?.output_audio?.data
+    || data?.steps?.slice().reverse().find(step=>step?.type==="model_output")?.content?.slice().reverse().find(part=>part?.type==="audio")?.data;
+  if(!audio) throw new Error("Gemini TTS n'a retourné aucun audio.");
+  return String(audio);
 }
 
 app.get("/api/voice/status",requirePrivateRequest,async(req,res)=>{
@@ -1166,20 +1181,44 @@ app.get("/api/voice/status",requirePrivateRequest,async(req,res)=>{
 });
 
 app.post("/api/voice/design",requirePrivateRequest,async(req,res)=>{
-  if(!process.env.ELEVENLABS_API_KEY) return res.status(503).json({ok:false,error:"ELEVENLABS_API_KEY manquante dans Railway."});
+  if(!GEMINI_API_KEY && !process.env.ELEVENLABS_API_KEY) return res.status(503).json({ok:false,error:"Aucun fournisseur vocal configuré."});
   try{
+    if(GEMINI_API_KEY){
+      const description="Original adult male British AI assistant voice. Mature low baritone, smooth slightly gravelly texture, refined British accent, precise diction, calm measured cadence, intelligent composed authority, subtle warmth, natural conversational delivery, designed to speak French clearly without sounding theatrical. Do not imitate any real actor or copyrighted character.";
+      const response=await fetch("https://generativelanguage.googleapis.com/v1beta/voices",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","x-goog-api-key":GEMINI_API_KEY},
+        body:JSON.stringify({
+          store:true,
+          voice:{
+            model:"gemini-3.8-flash-tts",
+            type:"prompted",
+            display_name:"JARVIS Original",
+            gender:"male",
+            language_code:"en-GB",
+            prompted:{input:description}
+          }
+        })
+      });
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok) throw new Error(data?.error?.message||"Gemini Voice Design failed ("+response.status+").");
+      if(!data?.name && !data?.id) throw new Error("Gemini Voice Design n'a retourné aucun voice ID.");
+      const voiceId=data.id||data.name;
+      await saveVoiceConfig({voiceId,voiceName:data.display_name||data.name||"JARVIS Original",createdAt:new Date().toISOString(),provider:"Gemini",description});
+      res.json({ok:true,voiceId,voiceName:data.display_name||data.name||"JARVIS Original",engine:"Gemini",model:"gemini-3.8-flash-tts"});
+      return;
+    }
     const description="Original adult male British RP AI assistant voice. Deep smooth baritone, calm intelligent composed delivery, subtle authority, precise diction, measured pace, restrained warmth, futuristic onboard computer assistant, natural conversational tone, never theatrical, never an imitation of any actor or copyrighted character.";
     const sampleText="Good evening. I have reviewed the available market context. The current setup is not yet confirmed, so I am keeping the analysis factual and waiting for the required evidence.";
     const design=await fetch("https://api.elevenlabs.io/v1/text-to-voice/design",{method:"POST",headers:{"xi-api-key":process.env.ELEVENLABS_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({model_id:"eleven_ttv_v3",voice_description:description,text:sampleText})});
     const dd=await design.json().catch(()=>({}));
     if(!design.ok) return res.status(502).json({ok:false,error:dd.detail||dd.message||"Voice Design failed."});
-    const preview=dd.previews?.[0];
-    const generatedVoiceId=preview?.generated_voice_id;
+    const preview=dd.previews?.[0],generatedVoiceId=preview?.generated_voice_id;
     if(!generatedVoiceId) return res.status(502).json({ok:false,error:"Voice Design n’a retourné aucun generated_voice_id."});
     const created=await fetch("https://api.elevenlabs.io/v1/text-to-voice",{method:"POST",headers:{"xi-api-key":process.env.ELEVENLABS_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({voice_name:"JARVIS Original",voice_description:description,generated_voice_id:generatedVoiceId})});
     const cd=await created.json().catch(()=>({}));
     if(!created.ok) return res.status(502).json({ok:false,error:cd.detail||cd.message||"Voice creation failed."});
-    await saveVoiceConfig({voiceId:cd.voice_id,voiceName:cd.name||"JARVIS Original",createdAt:new Date().toISOString(),description});
+    await saveVoiceConfig({voiceId:cd.voice_id,voiceName:cd.name||"JARVIS Original",createdAt:new Date().toISOString(),provider:"ElevenLabs",description});
     res.json({ok:true,voiceId:cd.voice_id,voiceName:cd.name||"JARVIS Original",engine:"ElevenLabs",model:process.env.ELEVENLABS_TTS_MODEL||"eleven_v4_turbo"});
   }catch(e){res.status(502).json({ok:false,error:e.message||"Impossible de créer la voix."});}
 });
