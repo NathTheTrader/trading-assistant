@@ -42,6 +42,9 @@ jobs:
           if(!html.includes('id="connTradovate"')||!html.includes('id="connRithmic"')||!html.includes('id="connKcex"')) fail("Connection center IDs missing");
           if(!backend.includes('OPENROUTER_DAILY_REQUEST_LIMIT')) fail("AI request limit must be configurable, not hard-coded");
           if(!backend.includes('status !== 429')) fail("AI transient 429 retry missing");
+          if(!html.includes('function edgeflowAutoUpdate()')) fail("Frontend auto-update watcher missing");
+          if(!html.includes('classList.add("hidden")')) fail("Stable class-based workspace router missing");
+          if(!html.includes('document.querySelectorAll("main>section")')) fail("Workspace isolation selector missing");
           if(!voice.includes("trading-assistant-production.up.railway.app")) fail("Voice backend default missing");
           console.log("Edgeflow invariants OK");
           NODE
