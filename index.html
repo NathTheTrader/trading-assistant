@@ -2172,11 +2172,13 @@ function applyDashboardStats(prefix,data){
  const source=$(prefix+"SourceLabel");if(source)source.textContent=data.serverOk?"Journal + serveur":"Journal local";
 }
 function renderStats(){
- // Paint local journal data synchronously so a workspace switch never exposes stale KPIs.
- applyDashboardStats("dash",localDashboardTrades("NQ"));
- applyDashboardStats("cryptoDash",localDashboardTrades("CRYPTO"));
+ // Paint local journal data synchronously, but never allow dashboard rendering to block navigation.
+ try{
+   applyDashboardStats("dash",localDashboardTrades("NQ"));
+   applyDashboardStats("cryptoDash",localDashboardTrades("CRYPTO"));
+ }catch(_){}
  Promise.all([loadDashboardTrades("NQ"),loadDashboardTrades("CRYPTO")])
-   .then(datasets=>{applyDashboardStats("dash",datasets[0]);applyDashboardStats("cryptoDash",datasets[1]);})
+   .then(datasets=>{try{applyDashboardStats("dash",datasets[0]);applyDashboardStats("cryptoDash",datasets[1]);}catch(_){} })
    .catch(()=>{});
 }
 async function refreshConnectionCenter(){
