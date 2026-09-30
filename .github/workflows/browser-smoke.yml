@@ -60,7 +60,7 @@ jobs:
             await click("#navBotFutures");await expectVisible("bot");
             if(await page.locator("#bot #btiming").count()!==1||await page.locator("#bot #bhtf").count()!==1||await page.locator("#bot #bpoi").count()!==1||await page.locator("#bot #bfib").count()!==1||await page.locator("#bot #brb").count()!==1||await page.locator("#bot #brr").count()!==1||await page.locator("#bot #bbacktest").count()!==1)throw new Error("Futures checklist incomplete");
 
-            await switchMode("CRYPTO");await expectVisible("crypto");
+            await switchMode("CRYPTO");await expectVisible("cryptoDash");
             await click("#navDash");await expectVisible("cryptoDash");
             await click("#navBotCrypto");await expectVisible("crypto");
             if(await page.locator("#crypto #cryptoInstrumentBot").count()!==1||await page.locator("#crypto #cDirection").count()!==1||await page.locator("#crypto #cKeyOpen").count()!==1)throw new Error("Crypto Bot controls incomplete");
@@ -116,7 +116,8 @@ jobs:
 
             await switchMode("NQ");await click("#navBotFutures");await expectVisible("bot");
             await switchMode("CRYPTO");await expectVisible("crypto");
-            await switchMode("NQ");await expectVisible("bot");
+            await switchMode("NQ");await expectVisible("dash");
+            await click("#navBotFutures");await expectVisible("bot");
             if(errors.length)throw new Error(errors.join("\n"));
             console.log("EDGEFLOW browser smoke OK");
             await browser.close();
