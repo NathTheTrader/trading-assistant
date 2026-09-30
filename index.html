@@ -656,22 +656,6 @@ function renderStats(){
  }
 }
 async function refreshAIDataAccess(){const el=document.getElementById("aiDataAccess");if(!el)return;const api=String(localStorage.getItem("botApiUrl")||"").replace(/\/$/,"");if(!api){el.textContent="Backend non configuré — aucune donnée serveur n’est accessible à l’IA.";return}try{const r=await fetch(api+"/api/history/ai-context?model="+encodeURIComponent(activeModel));const d=await r.json();el.innerHTML="<b>"+activeModel+"</b> · "+(d.sampleSize||0)+" trades serveur<br><span class='sub'>Mémoire historique + journal + contexte vérifié. Obsidian est importé séparément et reste cloisonné par modèle.</span>"}catch(e){el.textContent="Backend hors ligne.";}}
-function {
- const arr=getJournal(),scope=activeModel==="NQ"||activeModel==="CRYPTO"?activeModel:null,data=scope?arr.filter(x=>x.model===scope):arr;
- $("patTrades").textContent=data.length;
- const newsCount=data.filter(x=>x.news&&x.news.length).length;$("patNews").textContent=newsCount;
- const signatures={};data.forEach(x=>{const sig=[x.model||"",x.instrument||"",x.session||"",x.setupPattern||""].join("|");if(sig.replace(/\|/g,""))signatures[sig]=(signatures[sig]||0)+1});
- const repeats=Object.values(signatures).filter(n=>n>=2).length;$("patRepeat").textContent=repeats;
- const insights=[];
- if(data.length>=10){
-   const loss=data.filter(x=>String(x.result||"").toUpperCase().includes("LOSS"));
-   const win=data.filter(x=>String(x.result||"").toUpperCase().includes("WIN"));
-   if(loss.length&&win.length)insights.push("La base contient "+win.length+" WIN et "+loss.length+" LOSS. Le moteur complet pourra comparer les caractéristiques communes de chaque groupe.");
-   if(repeats)insights.push(repeats+" combinaison(s) de modèle / instrument / session apparaissent plusieurs fois. Elles seront candidates à une analyse de pattern.");
- } else insights.push("Il faut davantage de trades enregistrés avant de produire des observations fiables. L'IA ne doit pas transformer quelques trades en règle générale.");
- $("patCount").textContent=insights.length;
- $("patternInsights").innerHTML=insights.map(x=>'<div class="decision">'+esc(x)+'</div>').join("");
-}
 async function refreshObsidianStatus(){
   const box=$("obsidianStatusBox"),progress=$("obsidianProgress");
   if(!box||!BOT_API){if(box)box.textContent="Configure d'abord le backend IA.";return;}
