@@ -919,6 +919,34 @@ function evidenceStats(trades=[]){
   return {sampleSize:trades.length,wins,losses,winRate:(wins+losses)?Number((wins/(wins+losses)*100).toFixed(1)):null,avgR:r.length?Number((r.reduce((a,b)=>a+b,0)/r.length).toFixed(2)):null,totalR:r.length?Number(r.reduce((a,b)=>a+b,0).toFixed(2)):null};
 }
 function compactLearning(entries=[]){return entries.slice(-20).map(x=>({timestamp:x.timestamp,type:x.type,content:String(x.content||"").slice(0,1800),meta:x.meta||{}}));}
+function buildIntelligenceSignals(trades=[]){
+  const clean=trades.filter(Boolean);
+  const bucket=(getter)=>{
+    const map=new Map();
+    for(const t of clean){
+      const text=String(getter(t)||"").trim().replace(/\s+/g," ");
+      if(!text)continue;
+      const key=text.toLowerCase();
+      const row=map.get(key)||{text,count:0,wins:0,losses:0};
+      row.count++;
+      if(/WIN/i.test(String(t.result||"")))row.wins++;
+      if(/LOSS/i.test(String(t.result||"")))row.losses++;
+      map.set(key,row);
+    }
+    return [...map.values()].sort((a,b)=>b.count-a.count).slice(0,12);
+  };
+  return {
+    sampleSize:clean.length,
+    outcomes:{
+      wins:clean.filter(t=>/WIN/i.test(String(t.result||""))).length,
+      losses:clean.filter(t=>/LOSS/i.test(String(t.result||""))).length,
+      be:clean.filter(t=>/^(BE|BREAK)/i.test(String(t.result||""))).length
+    },
+    recurringErrors:bucket(t=>t.errors),
+    recurringLessons:bucket(t=>t.lesson),
+    recurringSetups:bucket(t=>t.setupPattern)
+  };
+}
 async function askAI({task, trade, history=[], chatHistory=[]}) {
   if(!openai)return {ok:false,error:"OPENROUTER_API_KEY manquante. Le moteur JARVIS est prêt mais aucune clé serveur n'est configurée."};
   const profile=await loadProfile();
@@ -931,8 +959,9 @@ async function askAI({task, trade, history=[], chatHistory=[]}) {
   const learning=(await loadLearning()).entries.filter(x=>x.model===model);
   const scopedHistory=history.filter(t=>normalizeModel(t?.model||model)===model);
   const combined=[...scopedHistory,...liveJournalTrades];
+  const intelligenceSignals=buildIntelligenceSignals(combined);
   const images=Array.isArray(trade?.screenshots)?trade.screenshots.filter(x=>/^data:image\/(png|jpe?g|webp);base64,/i.test(String(x))).slice(0,2):[];
-  const payload={engineVersion:AI_ENGINE_VERSION,traderProfile:profile,model,modelContract:contract,gradeScale:AI_GRADE_SCALE,historicalContext:historicalContext.models?.[model]||{},evidenceStats:evidenceStats(combined),task,currentTrade:trade?compactTradeForAI(trade):null,recentHistory:scopedHistory.slice(-60).map(compactTradeForAI),obsidian:{status:await loadObsidianStatus(),modelSampleSize:obsidianTrades.length},backtests:{sampleSize:backtestTrades.length,evidenceStats:evidenceStats(backtestTrades),recentRecords:backtestTrades.slice(-120).map(compactTradeForAI),liveJournalSampleSize:liveJournalTrades.length},learningMemory:compactLearning(learning),chatHistory:Array.isArray(chatHistory)?chatHistory.slice(-12):[]};
+  const payload={engineVersion:AI_ENGINE_VERSION,traderProfile:profile,model,modelContract:contract,gradeScale:AI_GRADE_SCALE,historicalContext:historicalContext.models?.[model]||{},evidenceStats:evidenceStats(combined),task,currentTrade:trade?compactTradeForAI(trade):null,recentHistory:scopedHistory.slice(-60).map(compactTradeForAI),obsidian:{status:await loadObsidianStatus(),modelSampleSize:obsidianTrades.length},backtests:{sampleSize:backtestTrades.length,evidenceStats:evidenceStats(backtestTrades),recentRecords:backtestTrades.slice(-120).map(compactTradeForAI),liveJournalSampleSize:liveJournalTrades.length},learningMemory:compactLearning(learning),intelligenceSignals,chatHistory:Array.isArray(chatHistory)?chatHistory.slice(-12):[]};
   const protocol=[
     "JARVIS LIVE-TRADING PROTOCOL",
     "- Analyze the setup as it exists NOW. Do not use hindsight.",
@@ -944,6 +973,9 @@ async function askAI({task, trade, history=[], chatHistory=[]}) {
     "- Separate FACT, INTERPRETATION, HYPOTHESIS and TEST.",
     "- FINAL GRADE must use this scale: "+AI_GRADE_SCALE,
     "OUTPUT ORDER: LIVE READ -> MODEL CHECK -> ENTRY QUALITY -> RISK / R:R -> TIMING + NEWS -> MAIN ERROR / IMPERFECTION -> FINAL GRADE -> ONE NEXT ACTION",
+    "- Prefer evidence with meaningful sample size. When a recurring error appears, report its count and win/loss split; do not call it causal without supporting evidence.",
+    "- Grade setup quality at the decision point. A WIN can contain bad process and a LOSS can still be a valid setup.",
+    "- For claims about what works, use intelligenceSignals and state the sample size before concluding.",
     "- Never guarantee direction or outcome."
   ].join("\n");
   const userContent=images.length?[{type:"input_text",text:JSON.stringify({...payload,task:String(task||"")+"\n"+protocol,screenshotCount:images.length})},...images.map(x=>({type:"input_image",image_url:x,detail:"high"}))]:JSON.stringify({...payload,task:String(task||"")+"\n"+protocol,screenshotCount:0});
@@ -1017,7 +1049,7 @@ async function askVoiceCoach({model,userText,previousTurns=[]}) {
   const response=await openai.responses.create({
     model:MODEL, reasoning:{effort:"high"},
     input:[
-      {role:"system",content:BASE_SYSTEM+"\nVOICE SESSION: ask exactly ONE useful question at a time. Do not dump a lecture."},
+      {role:"system",content:BASE_SYSTEM+"\nVOICE SESSION: act as JARVIS, not a generic motivational coach. Ask exactly ONE useful question at a time, stay concise, use the active model contract only, and reference exact evidence counts when available. Never invent a setup, trade, or result."},
       {role:"user",content:JSON.stringify({mode:"BUSINESS_COACH",model,traderProfile:profile,historicalData:aiData,previousTurns:previousTurns.slice(-12),userText})}
     ]
   });
