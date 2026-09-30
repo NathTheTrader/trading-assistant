@@ -45,7 +45,7 @@ const MODEL = process.env.OPENROUTER_MODEL || "openrouter/free";
 const FALLBACK_MODELS = String(process.env.OPENROUTER_FALLBACK_MODELS || "").split(",").map(x=>x.trim()).filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i);
 const AI_PROVIDER = GEMINI_API_KEY ? "gemini" : (process.env.OPENROUTER_API_KEY ? "openrouter" : "none");
 const AI_PRIMARY_MODEL = AI_PROVIDER==="gemini" ? GEMINI_MODEL : MODEL;
-const AI_ENGINE_VERSION = "2.4";
+const AI_ENGINE_VERSION = "2.5";
 const AI_GRADE_SCALE = "A+ exceptionnellement propre; A solide; A- solide avec petite imperfection; B+ bon avec imperfection claire; B bon mais faiblesse identifiable; B- limite; C+/C qualité limite; NO TRADE uniquement si un vrai killer/invalidation ou non-respect majeur du modèle. Structure messy seule = imperfection qui coûte des points, jamais un NO TRADE automatique.";
 const MODEL_CONTRACTS = {
   NQ:{
@@ -1263,6 +1263,47 @@ async function synthesizeAudioWithGemini(text){
   if(!audio)throw new Error("Gemini TTS n'a retourné aucun audio.");
   return String(audio);
 }
+
+app.post("/api/voice/speak",requirePrivateRequest,async(req,res)=>{
+  if(!GEMINI_API_KEY && !process.env.ELEVENLABS_API_KEY)return res.status(503).json({ok:false,error:"Aucun moteur vocal configuré."});
+  try{
+    const model=normalizeModel(req.body.model);
+    const text=String(req.body.text||"").trim();
+    if(!text)return res.status(400).json({ok:false,error:"Texte vocal manquant."});
+    if(text.length>1800)return res.status(413).json({ok:false,error:"Réponse vocale trop longue."});
+    const config=await loadVoiceConfig();
+    if(process.env.ELEVENLABS_API_KEY){
+      const voiceId=process.env.ELEVENLABS_VOICE_ID||config.voiceId;
+      if(voiceId){
+        const ttsModel=process.env.ELEVENLABS_TTS_MODEL||"eleven_v4_turbo";
+        const response=await fetch("https://api.elevenlabs.io/v1/text-to-speech/"+encodeURIComponent(voiceId)+"?output_format=mp3_44100_128",{
+          method:"POST",
+          headers:{"xi-api-key":process.env.ELEVENLABS_API_KEY,"Content-Type":"application/json"},
+          body:JSON.stringify({
+            text:"[calm][confident] "+text,
+            model_id:ttsModel,
+            language_code:"fr",
+            voice_settings:{stability:.65,similarity_boost:.82}
+          })
+        });
+        if(response.ok){
+          const audio=Buffer.from(await response.arrayBuffer()).toString("base64");
+          return res.json({ok:true,model,audioBase64:audio,audioMimeType:"audio/mpeg",voice:"ElevenLabs"});
+        }
+        const detail=await response.text().catch(()=> "");
+        console.error("[EDGEFLOW][ELEVENLABS_TTS]",response.status,detail.slice(0,400));
+      }
+    }
+    if(GEMINI_API_KEY){
+      const audio=await synthesizeAudioWithGemini(text);
+      return res.json({ok:true,model,audioBase64:audio,audioMimeType:"audio/wav",voice:"Gemini TTS"});
+    }
+    return res.status(503).json({ok:false,error:"Voix JARVIS indisponible."});
+  }catch(e){
+    console.error("[EDGEFLOW][VOICE_TTS]",e.message);
+    res.status(502).json({ok:false,error:e.message||"Erreur TTS."});
+  }
+});
 
 app.get("/api/voice/status",requirePrivateRequest,async(req,res)=>{
   const cfg=await loadVoiceConfig();
