@@ -714,6 +714,8 @@ input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--acc
         <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Liquidité près du SL</span><span class="check-meta">KILLER</span></span></span><input id="bliq" type="checkbox"><span class="check-switch"></span></label>
         <label class="check-card killer"><span class="check-main"><span class="check-icon">M</span><span class="check-copy"><span class="check-title">Structure messy</span><span class="check-meta">KILLER</span></span></span><input id="bmessy" type="checkbox"><span class="check-switch"></span></label>
         <label class="check-card killer"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Entrée trop tôt / trop tard</span><span class="check-meta">KILLER</span></span></span><input id="btimebad" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">KILLER comportemental</span></span></span><input id="btilt" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER comportemental</span></span></span><input id="brev" type="checkbox"><span class="check-switch"></span></label>
       </div>
       <div id="botLiveScore" class="live-check-score"><span>PRÉ-CHECK</span><strong id="botLiveScoreValue">30/30</strong><em id="botLiveScoreGrade">A+</em></div>
       <textarea id="bnotes" placeholder="HTF bias → POI → liquidité / sweep → retracement → R.B. → entrée → SL/TP → news…"></textarea>
@@ -760,6 +762,8 @@ input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--acc
     <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Liquidité près du SL</span><span class="check-meta">KILLER</span></span></span><input id="liq" type="checkbox"><span class="check-switch"></span></label>
     <label class="check-card killer"><span class="check-main"><span class="check-icon">M</span><span class="check-copy"><span class="check-title">Structure messy</span><span class="check-meta">KILLER</span></span></span><input id="messy" type="checkbox"><span class="check-switch"></span></label>
     <label class="check-card killer"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Entrée trop tôt / trop tard</span><span class="check-meta">KILLER</span></span></span><input id="timebad" type="checkbox"><span class="check-switch"></span></label>
+    <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">KILLER comportemental</span></span></span><input id="tilt" type="checkbox"><span class="check-switch"></span></label>
+    <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER comportemental</span></span></span><input id="revenge" type="checkbox"><span class="check-switch"></span></label>
   </div><div id="reviewLiveScore" class="live-check-score"><span>PRÉ-CHECK</span><strong id="reviewLiveScoreValue">30/30</strong><em id="reviewLiveScoreGrade">A+</em></div><textarea id="notes" placeholder="HTF bias → POI → liquidité/sweep → retracement → R.B. → entrée → SL/TP → news…"></textarea><div class="image-drop" style="margin-top:10px"><div class="image-inputs">
     <div class="image-input"><label for="rBefore">AVANT / SETUP</label><input id="rBefore" type="file" accept="image/*" data-image-preview="rBeforePreview"><img id="rBeforePreview" class="image-preview"></div>
     <div class="image-input"><label for="rAfter">APRÈS / RÉSULTAT</label><input id="rAfter" type="file" accept="image/*" data-image-preview="rAfterPreview"><img id="rAfterPreview" class="image-preview"></div>
@@ -986,7 +990,9 @@ const FUTURES_CHECKLIST_IDS={
  backtest:"backtest",
  liq:"liq",
  messy:"messy",
- timebad:"timebad"
+ timebad:"timebad",
+ tilt:"tilt",
+ revenge:"revenge"
 };
 function checklistChecked(prefix,key){
  const id=prefix+FUTURES_CHECKLIST_IDS[key];
@@ -999,8 +1005,10 @@ function scoreFrom(prefix=""){
  const liq=checklistChecked(prefix,"liq");
  const messy=checklistChecked(prefix,"messy");
  const timebad=checklistChecked(prefix,"timebad");
+ const tilt=checklistChecked(prefix,"tilt");
+ const revenge=checklistChecked(prefix,"revenge");
  const score=Math.max(0,Math.min(30,positive));
- const killer=!backtest||liq||messy||timebad;
+ const killer=!backtest||liq||messy||timebad||tilt||revenge;
  const grade=killer?"PAS DE TRADE":score>=27?"A+":score>=24?"A":score>=21?"A-":score>=18?"B+":score>=15?"B":score>=12?"B-":score>=9?"C+":"C";
  return{score,rawScore,killer,grade};
 }
@@ -1035,7 +1043,7 @@ async function runBotTest(){
    highRR:$("cryptoRRBot")?.value||""
  }:{
    timing:checklistChecked("b","timing"),htfBias:checklistChecked("b","htf"),poi:checklistChecked("b","poi"),fibonacciRetracement:checklistChecked("b","fib"),
-   rejectionBlock:checklistChecked("b","rb"),entryRR:checklistChecked("b","rr"),backtested:checklistChecked("b","backtest"),liquidityNearSL:checklistChecked("b","liq"),messyStructure:checklistChecked("b","messy"),timingError:checklistChecked("b","timebad")
+   rejectionBlock:checklistChecked("b","rb"),entryRR:checklistChecked("b","rr"),backtested:checklistChecked("b","backtest"),liquidityNearSL:checklistChecked("b","liq"),messyStructure:checklistChecked("b","messy"),timingError:checklistChecked("b","timebad"),tilt:checklistChecked("b","tilt"),revenge:checklistChecked("b","revenge")
  };
  const images=await getAnalyzerImages(isCrypto?"cBefore":"bBefore",isCrypto?"cAfter":"bAfter");
  const outEl=$(outputId);
@@ -1063,7 +1071,7 @@ async function analyze(){
    direction:$("cryptoDirection").value,keyOpen:$("cryptoKO").value,poi:$("cryptoPOI").value,entry:$("cryptoEntry").value,highRR:$("cryptoRR").value
  }:{
    timing:checklistChecked("","timing"),htfBias:checklistChecked("","htf"),poi:checklistChecked("","poi"),fibonacciRetracement:checklistChecked("","fib"),
-   rejectionBlock:checklistChecked("","rb"),entryRR:checklistChecked("","rr"),backtested:checklistChecked("","backtest"),liquidityNearSL:checklistChecked("","liq"),messyStructure:checklistChecked("","messy"),timingError:checklistChecked("","timebad")
+   rejectionBlock:checklistChecked("","rb"),entryRR:checklistChecked("","rr"),backtested:checklistChecked("","backtest"),liquidityNearSL:checklistChecked("","liq"),messyStructure:checklistChecked("","messy"),timingError:checklistChecked("","timebad"),tilt:checklistChecked("","tilt"),revenge:checklistChecked("","revenge")
  };
  try{
    const trade={model:isCrypto?"CRYPTO":"NQ",instrument:isCrypto?($("cryptoInstrumentReview")?.value||"CRYPTO"):"NQ",direction:isCrypto?$("cryptoDirection").value:"",risk:100,result:"OPEN",context:notes,setupPattern:isCrypto?"Direction → Key Open sweep → HTF POI → high RR":"HTF bias → POI → liquidity/sweep → retracement → R.B. → limit entry",checklist,screenshots:images,timestamp:new Date().toISOString()};
@@ -1073,8 +1081,8 @@ async function analyze(){
 }
 
 function bindLiveChecklist(){
- const botIds=["btiming","bhtf","bpoi","bfib","brb","brr","bbacktest","bliq","bmessy","btimebad"];
- const reviewIds=["timing","htf","poi","fib","rb","rr","backtest","liq","messy","timebad"];
+ const botIds=["btiming","bhtf","bpoi","bfib","brb","brr","bbacktest","bliq","bmessy","btimebad","btilt","brev"];
+ const reviewIds=["timing","htf","poi","fib","rb","rr","backtest","liq","messy","timebad","tilt","revenge"];
  [...botIds,...reviewIds].forEach(id=>{
    const el=$(id);
    if(!el||el.dataset.liveBound==="1")return;
@@ -1088,7 +1096,7 @@ function bindLiveChecklist(){
 }
 
 function resetReview(){
- ["liq","messy","timebad"].forEach(id=>{const el=$(id);if(el)el.checked=false});
+ ["liq","messy","timebad","tilt","revenge"].forEach(id=>{const el=$(id);if(el)el.checked=false});
  ["timing","htf","poi","fib","rb","rr","backtest"].forEach(id=>{const el=$(id);if(el)el.checked=true});
  ["cryptoDirection","cryptoKO","cryptoPOI","cryptoEntry","cryptoRR","cryptoDirectionBot","cryptoKOBot","cryptoPOIBot","cryptoEntryBot","cryptoRRBot"].forEach(id=>{if($(id))$(id).value=""});
  ["notes","cryptoNotes","bnotes","cryptoBotContext"].forEach(id=>{if($(id))$(id).value=""});
