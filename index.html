@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#090b10">
-<meta name="edgeflow-build" content="2026-09-30-journal-router-v2">
+<meta name="edgeflow-build" content="2026-09-30-0830-stable-router-v3">
 <title>EDGEFLOW — Trading Intelligence</title>
 <style>
 :root{
@@ -609,26 +609,10 @@ input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--acc
 @media(max-width:760px){.side{width:100%;padding:8px}.main{height:auto;overflow:visible;padding:16px 12px 32px}#journal,#settings,#review,#bot,#chat{width:100%}#journal>.grid{grid-template-columns:repeat(2,1fr)}#journal .form{grid-template-columns:1fr}#chat .chat-shell{height:68vh;min-height:430px}}
 
 
-/* DETERMINISTIC WORKSPACE ROUTER */
-main>section{position:relative;width:100%;max-width:1180px;margin:0 auto;padding:30px 20px 54px;min-height:0;box-sizing:border-box}
-.main{position:relative;overflow-y:auto!important;overflow-x:hidden!important;height:100vh!important;padding:0!important}
-#journal{position:relative!important;inset:auto!important;width:100%;max-width:1120px;margin:0 auto;padding:28px 18px 54px;height:auto!important;min-height:0!important;overflow:visible!important}
+#journal{width:min(100%,1120px);margin:0 auto}
 #journal .journal-panel{max-width:100%;margin-left:auto;margin-right:auto}
 #journal .journal-form{grid-template-columns:repeat(2,minmax(0,1fr))}
 #journal .journal-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
-#journal{width:100%;max-width:1120px;margin:0 auto;padding:28px 18px 54px}
-#journal .journal-panel{max-width:100%;margin-left:auto;margin-right:auto}
-#journal .journal-form{grid-template-columns:repeat(2,minmax(0,1fr))}
-#journal .journal-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
-.app[data-view] main>section{display:none!important}
-.app[data-view="models"] #models,.app[data-view="dash"] #dash,.app[data-view="bot"] #bot,.app[data-view="chat"] #chat,.app[data-view="journal"] #journal,.app[data-view="review"] #review,.app[data-view="settings"] #settings{display:block!important;position:relative!important;inset:auto!important;height:auto!important;min-height:0!important;overflow:visible!important}
-.app[data-view="journal"] main>section:not(#journal){display:none!important}
-.app[data-view="dash"] main>section:not(#dash),
-.app[data-view="bot"] main>section:not(#bot),
-.app[data-view="chat"] main>section:not(#chat),
-.app[data-view="review"] main>section:not(#review),
-.app[data-view="settings"] main>section:not(#settings),
-.app[data-view="models"] main>section:not(#models){display:none!important}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -945,28 +929,24 @@ function applyModeVisibility(){
   updateBotMode();
 }
 function show(id,btn){
- const target=$(id);if(!target)return;
  if($("journal")&&!$("journal").classList.contains("hidden")&&id!=="journal")saveJournalDraft();
- if(!VALID_MODES.has(activeModel))setSiteMode(siteMode||"NQ");
- const app=document.querySelector(".app"),main=document.querySelector(".main");
- const sections=[...document.querySelectorAll("main>section")];
- sections.forEach(section=>{
-   section.classList.remove("hidden");
-   section.style.setProperty("display","none","important");
-   section.setAttribute("aria-hidden","true");
- });
- target.classList.remove("hidden");
- target.style.setProperty("display","block","important");
- target.setAttribute("aria-hidden","false");
- if(app)app.dataset.view=id;
- sections.forEach(section=>{if(section!==target)section.style.setProperty("display","none","important");});
- target.style.setProperty("display","block","important");
+ if(!VALID_MODES.has(activeModel)){setSiteMode(siteMode||"NQ");}
+ document.querySelectorAll("main>section").forEach(s=>{s.classList.add("hidden");s.setAttribute("aria-hidden","true");});
+ const target=$(id);
+ if(target){target.classList.remove("hidden");target.setAttribute("aria-hidden","false");}
  document.querySelectorAll("nav button").forEach(b=>{b.classList.remove("active");b.removeAttribute("aria-current");});
- if(btn){btn.classList.add("active");btn.setAttribute("aria-current","page");}else{const navBtn=[...document.querySelectorAll("nav button")].find(b=>String(b.getAttribute("onclick")||"").includes("show('"+id+"'"));if(navBtn){navBtn.classList.add("active");navBtn.setAttribute("aria-current","page");}}
- if(main)main.scrollTop=0;target.scrollTop=0;window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;
+ if(btn){btn.classList.add("active");btn.setAttribute("aria-current","page");}
+ else{
+   const navBtn=[...document.querySelectorAll("nav button")].find(b=>String(b.getAttribute("onclick")||"").includes("show('"+id+"'"));
+   if(navBtn){navBtn.classList.add("active");navBtn.setAttribute("aria-current","page");}
+ }
+ const main=document.querySelector(".main");
+ if(main)main.scrollTop=0;
+ window.scrollTo(0,0);
+ document.documentElement.scrollTop=0;
+ document.body.scrollTop=0;
  if(id==="journal"){updateJournalMarket();renderJournal();restoreJournalDraft();if($("journalModeBadge"))$("journalModeBadge").textContent=activeModel==="CRYPTO"?"CRYPTO":"FUTURES";}
  if(id==="dash")renderStats();
- if(main)main.scrollTo({top:0,left:0,behavior:"auto"});target.scrollTo({top:0,left:0,behavior:"auto"});
 }
 async function sendChat(){
  const input=$("chatInput"),msg=String(input?.value||"").trim();if(!msg)return;
@@ -1381,6 +1361,29 @@ JOURNAL_DRAFT_FIELDS.forEach(id=>{
 });
 window.addEventListener("beforeunload",saveJournalDraft);
 $("jDate").addEventListener("change",updateJournalDate);$("jBefore").addEventListener("change",()=>previewJournalImage($("jBefore"),"jBeforePreview"));$("jAfter").addEventListener("change",()=>previewJournalImage($("jAfter"),"jAfterPreview"));
+
+// EDGEFLOW AUTO-UPDATE: poll the deployed HTML so new GitHub Pages builds are picked up without manual re-download.
+(function edgeflowAutoUpdate(){
+  const meta=document.querySelector('meta[name="edgeflow-build"]');
+  if(!meta)return;
+  const current=meta.content;
+  const check=async()=>{
+    try{
+      const url=location.pathname+"?edgeflow-version-check="+Date.now();
+      const res=await fetch(url,{cache:"no-store",headers:{"Cache-Control":"no-cache"}});
+      if(!res.ok)return;
+      const text=await res.text();
+      const doc=new DOMParser().parseFromString(text,"text/html");
+      const next=doc.querySelector('meta[name="edgeflow-build"]')?.content;
+      if(next&&next!==current){
+        const active=document.activeElement;
+        const editing=active&&(active.matches("input,textarea,select")||active.isContentEditable);
+        if(!editing)location.reload();
+      }
+    }catch(e){}
+  };
+  setInterval(check,30000);
+})();
 const chatDraftKey=()=> "edgeflow.chatDraft."+activeModel;
 $("chatInput")?.addEventListener("input",e=>localStorage.setItem(chatDraftKey(),e.target.value));
 $("chatInput")?.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat();}});
