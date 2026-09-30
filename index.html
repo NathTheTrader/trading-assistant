@@ -2461,7 +2461,7 @@ async function designJarvisVoice(){
 }
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");localStorage.removeItem("edgeflowAccessKey");location.reload()}}
 
-function showActiveDashboard(btn){show(activeModel==="CRYPTO"?"cryptoDash":"dash",btn||$("navDash"))}
+function showActiveDashboard(btn){show(String(siteMode||"NQ").toUpperCase()==="CRYPTO"?"cryptoDash":"dash",btn||$("navDash"))}
 if(!VALID_MODES.has(siteMode))siteMode="NQ";
 activeModel=siteMode;
 setSiteMode(siteMode);
