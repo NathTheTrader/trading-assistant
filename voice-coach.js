@@ -218,33 +218,38 @@ setState("idle","JARVIS PRÊT");
   function speak(t){
     setStatus("Voix JARVIS serveur indisponible.");
   }
-  async function speakWithJarvisVoice(text){
+    async function speakWithJarvisVoice(text){
     const value=String(text||"").trim();if(!value)return;
     try{
       setStatus("JARVIS prépare sa voix…");
-      const r=await fetch(api()+"/api/voice/speak",{method:"POST",headers:headers(),body:JSON.stringify({model:model(),text:value})});
+      const AudioCtx=window.AudioContext||window.webkitAudioContext;
+      if(!AudioCtx)throw new Error("Web Audio non disponible.");
+      if(!window.__edgeflowJarvisAudioContext)window.__edgeflowJarvisAudioContext=new AudioCtx();
+      const ctx=window.__edgeflowJarvisAudioContext;
+      if(ctx.state==="suspended")await ctx.resume();
+      const r=await fetch(api()+"/api/voice/speak",{
+        method:"POST",
+        headers:headers(),
+        body:JSON.stringify({model:model(),text:value})
+      });
       const d=await r.json().catch(()=>({}));
       if(!r.ok||!d.audioBase64)throw new Error(d.error||"Voix JARVIS indisponible.");
-      try{window.speechSynthesis?.cancel()}catch{}
-      try{currentAudio?.pause()}catch{}
-      currentAudio=new Audio("data:"+(d.audioMimeType||"audio/mpeg")+";base64,"+d.audioBase64);
-      currentAudio.onplay=()=>setStatus("JARVIS parle · "+modelLabel()+".");
-      currentAudio.onended=()=>{currentAudio=null;setStatus("JARVIS prêt.");};
-      currentAudio.onerror=()=>{currentAudio=null;setStatus("Erreur de lecture vocale.");};
-      await currentAudio.play();
+      const raw=atob(d.audioBase64);
+      const bytes=new Uint8Array(raw.length);
+      for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
+      const buffer=await ctx.decodeAudioData(bytes.buffer.slice(0));
+      const source=ctx.createBufferSource();
+      source.buffer=buffer;
+      source.connect(ctx.destination);
+      source.onended=()=>setStatus("JARVIS prêt.");
+      source.start(0);
+      return true;
     }catch(e){
       console.warn("[EDGEFLOW][VOICE_TTS]",e);
       setStatus("Voix JARVIS indisponible : "+String(e?.message||"erreur"));
       throw e;
     }
   }
-  async function speakJarvis(text,force=false){
-    if(!force&&!autoVoiceEnabled())return false;
-    await speakWithJarvisVoice(text);
-    return true;
-  }
-  window.edgeflowSpeakJarvis=speakWithJarvisVoice;
-  window.edgeflowAutoSpeakJarvis=speakJarvis;
   if("speechSynthesis" in window)window.speechSynthesis.onvoiceschanged=()=>chooseBrowserVoice();
   function mime(){const a=["audio/webm;codecs=opus","audio/webm","audio/ogg;codecs=opus","audio/mp4"];return a.find(x=>window.MediaRecorder?.isTypeSupported(x))||""}
   function stopVoiceMonitor(){
