@@ -53,12 +53,12 @@ jobs:
             await page.click("#modeNQ");await page.click("#navDash");await expectVisible("dash");
             await page.click("#modeCRYPTO");await page.click("#navDash");await expectVisible("cryptoDash");
             await page.click("#navSettings");await expectVisible("settings");
-            await page.screenshot({path:"/tmp/edgeflow-crypto-dashboard.png",fullPage:true});
             await page.click("#navJournal");await expectVisible("journal");
             await page.screenshot({path:"/tmp/edgeflow-journal.png",fullPage:true});
             await page.click("#navSettings");await expectVisible("settings");
             await page.screenshot({path:"/tmp/edgeflow-settings.png",fullPage:true});
             if(await page.locator("#settings .connection-card").count()!==3)throw new Error("Settings connection center incomplete");
+            await page.click("#navJournal");await expectVisible("journal");
             await page.click("#modeNQ");await expectVisible("journal");
             if(await page.locator("#jMarket").inputValue()!=="FUTURES")throw new Error("Journal did not switch to Futures");
             await page.locator("#jResult").fill("WIN");
