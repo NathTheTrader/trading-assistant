@@ -102,7 +102,7 @@ textarea{width:100%;min-height:105px;resize:vertical}.full{grid-column:1/-1}
 .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.kpi{background:#0b0f15;border:1px solid #1d2430;border-radius:10px;padding:11px}.kpi .num{font-size:18px;font-weight:900;margin-top:4px}
 .mobile-menu{display:none}
 @media(max-width:1050px){.side{width:215px;flex-basis:215px}.main{padding:22px}.grid{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}}
-@media(max-width:760px){.app{display:block}.side{position:sticky;width:100%;height:auto;display:block;padding:10px;border-right:0;border-bottom:1px solid var(--line)}.brand{padding:3px 8px 10px}.nav-title,.side-bottom{display:none}nav{display:flex;overflow:auto;padding-bottom:2px}nav button{flex:0 0 auto;width:auto;padding:9px 10px}.nav-icon{display:none}.main{padding:18px 14px 35px}.topbar{margin-bottom:17px}h1{font-size:23px}.top-actions{display:none}.hero{display:block}.hero-actions{margin-top:14px}.grid,.form,.model-select,.photo-grid{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.trade-pop{right:12px;top:78px}.bubble{max-width:90%}}
+@media(max-width:760px){.app{display:block}.side{position:sticky;width:100%;height:auto;display:block;padding:10px;border-right:0;border-bottom:1px solid var(--line)}.brand{padding:3px 8px 10px}.nav-title,.side-bottom{display:none}nav{display:flex;overflow:auto;padding-bottom:2px}nav button{flex:0 0 auto;width:auto;padding:9px 10px}.nav-icon{display:none}.main{height:auto;overflow:visible;padding:18px 14px 35px}.topbar{margin-bottom:17px}h1{font-size:23px}.top-actions{display:none}.hero{display:block}.hero-actions{margin-top:14px}.grid,.form,.model-select,.photo-grid{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.trade-pop{right:12px;top:78px}.bubble{max-width:90%}}
 
 .mode-switch{margin:0 8px 18px;padding:4px;background:#0b0f15;border:1px solid var(--line);border-radius:12px;display:grid;grid-template-columns:1fr 1fr;gap:4px}
 .mode-switch button{border:0;background:transparent;color:var(--muted);padding:9px 5px;border-radius:8px;font-size:10px;font-weight:900;letter-spacing:.6px}
@@ -528,7 +528,7 @@ button:active{transform:translateY(1px)}
 .side{background:rgba(7,9,12,.88);border-right-color:rgba(255,255,255,.055)}
 .side-bottom{opacity:.72}
 .nav-icon{opacity:.7}
-.main{padding-top:34px}
+.main{padding-top:0}
 .topbar{align-items:center}
 .topbar .sub{max-width:680px}
 .section,.card,.model-card{box-shadow:0 10px 32px rgba(0,0,0,.12)}
@@ -583,7 +583,7 @@ body.crypto-mode .brand-mark{background:linear-gradient(145deg,#67b2ff,#2878df 5
 nav button.active{background:linear-gradient(90deg,rgba(225,45,57,.12),rgba(225,45,57,.025) 75%,transparent);border-color:rgba(255,255,255,.045)}nav button.active:before{background:var(--red);box-shadow:0 0 12px var(--red)}
 body.crypto-mode nav button.active{background:linear-gradient(90deg,rgba(75,156,255,.12),rgba(75,156,255,.025) 75%,transparent)}body.crypto-mode nav button.active:before{background:var(--blue);box-shadow:0 0 12px var(--blue)}nav button.active .nav-icon{color:var(--red)}body.crypto-mode nav button.active .nav-icon{color:var(--blue)}
 .connection-mini{border-radius:10px;padding:10px}.mini-sub{font-size:8.5px}
-.main{width:min(100%,1380px);max-width:1380px;padding:24px 24px 48px}.topbar{margin-bottom:17px}.eyebrow{color:var(--red);font-size:8.5px;letter-spacing:1.8px}body.crypto-mode .eyebrow{color:var(--blue)}
+.main{flex:1 1 auto;min-width:0;width:auto;max-width:none;height:100vh;overflow-y:auto;overflow-x:hidden;padding:0}.topbar{margin-bottom:17px}.eyebrow{color:var(--red);font-size:8.5px;letter-spacing:1.8px}body.crypto-mode .eyebrow{color:var(--blue)}
 h1{font-family:"Manrope",sans-serif;font-size:25px;font-weight:780;letter-spacing:-1.05px}.sub{font-size:11px}.grid{gap:9px}
 .card,.section,.model-card{border-radius:12px;background:linear-gradient(145deg,rgba(15,19,25,.96),rgba(10,13,18,.96));border-color:var(--hairline);box-shadow:0 9px 28px rgba(0,0,0,.13)}.card{padding:14px}.section{padding:14px}.section h2{font-size:12.5px;font-weight:750;margin-bottom:10px}.label{font-size:8.5px}.value{font-size:22px}.layout{gap:10px;margin-top:10px}
 .hero{padding:19px;min-height:145px;border-radius:13px}.hero-title{font-size:20px}.hero p{font-size:11px}
@@ -592,33 +592,26 @@ input,textarea,select{min-height:40px}textarea{min-height:96px}.form{gap:7px}.fo
 .kpi-grid{gap:7px}.kpi{padding:9px}.dashboard-kpis{gap:8px}.dashboard-kpis .card{min-height:88px}.dashboard-kpis .card .value{margin-top:7px}.dashboard-kpis .value{font-size:21px}
 .check-grid{gap:7px}.check-card{min-height:56px;padding:10px 11px!important;border-radius:10px!important}.check-icon{width:28px;height:28px;border-radius:8px}.check-title{font-size:11px}.check-meta{font-size:8.5px}.image-drop{padding:11px}.image-inputs{gap:7px}.image-input{padding:8px}.image-input input[type=file]{min-height:35px}.ai-analysis{font-size:11.5px;line-height:1.65}
 main>section.hidden{display:none!important}main>section:not(.hidden){animation:edgeViewIn .16s ease-out}@keyframes edgeViewIn{from{opacity:.35;transform:translateY(3px)}to{opacity:1;transform:none}}
-#journal{width:min(100%,1120px);margin:0 auto}#journal .topbar{margin-bottom:14px}#journal>.grid{grid-template-columns:1.25fr .8fr .8fr .8fr}#journal>.grid .card{min-height:78px;padding:12px 13px}#journal>.grid .value{font-size:19px}#journal>.section{margin-top:10px!important;padding:13px}
-#journal .form{grid-template-columns:repeat(2,minmax(0,1fr))}#journal .form label{min-height:46px}#journal textarea{min-height:82px}#journal .photo-grid{gap:7px}#journal .photo-box{padding:8px}#journal .photo-box img{max-height:210px}#journal .actions{gap:6px}#journal .table-wrap{max-height:460px}#journal .table{min-width:680px}
+.workspace-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:18px}
+.journal-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}.journal-kpi{min-height:76px;padding:12px 13px;border:1px solid var(--hairline);border-radius:11px;background:linear-gradient(145deg,rgba(15,19,25,.96),rgba(10,13,18,.96));display:flex;flex-direction:column;justify-content:center}.journal-kpi span{font-size:8.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}.journal-kpi strong{font-size:19px;margin-top:6px}
+.workspace-status{display:flex;align-items:center;gap:7px;font-size:9px;font-weight:850;letter-spacing:.8px;color:#8f9aaa;border:1px solid var(--hairline2);padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.025)}.status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green)}
+.journal-panel{padding:14px;margin-top:10px;border:1px solid var(--hairline);border-radius:12px;background:linear-gradient(145deg,rgba(15,19,25,.96),rgba(10,13,18,.96));box-shadow:0 9px 28px rgba(0,0,0,.13)}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}.panel-head h2{font-size:13px;font-weight:800;margin:0 0 4px}
+.mode-badge{font-size:8px;font-weight:900;letter-spacing:.8px;padding:6px 8px;border-radius:6px;color:#ef6670;background:rgba(225,45,57,.07);border:1px solid rgba(225,45,57,.18)}body.crypto-mode .mode-badge{color:#6ea8ff;background:rgba(75,156,255,.08);border-color:rgba(75,156,255,.18)}
+.journal-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.journal-form label{display:flex;flex-direction:column;gap:6px;color:#aeb7c5;font-size:9px;font-weight:750;text-transform:uppercase;letter-spacing:.45px}.journal-form input,.journal-form select,.journal-form textarea{width:100%;font-size:11px;text-transform:none;letter-spacing:0}.journal-form textarea{min-height:82px}.journal-full{grid-column:1/-1}
+.journal-date-row{display:grid;grid-template-columns:1fr auto;gap:6px}.journal-date-display{height:40px;padding:10px;border:1px solid var(--line2);border-radius:9px;background:#0b0f15;color:#fff;display:flex;align-items:center;font-size:11px;text-transform:none;letter-spacing:0}.visually-hidden-input{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+.journal-section-title{font-size:9px;font-weight:850;letter-spacing:.8px;text-transform:uppercase;color:#aeb7c5;margin:15px 0 8px}.journal-photos{display:grid;grid-template-columns:1fr 1fr;gap:8px}.journal-photo{padding:10px;border:1px solid var(--hairline);border-radius:10px;background:#0a0e14}.journal-photo>div{display:flex;justify-content:space-between;gap:8px;align-items:center}.journal-photo b{font-size:9px}.journal-photo span{font-size:9px;color:var(--muted)}.journal-photo input{width:100%;margin-top:8px}.journal-photo img{width:100%;max-height:230px;object-fit:contain;margin-top:8px;border-radius:7px;background:#07090d}
+.journal-ai{padding:11px;border:1px solid rgba(225,45,57,.16);border-radius:10px;background:rgba(225,45,57,.035)}body.crypto-mode .journal-ai{border-color:rgba(75,156,255,.16);background:rgba(75,156,255,.035)}.journal-ai textarea{width:100%;min-height:82px;margin-top:8px;background:#090d13}.journal-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}.journal-actions button{min-height:36px}.journal-ai-output{margin-top:10px}#journal .table-wrap{max-height:none;overflow:auto}#journal .table{min-width:680px}
 #settings{width:min(100%,1160px);margin:0 auto}#review{width:min(100%,1180px);margin:0 auto}#bot{width:min(100%,1240px);margin:0 auto}#chat{width:min(100%,1120px);margin:0 auto}#chat .chat-shell{height:calc(100vh - 175px);min-height:480px}
 #journal .section h2,#settings .section h2,#review .section h2{letter-spacing:-.15px}.connection-card{padding:12px}.connection-card p{margin:8px 0 10px}.connection-actions a,.connection-actions button{min-height:34px}
 .status,.pill{background:rgba(225,45,57,.07);border-color:rgba(225,45,57,.18);color:#ef6670}.tag{background:rgba(225,45,57,.07);border-color:rgba(225,45,57,.14);color:#ef6972}.circle{border-color:var(--red);box-shadow:0 0 30px rgba(225,45,57,.07)}.grade{color:var(--red)}.card:before{background:linear-gradient(90deg,transparent,rgba(225,45,57,.18),transparent)}
 input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}.trade-pop{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
-@media(max-width:760px){.side{width:100%;padding:8px}.main{padding:16px 12px 32px}#journal,#settings,#review,#bot,#chat{width:100%}#journal>.grid{grid-template-columns:repeat(2,1fr)}#journal .form{grid-template-columns:1fr}#chat .chat-shell{height:68vh;min-height:430px}}
+@media(max-width:760px){.side{width:100%;padding:8px}.main{height:auto;overflow:visible;padding:16px 12px 32px}#journal,#settings,#review,#bot,#chat{width:100%}#journal>.grid{grid-template-columns:repeat(2,1fr)}#journal .form{grid-template-columns:1fr}#chat .chat-shell{height:68vh;min-height:430px}}
 
 
-/* VIEW ISOLATION — one workspace at a time */
-.app[data-view="models"] main>section:not(#models),
-.app[data-view="dash"] main>section:not(#dash),
-.app[data-view="bot"] main>section:not(#bot),
-.app[data-view="chat"] main>section:not(#chat),
-.app[data-view="journal"] main>section:not(#journal),
-.app[data-view="review"] main>section:not(#review),
-.app[data-view="settings"] main>section:not(#settings){display:none!important}
-.app[data-view="journal"] #journal{display:block!important}
-.app[data-view="settings"] #settings{display:block!important}
-.app[data-view="dash"] #dash{display:block!important}
-.app[data-view="review"] #review{display:block!important}
-.app[data-view="chat"] #chat{display:block!important}
-.app[data-view="models"] #models{display:block!important}
-.app[data-view="bot"] #bot{display:block!important}
-/* Navigation workspaces always begin at the top of the main viewport. */
-.main{scroll-margin-top:0}
-main>section{scroll-margin-top:0}
+/* DETERMINISTIC WORKSPACE ROUTER */
+main>section{width:100%;max-width:1380px;margin:0 auto;padding:34px 24px 60px;min-height:100%}
+.app[data-view] main>section{display:none!important}
+.app[data-view="models"] #models,.app[data-view="dash"] #dash,.app[data-view="bot"] #bot,.app[data-view="chat"] #chat,.app[data-view="journal"] #journal,.app[data-view="review"] #review,.app[data-view="settings"] #settings{display:block!important}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -805,34 +798,31 @@ main>section{scroll-margin-top:0}
   <div class="section" style="margin-top:14px"><h2>Résultat</h2><div id="result"><div class="empty">Aucune analyse.</div></div></div>
 </section>
 
-<section id="journal" class="hidden">
-  <div class="topbar"><div><div class="eyebrow">Historique et données</div><h1>Journal de trading</h1><div class="sub">Entrées séparées Futures / Crypto, avec screenshots AVANT / APRÈS et avis IA.</div></div><div class="status green">● JOURNAL ACTIF</div></div>
-  <div class="grid"><div class="card"><div class="label">Mois actif</div><div class="value small" id="journalMonth">—</div></div><div class="card"><div class="label">Trades ce mois</div><div class="value" id="monthTrades">0</div></div><div class="card"><div class="label">Futures ce mois</div><div class="value red" id="monthNQ">0</div></div><div class="card"><div class="label">Crypto ce mois</div><div class="value red" id="monthCrypto">0</div></div></div>
-  <div class="section" style="margin-top:14px">
-    <h2>Nouvelle entrée</h2>
-    <div class="form">
-      <label style="display:block">Date<div style="display:flex;gap:7px;margin-top:7px"><div id="jDateDisplay" style="flex:1;background:#0b0f15;color:#fff;border:1px solid var(--line2);border-radius:9px;padding:10px;min-height:40px;display:flex;align-items:center">—</div><button type="button" class="secondary" onclick="$('jDate').showPicker ? $('jDate').showPicker() : $('jDate').click()">📅</button></div><input id="jDate" type="date" lang="fr-CA" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none"></label>
-      <label style="display:block">Marché actif<select id="jMarket" onchange="updateJournalMarket()" disabled style="width:100%;margin-top:7px"><option value="FUTURES">FUTURES</option><option value="CRYPTO">CRYPTO</option></select></label>
-      <label style="display:block">Instrument<select id="jInstrument" style="width:100%;margin-top:7px"></select></label>
-      <label style="display:block">Session<input id="jSession" placeholder="NY AM / NY PM / London / Asia..." style="width:100%;margin-top:7px"></label>
-      <label style="display:block">Résultat<input id="jResult" placeholder="WIN / LOSS / BE" style="width:100%;margin-top:7px"></label>
-      <label style="display:block">Grade<input id="jGrade" placeholder="A+ / A / B+..." style="width:100%;margin-top:7px"></label>
-      <label style="display:block">R réalisé<input id="jR" placeholder="ex. -1R / +4R" style="width:100%;margin-top:7px"></label>
-      <label style="display:block">$ P&L<input id="jPnL" placeholder="ex. -100 / +400" style="width:100%;margin-top:7px"></label>
-      <div class="full"><textarea id="jContext" placeholder="Contexte : HTF bias, POI, liquidité, manipulation, Fibonacci, RB, Key Open..."></textarea></div>
-      <div class="full"><textarea id="jErrors" placeholder="Erreurs / ce qui aurait pu être mieux"></textarea></div>
-      <div class="full"><textarea id="jLesson" placeholder="Leçon du jour"></textarea></div>
-      <div class="full"><h3>📸 Screenshots du trade</h3><div class="photo-grid">
-        <div class="photo-box"><b>AVANT</b><div class="sub">Chart avant l'entrée</div><input id="jBefore" type="file" accept="image/*" style="width:100%;margin-top:8px"><img id="jBeforePreview" style="display:none"></div>
-        <div class="photo-box"><b>APRÈS</b><div class="sub">Chart après le trade</div><input id="jAfter" type="file" accept="image/*" style="width:100%;margin-top:8px"><img id="jAfterPreview" style="display:none"></div>
-      </div></div>
-      <div class="full"><h3>🤖 Avis de l'IA</h3><div class="ai-box"><div class="sub">Pré-analyse locale actuellement. Le vrai moteur IA pourra utiliser le contexte et les screenshots lorsque le backend sera connecté.</div><textarea id="jAI" placeholder="Avis de l'IA..." readonly style="margin-top:10px;background:#090d13"></textarea></div></div>
+<section id="journal" class="hidden workspace" aria-hidden="true">
+  <div class="workspace-head"><div><div class="eyebrow">JOURNAL</div><h1>Journal de trading</h1><div class="sub">Un espace dédié à tes trades. Futures et Crypto restent séparés.</div></div><div class="workspace-status"><span class="status-dot"></span><span>JOURNAL ACTIF</span></div></div>
+  <div class="journal-kpis"><div class="journal-kpi"><span>Mois actif</span><strong id="journalMonth">—</strong></div><div class="journal-kpi"><span>Trades ce mois</span><strong id="monthTrades">0</strong></div><div class="journal-kpi"><span>Futures</span><strong id="monthNQ">0</strong></div><div class="journal-kpi"><span>Crypto</span><strong id="monthCrypto">0</strong></div></div>
+  <div class="journal-panel">
+    <div class="panel-head"><div><h2>Nouvelle entrée</h2><div class="sub">Le marché est automatiquement lié au mode actif.</div></div><span class="mode-badge" id="journalModeBadge">FUTURES</span></div>
+    <div class="journal-form">
+      <label>Date<div class="journal-date-row"><div id="jDateDisplay" class="journal-date-display">—</div><button type="button" class="secondary" onclick="$('jDate').showPicker ? $('jDate').showPicker() : $('jDate').click()">📅</button></div><input id="jDate" type="date" lang="fr-CA" class="visually-hidden-input"></label>
+      <label>Marché<select id="jMarket" onchange="updateJournalMarket()" disabled><option value="FUTURES">FUTURES</option><option value="CRYPTO">CRYPTO</option></select></label>
+      <label>Instrument<select id="jInstrument"></select></label><label>Session<input id="jSession" placeholder="NY AM / NY PM / London / Asia..."></label>
+      <label>Résultat<input id="jResult" placeholder="WIN / LOSS / BE"></label><label>Grade<input id="jGrade" placeholder="A+ / A / B+..."></label>
+      <label>R réalisé<input id="jR" placeholder="+4R / -1R"></label><label>$ P&L<input id="jPnL" placeholder="+400 / -100"></label>
+      <label class="journal-full">Contexte<textarea id="jContext" placeholder="HTF bias, POI, liquidité, manipulation, Fibonacci, R.B., Key Open..."></textarea></label>
+      <label class="journal-full">Erreurs / points à améliorer<textarea id="jErrors" placeholder="Ce qui était incorrect, tardif ou évitable."></textarea></label>
+      <label class="journal-full">Leçon<textarea id="jLesson" placeholder="La règle ou le comportement à retenir."></textarea></label>
     </div>
-    <div class="actions"><button class="primary" onclick="prepareAIJournal()">🤖 PRÉ-ANALYSER</button><button class="primary" onclick="saveJournalEntry()">ENREGISTRER</button><button class="secondary" onclick="resetJournalForm()">RÉINITIALISER</button></div>
+    <div class="journal-section-title">Screenshots du trade</div><div class="journal-photos">
+      <div class="journal-photo"><div><b>AVANT</b><span>Chart avant l'entrée</span></div><input id="jBefore" type="file" accept="image/*"><img id="jBeforePreview" alt="" style="display:none"></div>
+      <div class="journal-photo"><div><b>APRÈS</b><span>Chart après le trade</span></div><input id="jAfter" type="file" accept="image/*"><img id="jAfterPreview" alt="" style="display:none"></div>
+    </div>
+    <div class="journal-section-title">Avis JARVIS</div><div class="journal-ai"><div class="sub">Pré-analyse locale. Le moteur multimodal peut utiliser le contexte et les screenshots lorsque le backend est disponible.</div><textarea id="jAI" placeholder="Avis de JARVIS..." readonly></textarea></div>
+    <div class="journal-actions"><button class="primary" onclick="prepareAIJournal()">🤖 PRÉ-ANALYSER</button><button class="primary" onclick="saveJournalEntry()">ENREGISTRER</button><button class="secondary" onclick="resetJournalForm()">RÉINITIALISER</button></div>
   </div>
-  <div class="section" style="margin-top:14px"><h2>Historique mensuel</h2><div id="journalMonths"></div></div>
-  <div class="section" style="margin-top:14px"><h2>Analyse du journal</h2><div class="sub">Le futur moteur IA pourra comparer NQ et Crypto séparément et rechercher les erreurs récurrentes, les grades et les contextes associés à tes résultats.</div><div class="actions"><button class="secondary" onclick="askJournalAI()">ANALYSER MON JOURNAL</button></div><div id="journalAI" style="margin-top:12px"></div></div>
-</section>
+  <div class="journal-panel"><div class="panel-head"><div><h2>Historique mensuel</h2><div class="sub">Uniquement les trades du modèle actif.</div></div></div><div id="journalMonths"></div></div>
+  <div class="journal-panel"><div class="panel-head"><div><h2>Analyse du journal</h2><div class="sub">Recherche locale des résultats et erreurs enregistrées.</div></div></div><div class="journal-actions"><button class="secondary" onclick="askJournalAI()">ANALYSER MON JOURNAL</button></div><div id="journalAI" class="journal-ai-output"></div></div>
+</section>>
 
 <section id="settings" class="hidden">
   <div class="topbar"><div><div class="eyebrow">Configuration</div><h1>Paramètres</h1><div class="sub">Les connexions réelles restent séparées de l'interface et utilisent des permissions contrôlées.</div></div></div>
@@ -883,7 +873,7 @@ function setSiteMode(mode){
   document.body.classList.remove("nq-mode","crypto-mode");
   document.body.classList.add(mode==="CRYPTO"?"crypto-mode":"nq-mode");
   ["NQ","CRYPTO"].forEach(m=>{const b=$("mode"+m);if(b){const on=m===mode;b.classList.toggle("active",on);b.setAttribute("aria-pressed",String(on));}});
-  updateModelUI(); updateBotMode(); applyModeVisibility(); const mini=$("connectionMiniSub"); if(mini) mini.textContent=siteMode==="CRYPTO"?"Crypto : KCEX · observateur lecture seule.":"Futures : Tradovate / Rithmic · lecture seule."; renderJournal(); refreshAIDataAccess(); refreshObsidianStatus();
+  updateModelUI(); updateBotMode(); applyModeVisibility(); const badge=$("journalModeBadge"); if(badge)badge.textContent=siteMode==="CRYPTO"?"CRYPTO":"FUTURES"; const mini=$("connectionMiniSub"); if(mini) mini.textContent=siteMode==="CRYPTO"?"Crypto : KCEX · observateur lecture seule.":"Futures : Tradovate / Rithmic · lecture seule."; renderJournal(); refreshAIDataAccess(); refreshObsidianStatus();
 }
 async function botFetch(path,options={}){
   if(!BOT_API) throw new Error("BOT_API_NOT_CONFIGURED");
@@ -938,39 +928,19 @@ function applyModeVisibility(){
   updateBotMode();
 }
 function show(id,btn){
- if($("journal")&&!$("journal").classList.contains("hidden")&&id!=="journal") saveJournalDraft();
- if(!VALID_MODES.has(activeModel)){setSiteMode(siteMode||"NQ");}
-
- /* Every navigation click is a new workspace: force the viewport to the top. */
- window.scrollTo({top:0,left:0,behavior:"auto"});
- document.documentElement.scrollTop=0;
- document.body.scrollTop=0;
- const main=document.querySelector(".main");
- if(main)main.scrollTop=0;
-
- const app=document.querySelector(".app"); if(app)app.dataset.view=id;
- document.querySelectorAll("main>section").forEach(s=>{
-   s.classList.add("hidden");
-   s.setAttribute("aria-hidden","true");
- });
- const target=$(id);
- if(target){
-   target.classList.remove("hidden");
-   target.setAttribute("aria-hidden","false");
-   target.scrollIntoView({block:"start",inline:"nearest"});
-   window.scrollTo({top:0,left:0,behavior:"auto"});
-   document.documentElement.scrollTop=0;
-   document.body.scrollTop=0;
-   if(main)main.scrollTop=0;
- }
- document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
- if(btn)btn.classList.add("active");
- else{
-   const navBtn=[...document.querySelectorAll("nav button")].find(b=>String(b.getAttribute("onclick")||"").includes("show('"+id+"'"));
-   if(navBtn)navBtn.classList.add("active");
- }
- if(id==="journal"){renderJournal();updateJournalMarket();restoreJournalDraft();}
+ const target=$(id);if(!target)return;
+ if($("journal")&&!$("journal").classList.contains("hidden")&&id!=="journal")saveJournalDraft();
+ if(!VALID_MODES.has(activeModel))setSiteMode(siteMode||"NQ");
+ const app=document.querySelector(".app"),main=document.querySelector(".main");
+ document.querySelectorAll("main>section").forEach(section=>{section.classList.add("hidden");section.setAttribute("aria-hidden","true");section.style.removeProperty("display");});
+ target.classList.remove("hidden");target.setAttribute("aria-hidden","false");target.style.removeProperty("display");
+ if(app)app.dataset.view=id;
+ document.querySelectorAll("nav button").forEach(b=>{b.classList.remove("active");b.removeAttribute("aria-current");});
+ if(btn){btn.classList.add("active");btn.setAttribute("aria-current","page");}else{const navBtn=[...document.querySelectorAll("nav button")].find(b=>String(b.getAttribute("onclick")||"").includes("show('"+id+"'"));if(navBtn){navBtn.classList.add("active");navBtn.setAttribute("aria-current","page");}}
+ if(main)main.scrollTop=0;window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;
+ if(id==="journal"){updateJournalMarket();renderJournal();restoreJournalDraft();if($("journalModeBadge"))$("journalModeBadge").textContent=activeModel==="CRYPTO"?"CRYPTO":"FUTURES";}
  if(id==="dash")renderStats();
+ if(main)main.scrollTo({top:0,left:0,behavior:"auto"});
 }
 async function sendChat(){
  const input=$("chatInput"),msg=String(input?.value||"").trim();if(!msg)return;
