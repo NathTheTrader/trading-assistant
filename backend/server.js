@@ -160,7 +160,7 @@ const openai = (process.env.GEMINI_API_KEY || openrouter) ? {
     create: async ({model,input,reasoning}) => {
       let geminiLastError=null;
       if(process.env.GEMINI_API_KEY){
-        const candidates=[model||GEMINI_MODEL,...GEMINI_FALLBACK_MODELS].filter((x,i,a)=>a.indexOf(x)===i);
+        const candidates=[GEMINI_MODEL,...GEMINI_FALLBACK_MODELS].filter((x,i,a)=>a.indexOf(x)===i);
         for(const candidate of candidates){
           try{
             return await callGemini({model:candidate,input,reasoning});
@@ -652,7 +652,7 @@ async function obsidianImageAnalysisLoop() {
       } catch(e) {
         if(e?.status===429 || /rate.?limit|too many requests|free.*limit/i.test(String(e?.message||""))) {
           obsidianJob={...obsidianJob,running:false,phase:"paused-rate-limit",
-            error:"OpenRouter a atteint une limite. Progression sauvegardée; relance plus tard pour reprendre sans retraiter les images."};
+            error:"Limite IA atteinte. Progression sauvegardée; relance plus tard pour reprendre sans retraiter les images."};
           await saveObsidianJob();
           return;
         }
@@ -790,7 +790,7 @@ async function askAI({task, trade, history=[]}) {
   }catch(e){
     const status=Number(e?.status||e?.statusCode||0);
     const detail=String(e?.message||"");
-    if(status===429&&/(free-models-per-day|free.*daily|daily.*free)/i.test(detail)) return {ok:false,error:"Quota OpenRouter des modèles gratuits atteinte. Configure OPENROUTER_MODEL vers un modèle disponible ou ajoute OPENROUTER_FALLBACK_MODELS.",code:"AI_DAILY_QUOTA",model:MODEL,engineVersion:AI_ENGINE_VERSION};
+    if(status===429&&/(free-models-per-day|free.*daily|daily.*free)/i.test(detail)) return {ok:false,error:"Quota du fournisseur IA atteinte. Gemini reste prioritaire; vérifie GEMINI_API_KEY ou les limites du fournisseur.",code:"AI_DAILY_QUOTA",model:MODEL,engineVersion:AI_ENGINE_VERSION};
     throw e;
   }
 }
