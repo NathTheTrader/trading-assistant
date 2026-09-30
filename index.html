@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2200-stable-clean-ui-v22"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2245-clean-background-mode-reload-v23"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><style>
@@ -1010,6 +1010,26 @@ body:before,body:after{display:none !important;content:none !important}
 .hero{background:#12171e !important;border-color:rgba(255,255,255,.08) !important;box-shadow:0 18px 45px rgba(0,0,0,.2) !important}
 .side{background:#090b10 !important;box-shadow:none !important}
 .date-entry{display:flex;gap:8px;align-items:center}.date-entry input[type=date]{flex:1;min-width:0}
+
+/* EDGEFLOW FINAL VISUAL SYSTEM — clean background, minimal chrome */
+html,body{background:#07090d !important;}
+body{
+  background-image:
+    radial-gradient(900px 560px at 82% -10%,rgba(255,54,93,.065),transparent 70%),
+    radial-gradient(760px 520px at 12% 110%,rgba(75,156,255,.028),transparent 72%),
+    linear-gradient(180deg,#06080b 0%,#090b10 52%,#07090d 100%) !important;
+}
+body.crypto-mode{
+  background-image:
+    radial-gradient(900px 560px at 82% -10%,rgba(75,156,255,.075),transparent 70%),
+    radial-gradient(760px 520px at 12% 110%,rgba(75,156,255,.034),transparent 72%),
+    linear-gradient(180deg,#06080b 0%,#090b10 52%,#07090d 100%) !important;
+}
+html body:before,html body:after{content:none !important;display:none !important;background:none !important;opacity:0 !important;}
+.app{background:transparent !important;}
+.card,.section,.model-card,.hero{border-color:rgba(255,255,255,.055) !important;}
+.card,.section,.model-card{box-shadow:0 12px 32px rgba(0,0,0,.15) !important;}
+.side{border-right-color:rgba(255,255,255,.055) !important;background:rgba(7,9,13,.92) !important;}
 </style>
 </head><body>
 <div class="app">
@@ -1025,8 +1045,8 @@ body:before,body:after{display:none !important;content:none !important}
   <div class="nav-title">WORKSPACE</div>
   <nav>
     <button id="navDash" onclick="showActiveDashboard(this)"><span class="nav-icon">⌂</span>Dashboard</button>
-    <button id="navBotFutures" data-mode="NQ" onclick="setSiteMode('NQ');show('bot',this)"><span class="nav-icon">◉</span>Bot Futures</button>
-    <button id="navBotCrypto" data-mode="CRYPTO" onclick="setSiteMode('CRYPTO');show('crypto',this)"><span class="nav-icon">◉</span>Bot Crypto</button>
+    <button id="navBotFutures" data-mode="NQ" onclick="openBotWorkspace('NQ','bot',this)"><span class="nav-icon">◉</span>Bot Futures</button>
+    <button id="navBotCrypto" data-mode="CRYPTO" onclick="openBotWorkspace('CRYPTO','crypto',this)"><span class="nav-icon">◉</span>Bot Crypto</button>
     <button id="navChat" onclick="show('chat',this)"><span class="nav-icon">◆</span>JARVIS</button>
     <button id="navJournal" onclick="show('journal',this)"><span class="nav-icon">▤</span>Journal</button>
     <button id="navSettings" onclick="show('settings',this)"><span class="nav-icon">⚙</span>Paramètres</button>
@@ -1338,11 +1358,13 @@ const nqDesc="HTF bias · POI · liquidité/manipulation · retracement Fibonacc
 const cryptoDesc="Direction du marché · Key Open manipulé/sweep · POI HTF aligné · entrée · high RR. OTE/Fib secondaire.";
 const BOT_API=(localStorage.getItem("botApiUrl")||"https://trading-assistant-production.up.railway.app").replace(/\/$/,"");
 const EDGEFLOW_ACCESS_KEY=localStorage.getItem("edgeflowAccessKey")||"";
-let activeModel=localStorage.getItem("activeModel")||"";
-let edgeflowBusy=false;
-let siteMode=localStorage.getItem("siteMode")||"NQ";
 const $=id=>document.getElementById(id);
 const VALID_MODES=new Set(["NQ","CRYPTO"]);
+const requestedMode=String(new URLSearchParams(location.search).get("mode")||"").toUpperCase();
+const initialMode=VALID_MODES.has(requestedMode)?requestedMode:(localStorage.getItem("siteMode")||"NQ");
+let activeModel=initialMode;
+let edgeflowBusy=false;
+let siteMode=initialMode;
 function setSiteMode(mode){
   if($("journal")&&!$("journal").classList.contains("hidden")) saveJournalDraft();
   mode=String(mode||"NQ").toUpperCase();
@@ -1362,13 +1384,17 @@ function setSiteMode(mode){
   if(typeof renderChatHistory==="function" && $("chat") && !$("chat").classList.contains("hidden")) renderChatHistory(siteMode);
 }
 function switchMode(mode){
-  const current=document.querySelector("main>.workspace:not(.hidden)")?.id||"dash";
+  mode=String(mode||"NQ").toUpperCase();
+  if(!VALID_MODES.has(mode))mode="NQ";
+  const target=new URL(location.href);
+  target.searchParams.set("mode",mode);
+  location.assign(target.pathname+"?"+target.searchParams.toString());
+}
+function openBotWorkspace(mode,id,btn){
+  mode=String(mode||"NQ").toUpperCase();
+  if(!VALID_MODES.has(mode))mode="NQ";
   setSiteMode(mode);
-  if(current==="journal") show("journal");
-  else if(current==="settings") show("settings");
-  else if(current==="chat") show("chat");
-  else if(current==="bot"||current==="crypto") show(mode==="CRYPTO"?"crypto":"bot");
-  else show(mode==="CRYPTO"?"cryptoDash":"dash");
+  show(id,btn);
 }
 async function botFetch(path,options={}){
   if(!BOT_API) throw new Error("BOT_API_NOT_CONFIGURED");
