@@ -59,11 +59,13 @@ jobs:
             if(await page.locator("#bot #cryptoBotContext").count()!==0)throw new Error("Crypto fields leaked into Futures Bot");
             if(await page.locator("#bot #btiming").count()!==1||await page.locator("#bot #bhtf").count()!==1||await page.locator("#bot #bpoi").count()!==1||await page.locator("#bot #bfib").count()!==1||await page.locator("#bot #brb").count()!==1||await page.locator("#bot #brr").count()!==1||await page.locator("#bot #bbacktest").count()!==1)throw new Error("Futures Bot checklist incomplete");
             if(await page.locator("#bot #bko").count()!==0||await page.locator("#bot #cryptoBotContext").count()!==0)throw new Error("Crypto Key Open state leaked into Futures Bot");
+            if(await page.locator("#bot #btilt").count()!==1||await page.locator("#bot #brev").count()!==1)throw new Error("Futures behavioral killers missing");
             await page.screenshot({path:"/tmp/edgeflow-futures-bot.png",fullPage:true});
             await click("#navReviewFutures");await expectVisible("review");
             if(await page.locator("#review #cryptoNotes").count()!==0)throw new Error("Crypto fields leaked into Futures Review");
             if(await page.locator("#review #htf").count()!==1||await page.locator("#review #poi").count()!==1||await page.locator("#review #fib").count()!==1||await page.locator("#review #rb").count()!==1||await page.locator("#review #rr").count()!==1||await page.locator("#review #backtest").count()!==1)throw new Error("Futures Review checklist incomplete");
-            if(await page.locator("#review #ko").count()!==0||await page.locator("#review #revenge").count()!==0)throw new Error("Crypto/Futures checklist contamination");
+            if(await page.locator("#review #ko").count()!==0)throw new Error("Crypto Key Open state leaked into Futures Review");
+            if(await page.locator("#review #tilt").count()!==1||await page.locator("#review #revenge").count()!==1)throw new Error("Futures behavioral killers missing");
             await page.screenshot({path:"/tmp/edgeflow-futures-review.png",fullPage:true});
             await click("#modeCRYPTO");await expectVisible("cryptoReview");
             await click("#navDash");await expectVisible("cryptoDash");
