@@ -2142,24 +2142,33 @@ function populateDashboardMonthControls(model,data){
  if(title)title.textContent=monthLabelLong(selected);
  if(label)label.textContent=monthLabelLong(selected);
 }
-async function renderStats(){
- const datasets=await Promise.all([loadDashboardTrades("NQ"),loadDashboardTrades("CRYPTO")]);
- const put=(prefix,data)=>{
-   data.trades.forEach(t=>{t.__dashboardMonth=data.month;});
-   const s=calcDashboardStats(data.trades);s.month=data.month;
-   if($(prefix+"Trades"))$(prefix+"Trades").textContent=s.trades;
-   if($(prefix+"Winrate"))$(prefix+"Winrate").textContent=s.winrate!==null?s.winrate.toFixed(1)+"%":"—";
-   if($(prefix+"AvgR"))$(prefix+"AvgR").textContent=s.avgR!==null?((s.avgR>=0?"+":"")+s.avgR.toFixed(2)+"R"):"—";
-   if($(prefix+"TotalR"))$(prefix+"TotalR").textContent=s.totalR!==null?((s.totalR>=0?"+":"")+s.totalR.toFixed(2)+"R"):"—";
-   if($(prefix+"Pnl"))$(prefix+"Pnl").textContent=s.pnl!==null?formatMoneyShort(s.pnl):"—";
-   if($(prefix+"PnlMeta"))$(prefix+"PnlMeta").textContent=s.pnlCount?s.pnlCount+" trade(s) avec P&L":"P&L renseigné dans le Journal";
-   populateDashboardMonthControls(prefix==="cryptoDash"?"CRYPTO":"NQ",data);
-   renderDashboardActivity(prefix,data.trades);
-   renderPnlChart(prefix,s);
-   const status=$(prefix+"DataStatus");if(status){status.textContent=data.serverOk?"● JOURNAL + SERVEUR":"● JOURNAL LOCAL";status.className=data.serverOk?"status green":"status";}
-   const source=$(prefix+"SourceLabel");if(source)source.textContent=data.serverOk?"Journal + serveur":"Journal local";
- };
- put("dash",datasets[0]);put("cryptoDash",datasets[1]);
+async function localDashboardTrades(model){
+ const local=getJournal().filter(x=>x.model===model);
+ const month=dashboardMonthKey(model);
+ return {trades:local.filter(t=>tradeMonthKey(t)===month),allTrades:local,localCount:local.length,serverCount:0,serverOk:false,month};
+}
+function applyDashboardStats(prefix,data){
+ data.trades.forEach(t=>{t.__dashboardMonth=data.month;});
+ const s=calcDashboardStats(data.trades);s.month=data.month;
+ if($(prefix+"Trades"))$(prefix+"Trades").textContent=s.trades;
+ if($(prefix+"Winrate"))$(prefix+"Winrate").textContent=s.winrate!==null?s.winrate.toFixed(1)+"%":"—";
+ if($(prefix+"AvgR"))$(prefix+"AvgR").textContent=s.avgR!==null?((s.avgR>=0?"+":"")+s.avgR.toFixed(2)+"R"):"—";
+ if($(prefix+"TotalR"))$(prefix+"TotalR").textContent=s.totalR!==null?((s.totalR>=0?"+":"")+s.totalR.toFixed(2)+"R"):"—";
+ if($(prefix+"Pnl"))$(prefix+"Pnl").textContent=s.pnl!==null?formatMoneyShort(s.pnl):"—";
+ if($(prefix+"PnlMeta"))$(prefix+"PnlMeta").textContent=s.pnlCount?s.pnlCount+" trade(s) avec P&L":"P&L renseigné dans le Journal";
+ populateDashboardMonthControls(prefix==="cryptoDash"?"CRYPTO":"NQ",data);
+ renderDashboardActivity(prefix,data.trades);
+ renderPnlChart(prefix,s);
+ const status=$(prefix+"DataStatus");if(status){status.textContent=data.serverOk?"● JOURNAL + SERVEUR":"● JOURNAL LOCAL";status.className=data.serverOk?"status green":"status";}
+ const source=$(prefix+"SourceLabel");if(source)source.textContent=data.serverOk?"Journal + serveur":"Journal local";
+}
+function renderStats(){
+ // Paint local journal data synchronously so a workspace switch never exposes stale KPIs.
+ applyDashboardStats("dash",localDashboardTrades("NQ"));
+ applyDashboardStats("cryptoDash",localDashboardTrades("CRYPTO"));
+ Promise.all([loadDashboardTrades("NQ"),loadDashboardTrades("CRYPTO")])
+   .then(datasets=>{applyDashboardStats("dash",datasets[0]);applyDashboardStats("cryptoDash",datasets[1]);})
+   .catch(()=>{});
 }
 async function refreshConnectionCenter(){
   if(!BOT_API)return;
