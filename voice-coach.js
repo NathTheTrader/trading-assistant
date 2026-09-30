@@ -130,8 +130,7 @@
         <div id="taConvo" class="ta-voice-convo"></div>
         <div id="taVA" class="ta-voice-answer" style="display:none"></div>
         <div class="ta-voice-actions">
-          <button id="taStart" class="primary" type="button">QUESTION</button>
-          <button id="taTalk" type="button">◉ PARLER</button>
+          <button id="taTalk" class="primary" type="button">◉ PARLER</button>
           <button id="taDaily" type="button">REVUE DU JOUR</button>
         </div>
         <div id="taVS" class="ta-voice-status">JARVIS utilise uniquement le contexte ${m}.</div>
@@ -140,7 +139,6 @@
     panel.querySelector("#taClose").onclick=()=>{panel.style.display="none";stopRecording()};
     panel.querySelector("#taModelF").onclick=()=>setVoiceModel("NQ");
     panel.querySelector("#taModelC").onclick=()=>setVoiceModel("CRYPTO");
-    panel.querySelector("#taStart").onclick=start;
     panel.querySelector("#taTalk").onclick=toggle;
     panel.querySelector("#taDaily").onclick=daily;
     setState("idle","JARVIS PRÊT");
@@ -174,7 +172,7 @@
       setState("idle","QUESTION ACTIVE");
       setStatus("Question prête · réponse vocale disponible.");
       speak(q);
-    }catch(e){setState("idle","JARVIS PRÊT");setStatus(e.message)}
+    }catch(e){setState("idle","JARVIS PRÊT");setStatus("Erreur vocale : "+(e?.message||"réessaie."))}
   }
   async function daily(){
     if(!api()){setStatus("Backend IA non configuré.");return}
@@ -230,7 +228,7 @@
       recorder.start();
       panel.querySelector("#taTalk").textContent="■ STOP";
       setState("listening","JARVIS ÉCOUTE");
-      setStatus("Parle maintenant…");
+      setStatus("Parle maintenant. Reclique sur PARLER quand tu as terminé.");
     }catch(e){setState("idle","JARVIS PRÊT");setStatus("Micro refusé : "+e.message)}
   }
   function stopRecording(){
