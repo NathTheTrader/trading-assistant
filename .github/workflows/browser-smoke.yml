@@ -103,9 +103,24 @@ jobs:
             await page.waitForTimeout(600);
             const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem("journal")||"[]").filter(x=>x.model==="NQ").length);
             if(stored!==1)throw new Error("Journal entry was not persisted");
+            await click("#modeCRYPTO");await expectVisible("journal");
+            if(await page.locator("#jMarket").inputValue()!=="CRYPTO")throw new Error("Journal did not switch to Crypto");
+            if(await page.locator("#jInstrument option").first().textContent()!=="BTC")throw new Error("Crypto Journal instruments not loaded");
+            await page.locator("#jResult").fill("LOSS");
+            await page.locator("#jR").fill("-1R");
+            await page.locator("#jPnL").fill("-100");
+            await page.locator("#jContext").fill("Crypto browser smoke test");
+            await page.click("button:has-text('ENREGISTRER')");
+            await page.waitForTimeout(500);
+            const split=await page.evaluate(()=>{const a=JSON.parse(localStorage.getItem("journal")||"[]");return {nq:a.filter(x=>x.model==="NQ").length,crypto:a.filter(x=>x.model==="CRYPTO").length}});
+            if(split.nq!==1||split.crypto!==1)throw new Error("Futures/Crypto Journal data not isolated: "+JSON.stringify(split));
             if(await page.locator("#dashTrades").count()!==1)throw new Error("Futures dashboard metric target missing");
             await click("#navDash");await expectVisible("dash");
             if((await page.locator("#dashTrades").textContent()).trim()!=="1")throw new Error("Dashboard Futures did not read Journal entry");
+            await click("#modeCRYPTO");await click("#navDash");await expectVisible("cryptoDash");
+            if((await page.locator("#cryptoDashTrades").textContent()).trim()!=="1")throw new Error("Dashboard Crypto did not read isolated Journal entry");
+            await click("#modeNQ");await click("#navDash");await expectVisible("dash");
+            if((await page.locator("#dashTrades").textContent()).trim()!=="1")throw new Error("Crypto entry leaked into Futures Dashboard");
             if(await page.locator("#journalMonths").count()!==1)throw new Error("Journal history target missing");
             
             if(errors.length)throw new Error(errors.join("\n"));
