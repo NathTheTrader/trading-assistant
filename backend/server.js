@@ -299,18 +299,21 @@ function normalizeObsidianPath(rel) {
   }
   return rel;
 }
-function parseObsidianModel(rel) {
-  const normalized=normalizeObsidianPath(String(rel).replace(/\\/g,"/"));
-  if (normalized.startsWith("CRYPTO/")) return "CRYPTO";
-  if (normalized.startsWith("FUNDED NEW EDGE/") || normalized.startsWith("BACKTEST/") || normalized.startsWith("Journal/") || normalized.startsWith("WEEKLY RECAP/")) return "NQ";
+function parseObsidianModel(rel,text="") {
+  const normalized=String(rel).replace(/\\/g,"/").toUpperCase();
+  const body=String(text||"").toUpperCase();
+  if(/(?:^|[/\\])CRYPTO(?:[/\\]|$)/.test(normalized) || (/\b(KEY OPEN|KCEX)\b/.test(body) && /\b(BTC|ETH|SOL|BNB|XRP|HYPE|FLOKI|CRYPTO)\b/.test(body))) return "CRYPTO";
+  if(/(?:^|[/\\])(FUNDED NEW EDGE|BACKTEST|JOURNAL|WEEKLY RECAP)(?:[/\\]|$)/.test(normalized)) return "NQ";
+  if(/\b(?:NQ|MNQ|MES|MGC|ES)\b/.test(normalized+" "+body)) return "NQ";
   return "OTHER";
 }
-function parseObsidianType(rel) {
-  const normalized=normalizeObsidianPath(String(rel).replace(/\\/g,"/"));
-  if (normalized.startsWith("CRYPTO/") || normalized.startsWith("FUNDED NEW EDGE/")) return "LIVE";
-  if (normalized.startsWith("BACKTEST/")) return "BACKTEST";
-  if (normalized.startsWith("Journal/")) return "JOURNAL";
-  if (normalized.startsWith("WEEKLY RECAP/")) return "WEEKLY";
+function parseObsidianType(rel,text="") {
+  const normalized=String(rel).replace(/\\/g,"/").toUpperCase();
+  const body=String(text||"").toUpperCase();
+  if(/(?:^|[/\\])BACKTEST(?:[/\\]|$)/.test(normalized) || /\bBACKTEST\b/.test(body)) return "BACKTEST";
+  if(/(?:^|[/\\])JOURNAL(?:[/\\]|$)/.test(normalized)) return "JOURNAL";
+  if(/(?:^|[/\\])WEEKLY RECAP(?:[/\\]|$)/.test(normalized) || /\bWEEKLY RECAP\b/.test(body)) return "WEEKLY";
+  if(parseObsidianModel(rel,text)==="CRYPTO" || /(?:^|[/\\])FUNDED NEW EDGE(?:[/\\]|$)/.test(normalized)) return "LIVE";
   return "OTHER";
 }
 function firstMatch(text, patterns) {
@@ -451,10 +454,18 @@ async function importObsidianZip(buffer) {
       const relRaw=path.relative(root,full).replace(/\\/g,"/");
       const rel=normalizeObsidianPath(relRaw);
       const text=await fs.readFile(full,"utf8");
-      const model=parseObsidianModel(rel);
-      if(model==="OTHER") continue;
+      const model=parseObsidianModel(rel,text);
+      const looksLikeTrade=/\b(?:trade|recap|backtest|entry|stop|target|win|loss|journal|setup|key open|rejection block|fvg|fib)\b/i.test(text+" "+rel);
+      if(model==="OTHER" && !looksLikeTrade) continue;
       markdownFiles++;
       const record=parseObsidianTrade(rel,text);
+      if(model!=="OTHER") record.model=model;
+      else {
+        record.model=/\b(?:KEY OPEN|KCEX|BTC|ETH|SOL|BNB|XRP|HYPE|FLOKI|CRYPTO)\b/i.test(text) ? "CRYPTO" : "NQ";
+        record.parseWarning="Mode détecté automatiquement par le contenu.";
+      }
+      const parsedType=parseObsidianType(rel,text);
+      record.type=parsedType==="OTHER"?"JOURNAL":parsedType;
       record.imageFiles=record.images.map(name=>imageMap.get(path.basename(name).toLowerCase())).filter(Boolean);
       found.push(record);
     }
