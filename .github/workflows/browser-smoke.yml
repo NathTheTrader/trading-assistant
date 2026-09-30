@@ -46,6 +46,12 @@ jobs:
             page.on("console",m=>{if(m.type()==="error"&&!/403/.test(m.text()))errors.push("console: "+m.text())});
             await page.goto("http://127.0.0.1:4173/index.html",{waitUntil:"domcontentloaded"});
             const click=async sel=>page.locator(sel).evaluate(el=>el.click());
+            const switchMode=async mode=>{
+              await Promise.all([
+                page.waitForLoadState("domcontentloaded"),
+                page.locator(mode==="CRYPTO"?"#modeCRYPTO":"#modeNQ").evaluate(el=>el.click())
+              ]);
+            };
             const visible=()=>page.locator("main > .workspace:not(.hidden)").evaluateAll(xs=>xs.filter(x=>!x.hidden&&x.style.display!=="none").map(x=>x.id));
             const expectVisible=async id=>{const v=await visible();if(v.length!==1||v[0]!==id)throw new Error("Expected "+id+" visible, got "+JSON.stringify(v));};
 
@@ -55,7 +61,7 @@ jobs:
             await click("#navBotFutures");await expectVisible("bot");
             if(await page.locator("#bot #btiming").count()!==1||await page.locator("#bot #bhtf").count()!==1||await page.locator("#bot #bpoi").count()!==1||await page.locator("#bot #bfib").count()!==1||await page.locator("#bot #brb").count()!==1||await page.locator("#bot #brr").count()!==1||await page.locator("#bot #bbacktest").count()!==1)throw new Error("Futures checklist incomplete");
 
-            await click("#modeCRYPTO");await expectVisible("crypto");
+            await switchMode("CRYPTO");await expectVisible("crypto");
             await click("#navDash");await expectVisible("cryptoDash");
             await click("#navBotCrypto");await expectVisible("crypto");
             if(await page.locator("#crypto #cryptoInstrumentBot").count()!==1||await page.locator("#crypto #cDirection").count()!==1||await page.locator("#crypto #cKeyOpen").count()!==1)throw new Error("Crypto Bot controls incomplete");
@@ -67,7 +73,7 @@ jobs:
             if(!(await page.locator("#chat .bubble.me").count()===1))throw new Error("JARVIS user bubble missing");
             if(!(await page.locator("#chat .bubble.ai").count()>=2))throw new Error("JARVIS response missing");
 
-            await click("#modeNQ");await click("#navJournal");await expectVisible("journal");
+            await switchMode("NQ");await click("#navJournal");await expectVisible("journal");
             if(await page.locator("#jDate").count()!==1)throw new Error("Journal date input missing");
             await page.locator("#jDate").fill("2026-09-15");
             await page.locator("#jDate").dispatchEvent("change");
@@ -83,7 +89,7 @@ jobs:
             await page.click("button:has-text('ENREGISTRER')");
             await page.waitForTimeout(350);
 
-            await click("#modeCRYPTO");await click("#navJournal");await expectVisible("journal");
+            await switchMode("CRYPTO");await click("#navJournal");await expectVisible("journal");
             await page.locator("#jDate").fill("2026-09-16");
             await page.locator("#jDate").dispatchEvent("change");
             await page.locator("#jResult").fill("LOSS");
@@ -99,19 +105,19 @@ jobs:
             if(!stored.some(x=>x.model==="NQ"&&x.dateISO==="2026-09-16"))throw new Error("Futures selected date not persisted");
             if(!stored.some(x=>x.model==="CRYPTO"&&x.dateISO==="2026-09-16"))throw new Error("Crypto selected date not persisted");
 
-            await click("#modeNQ");await click("#navDash");await expectVisible("dash");
+            await switchMode("NQ");await click("#navDash");await expectVisible("dash");
             if((await page.locator("#dashTrades").textContent()).trim()!=="1")throw new Error("Futures Dashboard did not read Futures Journal");
-            await click("#modeCRYPTO");await click("#navDash");await expectVisible("cryptoDash");
+            await switchMode("CRYPTO");await click("#navDash");await expectVisible("cryptoDash");
             if((await page.locator("#cryptoDashTrades").textContent()).trim()!=="1"){const dbg=await page.evaluate(()=>({journal:JSON.parse(localStorage.getItem("journal")||"[]"),month:localStorage.getItem("edgeflow.dashboardMonth.CRYPTO"),view:document.querySelector("main > .workspace:not(.hidden)")?.id,mode:document.documentElement.getAttribute("data-site-mode"),kpi:document.querySelector("#cryptoDashTrades")?.textContent}));throw new Error("Crypto Dashboard did not read Crypto Journal: "+JSON.stringify(dbg));}
-            await click("#modeNQ");await click("#navDash");await expectVisible("dash");
+            await switchMode("NQ");await click("#navDash");await expectVisible("dash");
             if((await page.locator("#dashTrades").textContent()).trim()!=="1")throw new Error("Crypto journal leaked into Futures Dashboard");
 
             await click("#navSettings");await expectVisible("settings");
             if(await page.locator("#settings .connection-card").count()!==3)throw new Error("Connection center incomplete");
 
-            await click("#modeNQ");await click("#navBotFutures");await expectVisible("bot");
-            await click("#modeCRYPTO");await expectVisible("crypto");
-            await click("#modeNQ");await expectVisible("bot");
+            await switchMode("NQ");await click("#navBotFutures");await expectVisible("bot");
+            await switchMode("CRYPTO");await expectVisible("crypto");
+            await switchMode("NQ");await expectVisible("bot");
             if(errors.length)throw new Error(errors.join("\n"));
             console.log("EDGEFLOW browser smoke OK");
             await browser.close();
