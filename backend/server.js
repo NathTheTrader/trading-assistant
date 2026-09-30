@@ -461,6 +461,8 @@ async function importObsidianZip(buffer) {
     const trades=found.filter(x=>x && typeof x==="object" && x.id && x.model).sort((a,b)=>String(a.sourcePath).localeCompare(String(b.sourcePath)));
     const status={imported:true,markdownFiles,imageFiles,tradeRecords:trades.length,updatedAt:new Date().toISOString(),source:"Obsidian ZIP"};
     await saveObsidian(trades,status);
+    obsidianJob={running:false,phase:"imported",total:imageFiles,processed:0,analyzedImages:0,error:null,startedAt:null,finishedAt:null,currentFile:null,currentModel:null};
+    await saveObsidianJob();
     return status;
   } finally {
     await fs.rm(root,{recursive:true,force:true}).catch(()=>{});
