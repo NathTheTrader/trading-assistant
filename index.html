@@ -551,7 +551,7 @@ button:active{transform:translateY(1px)}
   <nav>
     <button id="navDash" onclick="show('dash',this)"><span class="nav-icon">⌂</span>Tableau de bord</button>
     <button id="navBot" type="button" onclick="show('bot',this)"><span class="nav-icon">◉</span><span id="navBotText">Bot Futures</span></button>
-    <button onclick="show('chat',this)"><span class="nav-icon">◇</span>Assistant IA</button>
+    <button onclick="show('chat',this)"><span class="nav-icon">◇</span>JARVIS</button>
     <button onclick="show('journal',this)"><span class="nav-icon">▤</span>Journal</button>
     
     <button onclick="show('settings',this)"><span class="nav-icon">⚙</span>Paramètres</button>
@@ -617,15 +617,15 @@ button:active{transform:translateY(1px)}
     <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TS</div><div><div class="connection-name">TradeSea</div><div class="connection-type">Rithmic · plateforme</div></div></div><span class="connection-status ready">LIÉ À RITHMIC</span></div><p>TradeSea utilise Rithmic pour ses comptes. Edgeflow ne scrape pas TradeSea et ne stocke pas ton login TradeSea.</p></div>
     <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Crypto · observateur</div></div></div><span id="dashConnKcex" class="connection-status warn">ÉCRAN</span></div><p>Observation de l'interface KCEX par partage d'onglet. Aucun ordre n'est envoyé.</p></div>
   </div></div>
-    <div class="section"><h2>Raccourcis</h2><div class="actions"><button class="primary" onclick="show('review')">Analyser un trade</button><button class="secondary" onclick="show('journal')">Ouvrir le journal</button><button class="secondary" onclick="show('chat')">Parler à l'assistant</button></div></div>
+    <div class="section"><h2>Raccourcis</h2><div class="actions"><button class="primary" onclick="show('review')">Analyser un trade</button><button class="secondary" onclick="show('journal')">Ouvrir le journal</button><button class="secondary" onclick="show('chat')">Parler à JARVIS</button></div></div>
   </div>
 </section>
 
 <section id="chat" class="hidden">
-  <div class="topbar"><div><div class="eyebrow">Assistant central</div><h1>Assistant IA <span class="pill" id="chatModelPill"></span></h1><div class="sub">Contexte du modèle actif : <span id="chatModeText"></span>. Mémoire historique, journal et données live restent séparés par modèle.</div></div><div class="status">● CHAT PRÊT</div></div>
+  <div class="topbar"><div><div class="eyebrow">JARVIS</div><h1>JARVIS <span class="pill" id="chatModelPill"></span></h1><div class="sub">Contexte du modèle actif : <span id="chatModeText"></span>. Mémoire historique, journal et données live restent séparés par modèle.</div></div><div class="status">● CHAT PRÊT</div></div>
   <div class="section chat-shell">
     <div id="chatMessages" class="chat-messages">
-      <div class="bubble ai"><b>EDGEFLOW</b><div class="sub" style="margin-top:5px">Je suis prêt. Sélectionne NQ ou Crypto et parle-moi d'un setup, d'un trade ou de ton journal.</div></div>
+      <div class="bubble ai"><b>JARVIS</b><div class="sub" style="margin-top:5px">Je suis prêt. Sélectionne NQ ou Crypto et parle-moi d'un setup, d'un trade ou de ton journal.</div></div>
     </div>
     <div class="chat-input"><textarea id="chatInput" rows="1" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Écris ici… ex. Pourquoi ce trade est B+ ?" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea><button class="primary" type="button" onclick="sendChat()">ENVOYER</button></div>
   </div>
@@ -847,21 +847,21 @@ async function sendChat(){
  box.insertAdjacentHTML("beforeend",'<div class="bubble me"><b>TOI</b><div style="margin-top:5px">'+esc(msg)+'</div></div>');
  box.scrollTop=box.scrollHeight;
  if(!BOT_API){
-   box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>EDGEFLOW</b><div class="sub" style="margin-top:5px">'+getJournalAwareReply(msg)+'</div></div>');
+   box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>JARVIS</b><div class="sub" style="margin-top:5px">'+getJournalAwareReply(msg)+'</div></div>');
    input.value=""; localStorage.removeItem("edgeflow.chatDraft."+activeModel);
    return;
  }
  if(sendBtn)sendBtn.disabled=true;
- box.insertAdjacentHTML("beforeend",'<div id="aiThinking" class="bubble ai"><b>EDGEFLOW</b><div class="sub" style="margin-top:5px">Analyse en cours…</div></div>');
+ box.insertAdjacentHTML("beforeend",'<div id="aiThinking" class="bubble ai"><b>JARVIS</b><div class="sub" style="margin-top:5px">Analyse en cours…</div></div>');
  try{
    const r=await botFetch("/api/chat",{method:"POST",body:JSON.stringify({message:msg,model:activeModel})});
    $("aiThinking")?.remove();
-   box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>EDGEFLOW</b><div class="sub" style="margin-top:5px">'+esc(r.text||"Aucune réponse.")+'</div></div>');
+   box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>JARVIS</b><div class="sub" style="margin-top:5px">'+esc(r.text||"Aucune réponse.")+'</div></div>');
    input.value=""; localStorage.removeItem("edgeflow.chatDraft."+activeModel);
  }catch(e){
    $("aiThinking")?.remove();
    const err=String(e?.message||"Erreur inconnue");
-   box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>EDGEFLOW</b><div class="sub" style="margin-top:5px"><b>IA indisponible :</b> '+esc(err)+'<br><br>'+getJournalAwareReply(msg)+'</div></div>');
+   box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>JARVIS</b><div class="sub" style="margin-top:5px"><b>IA indisponible :</b> '+esc(err)+'<br><br>'+getJournalAwareReply(msg)+'</div></div>');
  }finally{
    if(sendBtn)sendBtn.disabled=false;
    box.scrollTop=box.scrollHeight;
