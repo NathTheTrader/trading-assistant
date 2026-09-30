@@ -1929,7 +1929,10 @@ function mergeDashboardTrades(local,server){
  return [...map.values()].sort((a,b)=>tradeTimestamp(a).localeCompare(tradeTimestamp(b)));
 }
 function dashboardMonthKey(model){
- return localStorage.getItem("edgeflow.dashboardMonth."+model)||localMonthKey();
+ const saved=localStorage.getItem("edgeflow.dashboardMonth."+model);
+ if(/^\d{4}-\d{2}$/.test(String(saved||"")))return saved;
+ const latest=getJournal().filter(t=>t.model===model).map(tradeMonthKey).filter(x=>/^\d{4}-\d{2}$/.test(x)).sort().pop();
+ return latest||localMonthKey();
 }
 function setDashboardMonth(model,month){
  if(!/^\d{4}-\d{2}$/.test(month))month=localMonthKey();
