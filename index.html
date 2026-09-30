@@ -845,7 +845,7 @@ input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--acc
   <div class="section" style="margin-top:12px"><h2>Connexion Crypto</h2><div class="connection-grid">
     <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Crypto · observateur</div></div></div><span id="connKcex" class="connection-status warn">ÉCRAN</span></div><p>Partage d’onglet pour observation visuelle. Aucun ordre automatique.</p><div class="actions"><button class="primary" onclick="setSiteMode('CRYPTO');show('crypto',this)">OUVRIR OBSERVATEUR</button><button class="secondary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button></div></div>
   </div></div>
-  <div class="section" style="margin-top:12px"><h2>Obsidian · mémoire historique</h2><div id="obsidianStatusBox" class="ai-box">Aucun journal Obsidian importé sur le backend.</div><div class="actions"><input id="obsidianZip" type="file" accept=".zip,application/zip" style="flex:1"><button class="primary" onclick="importObsidianJournal()">IMPORTER</button><button class="secondary" onclick="analyzeObsidianImages()">ANALYSER LES IMAGES</button></div><div id="obsidianProgress" class="sub" style="margin-top:8px">Analyse visuelle en lecture seule.</div></div>
+  <div class="section" style="margin-top:12px"><h2>Obsidian · mémoire historique</h2><div id="obsidianStatusBox" class="ai-box">Aucun journal Obsidian importé sur le backend.</div><div class="actions"><input id="obsidianZip" type="file" accept=".zip,application/zip" style="flex:1"><button type="button" class="primary" onclick="importObsidianJournal()">IMPORTER</button><button type="button" class="secondary" onclick="analyzeObsidianImages()">ANALYSER LES IMAGES</button></div><div id="obsidianProgress" class="sub" style="margin-top:8px">Analyse visuelle en lecture seule.</div></div>
   <div class="section" style="margin-top:12px"><h2>Sécurité</h2><div class="rows"><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div><div class="row"><span>Lecture seule</span><span class="yes">ACTIVE</span></div><div class="row"><span>Journal</span><span class="neutral">NAVIGATEUR LOCAL</span></div></div></div>
   <div class="section" style="margin-top:12px"><h2>Modèle actif</h2><div id="settingsModel" class="tag">MODÈLE NQ</div><div id="settingsModelDesc" class="sub"></div><div class="actions"><button class="secondary" onclick="chooseModel()">CHANGER DE MODÈLE</button><button class="danger" onclick="clearLocalData()">EFFACER LES DONNÉES LOCALES</button></div></div>
 </section>
@@ -863,6 +863,7 @@ const cryptoDesc="Direction du marché → Key Open manipulé / sweep → POI HT
 const BOT_API=(localStorage.getItem("botApiUrl")||"https://trading-assistant-production.up.railway.app").replace(/\/$/,"");
 const EDGEFLOW_ACCESS_KEY=localStorage.getItem("edgeflowAccessKey")||"";
 let activeModel=localStorage.getItem("activeModel")||"";
+let edgeflowBusy=false;
 let siteMode=localStorage.getItem("siteMode")||"NQ";
 const $=id=>document.getElementById(id);
 const VALID_MODES=new Set(["NQ","CRYPTO"]);
@@ -1314,7 +1315,7 @@ async function refreshObsidianStatus(){
 async function importObsidianJournal(){
   if(!BOT_API){alert("Configure d'abord l'URL du backend dans Paramètres.");return;}
   const file=$("obsidianZip")?.files?.[0]; if(!file){alert("Sélectionne ton ZIP Obsidian.");return;}
-  const progress=$("obsidianProgress"); progress.textContent="Import du journal Obsidian en cours…";
+  const progress=$("obsidianProgress"); edgeflowBusy=true; progress.textContent="Import du journal Obsidian en cours…";
   try{
     const form=new FormData();form.append("file",file,file.name);
     const headers={}; if(EDGEFLOW_ACCESS_KEY) headers["X-EDGEFLOW-ACCESS"]=EDGEFLOW_ACCESS_KEY;
@@ -1323,16 +1324,17 @@ async function importObsidianJournal(){
     if(!r.ok)throw new Error(d.error||"Import impossible");
     progress.textContent="Import terminé : "+d.status.tradeRecords+" fiches et "+d.status.imageFiles+" images.";
     await refreshObsidianStatus(); await refreshAIDataAccess();
-  }catch(e){progress.textContent="Import échoué : "+e.message;}
+    edgeflowBusy=false;
+  }catch(e){edgeflowBusy=false;progress.textContent="Import échoué : "+e.message;}
 }
 async function analyzeObsidianImages(){
   if(!BOT_API){alert("Configure d'abord le backend.");return;}
-  const progress=$("obsidianProgress");progress.textContent="Démarrage / reprise de l'analyse visuelle…";
+  const progress=$("obsidianProgress");edgeflowBusy=true;progress.textContent="Démarrage / reprise de l'analyse visuelle…";
   try{
     const r=await botFetch("/api/obsidian/analyze-images",{method:"POST",body:JSON.stringify({model:activeModel})});
     progress.textContent=r.resumed?"Reprise automatique : les images déjà terminées sont ignorées.":(r.started?"Analyse visuelle démarrée.":"Analyse déjà en cours.");
     pollObsidianJob();
-  }catch(e){progress.textContent="Analyse impossible : "+e.message;}
+  }catch(e){edgeflowBusy=false;progress.textContent="Analyse impossible : "+e.message;}
 }
 async function pollObsidianJob(){
   if(!BOT_API)return;
@@ -1345,7 +1347,7 @@ async function pollObsidianJob(){
       p.textContent=state+" · "+(r.processed||0)+"/"+(r.total||0)+" images"+current+(r.error?" · "+r.error:"");
     }
     if(r.running)setTimeout(pollObsidianJob,2500);
-    else refreshObsidianStatus();
+    else {edgeflowBusy=false;refreshObsidianStatus();}
   }catch(e){setTimeout(pollObsidianJob,5000);}
 }
 async function saveBotUrl(){
@@ -1509,7 +1511,9 @@ $("chatInput")?.addEventListener("input",e=>localStorage.setItem(chatDraftKey(),
      const doc=new DOMParser().parseFromString(await res.text(),"text/html");
      const next=doc.querySelector('meta[name="edgeflow-build"]')?.content;
      const active=document.activeElement,editing=active&&(active.matches("input,textarea,select")||active.isContentEditable);
-     if(next&&next!==current&&!editing)location.reload();
+     const fileInput=document.querySelector("#obsidianZip");
+     const dataBeingEdited=!!(fileInput&&fileInput.files&&fileInput.files.length);
+     if(next&&next!==current&&!editing&&!edgeflowBusy&&!dataBeingEdited)location.reload();
    }catch(e){}
  };
  setTimeout(check,1500);setInterval(check,30000);
