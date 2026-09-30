@@ -102,7 +102,7 @@ jobs:
             await click("#modeNQ");await click("#navDash");await expectVisible("dash");
             if((await page.locator("#dashTrades").textContent()).trim()!=="1")throw new Error("Futures Dashboard did not read Futures Journal");
             await click("#modeCRYPTO");await click("#navDash");await expectVisible("cryptoDash");
-            if((await page.locator("#cryptoDashTrades").textContent()).trim()!=="1")throw new Error("Crypto Dashboard did not read Crypto Journal");
+            if((await page.locator("#cryptoDashTrades").textContent()).trim()!=="1"){const dbg=await page.evaluate(()=>({journal:JSON.parse(localStorage.getItem("journal")||"[]"),month:localStorage.getItem("edgeflow.dashboardMonth.CRYPTO"),view:document.querySelector("main > .workspace:not(.hidden)")?.id,mode:document.documentElement.getAttribute("data-site-mode"),kpi:document.querySelector("#cryptoDashTrades")?.textContent}));throw new Error("Crypto Dashboard did not read Crypto Journal: "+JSON.stringify(dbg));}
             await click("#modeNQ");await click("#navDash");await expectVisible("dash");
             if((await page.locator("#dashTrades").textContent()).trim()!=="1")throw new Error("Crypto journal leaked into Futures Dashboard");
 
