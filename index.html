@@ -542,7 +542,6 @@ button:active{transform:translateY(1px)}
 .weight{font-size:9px;letter-spacing:.5px;color:#8f99aa;margin-left:auto;margin-right:8px}.weight.killer{color:#ff496b}
 .live-check-score{margin-top:12px;padding:12px 14px;border:1px solid var(--hairline2);border-radius:10px;background:linear-gradient(135deg,rgba(255,255,255,.035),rgba(255,255,255,.015));display:flex;align-items:center;gap:12px}.live-check-score span{font-size:9px;letter-spacing:1.2px;color:#778291;font-weight:850}.live-check-score strong{font-size:24px;line-height:1}.live-check-score em{font-style:normal;font-size:11px;font-weight:900;margin-left:auto}
 </style>
-</style>
 </head>
 <body>
 <div class="app">
@@ -903,7 +902,7 @@ async function runBotTest(){
     if(!BOT_API){$("botOutput").innerHTML='<div class="decision">Analyse locale prête. Configure le backend pour l’analyse IA réelle.</div><div class="sub" style="margin-top:10px">'+esc(context)+'</div>';return}
     try{
       const r=await botFetch("/api/analyze-trade",{method:"POST",body:JSON.stringify({trade:{model:"CRYPTO",instrument:"CRYPTO",direction:"",risk:100,result:"OPEN",context,setupPattern:"Key Open → sweep → HTF POI → high RR",timestamp:new Date().toISOString()}})});
-      $("botOutput").innerHTML='<div class="ai-box"><b>TRADING ASSISTANT — CRYPTO</b><div class="sub" style="margin-top:9px">'+esc(r.text||"Analyse terminée.")+'</div></div>';
+      $("botOutput").innerHTML='<div class="ai-box"><b>JARVIS — CRYPTO</b><div class="sub" style="margin-top:9px">'+esc(r.text||"Analyse terminée.")+'</div></div>';
     }catch(e){$("botOutput").innerHTML='<div class="decision bad">IA indisponible</div><div class="sub" style="margin-top:10px">'+esc(e?.message||"Erreur backend")+'</div>'}
     return;
   }
@@ -929,10 +928,22 @@ function analyze(){
  renderJournal();renderStats();
 }
 function bindLiveChecklist(){
- ["btiming","bhigh","bloss","bko","bbacktest","bliq","btilt","brev","timing","high","loss","ko","backtest","liq","tilt","revenge"].forEach(id=>{
-   const el=$(id); if(el && !el.dataset.liveBound){el.addEventListener("change",()=>updateLiveChecklist(id.startsWith("b")?"b":""));el.dataset.liveBound="1";}
+ const ids=["btiming","bhigh","bloss","bko","bbacktest","bliq","btilt","brev","timing","high","loss","ko","backtest","liq","tilt","revenge"];
+ ids.forEach(id=>{
+   const el=$(id);
+   if(el && !el.dataset.liveBound){
+     const refresh=()=>updateLiveChecklist(id.startsWith("b")?"b":"");
+     el.addEventListener("change",refresh);
+     el.addEventListener("input",refresh);
+     el.dataset.liveBound="1";
+   }
  });
- updateLiveChecklist("b"); updateLiveChecklist("");
+ document.addEventListener("change",e=>{
+   if(e.target?.matches("#botNQChecklist input[type=checkbox]")) updateLiveChecklist("b");
+   if(e.target?.matches("#reviewNQ input[type=checkbox]")) updateLiveChecklist("");
+ });
+ updateLiveChecklist("b");
+ updateLiveChecklist("");
 }
 
 function resetReview(){["loss","liq","tilt","revenge"].forEach(id=>$(id).checked=false);["timing","high","ko","backtest"].forEach(id=>$(id).checked=true);["cryptoDirection","cryptoKO","cryptoPOI","cryptoEntry","cryptoRR"].forEach(id=>{if($(id))$(id).value=""});$("notes").value="";$("cryptoNotes").value="";$("result").innerHTML='<div class="empty">Aucune analyse.</div>';updateLiveChecklist("b");updateLiveChecklist("")}
@@ -1108,7 +1119,7 @@ function renderTradovateSnapshot(r){
   ].join("");
 }
 function renderTradovateStatus(r){const ok=!!r.connected;if($("tvLiveStatus")){$("tvLiveStatus").textContent=ok?"● LIVE":"● DÉCONNECTÉ";$("tvLiveStatus").className=ok?"status green":"status"}if($("tvBotState")){$("tvBotState").textContent=ok?"LIVE":"EN ATTENTE";$("tvBotState").className="value small "+(ok?"green":"orange")}if($("tvConnectionText"))$("tvConnectionText").textContent=ok?"Flux actif":"Non connecté";if($("tvDetails"))$("tvDetails").innerHTML='<div class="row"><span>Utilisateur</span><span>'+esc(r.userId||"—")+'</span></div><div class="row"><span>Comptes</span><span>'+esc((r.accounts||[]).map(a=>a.name||a.id).join(", ")||"—")+'</span></div>'}
-async function refreshTradovateEvents(){if(!BOT_API)return;try{const r=await botFetch("/api/tradovate/events"),ev=(r||[]).slice(-1)[0],ai=(r||[]).filter(x=>x.type==="trade_ai_analysis").slice(-1)[0];if(ev&&$("tvLastEvent"))$("tvLastEvent").innerHTML='<b>'+esc(ev.type||"event")+'</b><div class="sub">'+esc(ev.timestamp||"")+'</div>';if(ai&&$("tvAI"))$("tvAI").innerHTML='<b>TRADING ASSISTANT</b><div class="sub" style="margin-top:8px">'+esc(ai.analysis||"")+'</div>'}catch(e){}}
+async function refreshTradovateEvents(){if(!BOT_API)return;try{const r=await botFetch("/api/tradovate/events"),ev=(r||[]).slice(-1)[0],ai=(r||[]).filter(x=>x.type==="trade_ai_analysis").slice(-1)[0];if(ev&&$("tvLastEvent"))$("tvLastEvent").innerHTML='<b>'+esc(ev.type||"event")+'</b><div class="sub">'+esc(ev.timestamp||"")+'</div>';if(ai&&$("tvAI"))$("tvAI").innerHTML='<b>JARVIS</b><div class="sub" style="margin-top:8px">'+esc(ai.analysis||"")+'</div>'}catch(e){}}
 setInterval(()=>{if(activeModel==="NQ"&&BOT_API)refreshTradovateUI()},5000);
 let kcexScreenStream=null;
 let kcexAutoTimer=null;
