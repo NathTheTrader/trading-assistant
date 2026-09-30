@@ -55,6 +55,7 @@ const openai = openrouter ? {
         max_tokens: Number(process.env.OPENROUTER_MAX_TOKENS || 4000)
       };
       if (process.env.OPENROUTER_REASONING === "true" && reasoning) body.reasoning = reasoning;
+      await reserveAIRequest();
       const r = await openrouter.chat.completions.create(body);
       return { output_text: aiText(r.choices?.[0]?.message?.content), raw:r };
     }
