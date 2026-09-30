@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2345-stable-bot-routing-v26"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2400-stable-mode-initialization-v27"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><script>
@@ -2441,10 +2441,17 @@ async function designJarvisVoice(){
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");localStorage.removeItem("edgeflowAccessKey");location.reload()}}
 
 function showActiveDashboard(btn){show(activeModel==="CRYPTO"?"cryptoDash":"dash",btn||$("navDash"))}
-if(!VALID_MODES.has(siteMode))siteMode="NQ";
-activeModel=siteMode;
-setSiteMode(siteMode);
-showActiveDashboard($("navDash"));
+function initializeActiveWorkspace(){
+  if(!VALID_MODES.has(siteMode))siteMode="NQ";
+  activeModel=siteMode;
+  setSiteMode(siteMode);
+  showActiveDashboard($("navDash"));
+}
+initializeActiveWorkspace();
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",()=>initializeActiveWorkspace(),{once:true});
+}
+setTimeout(()=>{if(!document.querySelector("main>.workspace:not(.hidden)"))initializeActiveWorkspace()},0);
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
 renderJournal();resetJournalForm();restoreJournalDraft();hydrateJournalFromServer();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();refreshAIEngineStatus();refreshJarvisVoiceStatus();renderStats();bindLiveChecklist();
