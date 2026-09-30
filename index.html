@@ -610,7 +610,11 @@ input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--acc
 
 
 /* DETERMINISTIC WORKSPACE ROUTER */
-main>section{width:100%;max-width:1380px;margin:0 auto;padding:34px 24px 60px;min-height:100%}
+main>section{width:100%;max-width:1180px;margin:0 auto;padding:30px 20px 54px;min-height:100%}
+#journal{width:100%;max-width:1120px;margin:0 auto;padding:28px 18px 54px}
+#journal .journal-panel{max-width:100%;margin-left:auto;margin-right:auto}
+#journal .journal-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+#journal .journal-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
 .app[data-view] main>section{display:none!important}
 .app[data-view="models"] #models,.app[data-view="dash"] #dash,.app[data-view="bot"] #bot,.app[data-view="chat"] #chat,.app[data-view="journal"] #journal,.app[data-view="review"] #review,.app[data-view="settings"] #settings{display:block!important}
 </style>
@@ -943,6 +947,8 @@ function show(id,btn){
  target.style.setProperty("display","block","important");
  target.setAttribute("aria-hidden","false");
  if(app)app.dataset.view=id;
+ sections.forEach(section=>{if(section!==target)section.style.setProperty("display","none","important");});
+ target.style.setProperty("display","block","important");
  document.querySelectorAll("nav button").forEach(b=>{b.classList.remove("active");b.removeAttribute("aria-current");});
  if(btn){btn.classList.add("active");btn.setAttribute("aria-current","page");}else{const navBtn=[...document.querySelectorAll("nav button")].find(b=>String(b.getAttribute("onclick")||"").includes("show('"+id+"'"));if(navBtn){navBtn.classList.add("active");navBtn.setAttribute("aria-current","page");}}
  if(main)main.scrollTop=0;window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;
