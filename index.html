@@ -1120,12 +1120,12 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
 <section id="settings" class="workspace hidden">
   <div class="workspace-header"><div><div class="eyebrow">CONFIGURATION</div><h1>Paramètres</h1><div class="sub">Backend, connexions, mémoire et sécurité. Rien ici n'envoie automatiquement d'ordre.</div></div><div class="status">● LECTURE SEULE</div></div>
   <div class="section"><h2>Serveur EDGEFLOW</h2><div class="rows"><div class="row"><span>Backend</span><span id="backendStatus" class="neutral">NON CONFIGURÉ</span></div></div><div class="actions"><input id="botApiUrl" placeholder="https://ton-backend.example.com" style="flex:1"><input id="edgeflowAccessKey" type="password" placeholder="Clé d’accès privée" autocomplete="off" style="flex:1"><button class="secondary" onclick="saveBotUrl()">ENREGISTRER</button><button class="secondary" onclick="testBotConnection()">TESTER</button></div></div>
-  <div class="section" style="margin-top:12px"><h2>Connexions Futures</h2><div class="connection-grid">
-    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TV</div><div><div class="connection-name">Tradovate</div><div class="connection-type">Futures · lecture seule</div></div></div><span id="connTradovate" class="connection-status">—</span></div><p>Connexion serveur et synchronisation des événements du compte.</p><div class="connection-actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
-    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">R</div><div><div class="connection-name">Rithmic</div><div class="connection-type">Futures · R|Protocol</div></div></div><span id="connRithmic" class="connection-status">—</span></div><p>Accès API développeur requis pour une intégration directe.</p><a href="https://www.rithmic.com/apis" target="_blank" rel="noopener noreferrer">DOCUMENTATION RITHMIC</a></div>
+  <div class="section connection-center" style="margin-top:12px"><div class="workspace-header" style="margin-bottom:10px"><div><h2>Connexions Futures</h2><div class="sub">Lecture seule : JARVIS observe les ordres et fills, sans jamais exécuter.</div></div><span class="tag">FUTURES</span></div><div class="connection-grid">
+    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TV</div><div><div class="connection-name">Tradovate</div><div class="connection-type">API directe · événements temps réel</div></div></div><span id="connTradovate" class="connection-status">—</span></div><p>Synchronisation du compte, positions, ordres et fills via API + WebSocket.</p><div class="connection-actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
+    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">R</div><div><div class="connection-name">Rithmic</div><div class="connection-type">Observateur live · R|Trader</div></div></div><span id="connRithmic" class="connection-status warn">ÉCRAN</span></div><p>Le mode actuel surveille uniquement les actions visibles dans R|Trader. L’API R|Protocol nécessite un accès développeur Rithmic.</p><div class="connection-actions"><button class="primary" onclick="setSiteMode('NQ');show('bot',this);startRithmicScreenShare()">PARTAGER</button><button class="secondary" onclick="setSiteMode('NQ');show('bot',this);toggleRithmicObserver()">ARMER</button></div></div>
   </div></div>
-  <div class="section" style="margin-top:12px"><h2>Connexion Crypto</h2><div class="connection-grid">
-    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Crypto · observateur</div></div></div><span id="connKcex" class="connection-status warn">ÉCRAN</span></div><p>Partage d’onglet pour observation visuelle. Aucun ordre automatique.</p><div class="actions"><button class="primary" onclick="setSiteMode('CRYPTO');show('crypto',this)">OUVRIR OBSERVATEUR</button><button class="secondary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button></div></div>
+  <div class="section connection-center" style="margin-top:12px"><div class="workspace-header" style="margin-bottom:10px"><div><h2>Connexion Crypto</h2><div class="sub">KCEX est traité comme une source d’écran en lecture seule pour voir tes ordres au moment où tu les places.</div></div><span class="tag">CRYPTO</span></div><div class="connection-grid">
+    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Order Watch · onglet KCEX</div></div></div><span id="connKcex" class="connection-status warn">ÉCRAN</span></div><p>Partage uniquement l’onglet KCEX. Edgeflow compare les captures et alerte lorsqu’un nouvel ordre/position devient visible.</p><div class="actions"><button class="primary" onclick="setSiteMode('CRYPTO');show('crypto',this)">SURVEILLER MES ORDRES</button><button class="secondary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button></div></div>
   </div></div>
   <div class="section" style="margin-top:12px"><h2>Obsidian · mémoire historique</h2><div id="obsidianStatusBox" class="ai-box">Aucun journal Obsidian importé sur le backend.</div><div class="actions"><input id="obsidianZip" type="file" accept=".zip,application/zip" style="flex:1"><button type="button" class="primary" onclick="importObsidianJournal()">IMPORTER</button><button type="button" class="secondary" onclick="analyzeObsidianImages()">ANALYSER LES IMAGES</button></div><div id="obsidianProgress" class="sub" style="margin-top:8px">Analyse visuelle en lecture seule.</div></div>
   <div class="section jarvis-voice-settings" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h2>Voix JARVIS</h2><div class="sub">Synthèse vocale du coach. ElevenLabs prend le relais lorsqu'une clé serveur est configurée.</div></div><span id="jarvisVoiceStatus" class="status">● VÉRIFICATION</span></div><div class="voice-settings-grid" style="margin-top:10px"><div class="ai-box"><div class="label">PROFIL VOCAL</div><div id="jarvisVoiceName" style="margin-top:6px;font-weight:850">JARVIS Original</div><div id="jarvisVoiceEngine" class="sub" style="margin-top:4px">—</div></div><div class="ai-box"><div class="label">MOTEUR</div><div id="jarvisVoiceModel" style="margin-top:6px;font-weight:850">Eleven v4 Turbo</div><div class="sub" style="margin-top:4px">Voix temps réel · faible latence.</div></div></div><div class="actions" style="margin-top:10px"><button type="button" class="primary" onclick="designJarvisVoice()">GÉNÉRER VOIX JARVIS</button></div><div id="jarvisVoiceHelp" class="sub" style="margin-top:8px">Ajoute ELEVENLABS_API_KEY dans Railway pour activer la synthèse vocale serveur et générer une voix JARVIS originale.</div></div>
@@ -1161,7 +1161,7 @@ function setSiteMode(mode){
   document.body.classList.add(mode==="CRYPTO"?"crypto-mode":"nq-mode");
   ["NQ","CRYPTO"].forEach(m=>{const b=$("mode"+m);if(b){const on=m===mode;b.classList.toggle("active",on);b.setAttribute("aria-pressed",String(on));}});
   updateModelUI(); updateBotMode(); applyModeVisibility();
-  const mini=$("connectionMiniSub"); if(mini) mini.textContent=siteMode==="CRYPTO"?"Crypto : KCEX · observateur lecture seule.":"Futures : Tradovate / Rithmic · lecture seule.";
+  const mini=$("connectionMiniSub"); if(mini) mini.textContent=siteMode==="CRYPTO"?"Crypto : KCEX · Order Watch lecture seule.":"Futures : Tradovate API · Rithmic Order Watch lecture seule.";
   renderJournal();
   if($("journal")&&!$("journal").classList.contains("hidden")) updateJournalMarket();
   refreshAIDataAccess(); refreshObsidianStatus();
@@ -1748,19 +1748,31 @@ async function analyzeKCEXScreen(){
       imageDataUrl,
       context:$("cryptoBotContext")?.value?.trim()||"Observation live de l'interface KCEX. Décrire uniquement ce qui est visible et pertinent pour le modèle Crypto."
     })});
-    if(out)out.innerHTML="<b>TRADING ASSISTANT — CRYPTO</b><div class='sub' style='margin-top:8px'>"+esc(r.text||"Analyse terminée.")+"</div>";
-    setKCEXStatus("Dernière capture analysée : "+new Date().toLocaleTimeString("fr-CA"));
+    if(r.detected){
+      toneAlert();
+      showTradePopup({broker:"KCEX",model:"CRYPTO",instrument:r.instrument||"CRYPTO",direction:r.direction||"—",orderType:r.orderType||"—",price:r.price??"—",quantity:r.quantity??"—",risk:"—",context:r.context||"Nouvelle activité d’ordre visible dans l’onglet KCEX."});
+      if(out)out.innerHTML="<b>ORDRE KCEX DÉTECTÉ</b><div class='sub' style='margin-top:8px'>"+esc((r.instrument||"CRYPTO")+" · "+(r.direction||"—")+" · "+(r.orderType||"—")+" · "+(r.price??"—"))+"</div>";
+    } else if(out)out.innerHTML="<b>KCEX · ORDER WATCH</b><div class='sub' style='margin-top:8px'>Aucun nouvel ordre confirmé sur cette capture.</div>";
+    setKCEXStatus((r.detected?"ORDRE DÉTECTÉ · ":"Capture vérifiée · ")+new Date().toLocaleTimeString("fr-CA"));
   }catch(e){
     if(out)out.innerHTML="<div class='decision bad'>Analyse impossible</div><div class='sub' style='margin-top:8px'>"+esc(e.message||"Erreur backend")+"</div>";
     setKCEXStatus("Erreur d'analyse backend.");
   }finally{kcexAnalyzing=false;}
 }
+function toneAlert(){
+  try{
+    const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+    const c=new C(),o=c.createOscillator(),g=c.createGain();
+    o.type="sine";o.frequency.value=880;g.gain.value=.035;o.connect(g);g.connect(c.destination);
+    o.start();g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.22);o.stop(c.currentTime+.23);
+  }catch{}
+}
 function toggleKCEXAuto(){
-  if(kcexAutoTimer){stopKCEXAuto();setKCEXStatus("Analyse automatique arrêtée.");return;}
-  if(!kcexScreenStream){setKCEXStatus("Partage KCEX requis avant l'auto 15s.");return;}
+  if(kcexAutoTimer){stopKCEXAuto();setKCEXStatus("Order Watch arrêté.");return;}
+  if(!kcexScreenStream){setKCEXStatus("Partage de l’onglet KCEX requis.");return;}
   analyzeKCEXScreen();
-  kcexAutoTimer=setInterval(()=>analyzeKCEXScreen(),15000);
-  setKCEXStatus("Analyse automatique active : une capture toutes les 15 secondes.");
+  kcexAutoTimer=setInterval(()=>analyzeKCEXScreen(),3000);
+  setKCEXStatus("ORDER WATCH actif · vérification toutes les 3 secondes · ordres uniquement.");
 }
 
 
@@ -1791,13 +1803,13 @@ async function observeRithmicFrame(){
  try{
    const r=await botFetch("/api/detect-screen-trade",{method:"POST",body:JSON.stringify({broker:"RITHMIC",imageDataUrl:img,previousImageDataUrl:rithmicPreviousFrame})});
    rithmicPreviousFrame=img;
-   if(r.detected){showTradePopup({broker:"RITHMIC",model:"NQ",instrument:r.instrument||"NQ",direction:r.direction||"—",orderType:r.orderType||"—",price:r.price??"—",quantity:r.quantity??"—",risk:"$100",context:r.context||""});}
+   if(r.detected){toneAlert();showTradePopup({broker:"RITHMIC",model:"NQ",instrument:r.instrument||"NQ",direction:r.direction||"—",orderType:r.orderType||"—",price:r.price??"—",quantity:r.quantity??"—",risk:"$100",context:r.context||"Nouvelle activité d’ordre visible dans R|Trader."});}
  }catch(e){}finally{rithmicAnalyzing=false;}
 }
 function startObserverLoop(kind){
  if(kind!=="RITHMIC")return;
  stopObserver("RITHMIC");rithmicPreviousFrame="";
- rithmicObserverTimer=setInterval(observeRithmicFrame,4000);setObserverUI("RITHMIC",true,"Observateur actif · comparaison toutes les 4 s");observeRithmicFrame();
+ rithmicObserverTimer=setInterval(observeRithmicFrame,3000);setObserverUI("RITHMIC",true,"Order Watch actif · comparaison toutes les 3 s");observeRithmicFrame();
 }
 async function startRithmicScreenShare(){if(!navigator.mediaDevices?.getDisplayMedia){setScreenStatus("rithmicScreenStatus","Le partage d'écran n'est pas disponible.");return}try{stopRithmicScreenShare();rithmicScreenStream=await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:"window"},audio:false,selfBrowserSurface:"exclude",surfaceSwitching:"include",monitorTypeSurfaces:"include"});const v=$("rithmicScreenPreview");v.srcObject=rithmicScreenStream;v.style.display="block";await v.play().catch(()=>{});const track=rithmicScreenStream.getVideoTracks()[0];track.addEventListener("ended",()=>stopRithmicScreenShare(),{once:true});setScreenStatus("rithmicScreenStatus","Rithmic partagé. Sélectionne R|Trader ou ta plateforme dans la permission.");}catch(e){setScreenStatus("rithmicScreenStatus","Partage annulé : "+(e.message||e.name));}}
 function stopRithmicScreenShare(){stopObserver("RITHMIC");if(rithmicScreenStream){rithmicScreenStream.getTracks().forEach(t=>t.stop());rithmicScreenStream=null}const v=$("rithmicScreenPreview");if(v){v.srcObject=null;v.style.display="none"}setScreenStatus("rithmicScreenStatus","Partage Rithmic arrêté.");}
