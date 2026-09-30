@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1045-v4-ai-ingestion"><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1600-daily-dashboard-v6"><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><style>
@@ -930,6 +930,33 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
 .dashboard-side-meta{display:grid;gap:6px}.dashboard-side-meta .row{min-height:38px;padding:8px 10px;font-size:10px}.dashboard-model-strip{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-top:12px}.dashboard-model-title{font-size:15px;font-weight:850;margin:4px 0}.dashboard-model-tags{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.dashboard-model-tags .tag{margin:0}
 @media(max-width:1120px){.dashboard-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.dashboard-grid-main{grid-template-columns:1fr}.dashboard-side-card{min-height:0}.dashboard-model-strip{display:block}.dashboard-model-tags{justify-content:flex-start;margin-top:10px}}
 @media(max-width:760px){.dashboard-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-grid-main{gap:8px}.pnl-chart-card,.dashboard-side-card{min-height:0}.pnl-svg{height:260px}.pnl-chart{min-height:260px}.dashboard-activity-row{padding:9px}.dashboard-model-strip{padding:12px}.dashboard-model-tags{gap:5px}.dashboard-model-tags .tag{font-size:8px}}
+
+/* EDGEFLOW — final low-contrast background */
+body{
+ background:
+   radial-gradient(900px 620px at 82% -12%,rgba(255,54,93,.045),transparent 72%),
+   radial-gradient(760px 520px at 12% 112%,rgba(75,156,255,.016),transparent 76%),
+   linear-gradient(180deg,#05070a 0%,#080a0d 52%,#06080b 100%) !important;
+}
+body.crypto-mode{
+ background:
+   radial-gradient(900px 620px at 82% -12%,rgba(75,156,255,.050),transparent 72%),
+   radial-gradient(760px 520px at 12% 112%,rgba(75,156,255,.018),transparent 76%),
+   linear-gradient(180deg,#05070a 0%,#080a0d 52%,#06080b 100%) !important;
+}
+body:before{
+ opacity:.045 !important;
+ background-image:
+   linear-gradient(rgba(255,255,255,.014) 1px,transparent 1px),
+   linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px) !important;
+ background-size:92px 92px !important;
+ mask-image:linear-gradient(to bottom,rgba(0,0,0,.38),rgba(0,0,0,.08) 62%,transparent 94%) !important;
+}
+body:after{
+ content:"";position:fixed;inset:-12%;pointer-events:none;z-index:-1;
+ background:radial-gradient(520px 390px at 70% 25%,rgba(255,255,255,.008),transparent 76%);
+ opacity:.75;mix-blend-mode:screen;
+}
 </style>
 </head><body>
 <div class="app">
@@ -972,7 +999,7 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
 
 <section id="dash" class="workspace hidden" data-model="NQ">
   <div class="workspace-header">
-    <div><div class="eyebrow" id="dashMarketEyebrow">FUTURES</div><h1>Dashboard Futures</h1><div class="sub">Performance réelle du journal Futures. Les trades enregistrés sont automatiquement repris ici.</div></div>
+    <div><div class="eyebrow" id="dashMarketEyebrow">FUTURES</div><h1>Dashboard Futures</h1><div class="sub">Performance de la journée en cours · <strong id="dashDayLabel">—</strong> · l’historique complet reste dans le Journal.</div></div>
     <div class="status green">● FUTURES ACTIF</div>
   </div>
   <div class="grid dashboard-kpis">
@@ -1013,7 +1040,7 @@ body.crypto-mode .hero{background:radial-gradient(circle at 86% 10%,rgba(47,140,
 
 <section id="cryptoDash" class="workspace hidden">
   <div class="workspace-header">
-    <div><div class="eyebrow" id="cryptoDashMarketEyebrow">CRYPTO</div><h1>Dashboard Crypto</h1><div class="sub">Performance réelle du journal Crypto. La courbe suit uniquement les trades Crypto enregistrés.</div></div>
+    <div><div class="eyebrow" id="cryptoDashMarketEyebrow">CRYPTO</div><h1>Dashboard Crypto</h1><div class="sub">Performance de la journée en cours · <strong id="cryptoDashDayLabel">—</strong> · l’historique complet reste dans le Journal.</div></div>
     <div class="status green">● CRYPTO ACTIF</div>
   </div>
   <div class="grid dashboard-kpis">
@@ -1697,6 +1724,18 @@ function parseNumericR(value){
  const m=String(value??"").replace(",",".").match(/[-+]?\d+(?:\.\d+)?/);
  return m?Number(m[0]):NaN;
 }
+function localDateISO(date=new Date()){
+ const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,"0"),d=String(date.getDate()).padStart(2,"0");
+ return y+"-"+m+"-"+d;
+}
+function tradeDateISO(t){
+ const explicit=String(t.dateISO||"").slice(0,10);
+ if(/^\d{4}-\d{2}-\d{2}$/.test(explicit))return explicit;
+ const raw=String(t.timestamp||t.date||"");
+ if(!raw)return"";
+ const d=new Date(raw);
+ return Number.isNaN(d.getTime())?"":localDateISO(d);
+}
 function tradeTimestamp(t){
  return String(t.timestamp||t.dateISO||t.date||"");
 }
@@ -1710,15 +1749,23 @@ function mergeDashboardTrades(local,server){
 }
 async function loadDashboardTrades(model){
  const local=getJournal().filter(x=>x.model===model);
- let server=[];
- let serverOk=false;
+ let server=[],serverOk=false;
  try{
    if(BOT_API){
      const r=await botFetch("/api/trades?model="+encodeURIComponent(model));
      if(Array.isArray(r)){server=r;serverOk=true;}
    }
  }catch(e){}
- return{trades:mergeDashboardTrades(local,server),localCount:local.length,serverCount:server.length,serverOk};
+ const merged=mergeDashboardTrades(local,server);
+ const today=localDateISO();
+ return{
+   trades:merged.filter(t=>tradeDateISO(t)===today),
+   allTrades:merged,
+   localCount:local.length,
+   serverCount:server.length,
+   serverOk,
+   today
+ };
 }
 function formatMoneyShort(n){
  if(!Number.isFinite(n))return"—";
@@ -1727,6 +1774,10 @@ function formatMoneyShort(n){
 function formatDateShort(v){
  const d=new Date(String(v).length===10?v+"T12:00:00":v);
  return Number.isNaN(d.getTime())?"—":d.toLocaleDateString("fr-CA",{month:"short",day:"2-digit"});
+}
+function formatCurrentDayLabel(iso){
+ const d=new Date(iso+"T12:00:00");
+ return Number.isNaN(d.getTime())?"Aujourd'hui":d.toLocaleDateString("fr-CA",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
 }
 function calcDashboardStats(arr){
  const wins=arr.filter(x=>/^WIN/i.test(String(x.result||""))).length;
@@ -1751,20 +1802,20 @@ function calcDashboardStats(arr){
 }
 function pnlTooltipPoint(point){
  const t=point.trade||{};
- return esc(formatDateShort(tradeTimestamp(t)))+" · "+esc(t.instrument||"")+
+ return esc(formatDateShort(tradeDateISO(t)))+" · "+esc(t.instrument||"")+
    " · "+esc(formatMoneyShort(point.pnl))+" · cumul "+esc(formatMoneyShort(point.cumulative));
 }
 function renderPnlChart(prefix,stats){
- const el=$(prefix+"PnlChart"); if(!el)return;
- const badge=$(prefix+"PnlBadge"), caption=$(prefix+"PnlCaption"), meta=$(prefix+"PnlMeta"), count=$(prefix+"PnlCount"), peak=$(prefix+"PeakPnl"),dd=$(prefix+"MaxDD");
- if(meta)meta.textContent=stats.pnlCount?stats.pnlCount+" trade(s) avec P&L":"P&L renseigné dans le journal";
+ const el=$(prefix+"PnlChart");if(!el)return;
+ const badge=$(prefix+"PnlBadge"),caption=$(prefix+"PnlCaption"),meta=$(prefix+"PnlMeta"),count=$(prefix+"PnlCount"),peak=$(prefix+"PeakPnl"),dd=$(prefix+"MaxDD");
+ if(meta)meta.textContent=stats.pnlCount?stats.pnlCount+" trade(s) avec P&L aujourd'hui":"P&L renseigné dans le Journal";
  if(count)count.textContent=String(stats.pnlCount);
  if(peak)peak.textContent=stats.pnlCount?formatMoneyShort(stats.peak):"—";
  if(dd)dd.textContent=stats.pnlCount?formatMoneyShort(-stats.drawdown):"—";
  if(badge){badge.textContent=stats.pnl!==null?formatMoneyShort(stats.pnl):"—";badge.className="pnl-net "+(stats.pnl>0?"positive":stats.pnl<0?"negative":"neutral");}
- if(caption)caption.textContent=stats.pnlCount?stats.pnlCount+" trade(s) · cumul final "+formatMoneyShort(stats.pnl):"Ajoute ton P&L dans le Journal pour construire la courbe.";
+ if(caption)caption.textContent=stats.pnlCount?stats.pnlCount+" trade(s) · cumul final "+formatMoneyShort(stats.pnl):"Aucun P&L renseigné pour aujourd'hui.";
  if(!stats.series.length){
-   el.innerHTML='<div class="empty">Ajoute ton P&L dans le Journal pour construire la courbe.</div>';return;
+   el.innerHTML='<div class="empty">Aucun P&L renseigné pour aujourd'hui.</div>';return;
  }
  const w=940,h=300,padL=52,padR=20,padT=18,padB=34;
  const vals=[0,...stats.series.map(p=>p.cumulative)],min=Math.min(...vals),max=Math.max(...vals);
@@ -1781,8 +1832,8 @@ function renderPnlChart(prefix,stats){
    grid.push('<text x="'+(padL-10)+'" y="'+(yy+3).toFixed(1)+'" text-anchor="end" class="pnl-axis">'+esc(formatMoneyShort(v))+'</text>');
  }
  const dots=stats.series.map((p,i)=>'<g class="pnl-point"><circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.cumulative).toFixed(1)+'" r="4" class="pnl-dot"/><title>'+pnlTooltipPoint(p)+'</title></g>').join("");
- const labels=stats.series.length>1?[0,Math.floor((stats.series.length-1)/2),stats.series.length-1].filter((v,i,a)=>a.indexOf(v)===i).map(i=>'<text x="'+x(i).toFixed(1)+'" y="'+(h-8)+'" text-anchor="middle" class="pnl-axis">'+esc(formatDateShort(tradeTimestamp(stats.series[i].trade)))+'</text>').join(""):"";
- el.innerHTML='<svg class="pnl-svg" viewBox="0 0 '+w+" "+h+'" role="img" aria-label="Courbe P&L cumulée">'+grid.join("")+
+ const labels=stats.series.length>1?[0,Math.floor((stats.series.length-1)/2),stats.series.length-1].filter((v,i,a)=>a.indexOf(v)===i).map(i=>'<text x="'+x(i).toFixed(1)+'" y="'+(h-8)+'" text-anchor="middle" class="pnl-axis">'+esc(formatDateShort(tradeDateISO(stats.series[i].trade)))+'</text>').join(""):"";
+ el.innerHTML='<svg class="pnl-svg" viewBox="0 0 '+w+" "+h+'" role="img" aria-label="Courbe P&L cumulée du jour">'+grid.join("")+
    '<line x1="'+padL+'" y1="'+zeroY.toFixed(1)+'" x2="'+(w-padR)+'" y2="'+zeroY.toFixed(1)+'" class="pnl-zero"/>'+
    '<path d="'+area+'" class="pnl-area"/><path d="'+line+'" class="pnl-line"/>'+dots+labels+
    '<text x="'+padL+'" y="12" class="pnl-axis">P&L cumulé</text></svg>';
@@ -1790,11 +1841,12 @@ function renderPnlChart(prefix,stats){
 function renderDashboardActivity(prefix,arr){
  const el=$(prefix+"Latest");if(!el)return;
  const rows=arr.slice().sort((a,b)=>tradeTimestamp(b).localeCompare(tradeTimestamp(a))).slice(0,6);
- if(!rows.length){el.innerHTML='<div class="empty">Aucune activité enregistrée.</div>';return;}
+ if(!rows.length){el.innerHTML='<div class="empty">Aucun trade aujourd\'hui.</div>';return;}
  el.innerHTML=rows.map(t=>{
    const result=String(t.result||"").toUpperCase();
    const resultClass=result.includes("WIN")?"win":result.includes("LOSS")?"loss":"open";
-   return '<div class="dashboard-activity-row"><div class="activity-main"><div class="activity-top"><strong>'+esc(t.instrument||"—")+'</strong><span class="activity-result '+resultClass+'">'+esc(result||"OPEN")+'</span></div><div class="sub">'+esc(formatDateShort(tradeTimestamp(t)))+' · '+esc(t.session||"Session non définie")+'</div></div><div class="activity-right"><strong class="'+(parseNumericAmount(t.pnl)>0?"green":parseNumericAmount(t.pnl)<0?"red":"")+'">'+(Number.isFinite(parseNumericAmount(t.pnl))?esc(formatMoneyShort(parseNumericAmount(t.pnl))):"—")+'</strong><span>'+esc(t.R||"—")+'</span></div></div>';
+   const pnl=parseNumericAmount(t.pnl);
+   return '<div class="dashboard-activity-row"><div class="activity-main"><div class="activity-top"><strong>'+esc(t.instrument||"—")+'</strong><span class="activity-result '+resultClass+'">'+esc(result||"OPEN")+'</span></div><div class="sub">'+esc(t.session||"Session non définie")+'</div></div><div class="activity-right"><strong class="'+(pnl>0?"green":pnl<0?"red":"")+'">'+(Number.isFinite(pnl)?esc(formatMoneyShort(pnl)):"—")+'</strong><span>'+esc(t.R||"—")+'</span></div></div>';
  }).join("");
 }
 async function renderStats(){
@@ -1806,11 +1858,13 @@ async function renderStats(){
    if($(prefix+"AvgR"))$(prefix+"AvgR").textContent=s.avgR!==null?((s.avgR>=0?"+":"")+s.avgR.toFixed(2)+"R"):"—";
    if($(prefix+"TotalR"))$(prefix+"TotalR").textContent=s.totalR!==null?((s.totalR>=0?"+":"")+s.totalR.toFixed(2)+"R"):"—";
    if($(prefix+"Pnl"))$(prefix+"Pnl").textContent=s.pnl!==null?formatMoneyShort(s.pnl):"—";
-   if($(prefix+"PnlMeta"))$(prefix+"PnlMeta").textContent=s.pnlCount?s.pnlCount+" trade(s) avec P&L":"P&L renseigné dans le journal";
+   if($(prefix+"PnlMeta"))$(prefix+"PnlMeta").textContent=s.pnlCount?s.pnlCount+" trade(s) avec P&L aujourd'hui":"P&L renseigné dans le Journal";
+   const dayLabel=$(prefix+"DayLabel");if(dayLabel)dayLabel.textContent=formatCurrentDayLabel(data.today);
    renderDashboardActivity(prefix,data.trades);
    renderPnlChart(prefix,s);
    const status=$(prefix+"DataStatus");
    if(status){status.textContent=data.serverOk?"● JOURNAL + SERVEUR":"● JOURNAL LOCAL";status.className=data.serverOk?"status green":"status";}
+   const source=$(prefix+"SourceLabel");if(source)source.textContent=data.serverOk?"Journal + serveur":"Journal local";
  };
  put("dash",datasets[0]);put("cryptoDash",datasets[1]);
 }
