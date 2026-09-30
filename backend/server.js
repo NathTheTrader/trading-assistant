@@ -910,7 +910,7 @@ function evidenceStats(trades=[]){
   return {sampleSize:trades.length,wins,losses,winRate:(wins+losses)?Number((wins/(wins+losses)*100).toFixed(1)):null,avgR:r.length?Number((r.reduce((a,b)=>a+b,0)/r.length).toFixed(2)):null,totalR:r.length?Number(r.reduce((a,b)=>a+b,0).toFixed(2)):null};
 }
 function compactLearning(entries=[]){return entries.slice(-20).map(x=>({timestamp:x.timestamp,type:x.type,content:String(x.content||"").slice(0,1800),meta:x.meta||{}}));}
-async function askAI({task, trade, history=[]}) {
+async function askAI({task, trade, history=[], chatHistory=[]}) {
   if(!openai)return {ok:false,error:"OPENROUTER_API_KEY manquante. Le moteur JARVIS est prêt mais aucune clé serveur n'est configurée."};
   const profile=await loadProfile();
   const model=normalizeModel(trade?.model || (String(task||"").toUpperCase().includes("CRYPTO")?"CRYPTO":"NQ"));
@@ -923,7 +923,7 @@ async function askAI({task, trade, history=[]}) {
   const scopedHistory=history.filter(t=>normalizeModel(t?.model||model)===model);
   const combined=[...scopedHistory,...liveJournalTrades];
   const images=Array.isArray(trade?.screenshots)?trade.screenshots.filter(x=>/^data:image\/(png|jpe?g|webp);base64,/i.test(String(x))).slice(0,2):[];
-  const payload={engineVersion:AI_ENGINE_VERSION,traderProfile:profile,model,modelContract:contract,gradeScale:AI_GRADE_SCALE,historicalContext:historicalContext.models?.[model]||{},evidenceStats:evidenceStats(combined),task,currentTrade:trade?compactTradeForAI(trade):null,recentHistory:scopedHistory.slice(-60).map(compactTradeForAI),obsidian:{status:await loadObsidianStatus(),modelSampleSize:obsidianTrades.length},backtests:{sampleSize:backtestTrades.length,evidenceStats:evidenceStats(backtestTrades),recentRecords:backtestTrades.slice(-120).map(compactTradeForAI),liveJournalSampleSize:liveJournalTrades.length},learningMemory:compactLearning(learning)};
+  const payload={engineVersion:AI_ENGINE_VERSION,traderProfile:profile,model,modelContract:contract,gradeScale:AI_GRADE_SCALE,historicalContext:historicalContext.models?.[model]||{},evidenceStats:evidenceStats(combined),task,currentTrade:trade?compactTradeForAI(trade):null,recentHistory:scopedHistory.slice(-60).map(compactTradeForAI),obsidian:{status:await loadObsidianStatus(),modelSampleSize:obsidianTrades.length},backtests:{sampleSize:backtestTrades.length,evidenceStats:evidenceStats(backtestTrades),recentRecords:backtestTrades.slice(-120).map(compactTradeForAI),liveJournalSampleSize:liveJournalTrades.length},learningMemory:compactLearning(learning)},chatHistory:Array.isArray(chatHistory)?chatHistory.slice(-12):[]};
   const protocol=[
     "JARVIS LIVE-TRADING PROTOCOL",
     "- Analyze the setup as it exists NOW. Do not use hindsight.",
@@ -1020,13 +1020,18 @@ app.get("/api/ai/status",requirePrivateRequest,(req,res)=>res.json({
   engine:"JARVIS",
   engineVersion:AI_ENGINE_VERSION,
   configured:!!openai,
-  primaryModel:MODEL,
+  provider:AI_PROVIDER,
+  primaryModel:AI_PRIMARY_MODEL,
+  configuredLegacyModel:MODEL,
   fallbackModels:FALLBACK_MODELS,
   freeModelMode:/^openrouter\/free$/i.test(MODEL),
+  voiceConfigured:Boolean(process.env.ELEVENLABS_API_KEY),
+  voiceEngine:process.env.ELEVENLABS_API_KEY?"ElevenLabs":"Browser fallback",
+  voiceModel:process.env.ELEVENLABS_TTS_MODEL||"eleven_v4_turbo",
+  voiceIdConfigured:Boolean(process.env.ELEVENLABS_VOICE_ID),
   storageRoot:EDGEFLOW_STORAGE_ROOT,
   storageMode:EDGEFLOW_STORAGE_ROOT.startsWith("/data")?"PERSISTENT_VOLUME_EXPECTED":"LOCAL_EPHEMERAL_UNLESS_VOLUME_ATTACHED"
 }));
-
 app.get("/api/history/ai-context",requirePrivateRequest,  async (req,res) => {
   const model=normalizeModel(req.query.model);
   const data=await buildAIHistory(model);
@@ -1087,9 +1092,10 @@ app.post("/api/voice/turn",requirePrivateRequest, async (req,res) => {
     const model=normalizeModel(req.body.model);
     const previousTurns=Array.isArray(req.body.previousTurns)?req.body.previousTurns.slice(-12):[];
     const reply=String(await askVoiceCoach({model,userText:transcript,previousTurns})||"").trim();
-    const voiceId=process.env.ELEVENLABS_VOICE_ID||"JBFqnCBsd6RMkjVDRZzb";
+    const voiceId=process.env.ELEVENLABS_VOICE_ID||"s3TPKV1kjDlVtZbl4Ksh";
     const ttsModel=process.env.ELEVENLABS_TTS_MODEL||"eleven_v4_turbo";
-    const tts=await fetch("https://api.elevenlabs.io/v1/text-to-speech/"+encodeURIComponent(voiceId)+"?output_format=mp3_44100_128",{method:"POST",headers:{"xi-api-key":process.env.ELEVENLABS_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({text:reply,model_id:ttsModel,language_code:"fr",voice_settings:{stability:.62,similarity_boost:.78,style:.18,use_speaker_boost:true,speed:.94}})});
+    const speechText="[calm][confident] "+reply;
+    const tts=await fetch("https://api.elevenlabs.io/v1/text-to-speech/"+encodeURIComponent(voiceId)+"?output_format=mp3_44100_128",{method:"POST",headers:{"xi-api-key":process.env.ELEVENLABS_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({text:speechText,model_id:ttsModel,language_code:"fr",voice_settings:{stability:.65,similarity_boost:.82}})});
     if(!tts.ok) return res.status(502).json({ok:false,error:"ElevenLabs TTS failed: "+(await tts.text()).slice(0,500)});
     const audio=Buffer.from(await tts.arrayBuffer()).toString("base64");
     res.json({ok:true,model,transcript,reply,audioBase64:audio,voice:"JARVIS-style",ttsModel});
@@ -1291,10 +1297,12 @@ app.post("/api/chat",requirePrivateRequest,  async (req,res) => {
   if(message.length>12000) return res.status(413).json({ok:false,error:"Message trop long."});
   const trades=await loadTrades();
   const model=String(req.body.model||"NQ").toUpperCase()==="CRYPTO"?"CRYPTO":"NQ";
+  const previousTurns=Array.isArray(req.body.previousTurns)?req.body.previousTurns.slice(-12).map(x=>({role:String(x?.role)==="assistant"?"assistant":"user",content:String(x?.content||"").slice(0,2400)})):[];
   const result=await askAI({
     task:`Answer the trader's question using ONLY the ${model} model and its stored trading history. Never import rules or trades from the other model. User question: ${String(req.body.message || "")}`,
     trade:null,
-    history:trades.filter(t=>t.model===model)
+    history:trades.filter(t=>t.model===model),
+    chatHistory:previousTurns
   });
   if(!result.ok) return res.status(result.code==="AI_DAILY_QUOTA"?429:503).json(result);
   res.json(result);
