@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#e11d48">
-<title>NATH TRADING AI — NQ & Crypto</title>
+<meta name="theme-color" content="#090b10">
+<title>EDGEFLOW — Trading Intelligence</title>
 <style>
 :root{
   --accent:var(--red);--accentSoft:rgba(255,49,88,.12);
@@ -125,7 +125,7 @@ h1{font-size:24px}.grid{gap:9px}.card,.section,.model-card{padding:13px;border-r
 @media(max-width:1050px){.side{width:185px;flex-basis:185px}.main{padding:15px}.grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.side{width:100%;padding:8px}.main{padding:12px}.chat-shell{height:60vh}}
 
-/* NATH TRADING AI — compact dashboard + model accents */
+/* EDGEFLOW — compact dashboard + model accents */
 .dashboard-kpis{grid-template-columns:repeat(4,1fr)}
 .dashboard-kpis .card{min-height:86px}
 .dashboard-kpis .value{font-size:22px;margin-top:5px}
@@ -151,8 +151,8 @@ body.crypto-mode input:focus,body.crypto-mode textarea:focus,body.crypto-mode se
 <div class="app">
 <aside class="side">
   <div class="brand">
-    <div class="brand-mark">T</div>
-    <div><div class="brand-title">NATH <span>TRADING AI</span></div><div class="brand-sub">NQ • CRYPTO • JOURNAL</div></div>
+    <div class="brand-mark">E</div>
+    <div><div class="brand-title">EDGE<span>FLOW</span></div><div class="brand-sub">NQ • CRYPTO • AI</div></div>
   </div>
   <div class="mode-switch" aria-label="Mode du site"><button id="modeNQ" type="button" data-site-mode="NQ" aria-pressed="false">NQ / FUTURES</button><button id="modeCrypto" type="button" data-site-mode="CRYPTO" aria-pressed="false">CRYPTO</button></div>
   <div class="nav-title">ESPACE DE TRADING</div>
@@ -229,9 +229,9 @@ body.crypto-mode input:focus,body.crypto-mode textarea:focus,body.crypto-mode se
   <div class="topbar"><div><div class="eyebrow">Assistant central</div><h1>Assistant IA <span class="pill" id="chatModelPill"></span></h1><div class="sub">Contexte du modèle actif : <span id="chatModeText"></span>. Mémoire historique, journal et données live restent séparés par modèle.</div></div><div class="status">● CHAT PRÊT</div></div>
   <div class="section chat-shell">
     <div id="chatMessages" class="chat-messages">
-      <div class="bubble ai"><b>TRADING ASSISTANT</b><div class="sub" style="margin-top:5px">Je suis prêt. Sélectionne NQ ou Crypto et parle-moi d'un setup, d'un trade ou de ton journal.</div></div>
+      <div class="bubble ai"><b>EDGEFLOW</b><div class="sub" style="margin-top:5px">Je suis prêt. Sélectionne NQ ou Crypto et parle-moi d'un setup, d'un trade ou de ton journal.</div></div>
     </div>
-    <div class="chat-input"><input id="chatInput" placeholder="Ex. Pourquoi ce trade est B+ ?" onkeydown="if(event.key==='Enter')sendChat()"><button class="primary" onclick="sendChat()">ENVOYER</button></div>
+    <div class="chat-input"><textarea id="chatInput" rows="1" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Écris ici… ex. Pourquoi ce trade est B+ ?" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea><button class="primary" type="button" onclick="sendChat()">ENVOYER</button></div>
   </div>
   <div class="section" style="margin-top:14px"><h2>Données accessibles à l’IA</h2><div id="aiDataAccess" class="ai-box">Chargement du périmètre de données…</div></div>
   <div class="section" style="margin-top:14px"><h2>Sources de données</h2><div class="rows"><div class="row"><span>Futures — Tradovate</span><span class="neutral">À connecter</span></div><div class="row"><span>Crypto — KCEX</span><span class="neutral">Méthode autorisée requise</span></div><div class="row"><span>TradingView / Bookmap</span><span class="neutral">Analyse image — à connecter</span></div></div></div>
