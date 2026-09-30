@@ -80,7 +80,9 @@ jobs:
             await click("#navJournal");await expectVisible("journal");
             const journalTop=await page.locator("#journal").evaluate(el=>el.getBoundingClientRect().top);
             if(journalTop<0||journalTop>100)throw new Error("Journal not positioned at workspace top: "+journalTop);
-            await click("#modeNQ");await click("#navDash");await expectVisible("dash");
+            await click("#modeNQ");
+            console.log("MODE DEBUG",await page.evaluate(()=>({mode:document.documentElement.getAttribute("data-site-mode"),body:document.body.className,visible:[...document.querySelectorAll("main>.workspace:not(.hidden)")].map(x=>x.id)})));
+            await click("#navDash");await expectVisible("dash");
             await click("#modeCRYPTO");await click("#navDash");await expectVisible("cryptoDash");
             await click("#navSettings");await expectVisible("settings");
             await click("#navJournal");await expectVisible("journal");
