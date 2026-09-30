@@ -47,10 +47,9 @@ jobs:
             await page.goto("http://127.0.0.1:4173/index.html",{waitUntil:"domcontentloaded"});
             const click=async sel=>page.locator(sel).evaluate(el=>el.click());
             const switchMode=async mode=>{
-              await Promise.all([
-                page.waitForLoadState("domcontentloaded"),
-                page.locator(mode==="CRYPTO"?"#modeCRYPTO":"#modeNQ").evaluate(el=>el.click())
-              ]);
+              const wait=page.waitForURL(url=>new URL(url).searchParams.get("mode")===mode,{waitUntil:"domcontentloaded"});
+              await page.locator(mode==="CRYPTO"?"#modeCRYPTO":"#modeNQ").evaluate(el=>el.click());
+              await wait;
             };
             const visible=()=>page.locator("main > .workspace:not(.hidden)").evaluateAll(xs=>xs.filter(x=>!x.hidden&&x.style.display!=="none").map(x=>x.id));
             const expectVisible=async id=>{const v=await visible();if(v.length!==1||v[0]!==id)throw new Error("Expected "+id+" visible, got "+JSON.stringify(v));};
