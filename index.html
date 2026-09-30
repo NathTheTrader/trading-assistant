@@ -1302,7 +1302,13 @@ async function refreshObsidianStatus(){
     const r=await botFetch("/api/obsidian/status?model="+encodeURIComponent(activeModel||"NQ"));
     if(!r.imported){box.innerHTML="<b>OBSIDIAN</b> · non importé<br><span class='sub'>Importe ton ZIP une fois. L'IA pourra ensuite utiliser les fiches et les screenshots.</span>";return;}
     box.innerHTML="<b>OBSIDIAN ACTIF</b> · "+(r.tradeRecords||0)+" fiches · "+(r.imageFiles||0)+" images<br><span class='sub'>"+(r.modelTradeRecords||0)+" fiches pour "+esc(activeModel)+" · "+(r.imageAnalyses||0)+" images déjà analysées.</span>";
-    const j=r.job||{}; if(progress) progress.textContent=j.running?("Analyse visuelle en cours : "+j.processed+"/"+j.total+" images."):(j.phase==="complete"?"Analyse visuelle terminée.":j.error?"Erreur : "+j.error:"Prêt à analyser.");
+    const j=r.job||{};
+    if(progress){
+      if(j.running) progress.textContent="Analyse visuelle en cours : "+(j.processed||0)+"/"+(j.total||0)+" images.";
+      else if(j.error) progress.textContent="Analyse en pause : "+j.error;
+      else if(j.phase==="complete" && (r.imageAnalyses||0)>0) progress.textContent="Analyse visuelle terminée : "+(r.imageAnalyses||0)+" images analysées.";
+      else progress.textContent="Import terminé · "+(r.tradeRecords||0)+" fiches · "+(r.imageFiles||0)+" images · prêt à lancer l’analyse.";
+    }
   }catch(e){if(box)box.innerHTML="<span class='neutral'>Backend hors ligne.</span>";}
 }
 async function importObsidianJournal(){
