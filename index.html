@@ -1316,6 +1316,13 @@ html body:before,html body:after{display:none !important;content:none !important
       <div class="ai-box"><div class="label">MÉMOIRE ACTIVE</div><div id="aiMemoryStatus" style="margin-top:6px;font-size:12px;font-weight:800">—</div><div id="aiMemorySub" class="sub" style="margin-top:5px">—</div></div>
       <div class="ai-box"><div class="label">OPTIMISATION</div><div class="actions" style="margin-top:8px"><button class="primary" onclick="runDailyOptimization()">REVUE DU JOUR</button><button class="secondary" onclick="askCoachQuestion()">QUESTION COACH</button></div></div>
     </div>
+    <div class="ai-box" style="margin-top:10px">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+        <div><div class="label">FINANCIAL JUICE</div><div id="fjNewsStatus" class="sub" style="margin-top:4px">Chargement du flux live…</div></div>
+        <button class="secondary" type="button" onclick="refreshFinancialJuiceUI()">ACTUALISER</button>
+      </div>
+      <div id="fjNewsList" class="rows" style="margin-top:9px"><div class="empty">Chargement des headlines…</div></div>
+    </div>
     <div id="aiOptimizationOutput" class="ai-box" style="margin-top:10px;display:none"></div>
   </div>
   <div class="section chat-shell jarvis-chat"><div class="jarvis-chat-top"><div><span class="jarvis-live-dot"></span><span id="chatModeText2">FUTURES</span> · SESSION ACTIVE</div><div class="jarvis-readonly">READ ONLY</div></div><div id="chatMessages" class="chat-messages"><div class="bubble ai"><b>JARVIS</b><div class="sub" style="margin-top:5px">Je suis prêt. Je réponds selon le modèle actif et son historique.</div></div></div><div class="chat-input"><textarea id="chatInput" rows="1" placeholder="Écris ici…"></textarea><button class="primary" onclick="sendChat()">ENVOYER</button></div></div>
@@ -1575,6 +1582,29 @@ function renderChatText(text=""){
  x=x.replace(/\n\n+/g,"<div class='md-gap'></div>");
  x=x.replace(/\n/g,"<br>");
  return x;
+}
+function renderFinancialJuiceNews(items=[]){
+ const box=$("fjNewsList"); if(!box)return;
+ if(!items.length){box.innerHTML='<div class="empty">Aucune headline disponible.</div>';return;}
+ box.innerHTML=items.slice(0,12).map(x=>{
+   const when=x.pubDate?new Date(x.pubDate).toLocaleTimeString("fr-CA",{hour:"2-digit",minute:"2-digit"}):"";
+   const title=esc(x.title||"");
+   const cat=x.category?esc(x.category):"NEWS";
+   const desc=x.description?esc(String(x.description).slice(0,220)):"";
+   const link=x.link?'<a href="'+esc(x.link)+'" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none">↗</a>':"";
+   return '<div class="row"><div style="min-width:0"><div style="font-weight:800">'+title+' '+link+'</div><div class="sub" style="margin-top:4px">'+cat+(when?" · "+when:"")+(desc?" · "+desc:"")+'</div></div></div>';
+ }).join("");
+}
+async function refreshFinancialJuiceUI(){
+ const status=$("fjNewsStatus");
+ try{
+   const r=await botFetch("/api/news/financialjuice?limit=12");
+   renderFinancialJuiceNews(r.items||[]);
+   if(status)status.textContent="LIVE · FinancialJuice · "+new Date().toLocaleTimeString("fr-CA",{hour:"2-digit",minute:"2-digit"});
+ }catch(e){
+   if(status)status.textContent="Flux FinancialJuice indisponible";
+   const box=$("fjNewsList");if(box)box.innerHTML='<div class="empty">Impossible de charger FinancialJuice.</div>';
+ }
 }
 function renderChatHistory(model=activeModel){
  const box=$("chatMessages"); if(!box)return;
@@ -2482,7 +2512,7 @@ if(document.readyState==="loading"){
 setTimeout(()=>{if(!document.querySelector("main>.workspace:not(.hidden)"))initializeActiveWorkspace()},0);
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
-renderJournal();resetJournalForm();restoreJournalDraft();hydrateJournalFromServer();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();refreshAIEngineStatus();refreshJarvisVoiceStatus();renderStats();bindLiveChecklist();
+renderJournal();resetJournalForm();restoreJournalDraft();hydrateJournalFromServer();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();refreshAIEngineStatus();refreshJarvisVoiceStatus();refreshFinancialJuiceUI();renderStats();bindLiveChecklist();
 document.querySelectorAll("[data-image-preview]").forEach(input=>input.addEventListener("change",()=>previewJournalImage(input,input.dataset.imagePreview)));
 JOURNAL_DRAFT_FIELDS.forEach(id=>{const el=$(id);if(!el)return;el.addEventListener("input",saveJournalDraft);el.addEventListener("change",saveJournalDraft);});
 window.addEventListener("beforeunload",saveJournalDraft);
