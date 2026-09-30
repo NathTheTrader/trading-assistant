@@ -811,7 +811,7 @@ app.get("/api/trades",requirePrivateRequest,  async (req,res) => {
   res.json(model ? trades.filter(t=>t.model===model) : trades);
 });
 
-app.post("/api/trades", async (req,res) => {
+app.post("/api/trades",requirePrivateRequest, async (req,res) => {
   const trades=await loadTrades();
   const trade=cleanTrade(req.body);
   trades.push(trade);
