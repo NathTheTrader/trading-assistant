@@ -860,7 +860,7 @@ function setSiteMode(mode){
   ["NQ","CRYPTO"].forEach(m=>{const b=$("mode"+m);if(b){const on=m===mode;b.classList.toggle("active",on);b.setAttribute("aria-pressed",String(on));}});
   updateModelUI(); updateBotMode(); applyModeVisibility();
   const mini=$("connectionMiniSub"); if(mini) mini.textContent=siteMode==="CRYPTO"?"Crypto : KCEX · observateur lecture seule.":"Futures : Tradovate / Rithmic · lecture seule.";
-  renderJournal(); refreshAIDataAccess(); refreshObsidianStatus();
+  renderJournal(); if(visible==="journal") updateJournalMarket(); refreshAIDataAccess(); refreshObsidianStatus();
   if(visible==="dash"||visible==="cryptoDash") showActiveDashboard($("navDash"));
   else if(visible==="bot"||visible==="crypto") show(mode==="CRYPTO"?"crypto":"bot");
   else if(visible==="review"||visible==="cryptoReview") show(mode==="CRYPTO"?"cryptoReview":"review");
@@ -898,6 +898,7 @@ function updateModelUI(){
  if(revF)revF.classList.toggle("hidden",activeModel!=="NQ");
  if(revC)revC.classList.toggle("hidden",activeModel!=="CRYPTO");
  const modeLabel=$("activeModeLabel"); if(modeLabel)modeLabel.textContent=activeModel==="CRYPTO"?"CRYPTO":"FUTURES";
+ const journalBadge=$("journalModeBadge"); if(journalBadge)journalBadge.textContent=activeModel==="CRYPTO"?"CRYPTO":"FUTURES";
  renderStats();
 }
 function updateBotMode(){
