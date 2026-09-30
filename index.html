@@ -1198,7 +1198,7 @@ function journalPopupTrade(){
 function getJournal(){try{return JSON.parse(localStorage.getItem("journal")||"[]")}catch(e){return[]}}
 function journalKey(x){return String(x.dateISO||x.date||"").slice(0,7)||"unknown"}
 function compressImage(file){return new Promise(resolve=>{if(!file){resolve("");return}const reader=new FileReader();reader.onload=e=>{const img=new Image();img.onload=()=>{const max=1400,scale=Math.min(1,max/img.width),c=document.createElement("canvas");c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext("2d").drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL("image/jpeg",.72))};img.src=e.target.result};reader.readAsDataURL(file)})}
-function previewJournalImage(input,id){const f=input.files&&input.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{$(id).src=e.target.result;$(id).style.display="block"};r.readAsDataURL(f)}
+function previewJournalImage(input,id){const f=input?.files?.[0],img=$(id);if(!f||!img)return;const url=URL.createObjectURL(f);img.onload=()=>{img.style.display="block";URL.revokeObjectURL(url)};img.onerror=()=>{img.style.display="none";URL.revokeObjectURL(url)};img.src=url;img.style.display="block"}
 async function prepareAIJournal(){
  const market=$("jMarket").value,instrument=$("jInstrument").value,context=$("jContext").value,errors=$("jErrors").value,result=$("jResult").value,grade=$("jGrade").value;
  const before=await compressImage($("jBefore").files&&$("jBefore").files[0]),after=await compressImage($("jAfter").files&&$("jAfter").files[0]);
