@@ -1,217 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1200-v2-clean-shell"><title>EDGEFLOW — Trading Intelligence</title></head><body>
-<div class="app">
-<aside class="side">
-  <div class="brand">
-    <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40" width="35" height="35"><path d="M20 3 35 11.5v17L20 37 5 28.5v-17L20 3Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M26.8 11.5H14.2v17h12.6M14.2 20h9.4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></div>
-    <div><div class="brand-title">EDGE<span>FLOW</span></div><div class="brand-sub">TRADING INTELLIGENCE</div></div>
-  </div>
-  <div class="mode-switch" role="group" aria-label="Modèle actif">
-    <button id="modeNQ" data-site-mode="NQ" type="button">FUTURES</button>
-    <button id="modeCRYPTO" data-site-mode="CRYPTO" type="button">CRYPTO</button>
-  </div>
-  <div class="nav-title">WORKSPACE</div>
-  <nav>
-    <button id="navDash" onclick="showActiveDashboard(this)"><span class="nav-icon">⌂</span>Dashboard</button>
-    <button id="navBotFutures" data-mode="NQ" onclick="setSiteMode('NQ');show('bot',this)"><span class="nav-icon">◉</span>Bot Futures</button>
-    <button id="navBotCrypto" data-mode="CRYPTO" onclick="setSiteMode('CRYPTO');show('crypto',this)"><span class="nav-icon">◉</span>Bot Crypto</button>
-    <button id="navReviewFutures" data-mode="NQ" onclick="setSiteMode('NQ');show('review',this)"><span class="nav-icon">◇</span>Revue Futures</button>
-    <button id="navReviewCrypto" data-mode="CRYPTO" onclick="setSiteMode('CRYPTO');show('cryptoReview',this)"><span class="nav-icon">◇</span>Revue Crypto</button>
-    <button id="navChat" onclick="show('chat',this)"><span class="nav-icon">◆</span>JARVIS</button>
-    <button id="navJournal" onclick="show('journal',this)"><span class="nav-icon">▤</span>Journal</button>
-    <button id="navSettings" onclick="show('settings',this)"><span class="nav-icon">⚙</span>Paramètres</button>
-  </nav>
-  <div class="side-bottom">
-    <div class="connection-mini">
-      <div class="mini-head"><span>MODE ACTIF</span><span class="dot"></span></div>
-      <div id="activeModeLabel" class="mini-sub">FUTURES</div>
-      <div id="connectionMiniSub" class="mini-sub">Futures : Tradovate / Rithmic · lecture seule.</div>
-    </div>
-  </div>
-</aside>
-<main class="main">
-
-<section id="models" class="workspace">
-  <div class="workspace-header"><div><div class="eyebrow">EDGEFLOW</div><h1>Choisis ton modèle</h1><div class="sub">Deux environnements distincts. Le contexte, le journal, le bot et les règles restent séparés.</div></div><div class="status green">● SYSTÈME PRÊT</div></div>
-  <div class="model-select">
-    <div class="model-card" onclick="selectModel('NQ')"><div class="tag">FUTURES</div><h2>Modèle Futures</h2><p>HTF bias → POI → liquidité / manipulation → retracement Fibonacci → Rejection Block → entrée limite.</p><div class="sub">Ouvrir Futures →</div></div>
-    <div class="model-card" onclick="selectModel('CRYPTO')"><div class="tag">CRYPTO</div><h2>Modèle Crypto</h2><p>Direction → Key Open manipulé / sweep → POI HTF aligné → entrée → high RR. OTE / Fib secondaire.</p><div class="sub">Ouvrir Crypto →</div></div>
-  </div>
-</section>
-
-<section id="dash" class="workspace hidden" data-model="NQ">
-  <div class="workspace-header"><div><div class="eyebrow" id="dashMarketEyebrow">FUTURES</div><h1>Dashboard Futures</h1><div class="sub">Statistiques et activité du modèle Futures uniquement.</div></div><div class="status green">● FUTURES ACTIF</div></div>
-  <div class="grid dashboard-kpis">
-    <div class="card"><div class="label">Trades</div><div class="value" id="dashTrades">0</div><div class="sub">Journal Futures</div></div>
-    <div class="card"><div class="label">Winrate</div><div class="value green" id="dashWinrate">—</div><div class="sub">WIN / (WIN + LOSS)</div></div>
-    <div class="card"><div class="label">RR moyen</div><div class="value blue" id="dashAvgR">—</div><div class="sub">R réalisé moyen</div></div>
-    <div class="card"><div class="label">RR total</div><div class="value" id="dashTotalR">—</div><div class="sub">Somme des R</div></div>
-  </div>
-  <div class="workspace-grid" style="margin-top:12px">
-    <div class="section"><h2>Dernière activité Futures</h2><div id="dashLatest"><div class="empty">Aucune activité enregistrée.</div></div></div>
-    <div class="section"><h2>Modèle</h2><div class="tag" id="dashModelTag">MODÈLE NQ</div><div id="modelDescription" class="sub"></div><div class="divider"></div><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div><div class="actions"><button class="primary" onclick="show('bot',this)">BOT FUTURES</button><button class="secondary" onclick="show('review',this)">NOUVELLE REVUE</button></div></div>
-  </div>
-</section>
-
-<section id="cryptoDash" class="workspace hidden">
-  <div class="workspace-header"><div><div class="eyebrow" id="cryptoDashMarketEyebrow">CRYPTO</div><h1>Dashboard Crypto</h1><div class="sub">Statistiques et activité du modèle Crypto uniquement.</div></div><div class="status green">● CRYPTO ACTIF</div></div>
-  <div class="grid dashboard-kpis">
-    <div class="card"><div class="label">Trades</div><div class="value" id="cryptoDashTrades">0</div><div class="sub">Journal Crypto</div></div>
-    <div class="card"><div class="label">Winrate</div><div class="value green" id="cryptoDashWinrate">—</div><div class="sub">WIN / (WIN + LOSS)</div></div>
-    <div class="card"><div class="label">RR moyen</div><div class="value blue" id="cryptoDashAvgR">—</div><div class="sub">R réalisé moyen</div></div>
-    <div class="card"><div class="label">RR total</div><div class="value" id="cryptoDashTotalR">—</div><div class="sub">Somme des R</div></div>
-  </div>
-  <div class="workspace-grid" style="margin-top:12px">
-    <div class="section"><h2>Dernière activité Crypto</h2><div id="cryptoDashLatest"><div class="empty">Aucune activité enregistrée.</div></div></div>
-    <div class="section"><h2>Modèle Crypto</h2><div class="tag" id="cryptoDashModelTag">MODÈLE CRYPTO</div><div id="cryptoModelDescription" class="sub"></div><div class="divider"></div><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div><div class="actions"><button class="primary" onclick="show('crypto',this)">BOT CRYPTO</button><button class="secondary" onclick="show('cryptoReview',this)">NOUVELLE REVUE</button></div></div>
-  </div>
-</section>
-
-<section id="bot" class="workspace hidden" data-model="NQ">
-  <div class="workspace-header"><div><div class="eyebrow">FUTURES · BOT</div><h1>Bot Futures</h1><div class="sub">Analyse multimodale du modèle NQ. Tradovate et Rithmic restent en lecture seule.</div></div><div id="tvLiveStatus" class="status">● DÉCONNECTÉ</div></div>
-  <div class="grid">
-    <div class="card"><div class="label">Tradovate</div><div class="value small">Futures</div><div id="tvConnectionText" class="sub">Backend non connecté</div><div class="actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
-    <div class="card"><div class="label">Risque de référence</div><div class="value">$100</div><div class="sub">Lecture seule</div></div>
-    <div class="card"><div class="label">État</div><div id="tvBotState" class="value small green">PRÊT</div><div class="sub">Flux Futures</div></div>
-    <div class="card"><div class="label">Modèle</div><div class="value small red">NQ</div><div class="sub">Aucune exécution</div></div>
-  </div>
-  <div class="workspace-grid" style="margin-top:12px">
-    <div class="section">
-      <h2>Tester le modèle Futures</h2>
-      <div class="check-grid">
-        <label class="check-card"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Timing / Session</span><span class="check-meta">+5 · fenêtre</span></span></span><input id="btiming" type="checkbox" checked><span class="check-switch"></span></label>
-        <label class="check-card"><span class="check-main"><span class="check-icon">H</span><span class="check-copy"><span class="check-title">Haute probabilité</span><span class="check-meta">+15 · contexte</span></span></span><input id="bhigh" type="checkbox" checked><span class="check-switch"></span></label>
-        <label class="check-card"><span class="check-main"><span class="check-icon">L</span><span class="check-copy"><span class="check-title">Perte récente</span><span class="check-meta">−10 · contexte</span></span></span><input id="bloss" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card"><span class="check-main"><span class="check-icon">K</span><span class="check-copy"><span class="check-title">Bon sans Key Open</span><span class="check-meta">+10 · contexte</span></span></span><input id="bko" type="checkbox" checked><span class="check-switch"></span></label>
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Setup backtesté</span><span class="check-meta">KILLER · requis</span></span></span><input id="bbacktest" type="checkbox" checked><span class="check-switch"></span></label>
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Liquidité près du SL</span><span class="check-meta">KILLER</span></span></span><input id="bliq" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">KILLER</span></span></span><input id="btilt" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER</span></span></span><input id="brev" type="checkbox"><span class="check-switch"></span></label>
-      </div>
-      <div id="botLiveScore" class="live-check-score"><span>PRÉ-CHECK</span><strong id="botLiveScoreValue">30/30</strong><em id="botLiveScoreGrade">A+</em></div>
-      <textarea id="bnotes" placeholder="HTF bias → POI → liquidité / sweep → retracement → R.B. → entrée → SL/TP → news…"></textarea>
-      <div class="image-drop" style="margin-top:10px"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots</div><div class="image-drop-sub">AVANT = setup. APRÈS = résultat.</div></div><span class="pill">2 max</span></div><div class="image-inputs">
-        <div class="image-input"><label for="bBefore">AVANT / SETUP</label><input id="bBefore" type="file" accept="image/*" data-image-preview="bBeforePreview"><img id="bBeforePreview" class="image-preview"></div>
-        <div class="image-input"><label for="bAfter">APRÈS / RÉSULTAT</label><input id="bAfter" type="file" accept="image/*" data-image-preview="bAfterPreview"><img id="bAfterPreview" class="image-preview"></div>
-      </div></div>
-      <div class="actions"><button class="primary" onclick="runBotTest()">ANALYSER AVEC JARVIS</button></div>
-    </div>
-    <div class="section"><h2>Analyse</h2><div id="botOutput"><div class="empty">Aucun setup analysé.</div></div><div class="divider"></div><h2>Événements Tradovate</h2><div id="tvDetails" class="rows"><div class="row"><span>Utilisateur</span><span>—</span></div><div class="row"><span>Dernier fill</span><span>—</span></div></div><div id="tvLastEvent" class="ai-box" style="margin-top:8px">Aucun événement récent.</div><div id="tvAI" class="ai-box" style="margin-top:8px">Aucune analyse live.</div></div>
-  </div>
-  <div class="section" style="margin-top:12px"><h2>Rithmic · observateur</h2><div class="ai-box"><b>Lecture seule</b><div class="sub" style="margin-top:6px">Partage la fenêtre de R|Trader. EDGEFLOW compare des captures et cherche uniquement une nouvelle activité de trade visible.</div></div><div class="actions"><button class="primary" onclick="startRithmicScreenShare()">PARTAGER RITHMIC</button><button class="secondary" onclick="stopRithmicScreenShare()">ARRÊTER</button><button class="secondary" onclick="toggleRithmicObserver()">ARMER</button><button class="secondary" onclick="analyzeRithmicScreen()">ANALYSER</button></div><div id="rithmicScreenStatus" class="sub" style="margin-top:8px">Pas de partage actif.</div><video id="rithmicScreenPreview" autoplay muted playsinline style="display:none;width:100%;max-height:400px;margin-top:9px;background:#07090d;border-radius:9px"></video><div id="rithmicObserverState" class="observer-live"><i></i><span>Observateur désarmé</span></div><div id="rithmicAIOutput" class="ai-box" style="margin-top:9px">Aucune capture analysée.</div></div>
-</section>
-
-<section id="crypto" class="workspace hidden" data-model="CRYPTO">
-  <div class="workspace-header"><div><div class="eyebrow">CRYPTO · BOT</div><h1>Bot Crypto</h1><div class="sub">Modèle Crypto indépendant. KCEX est observé en lecture seule.</div></div><div class="status green">● CRYPTO</div></div>
-  <div class="section"><div class="status-strip"><b>MODÈLE</b><span>Direction du marché → Key Open manipulé / sweep → POI HTF aligné → entrée → high RR. OTE/Fib secondaire.</span></div><div class="field-grid" style="margin-top:12px">
-    <label>Instrument<select id="cryptoInstrumentBot"><option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>XRP</option><option>HYPE</option><option>FLOKI</option></select></label>
-    <label>Direction<select id="cryptoDirectionBot"><option value="">À déterminer</option><option value="Haussière">Haussière</option><option value="Baissière">Baissière</option></select></label>
-    <label>Key Open<select id="cryptoKOBot"><option value="">Non confirmé</option><option value="Confirmé">Confirmé</option><option value="Absent">Absent</option></select></label>
-    <label>POI HTF<select id="cryptoPOIBot"><option value="">Non confirmé</option><option value="Confirmé">Confirmé</option><option value="Absent">Absent</option></select></label>
-    <label>Entrée<select id="cryptoEntryBot"><option value="">Non confirmé</option><option value="Confirmée">Confirmée</option><option value="Hors modèle">Hors modèle</option></select></label>
-    <label>High RR<select id="cryptoRRBot"><option value="">Non défini</option><option value="Oui">Oui</option><option value="Non">Non</option></select></label>
-    <div class="full"><textarea id="cryptoBotContext" placeholder="Direction, Key Open manipulé/sweep, POI HTF, entrée, high RR, contexte du marché…"></textarea></div>
-    <div class="full image-drop"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots Crypto</div><div class="image-drop-sub">JARVIS utilise le graphique visible comme preuve principale.</div></div><span class="pill">2 max</span></div><div class="image-inputs">
-      <div class="image-input"><label for="cBefore">AVANT / SETUP</label><input id="cBefore" type="file" accept="image/*" data-image-preview="cBeforePreview"><img id="cBeforePreview" class="image-preview"></div>
-      <div class="image-input"><label for="cAfter">APRÈS / RÉSULTAT</label><input id="cAfter" type="file" accept="image/*" data-image-preview="cAfterPreview"><img id="cAfterPreview" class="image-preview"></div>
-    </div></div>
-  </div><div class="actions"><button class="primary" onclick="runBotTest()">ANALYSER LE SETUP CRYPTO</button></div></div>
-  <div class="section" style="margin-top:12px"><h2>JARVIS · analyse Crypto</h2><div id="cryptoBotOutput"><div class="empty">Aucun setup analysé.</div></div></div>
-  <div class="section" style="margin-top:12px"><h2>KCEX · observateur</h2><div class="ai-box"><b>Lecture seule par partage d’écran</b><div class="sub" style="margin-top:6px">Partage uniquement l’onglet KCEX. EDGEFLOW ne stocke pas ton mot de passe et ne passe aucun ordre.</div></div><div class="actions"><button class="primary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button><button class="secondary" onclick="startKCEXScreenShare()">PARTAGER KCEX</button><button class="secondary" onclick="stopKCEXScreenShare()">ARRÊTER</button><button class="secondary" onclick="analyzeKCEXScreen()">ANALYSER</button><button class="secondary" onclick="toggleKCEXAuto()">AUTO 15s</button></div><div id="kcexScreenStatus" class="sub" style="margin-top:8px">Pas de partage actif.</div><video id="kcexScreenPreview" autoplay muted playsinline style="display:none;width:100%;max-height:400px;margin-top:9px;background:#07090d;border-radius:9px"></video><div id="kcexObserverState" class="observer-live"><i></i><span>Observateur désarmé</span></div><div id="kcexAIOutput" class="ai-box" style="margin-top:9px">Aucune capture analysée.</div></div>
-</section>
-
-<section id="review" class="workspace hidden">
-  <div class="workspace-header"><div><div class="eyebrow">FUTURES · REVUE</div><h1>Revue de trade Futures <span id="reviewModel" class="pill">FUTURES MODÈLE</span></h1><div class="sub">Le score est un pré-check. Le graphique et le contexte restent les preuves principales.</div></div></div>
-  <div class="section"><div class="check-grid">
-    <label class="check-card"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Timing / Session</span><span class="check-meta">+5</span></span></span><input id="timing" type="checkbox" checked><span class="check-switch"></span></label>
-    <label class="check-card"><span class="check-main"><span class="check-icon">H</span><span class="check-copy"><span class="check-title">Haute probabilité</span><span class="check-meta">+15</span></span></span><input id="high" type="checkbox" checked><span class="check-switch"></span></label>
-    <label class="check-card"><span class="check-main"><span class="check-icon">L</span><span class="check-copy"><span class="check-title">Perte récente</span><span class="check-meta">−10</span></span></span><input id="loss" type="checkbox"><span class="check-switch"></span></label>
-    <label class="check-card"><span class="check-main"><span class="check-icon">K</span><span class="check-copy"><span class="check-title">Bon sans Key Open</span><span class="check-meta">+10</span></span></span><input id="ko" type="checkbox" checked><span class="check-switch"></span></label>
-    <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Setup backtesté</span><span class="check-meta">KILLER si faux</span></span></span><input id="backtest" type="checkbox" checked><span class="check-switch"></span></label>
-    <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Liquidité près du SL</span><span class="check-meta">KILLER</span></span></span><input id="liq" type="checkbox"><span class="check-switch"></span></label>
-    <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">KILLER</span></span></span><input id="tilt" type="checkbox"><span class="check-switch"></span></label>
-    <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER</span></span></span><input id="revenge" type="checkbox"><span class="check-switch"></span></label>
-  </div><div id="reviewLiveScore" class="live-check-score"><span>PRÉ-CHECK</span><strong id="reviewLiveScoreValue">30/30</strong><em id="reviewLiveScoreGrade">A+</em></div><textarea id="notes" placeholder="HTF bias → POI → liquidité/sweep → retracement → R.B. → entrée → SL/TP → news…"></textarea><div class="image-drop" style="margin-top:10px"><div class="image-inputs">
-    <div class="image-input"><label for="rBefore">AVANT / SETUP</label><input id="rBefore" type="file" accept="image/*" data-image-preview="rBeforePreview"><img id="rBeforePreview" class="image-preview"></div>
-    <div class="image-input"><label for="rAfter">APRÈS / RÉSULTAT</label><input id="rAfter" type="file" accept="image/*" data-image-preview="rAfterPreview"><img id="rAfterPreview" class="image-preview"></div>
-  </div></div><div class="actions"><button class="primary" onclick="analyze()">ANALYSER LE TRADE</button><button class="secondary" onclick="resetReview()">RÉINITIALISER</button></div></div>
-  <div class="section" style="margin-top:12px"><h2>Résultat JARVIS</h2><div id="result"><div class="empty">Aucune analyse.</div></div></div>
-</section>
-
-<section id="cryptoReview" class="workspace hidden">
-  <div class="workspace-header"><div><div class="eyebrow">CRYPTO · REVUE</div><h1>Revue de trade Crypto <span id="cryptoReviewModel" class="pill">CRYPTO MODÈLE</span></h1><div class="sub">Direction → Key Open manipulé/sweep → POI HTF → entrée → high RR.</div></div></div>
-  <div class="section"><div class="field-grid">
-    <label>Instrument<select id="cryptoInstrumentReview"><option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>XRP</option><option>HYPE</option><option>FLOKI</option></select></label>
-    <label>Direction du marché<select id="cryptoDirection"><option value="">À déterminer</option><option>Haussière</option><option>Baissière</option></select></label>
-    <label>Key Open manipulé / sweep<select id="cryptoKO"><option value="">Non confirmé</option><option>Confirmé</option><option>Absent</option></select></label>
-    <label>POI HTF aligné<select id="cryptoPOI"><option value="">Non confirmé</option><option>Confirmé</option><option>Absent</option></select></label>
-    <label>Entrée conforme au modèle<select id="cryptoEntry"><option value="">Non confirmé</option><option>Confirmée</option><option>Hors modèle</option></select></label>
-    <label>High RR prévu<select id="cryptoRR"><option value="">Non défini</option><option>Oui</option><option>Non</option></select></label>
-    <div class="full"><textarea id="cryptoNotes" placeholder="Direction, Key Open, sweep, POI HTF, entrée et high RR…"></textarea></div>
-    <div class="full image-drop"><div class="image-inputs">
-      <div class="image-input"><label for="crBeforeReview">AVANT / SETUP</label><input id="crBeforeReview" type="file" accept="image/*" data-image-preview="crBeforeReviewPreview"><img id="crBeforeReviewPreview" class="image-preview"></div>
-      <div class="image-input"><label for="crAfterReview">APRÈS / RÉSULTAT</label><input id="crAfterReview" type="file" accept="image/*" data-image-preview="crAfterReviewPreview"><img id="crAfterReviewPreview" class="image-preview"></div>
-    </div></div>
-  </div><div class="actions"><button class="primary" onclick="analyze()">ANALYSER LE SETUP CRYPTO</button><button class="secondary" onclick="resetReview()">RÉINITIALISER</button></div></div>
-  <div class="section" style="margin-top:12px"><h2>Résultat JARVIS</h2><div id="cryptoReviewResult"><div class="empty">Aucune analyse.</div></div></div>
-</section>
-
-<section id="chat" class="workspace hidden">
-  <div class="workspace-header"><div><div class="eyebrow">JARVIS</div><h1>JARVIS <span class="pill" id="chatModelPill"></span></h1><div class="sub">Contexte verrouillé sur le modèle actif : <span id="chatModeText"></span>.</div></div><div class="status">● CHAT PRÊT</div></div>
-  <div class="section chat-shell"><div id="chatMessages" class="chat-messages"><div class="bubble ai"><b>JARVIS</b><div class="sub" style="margin-top:5px">Je suis prêt. Je réponds selon le modèle actif et son historique.</div></div></div><div class="chat-input"><textarea id="chatInput" rows="1" placeholder="Écris ici…"></textarea><button class="primary" onclick="sendChat()">ENVOYER</button></div></div>
-</section>
-
-<section id="journal" class="workspace hidden">
-  <div class="workspace-header"><div><div class="eyebrow">HISTORIQUE</div><h1>Journal de trading</h1><div class="sub">Chaque entrée est enregistrée sous le modèle actif. Futures et Crypto restent séparés.</div></div><div class="status green">● JOURNAL ACTIF</div></div>
-  <div class="grid">
-    <div class="card"><div class="label">Mois actif</div><div class="value small" id="journalMonth">—</div></div>
-    <div class="card"><div class="label">Trades ce mois</div><div class="value" id="monthTrades">0</div></div>
-    <div class="card"><div class="label">Futures</div><div class="value red" id="monthNQ">0</div></div>
-    <div class="card"><div class="label">Crypto</div><div class="value blue" id="monthCrypto">0</div></div>
-  </div>
-  <div class="section" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:15px"><div><h2>Nouvelle entrée</h2><div class="sub">Le marché est verrouillé sur le modèle actif.</div></div><span class="tag" id="journalModeBadge">FUTURES</span></div>
-    <div class="field-grid" style="margin-top:12px">
-      <label>Date<div style="display:flex;gap:7px"><div id="jDateDisplay" style="flex:1;background:#0b0f15;border:1px solid var(--line2);border-radius:9px;padding:10px;min-height:40px"></div><button type="button" class="secondary" onclick="$('jDate').showPicker?$('jDate').showPicker():$('jDate').click()">📅</button></div><input id="jDate" type="date" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none"></label>
-      <label>Marché<select id="jMarket" disabled><option value="FUTURES">FUTURES</option><option value="CRYPTO">CRYPTO</option></select></label>
-      <label>Instrument<select id="jInstrument"></select></label>
-      <label>Session<input id="jSession" placeholder="NY AM / NY PM / London / Asia…"></label>
-      <label>Résultat<input id="jResult" placeholder="WIN / LOSS / BE"></label>
-      <label>Grade<input id="jGrade" placeholder="A+ / A / B+…"></label>
-      <label>R réalisé<input id="jR" placeholder="+4R / -1R"></label>
-      <label>$ P&L<input id="jPnL" placeholder="+400 / -100"></label>
-      <div class="full"><textarea id="jContext" placeholder="Contexte du trade…"></textarea></div>
-      <div class="full"><textarea id="jErrors" placeholder="Erreurs / points à améliorer…"></textarea></div>
-      <div class="full"><textarea id="jLesson" placeholder="Leçon concrète…"></textarea></div>
-      <div class="full"><div class="image-drop"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots du trade</div><div class="image-drop-sub">AVANT et APRÈS sont conservés avec l’entrée.</div></div></div><div class="image-inputs"><div class="image-input"><label for="jBefore">AVANT</label><input id="jBefore" type="file" accept="image/*"><img id="jBeforePreview" class="image-preview"></div><div class="image-input"><label for="jAfter">APRÈS</label><input id="jAfter" type="file" accept="image/*"><img id="jAfterPreview" class="image-preview"></div></div></div></div>
-      <div class="full"><h3>🤖 JARVIS</h3><textarea id="jAI" readonly placeholder="Pré-analyse JARVIS…"></textarea></div>
-      <div class="full actions"><button class="primary" onclick="prepareAIJournal()">PRÉ-ANALYSER</button><button class="primary" onclick="saveJournalEntry()">ENREGISTRER</button><button class="secondary" onclick="resetJournalForm()">RÉINITIALISER</button></div>
-    </div>
-  </div>
-  <div class="section" style="margin-top:12px"><h2>Historique du modèle actif</h2><div id="journalMonths"></div></div>
-  <div class="section" style="margin-top:12px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><h2>Analyse du journal</h2><div class="sub">Lecture locale des erreurs et résultats.</div></div><button class="secondary" onclick="askJournalAI()">ANALYSER</button></div><div id="journalAI" style="margin-top:10px"></div></div>
-</section>
-
-<section id="settings" class="workspace hidden">
-  <div class="workspace-header"><div><div class="eyebrow">CONFIGURATION</div><h1>Paramètres</h1><div class="sub">Backend, connexions, mémoire et sécurité. Rien ici n'envoie automatiquement d'ordre.</div></div><div class="status">● LECTURE SEULE</div></div>
-  <div class="section"><h2>Serveur EDGEFLOW</h2><div class="rows"><div class="row"><span>Backend</span><span id="backendStatus" class="neutral">NON CONFIGURÉ</span></div></div><div class="actions"><input id="botApiUrl" placeholder="https://ton-backend.example.com" style="flex:1"><input id="edgeflowAccessKey" type="password" placeholder="Clé d’accès privée" autocomplete="off" style="flex:1"><button class="secondary" onclick="saveBotUrl()">ENREGISTRER</button><button class="secondary" onclick="testBotConnection()">TESTER</button></div></div>
-  <div class="section" style="margin-top:12px"><h2>Connexions Futures</h2><div class="connection-grid">
-    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TV</div><div><div class="connection-name">Tradovate</div><div class="connection-type">Futures · lecture seule</div></div></div><span id="connTradovate" class="connection-status">—</span></div><p>Connexion serveur et synchronisation des événements du compte.</p><div class="connection-actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
-    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">R</div><div><div class="connection-name">Rithmic</div><div class="connection-type">Futures · R|Protocol</div></div></div><span id="connRithmic" class="connection-status">—</span></div><p>Accès API développeur requis pour une intégration directe.</p><a href="https://www.rithmic.com/apis" target="_blank" rel="noopener noreferrer">DOCUMENTATION RITHMIC</a></div>
-  </div></div>
-  <div class="section" style="margin-top:12px"><h2>Connexion Crypto</h2><div class="connection-grid">
-    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Crypto · observateur</div></div></div><span id="connKcex" class="connection-status warn">ÉCRAN</span></div><p>Partage d’onglet pour observation visuelle. Aucun ordre automatique.</p><div class="actions"><button class="primary" onclick="setSiteMode('CRYPTO');show('crypto',this)">OUVRIR OBSERVATEUR</button><button class="secondary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button></div></div>
-  </div></div>
-  <div class="section" style="margin-top:12px"><h2>Obsidian · mémoire historique</h2><div id="obsidianStatusBox" class="ai-box">Aucun journal Obsidian importé sur le backend.</div><div class="actions"><input id="obsidianZip" type="file" accept=".zip,application/zip" style="flex:1"><button class="primary" onclick="importObsidianJournal()">IMPORTER</button><button class="secondary" onclick="analyzeObsidianImages()">ANALYSER LES IMAGES</button></div><div id="obsidianProgress" class="sub" style="margin-top:8px">Analyse visuelle en lecture seule.</div></div>
-  <div class="section" style="margin-top:12px"><h2>Sécurité</h2><div class="rows"><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div><div class="row"><span>Lecture seule</span><span class="yes">ACTIVE</span></div><div class="row"><span>Journal</span><span class="neutral">NAVIGATEUR LOCAL</span></div></div></div>
-  <div class="section" style="margin-top:12px"><h2>Modèle actif</h2><div id="settingsModel" class="tag">MODÈLE NQ</div><div id="settingsModelDesc" class="sub"></div><div class="actions"><button class="secondary" onclick="chooseModel()">CHANGER DE MODÈLE</button><button class="danger" onclick="clearLocalData()">EFFACER LES DONNÉES LOCALES</button></div></div>
-</section>
-
-</main>
-</div>
-<div id="tradePopup" class="trade-pop"><div class="trade-pop-head"><div class="trade-pop-title">TRADE DÉTECTÉ</div><button class="close-pop" onclick="closeTradePopup()">×</button></div><div class="trade-pop-body"><div class="trade-pop-grid">
-  <div class="trade-pop-item"><span>MODÈLE</span><b id="popModel">NQ</b></div><div class="trade-pop-item"><span>BROKER</span><b id="popBroker">RITHMIC</b></div><div class="trade-pop-item"><span>INSTRUMENT</span><b id="popInstrument">NQ</b></div><div class="trade-pop-item"><span>DIRECTION</span><b id="popDirection">—</b></div><div class="trade-pop-item"><span>TYPE</span><b id="popOrderType">—</b></div><div class="trade-pop-item"><span>PRIX</span><b id="popPrice">—</b></div><div class="trade-pop-item"><span>QTÉ</span><b id="popQty">—</b></div><div class="trade-pop-item"><span>RISQUE</span><b id="popRisk">$100</b></div>
-</div><div id="popSetup" class="ai-box">Détection visuelle</div><div id="popContext" class="sub" style="margin-top:8px"></div><div id="popAnalysis" class="decision bad" style="margin-top:10px">EN ATTENTE</div><div class="trade-pop-actions" style="margin-top:10px"><button class="primary" onclick="analyzePopupTrade()">ANALYSER</button><button class="secondary" onclick="journalPopupTrade()">JOURNAL</button></div></div></div>
-
-<style>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1200-v2-clean-shell"><title>EDGEFLOW — Trading Intelligence</title><style>
 :root{
   --accent:var(--red);--accentSoft:rgba(255,49,88,.12);
   --bg:#07090d;--bg2:#0b0e14;--panel:#10141c;--panel2:#151a23;--panel3:#0d1118;
@@ -837,6 +624,220 @@ input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--acc
 @media(max-width:1000px){.workspace-grid{grid-template-columns:1fr}.connection-grid{grid-template-columns:1fr}.model-steps{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.workspace{padding:16px 12px 32px}.workspace-header{display:block}.workspace-header h1{font-size:23px}.field-grid{grid-template-columns:1fr}.field-grid .full{grid-column:auto}.model-steps{grid-template-columns:1fr}}
 </style>
+</head><body>
+<div class="app">
+<aside class="side">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40" width="35" height="35"><path d="M20 3 35 11.5v17L20 37 5 28.5v-17L20 3Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M26.8 11.5H14.2v17h12.6M14.2 20h9.4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></div>
+    <div><div class="brand-title">EDGE<span>FLOW</span></div><div class="brand-sub">TRADING INTELLIGENCE</div></div>
+  </div>
+  <div class="mode-switch" role="group" aria-label="Modèle actif">
+    <button id="modeNQ" data-site-mode="NQ" type="button">FUTURES</button>
+    <button id="modeCRYPTO" data-site-mode="CRYPTO" type="button">CRYPTO</button>
+  </div>
+  <div class="nav-title">WORKSPACE</div>
+  <nav>
+    <button id="navDash" onclick="showActiveDashboard(this)"><span class="nav-icon">⌂</span>Dashboard</button>
+    <button id="navBotFutures" data-mode="NQ" onclick="setSiteMode('NQ');show('bot',this)"><span class="nav-icon">◉</span>Bot Futures</button>
+    <button id="navBotCrypto" data-mode="CRYPTO" onclick="setSiteMode('CRYPTO');show('crypto',this)"><span class="nav-icon">◉</span>Bot Crypto</button>
+    <button id="navReviewFutures" data-mode="NQ" onclick="setSiteMode('NQ');show('review',this)"><span class="nav-icon">◇</span>Revue Futures</button>
+    <button id="navReviewCrypto" data-mode="CRYPTO" onclick="setSiteMode('CRYPTO');show('cryptoReview',this)"><span class="nav-icon">◇</span>Revue Crypto</button>
+    <button id="navChat" onclick="show('chat',this)"><span class="nav-icon">◆</span>JARVIS</button>
+    <button id="navJournal" onclick="show('journal',this)"><span class="nav-icon">▤</span>Journal</button>
+    <button id="navSettings" onclick="show('settings',this)"><span class="nav-icon">⚙</span>Paramètres</button>
+  </nav>
+  <div class="side-bottom">
+    <div class="connection-mini">
+      <div class="mini-head"><span>MODE ACTIF</span><span class="dot"></span></div>
+      <div id="activeModeLabel" class="mini-sub">FUTURES</div>
+      <div id="connectionMiniSub" class="mini-sub">Futures : Tradovate / Rithmic · lecture seule.</div>
+    </div>
+  </div>
+</aside>
+<main class="main">
+
+<section id="models" class="workspace">
+  <div class="workspace-header"><div><div class="eyebrow">EDGEFLOW</div><h1>Choisis ton modèle</h1><div class="sub">Deux environnements distincts. Le contexte, le journal, le bot et les règles restent séparés.</div></div><div class="status green">● SYSTÈME PRÊT</div></div>
+  <div class="model-select">
+    <div class="model-card" onclick="selectModel('NQ')"><div class="tag">FUTURES</div><h2>Modèle Futures</h2><p>HTF bias → POI → liquidité / manipulation → retracement Fibonacci → Rejection Block → entrée limite.</p><div class="sub">Ouvrir Futures →</div></div>
+    <div class="model-card" onclick="selectModel('CRYPTO')"><div class="tag">CRYPTO</div><h2>Modèle Crypto</h2><p>Direction → Key Open manipulé / sweep → POI HTF aligné → entrée → high RR. OTE / Fib secondaire.</p><div class="sub">Ouvrir Crypto →</div></div>
+  </div>
+</section>
+
+<section id="dash" class="workspace hidden" data-model="NQ">
+  <div class="workspace-header"><div><div class="eyebrow" id="dashMarketEyebrow">FUTURES</div><h1>Dashboard Futures</h1><div class="sub">Statistiques et activité du modèle Futures uniquement.</div></div><div class="status green">● FUTURES ACTIF</div></div>
+  <div class="grid dashboard-kpis">
+    <div class="card"><div class="label">Trades</div><div class="value" id="dashTrades">0</div><div class="sub">Journal Futures</div></div>
+    <div class="card"><div class="label">Winrate</div><div class="value green" id="dashWinrate">—</div><div class="sub">WIN / (WIN + LOSS)</div></div>
+    <div class="card"><div class="label">RR moyen</div><div class="value blue" id="dashAvgR">—</div><div class="sub">R réalisé moyen</div></div>
+    <div class="card"><div class="label">RR total</div><div class="value" id="dashTotalR">—</div><div class="sub">Somme des R</div></div>
+  </div>
+  <div class="workspace-grid" style="margin-top:12px">
+    <div class="section"><h2>Dernière activité Futures</h2><div id="dashLatest"><div class="empty">Aucune activité enregistrée.</div></div></div>
+    <div class="section"><h2>Modèle</h2><div class="tag" id="dashModelTag">MODÈLE NQ</div><div id="modelDescription" class="sub"></div><div class="divider"></div><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div><div class="actions"><button class="primary" onclick="show('bot',this)">BOT FUTURES</button><button class="secondary" onclick="show('review',this)">NOUVELLE REVUE</button></div></div>
+  </div>
+</section>
+
+<section id="cryptoDash" class="workspace hidden">
+  <div class="workspace-header"><div><div class="eyebrow" id="cryptoDashMarketEyebrow">CRYPTO</div><h1>Dashboard Crypto</h1><div class="sub">Statistiques et activité du modèle Crypto uniquement.</div></div><div class="status green">● CRYPTO ACTIF</div></div>
+  <div class="grid dashboard-kpis">
+    <div class="card"><div class="label">Trades</div><div class="value" id="cryptoDashTrades">0</div><div class="sub">Journal Crypto</div></div>
+    <div class="card"><div class="label">Winrate</div><div class="value green" id="cryptoDashWinrate">—</div><div class="sub">WIN / (WIN + LOSS)</div></div>
+    <div class="card"><div class="label">RR moyen</div><div class="value blue" id="cryptoDashAvgR">—</div><div class="sub">R réalisé moyen</div></div>
+    <div class="card"><div class="label">RR total</div><div class="value" id="cryptoDashTotalR">—</div><div class="sub">Somme des R</div></div>
+  </div>
+  <div class="workspace-grid" style="margin-top:12px">
+    <div class="section"><h2>Dernière activité Crypto</h2><div id="cryptoDashLatest"><div class="empty">Aucune activité enregistrée.</div></div></div>
+    <div class="section"><h2>Modèle Crypto</h2><div class="tag" id="cryptoDashModelTag">MODÈLE CRYPTO</div><div id="cryptoModelDescription" class="sub"></div><div class="divider"></div><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div><div class="actions"><button class="primary" onclick="show('crypto',this)">BOT CRYPTO</button><button class="secondary" onclick="show('cryptoReview',this)">NOUVELLE REVUE</button></div></div>
+  </div>
+</section>
+
+<section id="bot" class="workspace hidden" data-model="NQ">
+  <div class="workspace-header"><div><div class="eyebrow">FUTURES · BOT</div><h1>Bot Futures</h1><div class="sub">Analyse multimodale du modèle NQ. Tradovate et Rithmic restent en lecture seule.</div></div><div id="tvLiveStatus" class="status">● DÉCONNECTÉ</div></div>
+  <div class="grid">
+    <div class="card"><div class="label">Tradovate</div><div class="value small">Futures</div><div id="tvConnectionText" class="sub">Backend non connecté</div><div class="actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
+    <div class="card"><div class="label">Risque de référence</div><div class="value">$100</div><div class="sub">Lecture seule</div></div>
+    <div class="card"><div class="label">État</div><div id="tvBotState" class="value small green">PRÊT</div><div class="sub">Flux Futures</div></div>
+    <div class="card"><div class="label">Modèle</div><div class="value small red">NQ</div><div class="sub">Aucune exécution</div></div>
+  </div>
+  <div class="workspace-grid" style="margin-top:12px">
+    <div class="section">
+      <h2>Tester le modèle Futures</h2>
+      <div class="check-grid">
+        <label class="check-card"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Timing / Session</span><span class="check-meta">+5 · fenêtre</span></span></span><input id="btiming" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card"><span class="check-main"><span class="check-icon">H</span><span class="check-copy"><span class="check-title">Haute probabilité</span><span class="check-meta">+15 · contexte</span></span></span><input id="bhigh" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card"><span class="check-main"><span class="check-icon">L</span><span class="check-copy"><span class="check-title">Perte récente</span><span class="check-meta">−10 · contexte</span></span></span><input id="bloss" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card"><span class="check-main"><span class="check-icon">K</span><span class="check-copy"><span class="check-title">Bon sans Key Open</span><span class="check-meta">+10 · contexte</span></span></span><input id="bko" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Setup backtesté</span><span class="check-meta">KILLER · requis</span></span></span><input id="bbacktest" type="checkbox" checked><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Liquidité près du SL</span><span class="check-meta">KILLER</span></span></span><input id="bliq" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">KILLER</span></span></span><input id="btilt" type="checkbox"><span class="check-switch"></span></label>
+        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER</span></span></span><input id="brev" type="checkbox"><span class="check-switch"></span></label>
+      </div>
+      <div id="botLiveScore" class="live-check-score"><span>PRÉ-CHECK</span><strong id="botLiveScoreValue">30/30</strong><em id="botLiveScoreGrade">A+</em></div>
+      <textarea id="bnotes" placeholder="HTF bias → POI → liquidité / sweep → retracement → R.B. → entrée → SL/TP → news…"></textarea>
+      <div class="image-drop" style="margin-top:10px"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots</div><div class="image-drop-sub">AVANT = setup. APRÈS = résultat.</div></div><span class="pill">2 max</span></div><div class="image-inputs">
+        <div class="image-input"><label for="bBefore">AVANT / SETUP</label><input id="bBefore" type="file" accept="image/*" data-image-preview="bBeforePreview"><img id="bBeforePreview" class="image-preview"></div>
+        <div class="image-input"><label for="bAfter">APRÈS / RÉSULTAT</label><input id="bAfter" type="file" accept="image/*" data-image-preview="bAfterPreview"><img id="bAfterPreview" class="image-preview"></div>
+      </div></div>
+      <div class="actions"><button class="primary" onclick="runBotTest()">ANALYSER AVEC JARVIS</button></div>
+    </div>
+    <div class="section"><h2>Analyse</h2><div id="botOutput"><div class="empty">Aucun setup analysé.</div></div><div class="divider"></div><h2>Événements Tradovate</h2><div id="tvDetails" class="rows"><div class="row"><span>Utilisateur</span><span>—</span></div><div class="row"><span>Dernier fill</span><span>—</span></div></div><div id="tvLastEvent" class="ai-box" style="margin-top:8px">Aucun événement récent.</div><div id="tvAI" class="ai-box" style="margin-top:8px">Aucune analyse live.</div></div>
+  </div>
+  <div class="section" style="margin-top:12px"><h2>Rithmic · observateur</h2><div class="ai-box"><b>Lecture seule</b><div class="sub" style="margin-top:6px">Partage la fenêtre de R|Trader. EDGEFLOW compare des captures et cherche uniquement une nouvelle activité de trade visible.</div></div><div class="actions"><button class="primary" onclick="startRithmicScreenShare()">PARTAGER RITHMIC</button><button class="secondary" onclick="stopRithmicScreenShare()">ARRÊTER</button><button class="secondary" onclick="toggleRithmicObserver()">ARMER</button><button class="secondary" onclick="analyzeRithmicScreen()">ANALYSER</button></div><div id="rithmicScreenStatus" class="sub" style="margin-top:8px">Pas de partage actif.</div><video id="rithmicScreenPreview" autoplay muted playsinline style="display:none;width:100%;max-height:400px;margin-top:9px;background:#07090d;border-radius:9px"></video><div id="rithmicObserverState" class="observer-live"><i></i><span>Observateur désarmé</span></div><div id="rithmicAIOutput" class="ai-box" style="margin-top:9px">Aucune capture analysée.</div></div>
+</section>
+
+<section id="crypto" class="workspace hidden" data-model="CRYPTO">
+  <div class="workspace-header"><div><div class="eyebrow">CRYPTO · BOT</div><h1>Bot Crypto</h1><div class="sub">Modèle Crypto indépendant. KCEX est observé en lecture seule.</div></div><div class="status green">● CRYPTO</div></div>
+  <div class="section"><div class="status-strip"><b>MODÈLE</b><span>Direction du marché → Key Open manipulé / sweep → POI HTF aligné → entrée → high RR. OTE/Fib secondaire.</span></div><div class="field-grid" style="margin-top:12px">
+    <label>Instrument<select id="cryptoInstrumentBot"><option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>XRP</option><option>HYPE</option><option>FLOKI</option></select></label>
+    <label>Direction<select id="cryptoDirectionBot"><option value="">À déterminer</option><option value="Haussière">Haussière</option><option value="Baissière">Baissière</option></select></label>
+    <label>Key Open<select id="cryptoKOBot"><option value="">Non confirmé</option><option value="Confirmé">Confirmé</option><option value="Absent">Absent</option></select></label>
+    <label>POI HTF<select id="cryptoPOIBot"><option value="">Non confirmé</option><option value="Confirmé">Confirmé</option><option value="Absent">Absent</option></select></label>
+    <label>Entrée<select id="cryptoEntryBot"><option value="">Non confirmé</option><option value="Confirmée">Confirmée</option><option value="Hors modèle">Hors modèle</option></select></label>
+    <label>High RR<select id="cryptoRRBot"><option value="">Non défini</option><option value="Oui">Oui</option><option value="Non">Non</option></select></label>
+    <div class="full"><textarea id="cryptoBotContext" placeholder="Direction, Key Open manipulé/sweep, POI HTF, entrée, high RR, contexte du marché…"></textarea></div>
+    <div class="full image-drop"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots Crypto</div><div class="image-drop-sub">JARVIS utilise le graphique visible comme preuve principale.</div></div><span class="pill">2 max</span></div><div class="image-inputs">
+      <div class="image-input"><label for="cBefore">AVANT / SETUP</label><input id="cBefore" type="file" accept="image/*" data-image-preview="cBeforePreview"><img id="cBeforePreview" class="image-preview"></div>
+      <div class="image-input"><label for="cAfter">APRÈS / RÉSULTAT</label><input id="cAfter" type="file" accept="image/*" data-image-preview="cAfterPreview"><img id="cAfterPreview" class="image-preview"></div>
+    </div></div>
+  </div><div class="actions"><button class="primary" onclick="runBotTest()">ANALYSER LE SETUP CRYPTO</button></div></div>
+  <div class="section" style="margin-top:12px"><h2>JARVIS · analyse Crypto</h2><div id="cryptoBotOutput"><div class="empty">Aucun setup analysé.</div></div></div>
+  <div class="section" style="margin-top:12px"><h2>KCEX · observateur</h2><div class="ai-box"><b>Lecture seule par partage d’écran</b><div class="sub" style="margin-top:6px">Partage uniquement l’onglet KCEX. EDGEFLOW ne stocke pas ton mot de passe et ne passe aucun ordre.</div></div><div class="actions"><button class="primary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button><button class="secondary" onclick="startKCEXScreenShare()">PARTAGER KCEX</button><button class="secondary" onclick="stopKCEXScreenShare()">ARRÊTER</button><button class="secondary" onclick="analyzeKCEXScreen()">ANALYSER</button><button class="secondary" onclick="toggleKCEXAuto()">AUTO 15s</button></div><div id="kcexScreenStatus" class="sub" style="margin-top:8px">Pas de partage actif.</div><video id="kcexScreenPreview" autoplay muted playsinline style="display:none;width:100%;max-height:400px;margin-top:9px;background:#07090d;border-radius:9px"></video><div id="kcexObserverState" class="observer-live"><i></i><span>Observateur désarmé</span></div><div id="kcexAIOutput" class="ai-box" style="margin-top:9px">Aucune capture analysée.</div></div>
+</section>
+
+<section id="review" class="workspace hidden">
+  <div class="workspace-header"><div><div class="eyebrow">FUTURES · REVUE</div><h1>Revue de trade Futures <span id="reviewModel" class="pill">FUTURES MODÈLE</span></h1><div class="sub">Le score est un pré-check. Le graphique et le contexte restent les preuves principales.</div></div></div>
+  <div class="section"><div class="check-grid">
+    <label class="check-card"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Timing / Session</span><span class="check-meta">+5</span></span></span><input id="timing" type="checkbox" checked><span class="check-switch"></span></label>
+    <label class="check-card"><span class="check-main"><span class="check-icon">H</span><span class="check-copy"><span class="check-title">Haute probabilité</span><span class="check-meta">+15</span></span></span><input id="high" type="checkbox" checked><span class="check-switch"></span></label>
+    <label class="check-card"><span class="check-main"><span class="check-icon">L</span><span class="check-copy"><span class="check-title">Perte récente</span><span class="check-meta">−10</span></span></span><input id="loss" type="checkbox"><span class="check-switch"></span></label>
+    <label class="check-card"><span class="check-main"><span class="check-icon">K</span><span class="check-copy"><span class="check-title">Bon sans Key Open</span><span class="check-meta">+10</span></span></span><input id="ko" type="checkbox" checked><span class="check-switch"></span></label>
+    <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Setup backtesté</span><span class="check-meta">KILLER si faux</span></span></span><input id="backtest" type="checkbox" checked><span class="check-switch"></span></label>
+    <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Liquidité près du SL</span><span class="check-meta">KILLER</span></span></span><input id="liq" type="checkbox"><span class="check-switch"></span></label>
+    <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">KILLER</span></span></span><input id="tilt" type="checkbox"><span class="check-switch"></span></label>
+    <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER</span></span></span><input id="revenge" type="checkbox"><span class="check-switch"></span></label>
+  </div><div id="reviewLiveScore" class="live-check-score"><span>PRÉ-CHECK</span><strong id="reviewLiveScoreValue">30/30</strong><em id="reviewLiveScoreGrade">A+</em></div><textarea id="notes" placeholder="HTF bias → POI → liquidité/sweep → retracement → R.B. → entrée → SL/TP → news…"></textarea><div class="image-drop" style="margin-top:10px"><div class="image-inputs">
+    <div class="image-input"><label for="rBefore">AVANT / SETUP</label><input id="rBefore" type="file" accept="image/*" data-image-preview="rBeforePreview"><img id="rBeforePreview" class="image-preview"></div>
+    <div class="image-input"><label for="rAfter">APRÈS / RÉSULTAT</label><input id="rAfter" type="file" accept="image/*" data-image-preview="rAfterPreview"><img id="rAfterPreview" class="image-preview"></div>
+  </div></div><div class="actions"><button class="primary" onclick="analyze()">ANALYSER LE TRADE</button><button class="secondary" onclick="resetReview()">RÉINITIALISER</button></div></div>
+  <div class="section" style="margin-top:12px"><h2>Résultat JARVIS</h2><div id="result"><div class="empty">Aucune analyse.</div></div></div>
+</section>
+
+<section id="cryptoReview" class="workspace hidden">
+  <div class="workspace-header"><div><div class="eyebrow">CRYPTO · REVUE</div><h1>Revue de trade Crypto <span id="cryptoReviewModel" class="pill">CRYPTO MODÈLE</span></h1><div class="sub">Direction → Key Open manipulé/sweep → POI HTF → entrée → high RR.</div></div></div>
+  <div class="section"><div class="field-grid">
+    <label>Instrument<select id="cryptoInstrumentReview"><option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>XRP</option><option>HYPE</option><option>FLOKI</option></select></label>
+    <label>Direction du marché<select id="cryptoDirection"><option value="">À déterminer</option><option>Haussière</option><option>Baissière</option></select></label>
+    <label>Key Open manipulé / sweep<select id="cryptoKO"><option value="">Non confirmé</option><option>Confirmé</option><option>Absent</option></select></label>
+    <label>POI HTF aligné<select id="cryptoPOI"><option value="">Non confirmé</option><option>Confirmé</option><option>Absent</option></select></label>
+    <label>Entrée conforme au modèle<select id="cryptoEntry"><option value="">Non confirmé</option><option>Confirmée</option><option>Hors modèle</option></select></label>
+    <label>High RR prévu<select id="cryptoRR"><option value="">Non défini</option><option>Oui</option><option>Non</option></select></label>
+    <div class="full"><textarea id="cryptoNotes" placeholder="Direction, Key Open, sweep, POI HTF, entrée et high RR…"></textarea></div>
+    <div class="full image-drop"><div class="image-inputs">
+      <div class="image-input"><label for="crBeforeReview">AVANT / SETUP</label><input id="crBeforeReview" type="file" accept="image/*" data-image-preview="crBeforeReviewPreview"><img id="crBeforeReviewPreview" class="image-preview"></div>
+      <div class="image-input"><label for="crAfterReview">APRÈS / RÉSULTAT</label><input id="crAfterReview" type="file" accept="image/*" data-image-preview="crAfterReviewPreview"><img id="crAfterReviewPreview" class="image-preview"></div>
+    </div></div>
+  </div><div class="actions"><button class="primary" onclick="analyze()">ANALYSER LE SETUP CRYPTO</button><button class="secondary" onclick="resetReview()">RÉINITIALISER</button></div></div>
+  <div class="section" style="margin-top:12px"><h2>Résultat JARVIS</h2><div id="cryptoReviewResult"><div class="empty">Aucune analyse.</div></div></div>
+</section>
+
+<section id="chat" class="workspace hidden">
+  <div class="workspace-header"><div><div class="eyebrow">JARVIS</div><h1>JARVIS <span class="pill" id="chatModelPill"></span></h1><div class="sub">Contexte verrouillé sur le modèle actif : <span id="chatModeText"></span>.</div></div><div class="status">● CHAT PRÊT</div></div>
+  <div class="section chat-shell"><div id="chatMessages" class="chat-messages"><div class="bubble ai"><b>JARVIS</b><div class="sub" style="margin-top:5px">Je suis prêt. Je réponds selon le modèle actif et son historique.</div></div></div><div class="chat-input"><textarea id="chatInput" rows="1" placeholder="Écris ici…"></textarea><button class="primary" onclick="sendChat()">ENVOYER</button></div></div>
+</section>
+
+<section id="journal" class="workspace hidden">
+  <div class="workspace-header"><div><div class="eyebrow">HISTORIQUE</div><h1>Journal de trading</h1><div class="sub">Chaque entrée est enregistrée sous le modèle actif. Futures et Crypto restent séparés.</div></div><div class="status green">● JOURNAL ACTIF</div></div>
+  <div class="grid">
+    <div class="card"><div class="label">Mois actif</div><div class="value small" id="journalMonth">—</div></div>
+    <div class="card"><div class="label">Trades ce mois</div><div class="value" id="monthTrades">0</div></div>
+    <div class="card"><div class="label">Futures</div><div class="value red" id="monthNQ">0</div></div>
+    <div class="card"><div class="label">Crypto</div><div class="value blue" id="monthCrypto">0</div></div>
+  </div>
+  <div class="section" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:15px"><div><h2>Nouvelle entrée</h2><div class="sub">Le marché est verrouillé sur le modèle actif.</div></div><span class="tag" id="journalModeBadge">FUTURES</span></div>
+    <div class="field-grid" style="margin-top:12px">
+      <label>Date<div style="display:flex;gap:7px"><div id="jDateDisplay" style="flex:1;background:#0b0f15;border:1px solid var(--line2);border-radius:9px;padding:10px;min-height:40px"></div><button type="button" class="secondary" onclick="$('jDate').showPicker?$('jDate').showPicker():$('jDate').click()">📅</button></div><input id="jDate" type="date" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none"></label>
+      <label>Marché<select id="jMarket" disabled><option value="FUTURES">FUTURES</option><option value="CRYPTO">CRYPTO</option></select></label>
+      <label>Instrument<select id="jInstrument"></select></label>
+      <label>Session<input id="jSession" placeholder="NY AM / NY PM / London / Asia…"></label>
+      <label>Résultat<input id="jResult" placeholder="WIN / LOSS / BE"></label>
+      <label>Grade<input id="jGrade" placeholder="A+ / A / B+…"></label>
+      <label>R réalisé<input id="jR" placeholder="+4R / -1R"></label>
+      <label>$ P&L<input id="jPnL" placeholder="+400 / -100"></label>
+      <div class="full"><textarea id="jContext" placeholder="Contexte du trade…"></textarea></div>
+      <div class="full"><textarea id="jErrors" placeholder="Erreurs / points à améliorer…"></textarea></div>
+      <div class="full"><textarea id="jLesson" placeholder="Leçon concrète…"></textarea></div>
+      <div class="full"><div class="image-drop"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots du trade</div><div class="image-drop-sub">AVANT et APRÈS sont conservés avec l’entrée.</div></div></div><div class="image-inputs"><div class="image-input"><label for="jBefore">AVANT</label><input id="jBefore" type="file" accept="image/*"><img id="jBeforePreview" class="image-preview"></div><div class="image-input"><label for="jAfter">APRÈS</label><input id="jAfter" type="file" accept="image/*"><img id="jAfterPreview" class="image-preview"></div></div></div></div>
+      <div class="full"><h3>🤖 JARVIS</h3><textarea id="jAI" readonly placeholder="Pré-analyse JARVIS…"></textarea></div>
+      <div class="full actions"><button class="primary" onclick="prepareAIJournal()">PRÉ-ANALYSER</button><button class="primary" onclick="saveJournalEntry()">ENREGISTRER</button><button class="secondary" onclick="resetJournalForm()">RÉINITIALISER</button></div>
+    </div>
+  </div>
+  <div class="section" style="margin-top:12px"><h2>Historique du modèle actif</h2><div id="journalMonths"></div></div>
+  <div class="section" style="margin-top:12px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><h2>Analyse du journal</h2><div class="sub">Lecture locale des erreurs et résultats.</div></div><button class="secondary" onclick="askJournalAI()">ANALYSER</button></div><div id="journalAI" style="margin-top:10px"></div></div>
+</section>
+
+<section id="settings" class="workspace hidden">
+  <div class="workspace-header"><div><div class="eyebrow">CONFIGURATION</div><h1>Paramètres</h1><div class="sub">Backend, connexions, mémoire et sécurité. Rien ici n'envoie automatiquement d'ordre.</div></div><div class="status">● LECTURE SEULE</div></div>
+  <div class="section"><h2>Serveur EDGEFLOW</h2><div class="rows"><div class="row"><span>Backend</span><span id="backendStatus" class="neutral">NON CONFIGURÉ</span></div></div><div class="actions"><input id="botApiUrl" placeholder="https://ton-backend.example.com" style="flex:1"><input id="edgeflowAccessKey" type="password" placeholder="Clé d’accès privée" autocomplete="off" style="flex:1"><button class="secondary" onclick="saveBotUrl()">ENREGISTRER</button><button class="secondary" onclick="testBotConnection()">TESTER</button></div></div>
+  <div class="section" style="margin-top:12px"><h2>Connexions Futures</h2><div class="connection-grid">
+    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TV</div><div><div class="connection-name">Tradovate</div><div class="connection-type">Futures · lecture seule</div></div></div><span id="connTradovate" class="connection-status">—</span></div><p>Connexion serveur et synchronisation des événements du compte.</p><div class="connection-actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
+    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">R</div><div><div class="connection-name">Rithmic</div><div class="connection-type">Futures · R|Protocol</div></div></div><span id="connRithmic" class="connection-status">—</span></div><p>Accès API développeur requis pour une intégration directe.</p><a href="https://www.rithmic.com/apis" target="_blank" rel="noopener noreferrer">DOCUMENTATION RITHMIC</a></div>
+  </div></div>
+  <div class="section" style="margin-top:12px"><h2>Connexion Crypto</h2><div class="connection-grid">
+    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Crypto · observateur</div></div></div><span id="connKcex" class="connection-status warn">ÉCRAN</span></div><p>Partage d’onglet pour observation visuelle. Aucun ordre automatique.</p><div class="actions"><button class="primary" onclick="setSiteMode('CRYPTO');show('crypto',this)">OUVRIR OBSERVATEUR</button><button class="secondary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button></div></div>
+  </div></div>
+  <div class="section" style="margin-top:12px"><h2>Obsidian · mémoire historique</h2><div id="obsidianStatusBox" class="ai-box">Aucun journal Obsidian importé sur le backend.</div><div class="actions"><input id="obsidianZip" type="file" accept=".zip,application/zip" style="flex:1"><button class="primary" onclick="importObsidianJournal()">IMPORTER</button><button class="secondary" onclick="analyzeObsidianImages()">ANALYSER LES IMAGES</button></div><div id="obsidianProgress" class="sub" style="margin-top:8px">Analyse visuelle en lecture seule.</div></div>
+  <div class="section" style="margin-top:12px"><h2>Sécurité</h2><div class="rows"><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div><div class="row"><span>Lecture seule</span><span class="yes">ACTIVE</span></div><div class="row"><span>Journal</span><span class="neutral">NAVIGATEUR LOCAL</span></div></div></div>
+  <div class="section" style="margin-top:12px"><h2>Modèle actif</h2><div id="settingsModel" class="tag">MODÈLE NQ</div><div id="settingsModelDesc" class="sub"></div><div class="actions"><button class="secondary" onclick="chooseModel()">CHANGER DE MODÈLE</button><button class="danger" onclick="clearLocalData()">EFFACER LES DONNÉES LOCALES</button></div></div>
+</section>
+
+</main>
+</div>
+<div id="tradePopup" class="trade-pop"><div class="trade-pop-head"><div class="trade-pop-title">TRADE DÉTECTÉ</div><button class="close-pop" onclick="closeTradePopup()">×</button></div><div class="trade-pop-body"><div class="trade-pop-grid">
+  <div class="trade-pop-item"><span>MODÈLE</span><b id="popModel">NQ</b></div><div class="trade-pop-item"><span>BROKER</span><b id="popBroker">RITHMIC</b></div><div class="trade-pop-item"><span>INSTRUMENT</span><b id="popInstrument">NQ</b></div><div class="trade-pop-item"><span>DIRECTION</span><b id="popDirection">—</b></div><div class="trade-pop-item"><span>TYPE</span><b id="popOrderType">—</b></div><div class="trade-pop-item"><span>PRIX</span><b id="popPrice">—</b></div><div class="trade-pop-item"><span>QTÉ</span><b id="popQty">—</b></div><div class="trade-pop-item"><span>RISQUE</span><b id="popRisk">$100</b></div>
+</div><div id="popSetup" class="ai-box">Détection visuelle</div><div id="popContext" class="sub" style="margin-top:8px"></div><div id="popAnalysis" class="decision bad" style="margin-top:10px">EN ATTENTE</div><div class="trade-pop-actions" style="margin-top:10px"><button class="primary" onclick="analyzePopupTrade()">ANALYSER</button><button class="secondary" onclick="journalPopupTrade()">JOURNAL</button></div></div></div>
+
+
 <script>
 const nqDesc="HTF bias → POI → liquidité / manipulation → retracement Fibonacci → Rejection Block → entrée limite.";
 const cryptoDesc="Direction du marché → Key Open manipulé / sweep → POI HTF aligné → entrée → high RR. OTE / Fib secondaire.";
