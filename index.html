@@ -1321,10 +1321,10 @@ async function importObsidianJournal(){
 }
 async function analyzeObsidianImages(){
   if(!BOT_API){alert("Configure d'abord le backend.");return;}
-  const progress=$("obsidianProgress");progress.textContent="Démarrage de l'analyse visuelle…";
+  const progress=$("obsidianProgress");progress.textContent="Démarrage / reprise de l'analyse visuelle…";
   try{
     const r=await botFetch("/api/obsidian/analyze-images",{method:"POST",body:JSON.stringify({model:activeModel})});
-    progress.textContent=r.started?"Analyse visuelle démarrée.":"Analyse déjà en cours.";
+    progress.textContent=r.resumed?"Reprise automatique : les images déjà terminées sont ignorées.":(r.started?"Analyse visuelle démarrée.":"Analyse déjà en cours.");
     pollObsidianJob();
   }catch(e){progress.textContent="Analyse impossible : "+e.message;}
 }
@@ -1333,9 +1333,14 @@ async function pollObsidianJob(){
   try{
     const r=await botFetch("/api/obsidian/job");
     const p=$("obsidianProgress");
-    if(p&&r.running){p.textContent="Analyse visuelle : "+r.processed+"/"+r.total+" images.";setTimeout(pollObsidianJob,5000);}
-    else {if(p)p.textContent=r.error?"Erreur : "+r.error:(r.phase==="complete"?"Analyse visuelle terminée.":"Prêt.");refreshObsidianStatus();}
-  }catch(e){}
+    if(p){
+      const current=r.currentFile?" · "+r.currentFile:"";
+      const state=r.running?"EN COURS":r.phase==="paused-rate-limit"?"EN PAUSE — QUOTA":r.phase==="paused-context-limit"?"EN PAUSE — CONTEXTE":r.phase==="complete"?"TERMINÉ":r.phase==="error"?"ERREUR":"PAUSE";
+      p.textContent=state+" · "+(r.processed||0)+"/"+(r.total||0)+" images"+current+(r.error?" · "+r.error:"");
+    }
+    if(r.running)setTimeout(pollObsidianJob,2500);
+    else refreshObsidianStatus();
+  }catch(e){setTimeout(pollObsidianJob,5000);}
 }
 async function saveBotUrl(){
  const v=$("botApiUrl").value.trim().replace(/\/$/,""); const k=$("edgeflowAccessKey")?.value.trim()||""; if(v)localStorage.setItem("botApiUrl",v); if(k)localStorage.setItem("edgeflowAccessKey",k); else localStorage.removeItem("edgeflowAccessKey"); if(v)location.reload();
