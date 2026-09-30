@@ -127,28 +127,37 @@ function mapGeminiThinking(reasoning) {
   return effort==="high"?"high":effort==="low"?"low":effort==="minimal"?"minimal":"medium";
 }
 async function callGemini({model,input,reasoning}) {
-  const endpoint="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent";
-  const body=buildGeminiRequest(input);
-  body.generationConfig={
-    maxOutputTokens:Number(process.env.GEMINI_MAX_OUTPUT_TOKENS||8000),
-    thinkingConfig:{thinkingLevel:mapGeminiThinking(reasoning)}
+  // Use Gemini's OpenAI-compatible endpoint with Bearer authentication.
+  // This is the supported path for current Gemini authorization (AQ/auth) keys
+  // and also accepts the same OpenAI-style multimodal message format Edgeflow already uses.
+  const endpoint=(process.env.GEMINI_OPENAI_BASE_URL||"https://generativelanguage.googleapis.com/v1beta/openai/").replace(/\\?$/,"")+"/chat/completions";
+  const messages=convertAIInput(input);
+  const body={
+    model,
+    messages,
+    max_tokens:Number(process.env.GEMINI_MAX_OUTPUT_TOKENS||8000)
   };
+  const effort=mapGeminiThinking(reasoning);
+  if(effort && effort!=="medium") body.reasoning_effort=effort;
   const response=await fetch(endpoint,{
     method:"POST",
-    headers:{"Content-Type":"application/json","x-goog-api-key":process.env.GEMINI_API_KEY},
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":"Bearer "+process.env.GEMINI_API_KEY
+    },
     body:JSON.stringify(body)
   });
   const data=await response.json().catch(()=>({}));
   if(!response.ok){
     const error=new Error(data?.error?.message||("Gemini API error "+response.status));
     error.status=response.status;
-    error.code=data?.error?.status||null;
+    error.code=data?.error?.status||data?.error?.code||null;
     throw error;
   }
-  const outputText=(data?.candidates||[]).flatMap(c=>c?.content?.parts||[]).map(p=>String(p?.text||"")).join("");
+  const outputText=aiText(data?.choices?.[0]?.message?.content);
   if(!outputText){
-    const reason=String(data?.candidates?.[0]?.finishReason||"EMPTY_RESPONSE");
-    const error=new Error("Gemini returned no text (finishReason="+reason+").");
+    const finishReason=String(data?.choices?.[0]?.finish_reason||"EMPTY_RESPONSE");
+    const error=new Error("Gemini returned no text (finishReason="+finishReason+").");
     error.status=502;
     throw error;
   }
