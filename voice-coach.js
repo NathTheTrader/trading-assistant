@@ -1,4 +1,4 @@
-/* EDGEFLOW_VOICE_V7 — talk only */
+/* EDGEFLOW_VOICE_V8 — Talk only + original JARVIS voice */
 (function(){
   const css=document.createElement("style");
   css.textContent=`
@@ -181,6 +181,23 @@ setState("idle","JARVIS PRÊT");
     u.rate=.91;u.pitch=.84;u.volume=1;
     window.speechSynthesis.speak(u);
   }
+  async function speakWithJarvisVoice(text){
+    const value=String(text||"").trim();if(!value)return;
+    try{
+      setStatus("JARVIS prépare sa voix…");
+      const r=await fetch(api()+"/api/voice/speak",{method:"POST",headers:headers(),body:JSON.stringify({model:model(),text:value})});
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok||!d.audioBase64)throw new Error(d.error||"Voix JARVIS indisponible.");
+      const audio=new Audio("data:"+(d.audioMimeType||"audio/mpeg")+";base64,"+d.audioBase64);
+      audio.onplay=()=>setStatus("JARVIS répond selon le modèle "+modelLabel()+".");
+      audio.onended=()=>setStatus("JARVIS prêt.");
+      await audio.play();
+    }catch(e){
+      console.warn("[EDGEFLOW][VOICE_TTS]",e);
+      speak(value);
+      setStatus("JARVIS répond selon le modèle "+modelLabel()+".");
+    }
+  }
   if("speechSynthesis" in window)window.speechSynthesis.onvoiceschanged=()=>chooseBrowserVoice();
   function mime(){const a=["audio/webm;codecs=opus","audio/webm","audio/ogg;codecs=opus","audio/mp4"];return a.find(x=>window.MediaRecorder?.isTypeSupported(x))||""}
   function stopVoiceMonitor(){
@@ -275,12 +292,8 @@ setState("idle","JARVIS PRÊT");
       const d=await r.json();if(!r.ok)throw new Error(d.error||"Erreur backend");
       turns.push({role:"user",content:String(d.transcript||"")},{role:"assistant",content:String(d.reply||"")});
       turns=turns.slice(-12);renderConversation();
-      panel.querySelector("#taVQ").textContent=d.reply||"Réponse reçue.";
-      setState("idle","RÉPONSE PRÊTE");setStatus("JARVIS répond selon le modèle "+modelLabel()+".");
-      if(d.audioBase64){
-        const a=new Audio("data:"+(d.audioMimeType||"audio/mpeg")+";base64,"+d.audioBase64);
-        a.play().catch(()=>speak(d.reply||""));
-      }else speak(d.reply||"");
+setState("idle","RÉPONSE PRÊTE");setStatus("JARVIS répond selon le modèle "+modelLabel()+".");
+      speakWithJarvisVoice(d.reply||"");
     }catch(e){setState("idle","JARVIS PRÊT");setStatus(e.message)}
   }
   function init(){
