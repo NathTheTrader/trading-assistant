@@ -282,13 +282,13 @@ function normalizeObsidianPath(rel) {
   return rel;
 }
 function parseObsidianModel(rel) {
-  const normalized=normalizeObsidianPath(String(rel).replace(/\/g,"/"));
+  const normalized=normalizeObsidianPath(String(rel).replace(/\\/g,"/"));
   if (normalized.startsWith("CRYPTO/")) return "CRYPTO";
   if (normalized.startsWith("FUNDED NEW EDGE/") || normalized.startsWith("BACKTEST/") || normalized.startsWith("Journal/") || normalized.startsWith("WEEKLY RECAP/")) return "NQ";
   return "OTHER";
 }
 function parseObsidianType(rel) {
-  const normalized=normalizeObsidianPath(String(rel).replace(/\/g,"/"));
+  const normalized=normalizeObsidianPath(String(rel).replace(/\\/g,"/"));
   if (normalized.startsWith("CRYPTO/") || normalized.startsWith("FUNDED NEW EDGE/")) return "LIVE";
   if (normalized.startsWith("BACKTEST/")) return "BACKTEST";
   if (normalized.startsWith("Journal/")) return "JOURNAL";
