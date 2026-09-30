@@ -63,7 +63,7 @@ jobs:
             if(await page.locator("#review #cryptoNotes").count()!==0)throw new Error("Crypto fields leaked into Futures Review");
             if(await page.locator("#review #backtest").count()!==1||await page.locator("#review #revenge").count()!==1)throw new Error("Futures Review checklist incomplete");
             await page.screenshot({path:"/tmp/edgeflow-futures-review.png",fullPage:true});
-            await click("#modeCRYPTO");await expectVisible("crypto");
+            await click("#modeCRYPTO");await expectVisible("cryptoReview");
             await click("#navDash");await expectVisible("cryptoDash");
             await click("#navBotCrypto");await expectVisible("crypto");
             if(await page.locator("#crypto .connection-card").count()!==0)throw new Error("Bot Crypto has unexpected connection cards");
