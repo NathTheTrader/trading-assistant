@@ -205,7 +205,7 @@ button.danger{min-height:42px}
   .chat-input textarea{font-size:16px}
   input,textarea,select{font-size:16px}
 }
-</style></style>
+</style>
 </head>
 <body>
 <div class="app">
@@ -338,14 +338,26 @@ button.danger{min-height:42px}
 </section>
 
 <section id="review" class="hidden">
-  <div class="topbar"><div><div class="eyebrow">Contrôle avant décision</div><h1>Revue de trade <span id="reviewModel" class="pill"></span></h1><div class="sub">La checklist suit exactement la logique du modèle enregistrée dans le bot.</div></div></div>
-  <div class="section"><div class="form">
-    <label>Timing / Session <input id="timing" type="checkbox" checked></label><label>Haute probabilité <input id="high" type="checkbox" checked></label>
-    <label>Perte récente <input id="loss" type="checkbox"></label><label>Bon sans Key Open <input id="ko" type="checkbox" checked></label>
-    <label>Setup backtesté <input id="backtest" type="checkbox" checked></label><label>Liquidité près du SL <input id="liq" type="checkbox"></label>
-    <label>Tilt <input id="tilt" type="checkbox"></label><label>Trade pour récupérer <input id="revenge" type="checkbox"></label>
-    <div class="full"><textarea id="notes" placeholder="Notes du setup : sweep → impulse → retracement → RB → fill..."></textarea></div>
-  </div><div class="actions"><button class="primary" onclick="analyze()">ANALYSER LE TRADE</button><button class="secondary" onclick="resetReview()">RÉINITIALISER</button></div></div>
+  <div class="topbar"><div><div class="eyebrow">Contrôle avant décision</div><h1>Revue de trade <span id="reviewModel" class="pill"></span></h1><div class="sub">Cette revue est strictement cloisonnée au modèle actif.</div></div></div>
+  <div id="reviewNQ">
+    <div class="section"><div class="form">
+      <label>Timing / Session <input id="timing" type="checkbox" checked></label><label>Haute probabilité <input id="high" type="checkbox" checked></label>
+      <label>Perte récente <input id="loss" type="checkbox"></label><label>Bon sans Key Open <input id="ko" type="checkbox" checked></label>
+      <label>Setup backtesté <input id="backtest" type="checkbox" checked></label><label>Liquidité près du SL <input id="liq" type="checkbox"></label>
+      <label>Tilt <input id="tilt" type="checkbox"></label><label>Trade pour récupérer <input id="revenge" type="checkbox"></label>
+      <div class="full"><textarea id="notes" placeholder="Notes du setup NQ : sweep → impulse → retracement → RB → fill..."></textarea></div>
+    </div><div class="actions"><button class="primary" onclick="analyze()">ANALYSER LE TRADE</button><button class="secondary" onclick="resetReview()">RÉINITIALISER</button></div></div>
+  </div>
+  <div id="reviewCrypto" class="hidden">
+    <div class="section"><h2>Modèle Crypto</h2><div class="form">
+      <label>Direction du marché <select id="cryptoDirection"><option value="">À déterminer</option><option>Haussière</option><option>Baissière</option></select></label>
+      <label>Key Open manipulé / sweep <select id="cryptoKO"><option value="">Non confirmé</option><option>Confirmé</option><option>Absent</option></select></label>
+      <label>POI HTF aligné <select id="cryptoPOI"><option value="">Non confirmé</option><option>Confirmé</option><option>Absent</option></select></label>
+      <label>Entrée conforme au modèle <select id="cryptoEntry"><option value="">Non confirmé</option><option>Confirmée</option><option>Hors modèle</option></select></label>
+      <label>High RR prévu <select id="cryptoRR"><option value="">Non défini</option><option>Oui</option><option>Non</option></select></label>
+      <div class="full"><textarea id="cryptoNotes" placeholder="Notes Crypto : direction → Key Open manipulé/sweep → POI HTF → entrée → high RR. OTE/Fib = secondaire."></textarea></div>
+    </div><div class="actions"><button class="primary" onclick="analyze()">ANALYSER LE SETUP CRYPTO</button><button class="secondary" onclick="resetReview()">RÉINITIALISER</button></div></div>
+  </div>
   <div class="section" style="margin-top:14px"><h2>Résultat</h2><div id="result"><div class="empty">Aucune analyse.</div></div></div>
 </section>
 
@@ -356,7 +368,7 @@ button.danger{min-height:42px}
     <h2>Nouvelle entrée</h2>
     <div class="form">
       <label style="display:block">Date<div style="display:flex;gap:7px;margin-top:7px"><div id="jDateDisplay" style="flex:1;background:#0b0f15;color:#fff;border:1px solid var(--line2);border-radius:9px;padding:10px;min-height:40px;display:flex;align-items:center">—</div><button type="button" class="secondary" onclick="$('jDate').showPicker ? $('jDate').showPicker() : $('jDate').click()">📅</button></div><input id="jDate" type="date" lang="fr-CA" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none"></label>
-      <label style="display:block">Marché<select id="jMarket" onchange="updateJournalMarket()" style="width:100%;margin-top:7px"><option value="FUTURES">FUTURES</option><option value="CRYPTO">CRYPTO</option></select></label>
+      <label style="display:block">Marché actif<select id="jMarket" onchange="updateJournalMarket()" disabled style="width:100%;margin-top:7px"><option value="FUTURES">FUTURES</option><option value="CRYPTO">CRYPTO</option></select></label>
       <label style="display:block">Instrument<select id="jInstrument" style="width:100%;margin-top:7px"></select></label>
       <label style="display:block">Session<input id="jSession" placeholder="NY AM / NY PM / London / Asia..." style="width:100%;margin-top:7px"></label>
       <label style="display:block">Résultat<input id="jResult" placeholder="WIN / LOSS / BE" style="width:100%;margin-top:7px"></label>
@@ -404,7 +416,7 @@ button.danger{min-height:42px}
 <section id="settings" class="hidden">
   <div class="topbar"><div><div class="eyebrow">Configuration</div><h1>Paramètres</h1><div class="sub">Les connexions réelles restent séparées de l'interface et utilisent des permissions contrôlées.</div></div></div>
   <div class="layout">
-    <div class="section"><h2>Serveur du bot</h2><div class="rows"><div class="row"><span>Backend IA</span><span class="neutral" id="backendStatus">NON CONFIGURÉ</span></div></div><div class="actions"><input id="botApiUrl" placeholder="https://ton-backend.example.com" style="flex:1"><button class="secondary" onclick="saveBotUrl()">ENREGISTRER</button><button class="secondary" onclick="testBotConnection()">TESTER</button></div><div class="sub" style="margin-top:8px">L'URL pointe vers ton serveur. Aucune clé API OpenAI ne doit être placée ici.</div></div><div class="section"><h2>Connexions de comptes</h2><div class="rows">
+    <div class="section"><h2>Serveur du bot</h2><div class="rows"><div class="row"><span>Backend IA</span><span class="neutral" id="backendStatus">NON CONFIGURÉ</span></div></div><div class="actions"><input id="botApiUrl" placeholder="https://ton-backend.example.com" style="flex:1"><input id="edgeflowAccessKey" type="password" placeholder="Clé d’accès privée" autocomplete="off" style="flex:1"><button class="secondary" onclick="saveBotUrl()">ENREGISTRER</button><button class="secondary" onclick="testBotConnection()">TESTER</button></div><div class="sub" style="margin-top:8px">La clé d’accès protège tes données privées du backend. Ce n’est pas une clé OpenAI/Tradovate et elle n’est jamais envoyée à GitHub.</div></div><div class="section"><h2>Connexions de comptes</h2><div class="rows">
       <div class="row"><span>Tradovate — Futures</span><span class="neutral">À connecter</span></div>
       <div class="row"><span>KCEX — Crypto</span><span class="neutral">Autorisation / méthode officielle requise</span></div>
     </div><div class="divider"></div><div class="sub">Le site GitHub Pages reste l'interface. Les clés/API et connexions sensibles devront être gérées par le backend, jamais stockées directement dans le navigateur.</div></div>
@@ -433,6 +445,7 @@ button.danger{min-height:42px}
 const nqDesc="HTF bias → POI → liquidité / manipulation → retracement Fibonacci → Rejection Block → entrée limite.";
 const cryptoDesc="Direction du marché → Key Open manipulé / sweep → POI HTF aligné → entrée → high RR. OTE / Fib secondaire.";
 const BOT_API=(localStorage.getItem("botApiUrl")||"").replace(/\/$/,"");
+const EDGEFLOW_ACCESS_KEY=localStorage.getItem("edgeflowAccessKey")||"";
 let activeModel=localStorage.getItem("activeModel")||"";
 let siteMode=localStorage.getItem("siteMode")||"NQ";
 const $=id=>document.getElementById(id);
@@ -450,7 +463,7 @@ function setSiteMode(mode){
 }
 async function botFetch(path,options={}){
   if(!BOT_API) throw new Error("BOT_API_NOT_CONFIGURED");
-  const res=await fetch(BOT_API+path,{headers:{"Content-Type":"application/json"},...options});
+  const headers={"Content-Type":"application/json"}; if(EDGEFLOW_ACCESS_KEY) headers["X-EDGEFLOW-ACCESS"]=EDGEFLOW_ACCESS_KEY; const res=await fetch(BOT_API+path,{headers,...options});
   const data=await res.json().catch(()=>({}));
   if(!res.ok) throw new Error(data.error||"Backend error");
   return data;
@@ -464,6 +477,7 @@ function selectModel(m){setSiteMode(m);show("dash",$("navDash"))}
 function chooseModel(){document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));$("models").classList.remove("hidden");document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"))}
 function updateModelUI(){
  if(!activeModel)return;
+ $("reviewNQ")?.classList.toggle("hidden",activeModel!=="NQ"); $("reviewCrypto")?.classList.toggle("hidden",activeModel!=="CRYPTO");
  $("modelPill").textContent=activeModel+" MODÈLE";$("reviewModel").textContent=activeModel+" MODÈLE";
  $("chatModelPill").textContent=activeModel+" MODÈLE";$("chatModeText").textContent=activeModel;
  $("dashModelTag").textContent=activeModel==="NQ"?"MODÈLE NQ":"MODÈLE CRYPTO";
@@ -570,13 +584,23 @@ async function runBotTest(){
   const arr=getJournal();arr.unshift({id:Date.now(),dateISO:new Date().toISOString().slice(0,10),date:new Date().toISOString().slice(0,10),model:"NQ",market:"FUTURES",instrument:"NQ",score:r.score,grade:r.grade,decision,notes:note,context:note});localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));renderJournal();renderStats();
 }
 function analyze(){
+ if(activeModel==="CRYPTO"){
+   const vals={direction:$("cryptoDirection").value,keyOpen:$("cryptoKO").value,poi:$("cryptoPOI").value,entry:$("cryptoEntry").value,highRR:$("cryptoRR").value};
+   const missing=Object.values(vals).filter(v=>!v).length,hardFail=[vals.keyOpen,vals.poi,vals.entry].includes("Absent")||vals.entry==="Hors modèle"||vals.highRR==="Non";
+   const decision=hardFail?"PAS DE TRADE":missing?"INCOMPLET — NE PAS DÉCIDER":"SETUP CRYPTO CONFORME À VÉRIFIER";
+   const notes=$("cryptoNotes").value;
+   const arr=getJournal();arr.unshift({id:Date.now(),dateISO:new Date().toISOString().slice(0,10),date:new Date().toISOString().slice(0,10),model:"CRYPTO",market:"CRYPTO",instrument:"BTC",direction:vals.direction,context:notes,setupPattern:"Direction → Key Open sweep → HTF POI → high RR",decision,cryptoReview:vals});
+   localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));
+   $("result").innerHTML='<div class="decision '+(hardFail||missing?"bad":"")+'">'+esc(decision)+'</div><div class="sub" style="margin-top:10px">Direction: <b>'+esc(vals.direction||"—")+'</b> · Key Open: <b>'+esc(vals.keyOpen||"—")+'</b> · HTF POI: <b>'+esc(vals.poi||"—")+'</b> · Entrée: <b>'+esc(vals.entry||"—")+'</b> · High RR: <b>'+esc(vals.highRR||"—")+'</b></div>';
+   renderJournal();renderStats(); return;
+ }
  const r=scoreFrom("");const decision=r.killer?"PAS DE TRADE":"TRADE VALIDE",notes=$("notes").value;
- const arr=getJournal();arr.unshift({id:Date.now(),dateISO:new Date().toISOString().slice(0,10),date:new Date().toISOString().slice(0,10),model:activeModel,market:activeModel==="CRYPTO"?"CRYPTO":"FUTURES",instrument:activeModel==="CRYPTO"?"BTC":"NQ",score:r.score,grade:r.grade,decision,notes,context:notes});
+ const arr=getJournal();arr.unshift({id:Date.now(),dateISO:new Date().toISOString().slice(0,10),date:new Date().toISOString().slice(0,10),model:"NQ",market:"FUTURES",instrument:"NQ",score:r.score,grade:r.grade,decision,notes,context:notes});
  localStorage.setItem("journal",JSON.stringify(arr.slice(0,500)));
  $("result").innerHTML='<div class="score"><div class="circle" style="border-color:'+(r.killer?'var(--red)':'var(--green)')+'">'+r.score+'</div><div><div class="'+(r.killer?'red':'grade')+'">'+r.grade+'</div><div class="sub">'+decision+'</div></div></div><div class="decision '+(r.killer?'bad':'')+'">'+(r.killer?'🔴 PAS DE TRADE — un killer est actif':'🟢 TRADE VALIDE')+'</div>';
  renderJournal();renderStats();
 }
-function resetReview(){["loss","liq","tilt","revenge"].forEach(id=>$(id).checked=false);["timing","high","ko","backtest"].forEach(id=>$(id).checked=true);$("notes").value="";$("result").innerHTML='<div class="empty">Aucune analyse.</div>'}
+function resetReview(){["loss","liq","tilt","revenge"].forEach(id=>$(id).checked=false);["timing","high","ko","backtest"].forEach(id=>$(id).checked=true);["cryptoDirection","cryptoKO","cryptoPOI","cryptoEntry","cryptoRR"].forEach(id=>{if($(id))$(id).value=""});$("notes").value="";$("cryptoNotes").value="";$("result").innerHTML='<div class="empty">Aucune analyse.</div>'}
 function showTradePopup(data={}){
  $("tradePopup").classList.add("show");$("popModel").textContent=data.model||activeModel||"NQ";$("popInstrument").textContent=data.instrument||"NQ";$("popDirection").textContent=data.direction||"LONG";$("popRisk").textContent=data.risk||"$100";$("popAnalysis").textContent="⏳ EN ATTENTE D'ANALYSE";$("popAnalysis").className="decision bad";
 }
@@ -613,7 +637,10 @@ async function saveJournalEntry(){
 function formatJournalDate(v){if(!v)return"—";return new Date(v+"T12:00:00").toLocaleDateString("fr-CA",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}
 function updateJournalDate(){$("jDateDisplay").textContent=formatJournalDate($("jDate").value)}
 function updateJournalMarket(){
- const market=$("jMarket").value,options=market==="FUTURES"?["MNQ","MES","MGC","Autre"]:["BTC","ETH","BNB","SOL","XRP","HYPE","FLOKI","Autre"];
+ const market=activeModel==="CRYPTO"?"CRYPTO":"FUTURES";
+ $("jMarket").value=market;
+ $("jMarket").disabled=true;
+ const options=market==="FUTURES"?["MNQ","MES","MGC","Autre"]:["BTC","ETH","BNB","SOL","XRP","HYPE","FLOKI","Autre"];
  $("jInstrument").innerHTML=options.map(x=>'<option value="'+x+'">'+x+"</option>").join("");
 }
 function resetJournalForm(){
@@ -712,7 +739,7 @@ async function pollObsidianJob(){
   }catch(e){}
 }
 async function saveBotUrl(){
- const v=$("botApiUrl").value.trim().replace(/\/$/,""); if(v){localStorage.setItem("botApiUrl",v); location.reload();}
+ const v=$("botApiUrl").value.trim().replace(/\/$/,""); const k=$("edgeflowAccessKey")?.value.trim()||""; if(v)localStorage.setItem("botApiUrl",v); if(k)localStorage.setItem("edgeflowAccessKey",k); else localStorage.removeItem("edgeflowAccessKey"); if(v)location.reload();
 }
 async function testBotConnection(){
  if(!BOT_API){$("backendStatus").textContent="NON CONFIGURÉ";return;}
@@ -803,8 +830,9 @@ function toggleKCEXAuto(){
   setKCEXStatus("Analyse automatique active : une capture toutes les 15 secondes.");
 }
 
-function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");location.reload()}}
+function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");localStorage.removeItem("edgeflowAccessKey");location.reload()}}
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
+if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
 if(!VALID_MODES.has(siteMode))siteMode="NQ"; setSiteMode(siteMode); $("models").classList.add("hidden"); $("dash").classList.remove("hidden"); updateModelUI(); document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode)));
 renderJournal();resetJournalForm();refreshPatterns();refreshAIDataAccess();refreshObsidianStatus();renderStats();$("navDash")?.classList.add("active");
 $("jDate").addEventListener("change",updateJournalDate);$("jBefore").addEventListener("change",()=>previewJournalImage($("jBefore"),"jBeforePreview"));$("jAfter").addEventListener("change",()=>previewJournalImage($("jAfter"),"jAfterPreview"));
