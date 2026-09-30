@@ -172,7 +172,7 @@ const openai = (process.env.GEMINI_API_KEY || openrouter) ? {
         }
       }
       if(openrouter){
-        const candidates=[MODEL,...FALLBACK_MODELS].filter((x,i,a)=>a.indexOf(x)===i);
+        const candidates=[model||MODEL,...FALLBACK_MODELS].filter((x,i,a)=>a.indexOf(x)===i);
         await reserveAIRequest();
         let lastError=null;
         for(const candidate of candidates){
