@@ -35,9 +35,15 @@ const openrouter = process.env.OPENROUTER_API_KEY ? new OpenAI({
     "X-OpenRouter-Title": "EDGEFLOW"
   }
 }) : null;
+
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
+const GEMINI_FALLBACK_MODELS = String(process.env.GEMINI_FALLBACK_MODELS || "gemini-3.1-flash-lite,gemini-3.6-flash")
+  .split(",").map(x=>x.trim()).filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i);
 const MODEL = process.env.OPENROUTER_MODEL || "openrouter/free";
 const FALLBACK_MODELS = String(process.env.OPENROUTER_FALLBACK_MODELS || "").split(",").map(x=>x.trim()).filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i);
-const AI_ENGINE_VERSION = "2.0";
+const AI_PROVIDER = process.env.GEMINI_API_KEY ? "gemini" : (process.env.OPENROUTER_API_KEY ? "openrouter" : "none");
+const AI_PRIMARY_MODEL = AI_PROVIDER==="gemini" ? GEMINI_MODEL : MODEL;
+const AI_ENGINE_VERSION = "2.1";
 const AI_GRADE_SCALE = "A+ exceptionnellement propre; A solide; A- solide avec petite imperfection; B+ bon avec imperfection claire; B bon mais faiblesse identifiable; B- limite; C+/C qualité limite; NO TRADE si killer ou modele non respecte.";
 const MODEL_CONTRACTS = {
   NQ:{
@@ -57,7 +63,7 @@ const MODEL_CONTRACTS = {
 };
 
 function convertAIContent(content) {
-  if (!Array.isArray(content)) return content;
+  if (!Array.isArray(content)) return [{type:"text",text:String(content||"")}];
   return content.map(item => {
     if (item?.type === "input_text") return { type:"text", text:String(item.text || "") };
     if (item?.type === "input_image") return { type:"image_url", image_url:{ url:String(item.image_url || "") } };
@@ -74,27 +80,118 @@ function aiText(content) {
   if (content && typeof content === "object") return String(content.text || content.content || "");
   return "";
 }
-const openai = openrouter ? {
+
+function parseGeminiDataUrl(value) {
+  const m=String(value||"").match(/^data:(image\/(?:png|jpe?g|webp));base64,(.+)$/i);
+  return m ? {mimeType:m[1].toLowerCase(),data:m[2]} : null;
+}
+function geminiParts(content) {
+  const parts=[];
+  const items=Array.isArray(content)?content:[{type:"input_text",text:String(content||"")}];
+  for(const item of items){
+    if(item?.type==="input_text" || item?.type==="text"){
+      const text=String(item.text||""); if(text) parts.push({text});
+      continue;
+    }
+    if(item?.type==="input_image"){
+      const image=parseGeminiDataUrl(item.image_url);
+      if(image) parts.push({inlineData:{mimeType:image.mimeType,data:image.data}});
+      continue;
+    }
+    if(item?.type==="image_url"){
+      const image=parseGeminiDataUrl(item.image_url?.url);
+      if(image) parts.push({inlineData:{mimeType:image.mimeType,data:image.data}});
+    }
+  }
+  return parts;
+}
+function buildGeminiRequest(input) {
+  const contents=[];
+  const systemParts=[];
+  for(const message of (Array.isArray(input)?input:[{role:"user",content:String(input||"")}])) {
+    const role=String(message?.role||"user");
+    const parts=geminiParts(message?.content);
+    if(!parts.length) continue;
+    if(role==="system"){
+      systemParts.push(...parts.filter(p=>p.text).map(p=>p.text));
+      continue;
+    }
+    contents.push({role:role==="assistant"?"model":"user",parts});
+  }
+  const body={contents};
+  if(systemParts.length) body.systemInstruction={parts:[{text:systemParts.join("\n\n")}]};
+  return body;
+}
+function mapGeminiThinking(reasoning) {
+  const effort=String(reasoning?.effort||"medium").toLowerCase();
+  return effort==="high"?"high":effort==="low"?"low":effort==="minimal"?"minimal":"medium";
+}
+async function callGemini({model,input,reasoning}) {
+  const endpoint="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent";
+  const body=buildGeminiRequest(input);
+  body.generationConfig={
+    maxOutputTokens:Number(process.env.GEMINI_MAX_OUTPUT_TOKENS||8000),
+    thinkingConfig:{thinkingLevel:mapGeminiThinking(reasoning)}
+  };
+  const response=await fetch(endpoint,{
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-goog-api-key":process.env.GEMINI_API_KEY},
+    body:JSON.stringify(body)
+  });
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok){
+    const error=new Error(data?.error?.message||("Gemini API error "+response.status));
+    error.status=response.status;
+    error.code=data?.error?.status||null;
+    throw error;
+  }
+  const outputText=(data?.candidates||[]).flatMap(c=>c?.content?.parts||[]).map(p=>String(p?.text||"")).join("");
+  if(!outputText){
+    const reason=String(data?.candidates?.[0]?.finishReason||"EMPTY_RESPONSE");
+    const error=new Error("Gemini returned no text (finishReason="+reason+").");
+    error.status=502;
+    throw error;
+  }
+  return {output_text:outputText,raw:data,model};
+}
+
+const openai = (process.env.GEMINI_API_KEY || openrouter) ? {
   responses: {
     create: async ({model,input,reasoning}) => {
-      const candidates=[model||MODEL,...FALLBACK_MODELS].filter((x,i,a)=>a.indexOf(x)===i);
-      await reserveAIRequest();
-      let lastError=null;
-      for(const candidate of candidates){
-        const body={model:candidate,messages:convertAIInput(input),temperature:Number(process.env.OPENROUTER_TEMPERATURE||0.2),max_tokens:Number(process.env.OPENROUTER_MAX_TOKENS||8000)};
-        if(process.env.OPENROUTER_REASONING!=="false"&&reasoning) body.reasoning=reasoning;
-        try{
-          const r=await openrouter.chat.completions.create(body);
-          return {output_text:aiText(r.choices?.[0]?.message?.content),raw:r,model:candidate};
-        }catch(error){
-          lastError=error;
-          const status=Number(error?.status||error?.response?.status||0);
-          const detail=String(error?.message||"").toLowerCase();
-          if(status===429 && /(free-models-per-day|free.*daily|daily.*free)/i.test(detail)) throw error;
-          if(status!==429) throw error;
+      let geminiLastError=null;
+      if(process.env.GEMINI_API_KEY){
+        const candidates=[model||GEMINI_MODEL,...GEMINI_FALLBACK_MODELS].filter((x,i,a)=>a.indexOf(x)===i);
+        for(const candidate of candidates){
+          try{
+            return await callGemini({model:candidate,input,reasoning});
+          }catch(error){
+            geminiLastError=error;
+            const status=Number(error?.status||0);
+            if(status!==429 && status!==500 && status!==502 && status!==503 && status!==504) break;
+          }
         }
       }
-      throw lastError||new Error("AI request failed.");
+      if(openrouter){
+        const candidates=[MODEL,...FALLBACK_MODELS].filter((x,i,a)=>a.indexOf(x)===i);
+        await reserveAIRequest();
+        let lastError=null;
+        for(const candidate of candidates){
+          const body={model:candidate,messages:convertAIInput(input),temperature:Number(process.env.OPENROUTER_TEMPERATURE||0.2),max_tokens:Number(process.env.OPENROUTER_MAX_TOKENS||8000)};
+          if(process.env.OPENROUTER_REASONING!=="false"&&reasoning) body.reasoning=reasoning;
+          try{
+            const r=await openrouter.chat.completions.create(body);
+            return {output_text:aiText(r.choices?.[0]?.message?.content),raw:r,model:candidate};
+          }catch(error){
+            lastError=error;
+            const status=Number(error?.status||error?.response?.status||0);
+            const detail=String(error?.message||"").toLowerCase();
+            if(status===429 && /(free-models-per-day|free.*daily|daily.*free)/i.test(detail)) throw error;
+            if(status!==429) throw error;
+          }
+        }
+        throw lastError||geminiLastError||new Error("AI request failed.");
+      }
+      throw geminiLastError||new Error("AI request failed.");
     }
   }
 } : null;
@@ -518,7 +615,7 @@ async function obsidianImageAnalysisLoop() {
         usage=JSON.parse(await fs.readFile(usageFile,"utf8"));
         if(usage.date!==new Date().toISOString().slice(0,10)) usage={date:new Date().toISOString().slice(0,10),requests:0};
       } catch {}
-      if(usage.requests >= OBSIDIAN_DAILY_REQUEST_BUDGET) {
+      if(AI_PROVIDER!=="gemini" && usage.requests >= OBSIDIAN_DAILY_REQUEST_BUDGET) {
         obsidianJob={...obsidianJob,running:false,phase:"paused-rate-limit",
           error:"Budget screenshots atteint pour aujourd'hui ("+OBSIDIAN_DAILY_REQUEST_BUDGET+" requêtes réservées). Progression sauvegardée; relance demain pour reprendre."};
         await saveObsidianJob();
@@ -689,7 +786,7 @@ async function askAI({task, trade, history=[]}) {
   const userContent=images.length?[{type:"input_text",text:JSON.stringify({...payload,task:String(task||"")+"\n"+protocol,screenshotCount:images.length})},...images.map(x=>({type:"input_image",image_url:x,detail:"high"}))]:JSON.stringify({...payload,task:String(task||"")+"\n"+protocol,screenshotCount:0});
   try{
     const response=await openai.responses.create({model:MODEL,reasoning:{effort:"high"},input:[{role:"system",content:BASE_SYSTEM+"\n\nACTIVE MODEL CONTRACT:\n"+JSON.stringify(contract)+"\n\nGRADE SCALE:\n"+AI_GRADE_SCALE},{role:"user",content:userContent}]});
-    return {ok:true,text:response.output_text,model:response.model||MODEL,engineVersion:AI_ENGINE_VERSION};
+    return {ok:true,text:response.output_text,model:response.model||AI_PRIMARY_MODEL,provider:AI_PROVIDER,engineVersion:AI_ENGINE_VERSION};
   }catch(e){
     const status=Number(e?.status||e?.statusCode||0);
     const detail=String(e?.message||"");
@@ -816,7 +913,7 @@ app.post("/api/coach/question",requirePrivateRequest,  async (req,res) => {
 });
 
 app.post("/api/voice/turn",requirePrivateRequest, async (req,res) => {
-  if(!openrouter) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
+  if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
   if(!process.env.ELEVENLABS_API_KEY) return res.status(503).json({ok:false,error:"ELEVENLABS_API_KEY manquante. Ajoute-la au backend pour activer la vraie voix JARVIS."});
   try{
     const audioBase64=String(req.body.audioBase64||"");
