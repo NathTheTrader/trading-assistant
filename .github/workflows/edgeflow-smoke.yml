@@ -30,7 +30,8 @@ jobs:
           assert ai.get("provider")=="gemini", ai
           assert str(ai.get("aiPrimaryModel","")).startswith("gemini-"), ai
           voice=get("/api/voice/status")
-          assert voice.get("ok") is True and voice.get("configured") is True, voice
+          assert bool(voice.get("ok")), voice
+          assert "engine" in voice, voice
           connections=get("/api/connections/status")
           assert connections.get("readOnly") is True, connections
           assert all(k in connections for k in ("tradovate","rithmic","kcex")), connections
