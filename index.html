@@ -1134,11 +1134,11 @@ async function pollObsidianJob(){
 async function saveBotUrl(){
  const v=$("botApiUrl").value.trim().replace(/\/$/,""); const k=$("edgeflowAccessKey")?.value.trim()||""; if(v)localStorage.setItem("botApiUrl",v); if(k)localStorage.setItem("edgeflowAccessKey",k); else localStorage.removeItem("edgeflowAccessKey"); if(v)location.reload();
 }
-async function testBotConnection(){
+async async function testBotConnection(){
  if(!BOT_API){$("backendStatus").textContent="NON CONFIGURÉ";return;}
  try{const r=await botFetch("/health");$("backendStatus").textContent=r.ai?"IA CONNECTÉE":"SERVEUR CONNECTÉ — CLÉ IA MANQUANTE";$("backendStatus").className=r.ai?"yes":"neutral";}catch(e){$("backendStatus").textContent="HORS LIGNE";$("backendStatus").className="no";}
 }
-async function connectTradovateUI(){if(!BOT_API){$("tvConnectionText").textContent="Backend non configuré";return}try{const r=await botFetch("/api/tradovate/connect",{method:"POST"});renderTradovateStatus(r);refreshTradovateEvents()}catch(e){$("tvConnectionText").textContent=e.message}}
+async async function connectTradovateUI(){if(!BOT_API){$("tvConnectionText").textContent="Backend non configuré";return}try{const r=await botFetch("/api/tradovate/connect",{method:"POST"});renderTradovateStatus(r);refreshTradovateEvents()}catch(e){$("tvConnectionText").textContent=e.message}}
 async function refreshTradovateUI(){if(!BOT_API)return;try{const r=await botFetch("/api/tradovate/snapshot");renderTradovateStatus(r);renderTradovateSnapshot(r);refreshTradovateEvents()}catch(e){$("tvConnectionText").textContent="Backend hors ligne"}}
 function renderTradovateSnapshot(r){
   const p=(r.positions||[]).filter(x=>Number(x.netPos||0)!==0);
