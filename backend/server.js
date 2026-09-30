@@ -345,6 +345,15 @@ const openai = (GEMINI_API_KEY || openrouter) ? {
 const PROFILE_FILE = process.env.PROFILE_FILE || path.join(EDGEFLOW_STORAGE_ROOT,"trader-profile.json");
 const HISTORICAL_CONTEXT_FILE = process.env.HISTORICAL_CONTEXT_FILE || path.join(EDGEFLOW_STORAGE_ROOT,"historical-trading-context.json");
 const OBSIDIAN_DIR = process.env.OBSIDIAN_DIR || path.join(EDGEFLOW_STORAGE_ROOT,"obsidian");
+const VOICE_CONFIG_FILE = process.env.VOICE_CONFIG_FILE || path.join(EDGEFLOW_STORAGE_ROOT,"jarvis-voice.json");
+async function loadVoiceConfig(){
+  try{return JSON.parse(await fs.readFile(VOICE_CONFIG_FILE,"utf8"));}catch{return {};}
+}
+async function saveVoiceConfig(data={}){
+  await fs.mkdir(path.dirname(VOICE_CONFIG_FILE),{recursive:true});
+  await fs.writeFile(VOICE_CONFIG_FILE,JSON.stringify(data,null,2));
+  return data;
+}
 const OBSIDIAN_TRADES_FILE = path.join(OBSIDIAN_DIR,"trades.json");
 const OBSIDIAN_STATUS_FILE = path.join(OBSIDIAN_DIR,"status.json");
 const OBSIDIAN_JOB_FILE = path.join(OBSIDIAN_DIR,"analysis-job.json");
@@ -1071,6 +1080,39 @@ app.post("/api/coach/question",requirePrivateRequest,  async (req,res) => {
   res.json({ok:true,model,question:response.output_text});
 });
 
+app.get("/api/voice/status",requirePrivateRequest,async(req,res)=>{
+  const cfg=await loadVoiceConfig();
+  const configured=Boolean(process.env.ELEVENLABS_API_KEY);
+  res.json({
+    ok:true,
+    configured,
+    engine:configured?"ElevenLabs":"Browser fallback",
+    model:process.env.ELEVENLABS_TTS_MODEL||"eleven_v4_turbo",
+    voiceId:Boolean(process.env.ELEVENLABS_VOICE_ID||cfg.voiceId),
+    voiceName:cfg.voiceName||"JARVIS Original",
+    designReady:configured
+  });
+});
+
+app.post("/api/voice/design",requirePrivateRequest,async(req,res)=>{
+  if(!process.env.ELEVENLABS_API_KEY) return res.status(503).json({ok:false,error:"ELEVENLABS_API_KEY manquante dans Railway."});
+  try{
+    const description="Original adult male British RP AI assistant voice. Deep smooth baritone, calm intelligent composed delivery, subtle authority, precise diction, measured pace, restrained warmth, futuristic onboard computer assistant, natural conversational tone, never theatrical, never an imitation of any actor or copyrighted character.";
+    const sampleText="Good evening. I have reviewed the available market context. The current setup is not yet confirmed, so I am keeping the analysis factual and waiting for the required evidence.";
+    const design=await fetch("https://api.elevenlabs.io/v1/text-to-voice/design",{method:"POST",headers:{"xi-api-key":process.env.ELEVENLABS_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({model_id:"eleven_ttv_v3",voice_description:description,text:sampleText})});
+    const dd=await design.json().catch(()=>({}));
+    if(!design.ok) return res.status(502).json({ok:false,error:dd.detail||dd.message||"Voice Design failed."});
+    const preview=dd.previews?.[0];
+    const generatedVoiceId=preview?.generated_voice_id;
+    if(!generatedVoiceId) return res.status(502).json({ok:false,error:"Voice Design n’a retourné aucun generated_voice_id."});
+    const created=await fetch("https://api.elevenlabs.io/v1/text-to-voice",{method:"POST",headers:{"xi-api-key":process.env.ELEVENLABS_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({voice_name:"JARVIS Original",voice_description:description,generated_voice_id:generatedVoiceId})});
+    const cd=await created.json().catch(()=>({}));
+    if(!created.ok) return res.status(502).json({ok:false,error:cd.detail||cd.message||"Voice creation failed."});
+    await saveVoiceConfig({voiceId:cd.voice_id,voiceName:cd.name||"JARVIS Original",createdAt:new Date().toISOString(),description});
+    res.json({ok:true,voiceId:cd.voice_id,voiceName:cd.name||"JARVIS Original",engine:"ElevenLabs",model:process.env.ELEVENLABS_TTS_MODEL||"eleven_v4_turbo"});
+  }catch(e){res.status(502).json({ok:false,error:e.message||"Impossible de créer la voix."});}
+});
+
 app.post("/api/voice/turn",requirePrivateRequest, async (req,res) => {
   if(!openai) return res.status(503).json({ok:false,error:"OPENROUTER_API_KEY manquante."});
   if(!process.env.ELEVENLABS_API_KEY) return res.status(503).json({ok:false,error:"ELEVENLABS_API_KEY manquante. Ajoute-la au backend pour activer la vraie voix JARVIS."});
@@ -1092,7 +1134,8 @@ app.post("/api/voice/turn",requirePrivateRequest, async (req,res) => {
     const model=normalizeModel(req.body.model);
     const previousTurns=Array.isArray(req.body.previousTurns)?req.body.previousTurns.slice(-12):[];
     const reply=String(await askVoiceCoach({model,userText:transcript,previousTurns})||"").trim();
-    const voiceId=process.env.ELEVENLABS_VOICE_ID||"s3TPKV1kjDlVtZbl4Ksh";
+    const voiceConfig=await loadVoiceConfig();
+    const voiceId=process.env.ELEVENLABS_VOICE_ID||voiceConfig.voiceId||"s3TPKV1kjDlVtZbl4Ksh";
     const ttsModel=process.env.ELEVENLABS_TTS_MODEL||"eleven_v4_turbo";
     const speechText="[calm][confident] "+reply;
     const tts=await fetch("https://api.elevenlabs.io/v1/text-to-speech/"+encodeURIComponent(voiceId)+"?output_format=mp3_44100_128",{method:"POST",headers:{"xi-api-key":process.env.ELEVENLABS_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({text:speechText,model_id:ttsModel,language_code:"fr",voice_settings:{stability:.65,similarity_boost:.82}})});
