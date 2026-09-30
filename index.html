@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1840-independent-workspace-routing-v32"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-1855-workspace-visibility-fix-v33"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><script>
@@ -1067,9 +1067,7 @@ html body:before,html body:after{display:none !important;content:none !important
 html[data-edgeflow-initial-mode="NQ"] #cryptoDash,html[data-edgeflow-initial-mode="NQ"] #crypto,html[data-edgeflow-initial-mode="NQ"] #bot{display:none!important}
 html[data-edgeflow-initial-mode="CRYPTO"] #dash,html[data-edgeflow-initial-mode="CRYPTO"] #bot{display:none!important}
 
-/* MODE-SAFE FIRST PAINT */
-html[data-edgeflow-initial-mode="CRYPTO"] #dash{display:none!important;visibility:hidden!important}
-html[data-edgeflow-initial-mode="NQ"] #dash{display:block!important;visibility:visible!important}
+/* MODE-SAFE removed: workspace visibility is controlled only by .hidden/show(). */
 </style>
 </head><body>
 <div class="app">
