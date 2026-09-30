@@ -61,7 +61,7 @@ const openai = openrouter ? {
         model: model || MODEL,
         messages: convertAIInput(input),
         temperature: Number(process.env.OPENROUTER_TEMPERATURE || 0.2),
-        max_tokens: Number(process.env.OPENROUTER_MAX_TOKENS || 4000)
+        max_tokens: Number(process.env.OPENROUTER_MAX_TOKENS || 8000)
       };
       if (process.env.OPENROUTER_REASONING === "true" && reasoning) body.reasoning = reasoning;
       await reserveAIRequest();
@@ -756,6 +756,19 @@ app.post("/api/analyze-screen",requirePrivateRequest,  async (req,res) => {
     });
     res.json({ok:true,model,text:response.output_text});
   }catch(e){res.status(502).json({ok:false,error:e.message});}
+});
+
+
+app.get("/api/connections/status",requirePrivateRequest, (req,res) => {
+  const tv=tradovateStatus();
+  const rithmicConfigured=Boolean(process.env.RITHMIC_USER&&process.env.RITHMIC_PASSWORD&&process.env.RITHMIC_SYSTEM);
+  res.json({
+    readOnly:true,
+    tradovate:tv,
+    rithmic:{configured:rithmicConfigured,connected:false,system:process.env.RITHMIC_SYSTEM||null,transport:"R|Protocol / WebSocket + Protobuf"},
+    tradesea:{available:true,mode:"external-rithmic-platform",apiDirect:false},
+    kcex:{available:true,mode:"screen-observer",apiDirect:false}
+  });
 });
 
 app.get("/api/tradovate/status",requirePrivateRequest, (req,res)=>res.json(tradovateStatus()));
