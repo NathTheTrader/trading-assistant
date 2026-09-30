@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2430-safe-journal-data-v29"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta name="edgeflow-build" content="2026-09-30-2445-journal-recovery-safe-v30"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1645 --><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><script>
@@ -1804,6 +1804,24 @@ function getJournal(){
    const value=JSON.parse(localStorage.getItem("journal")||"[]");
    return Array.isArray(value)?value.filter(x=>x&&typeof x==="object"):[];
  }catch(e){return[]}
+}
+let journalHydrating=false;
+async function hydrateJournalFromServer(){
+  if(!BOT_API||journalHydrating)return;
+  journalHydrating=true;
+  try{
+    const server=await botFetch("/api/trades");
+    if(!Array.isArray(server)||!server.length)return;
+    const local=getJournal(),map=new Map();
+    [...server,...local].filter(Boolean).forEach(t=>{
+      const key=String(t.id??((t.timestamp||t.dateISO||t.date||"")+"|"+(t.model||"")+"|"+(t.instrument||"")));
+      map.set(key,{...(map.get(key)||{}),...t});
+    });
+    const merged=[...map.values()].filter(Boolean).sort((a,b)=>String(b.timestamp||b.id||"").localeCompare(String(a.timestamp||a.id||"")));
+    localStorage.setItem("journal",JSON.stringify(merged.slice(0,500)));
+    renderJournal();
+    renderStats();
+  }catch(e){}finally{journalHydrating=false;}
 }
 function journalKey(x){if(!x||typeof x!=="object")return"unknown";return String(x.dateISO||x.date||"").slice(0,7)||"unknown"}
 function compressImage(file){return new Promise(resolve=>{if(!file){resolve("");return}const reader=new FileReader();reader.onload=e=>{const img=new Image();img.onload=()=>{const max=1400,scale=Math.min(1,max/img.width),c=document.createElement("canvas");c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext("2d").drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL("image/jpeg",.72))};img.src=e.target.result};reader.readAsDataURL(file)})}
