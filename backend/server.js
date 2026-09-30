@@ -859,7 +859,7 @@ app.post("/api/analyze-screen",requirePrivateRequest,  async (req,res) => {
             context,
             historicalContext:historicalContext.models?.[model]||{},
             optimizationSnapshot:snapshot,
-            task:"Inspect this current KCEX screen. Extract visible instrument, direction/position if shown, entry/mark/P&L/leverage if shown, visible chart structure, and any immediately visible market context. Then relate only the visible evidence to the Crypto model: market direction -> manipulated Key Open/sweep -> aligned HTF POI -> entry -> high RR. Clearly list missing information and do not infer hidden account state."
+            task:"Inspect this current trading-platform screen. Extract visible instrument, direction/position if shown, entry/mark/P&L/leverage if shown, visible chart structure, and any immediately visible market context. Then relate only the visible evidence to the correct model: for Crypto use market direction -> manipulated Key Open/sweep -> aligned HTF POI -> entry -> high RR; for Futures use HTF bias -> POI -> liquidity/manipulation -> Fibonacci retracement -> Rejection Block -> limit entry. Clearly list missing information and do not infer hidden account state."
           })},
           {type:"input_image",image_url:imageDataUrl,detail:"high"}
         ]}
