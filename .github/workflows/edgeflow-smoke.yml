@@ -43,7 +43,7 @@ jobs:
               elif path=="/api/voice/status":
                   assert data.get("ok") is True, data
                   assert data.get("configured") is True, data
-                  assert str(data.get("engine","")).strip().lower()=="gemini", data
+                  assert str(data.get("engine","")).strip().lower() == "gemini", data
               elif path=="/api/history/ai-context?model=NQ" or path=="/api/obsidian/status?model=NQ" or path=="/api/trades?model=NQ":
                   assert data.get("model")=="NQ", data
               elif path=="/api/history/ai-context?model=CRYPTO" or path=="/api/obsidian/status?model=CRYPTO" or path=="/api/trades?model=CRYPTO":
