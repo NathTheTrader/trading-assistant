@@ -220,7 +220,7 @@ button.danger{min-height:42px}
     <button id="navDash" onclick="show('dash',this)"><span class="nav-icon">⌂</span>Tableau de bord</button>
     <button id="navBot" type="button" onclick="show('bot',this)"><span class="nav-icon">◉</span><span id="navBotText">Bot NQ</span></button>
     <button onclick="show('chat',this)"><span class="nav-icon">◇</span>Assistant IA</button>
-    <button onclick="show('journal',this)"><span class="nav-icon">▤</span>Journal</button><button onclick="show('patterns',this)"><span class="nav-icon">⌁</span>Patterns IA</button>
+    <button onclick="show('journal',this)"><span class="nav-icon">▤</span>Journal</button>
     
     <button onclick="show('settings',this)"><span class="nav-icon">⚙</span>Paramètres</button>
   </nav>
@@ -384,29 +384,6 @@ button.danger{min-height:42px}
   </div>
   <div class="section" style="margin-top:14px"><h2>Historique mensuel</h2><div id="journalMonths"></div></div>
   <div class="section" style="margin-top:14px"><h2>Analyse du journal</h2><div class="sub">Le futur moteur IA pourra comparer NQ et Crypto séparément et rechercher les erreurs récurrentes, les grades et les contextes associés à tes résultats.</div><div class="actions"><button class="secondary" onclick="askJournalAI()">ANALYSER MON JOURNAL</button></div><div id="journalAI" style="margin-top:12px"></div></div>
-</section>
-
-<section id="patterns" class="hidden">
-  <div class="topbar"><div><div class="eyebrow">Mémoire du trader</div><h1>Patterns IA</h1><div class="sub">Le moteur va relier chaque trade à son heure, son contexte, ses screenshots, les news et son résultat pour rechercher des répétitions.</div></div><div class="status">● APPRENTISSAGE</div></div>
-  <div class="grid">
-    <div class="card"><div class="label">Trades analysés</div><div class="value" id="patTrades">0</div><div class="sub">Base disponible pour l'IA</div></div>
-    <div class="card"><div class="label">Patterns détectés</div><div class="value red" id="patCount">0</div><div class="sub">Règles à confirmer</div></div>
-    <div class="card"><div class="label">Trades avec news</div><div class="value" id="patNews">0</div><div class="sub">Calendrier associé</div></div>
-    <div class="card"><div class="label">Répétitions</div><div class="value orange" id="patRepeat">0</div><div class="sub">Comportements similaires</div></div>
-  </div>
-  <div class="layout">
-    <div class="section"><h2>Ce que l'IA cherchera automatiquement</h2><div class="rows">
-      <div class="row"><span>Heure / session du trade</span><span class="neutral">À corréler</span></div>
-      <div class="row"><span>Direction + instrument + modèle</span><span class="neutral">À corréler</span></div>
-      <div class="row"><span>Pattern du setup / contexte</span><span class="neutral">À apprendre</span></div>
-      <div class="row"><span>Screenshot AVANT / APRÈS</span><span class="neutral">Vision IA</span></div>
-      <div class="row"><span>News proches du trade</span><span class="neutral">Données à fournir</span></div>
-      <div class="row"><span>Résultat / R / P&L</span><span class="neutral">À mesurer</span></div>
-    </div></div>
-    <div class="section"><h2>Détection de répétitions</h2><div id="patternInsights"><div class="empty">Pas assez de données pour détecter un comportement répétitif.</div></div></div>
-  </div>
-  <div class="section" style="margin-top:14px"><h2>Base d'observation</h2><div class="sub">L'objectif n'est pas de modifier automatiquement ton modèle. L'IA doit d'abord observer, mesurer et te montrer les régularités. Exemple : « tu prends souvent ce type d'entrée 2 minutes avant une news importante » ou « ce contexte apparaît régulièrement dans tes pertes ». Toute conclusion sera basée sur les données enregistrées.</div><div class="actions"><button class="secondary" onclick="">ACTUALISER L'ANALYSE</button></div></div>
-
 </section>
 
 <section id="settings" class="hidden">
