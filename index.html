@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#090b10">
-<meta name="edgeflow-build" content="2026-09-30-0930-workspace-v5">
+<meta name="edgeflow-build" content="2026-09-30-1000-journal-settings-v6">
 <title>EDGEFLOW — Trading Intelligence</title>
 <style>
 :root{
@@ -613,6 +613,59 @@ input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb,var(--acc
 #journal .journal-panel{max-width:100%;margin-left:auto;margin-right:auto}
 #journal .journal-form{grid-template-columns:repeat(2,minmax(0,1fr))}
 #journal .journal-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+
+/* EDGEFLOW WORKSPACE V6 — Journal + Settings rebuilt, always top anchored */
+.main{flex:1 1 auto!important;min-width:0!important;width:auto!important;max-width:none!important;height:100vh!important;min-height:0!important;overflow:hidden!important;padding:0!important;margin:0!important}
+main>section{width:100%!important;max-width:none!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;box-sizing:border-box!important;overflow:hidden!important}
+main>section.hidden,main>section[hidden]{display:none!important}
+#journal,#settings,#review{overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain}
+#dash,#bot,#chat{overflow:hidden!important}
+#journal,#settings{scroll-behavior:auto!important}
+#journal .workspace-head,#settings .topbar{width:min(1180px,100%);margin-left:auto;margin-right:auto}
+#journal .workspace-head{padding-top:30px}
+#journal .journal-kpis,#journal .journal-panel{width:min(1180px,100%);margin-left:auto;margin-right:auto}
+#journal .journal-kpis{margin-bottom:12px}
+#journal .journal-panel{margin-top:0;margin-bottom:12px;padding:18px}
+#journal .journal-panel+.journal-panel{margin-top:12px}
+#journal .journal-entry-panel{margin-top:0}
+#journal .workspace-head h1{margin:0}
+#journal .journal-form{gap:9px}
+#journal .journal-form input,#journal .journal-form select{min-height:40px}
+#journal .journal-form textarea{min-height:88px}
+#journal .journal-actions{margin-top:12px}
+#settings{padding-top:0}
+#settings .topbar{padding-top:30px;margin-bottom:18px}
+#settings .layout{width:min(1180px,100%);margin:0 auto;display:grid;grid-template-columns:1fr;gap:12px}
+#settings .layout>.section{margin:0!important;padding:18px}
+#settings .layout>.section:first-child{background:linear-gradient(145deg,rgba(18,22,30,.98),rgba(10,14,20,.98))}
+#settings .connection-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#settings .connection-card{height:100%;padding:14px}
+#settings .connection-card p{line-height:1.5}
+#settings .connection-actions{display:flex;flex-wrap:wrap;gap:7px}
+#settings .connection-actions a,#settings .connection-actions button{min-height:34px}
+#settings .actions{align-items:center}
+#settings .settings-v6-label{font-size:9px;color:var(--accent);font-weight:900;letter-spacing:1.2px;text-transform:uppercase}
+#settings .layout>.section:nth-child(2){display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+#settings .layout>.section:nth-child(2)>h2{grid-column:1/-1}
+#settings .layout>.section:nth-child(2) .rows{grid-column:1/-1;grid-template-columns:repeat(3,1fr)}
+#settings .layout>.section:nth-child(2) .actions{grid-column:1/-1}
+@media(max-width:1050px){
+  #journal .workspace-head,#journal .journal-kpis,#journal .journal-panel,#settings .topbar,#settings .layout{width:calc(100% - 44px)}
+  #settings .connection-grid{grid-template-columns:1fr 1fr}
+  #settings .layout>.section:nth-child(2) .rows{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+  .main{height:auto!important;min-height:calc(100vh - 110px)!important}
+  .main>section{height:calc(100vh - 110px)!important;overflow-y:auto!important}
+  #journal .workspace-head,#journal .journal-kpis,#journal .journal-panel,#settings .topbar,#settings .layout{width:calc(100% - 28px)}
+  #journal .journal-kpis{grid-template-columns:1fr 1fr}
+  #journal .journal-form{grid-template-columns:1fr}
+  #journal .journal-full{grid-column:1}
+  #journal .journal-photos{grid-template-columns:1fr}
+  #settings .connection-grid{grid-template-columns:1fr}
+  #settings .layout>.section:nth-child(2){display:block}
+  #settings .layout>.section:nth-child(2) .rows{display:grid;grid-template-columns:1fr}
+}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -950,6 +1003,7 @@ function show(id,btn){
  }
  const main=document.querySelector(".main");
  if(main)main.scrollTop=0;
+ if(target)target.scrollTop=0;
  window.scrollTo(0,0);
  document.documentElement.scrollTop=0;
  document.body.scrollTop=0;
