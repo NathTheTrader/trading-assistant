@@ -384,7 +384,7 @@ async function saveObsidian(trades,status) {
   await fs.writeFile(OBSIDIAN_STATUS_FILE,JSON.stringify(status,null,2));
 }
 function safeZipTarget(root,entryName) {
-  const clean=entryName.replace(/\/g,"/");
+  const clean=entryName.replace(/\\/g,"/");
   if(!clean || clean.includes("\0") || clean.split("/").includes("..")) return null;
   const target=path.resolve(root,clean);
   if(target!==root && !target.startsWith(root+path.sep)) return null;
@@ -430,7 +430,7 @@ async function importObsidianZip(buffer) {
     }
     for(const full of all) {
       if(path.extname(full).toLowerCase()!==".md") continue;
-      const relRaw=path.relative(root,full).replace(/\/g,"/");
+      const relRaw=path.relative(root,full).replace(/\\/g,"/");
       const rel=normalizeObsidianPath(relRaw);
       const text=await fs.readFile(full,"utf8");
       const model=parseObsidianModel(rel);
