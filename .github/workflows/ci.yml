@@ -56,6 +56,8 @@ jobs:
           if(!html.includes('id="cryptoBotOutput"')||!html.includes('id="cryptoDashTrades"')||!html.includes('id="cryptoReviewResult"')) fail("Crypto workspace outputs missing");
           if(!html.includes("let rithmicScreenStream=null")) fail("Rithmic screen observer state missing");
           if(!html.includes("function showActiveDashboard")) fail("Independent dashboard routing missing");
+          if(!html.includes("s.hidden=true")||!html.includes("target.hidden=false")) fail("Deterministic workspace hiding missing");
+          if(!html.includes('id="crypto"')||!html.includes('id="cryptoReview"')) fail("Independent Crypto workspaces missing");
           if(html.includes("app[data-view]")) fail("Legacy data-view router still present");
           console.log("Edgeflow invariants OK");
           NODE
