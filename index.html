@@ -159,6 +159,115 @@ h1{font-size:24px}.grid{gap:9px}.card,.section,.model-card{padding:13px;border-r
 @media(max-width:1050px){.side{width:185px;flex-basis:185px}.main{padding:15px}.grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.side{width:100%;padding:8px}.main{padding:12px}.chat-shell{height:60vh}}
 
+/* JARVIS DESKTOP CHAT — keep input visible without page scrolling */
+#chat{
+  padding-top:10px;
+}
+#chat > .workspace-header{
+  min-height:48px;
+  margin-bottom:8px;
+  padding-top:7px;
+  padding-bottom:7px;
+}
+#chat .workspace-header h1{
+  font-size:22px;
+}
+#chat .workspace-header .sub{
+  font-size:10px;
+  margin-top:3px;
+}
+#chat .jarvis-overview{
+  padding:10px 12px!important;
+  margin-bottom:8px!important;
+}
+#chat .jarvis-console-head{
+  gap:10px;
+}
+#chat .jarvis-identity{
+  gap:9px;
+}
+#chat .jarvis-orb-static{
+  width:30px;height:30px;
+}
+#chat .jarvis-identity h2{
+  font-size:15px;
+}
+#chat .jarvis-identity .sub{
+  font-size:9px;
+  line-height:1.3;
+}
+#chat .jarvis-kicker{
+  font-size:7px;
+}
+#chat .jarvis-header-right{
+  gap:6px;
+}
+#chat .jarvis-model-tab{
+  padding:6px 8px;
+  font-size:8px;
+}
+#chat .workspace-grid{
+  gap:7px;
+  margin-top:7px!important;
+}
+#chat .workspace-grid .ai-box{
+  padding:8px 10px;
+}
+#chat .workspace-grid .label{
+  font-size:8px;
+}
+#chat .workspace-grid .sub{
+  font-size:9px;
+}
+#chat .workspace-grid .actions{
+  margin-top:5px;
+}
+#chat .workspace-grid button{
+  min-height:32px;
+  padding:7px 10px;
+  font-size:9px;
+}
+#chat .chat-shell{
+  height:calc(100vh - 350px)!important;
+  min-height:360px!important;
+}
+#chat .chat-messages{
+  min-height:0;
+}
+#chat .chat-input{
+  flex:0 0 auto;
+}
+#chat .chat-input textarea{
+  min-height:42px;
+  height:42px;
+}
+
+/* On smaller screens, prioritize the input instead of creating a second page scroll. */
+@media(max-width:760px){
+  #chat{
+    padding-top:5px;
+  }
+  #chat > .workspace-header{
+    min-height:40px;
+    margin-bottom:6px;
+    padding-top:5px;
+    padding-bottom:5px;
+  }
+  #chat .workspace-header h1{font-size:20px}
+  #chat .jarvis-overview{padding:8px 9px!important}
+  #chat .jarvis-overview .workspace-grid{
+    grid-template-columns:1fr;
+  }
+  #chat .jarvis-overview .workspace-grid .ai-box:first-child{
+    display:none;
+  }
+  #chat .chat-shell{
+    height:calc(100vh - 260px)!important;
+    min-height:300px!important;
+  }
+}
+
+
 /* EDGEFLOW — compact dashboard + model accents */
 .dashboard-kpis{grid-template-columns:repeat(4,1fr)}
 .dashboard-kpis .card{min-height:86px}
@@ -1526,7 +1635,10 @@ function show(id,btn){
  document.querySelectorAll("nav button").forEach(b=>{b.classList.remove("active");b.removeAttribute("aria-current");});
  if(btn){btn.classList.add("active");btn.setAttribute("aria-current","page");}
  if(id==="journal"){updateJournalMarket();renderJournal();restoreJournalDraft();hydrateJournalFromServer();}
- if(id==="chat"){renderChatHistory(activeModel);}
+ if(id==="chat"){
+  renderChatHistory(activeModel);
+  setTimeout(()=>{$("chatInput")?.focus();},0);
+}
  if(id==="dash"||id==="cryptoDash")renderStats();
  const main=document.querySelector(".main"); if(main)main.scrollTop=0;
  window.scrollTo(0,0);
@@ -2557,7 +2669,10 @@ window.addEventListener("pageshow",()=>initializeActiveWorkspace());
 if(document.readyState==="loading"){
   document.addEventListener("DOMContentLoaded",()=>initializeActiveWorkspace(),{once:true});
 }
-setTimeout(()=>{if(!document.querySelector("main>.workspace:not(.hidden)"))initializeActiveWorkspace()},0);
+setTimeout(()=>{
+  if(!document.querySelector("main>.workspace:not(.hidden)"))initializeActiveWorkspace();
+  if(!document.querySelector("#chat.hidden")&&!document.querySelector("#chat").classList.contains("hidden"))setTimeout(()=>$("chatInput")?.focus(),0);
+},0);
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
 renderJournal();resetJournalForm();restoreJournalDraft();hydrateJournalFromServer();refreshAIDataAccess();refreshObsidianStatus();refreshConnectionCenter();refreshAIEngineStatus();refreshJarvisVoiceStatus();renderStats();bindLiveChecklist();
