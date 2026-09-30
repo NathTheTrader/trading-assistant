@@ -52,7 +52,7 @@ jobs:
           if(new Set(sections).size!==sections.length) fail("Duplicate workspace IDs");
           if((html.match(/<style\b/gi)||[]).length!==1 || !html.includes("<style>")) fail("Expected one stylesheet block");
           if(html.indexOf("<style>")>html.indexOf("</head>")) fail("Stylesheet must be in head");
-          if(!html.includes('<script src="./voice-coach.js"></script>')) fail("Voice script tag malformed");
+          if(!/<script[^>]+src="\.\/voice-coach\.js(?:\?[^"]*)?"[^>]*><\/script>/i.test(html)) fail("Voice script tag malformed");
           if(!html.includes('id="cryptoBotOutput"')||!html.includes('id="cryptoDashTrades"')) fail("Crypto workspace outputs missing");
           if(!html.includes('id="aiEngineStatus"')||!html.includes('id="aiOptimizationOutput"')) fail("JARVIS intelligence panel missing");
           if(!html.includes('function refreshAIEngineStatus')||!html.includes('function runDailyOptimization')||!html.includes('function askCoachQuestion')) fail("JARVIS intelligence functions missing");
