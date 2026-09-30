@@ -532,9 +532,10 @@ async function sendChat(){
  const input=$("chatInput"),msg=String(input?.value||"").trim();if(!msg)return;
  const box=$("chatMessages"),sendBtn=document.querySelector(".chat-input .primary");
  box.insertAdjacentHTML("beforeend",'<div class="bubble me"><b>TOI</b><div style="margin-top:5px">'+esc(msg)+'</div></div>');
- input.value="";box.scrollTop=box.scrollHeight;
+ box.scrollTop=box.scrollHeight;
  if(!BOT_API){
    box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>EDGEFLOW</b><div class="sub" style="margin-top:5px">'+getJournalAwareReply(msg)+'</div></div>');
+   input.value=""; localStorage.removeItem("edgeflow.chatDraft."+activeModel);
    return;
  }
  if(sendBtn)sendBtn.disabled=true;
@@ -543,6 +544,7 @@ async function sendChat(){
    const r=await botFetch("/api/chat",{method:"POST",body:JSON.stringify({message:msg,model:activeModel})});
    $("aiThinking")?.remove();
    box.insertAdjacentHTML("beforeend",'<div class="bubble ai"><b>EDGEFLOW</b><div class="sub" style="margin-top:5px">'+esc(r.text||"Aucune réponse.")+'</div></div>');
+   input.value=""; localStorage.removeItem("edgeflow.chatDraft."+activeModel);
  }catch(e){
    $("aiThinking")?.remove();
    const err=String(e?.message||"Erreur inconnue");
@@ -713,7 +715,8 @@ async function importObsidianJournal(){
   const progress=$("obsidianProgress"); progress.textContent="Import du journal Obsidian en cours…";
   try{
     const form=new FormData();form.append("file",file,file.name);
-    const r=await fetch(BOT_API+"/api/obsidian/import",{method:"POST",body:form});
+    const headers={}; if(EDGEFLOW_ACCESS_KEY) headers["X-EDGEFLOW-ACCESS"]=EDGEFLOW_ACCESS_KEY;
+    const r=await fetch(BOT_API+"/api/obsidian/import",{method:"POST",headers,body:form});
     const d=await r.json().catch(()=>({}));
     if(!r.ok)throw new Error(d.error||"Import impossible");
     progress.textContent="Import terminé : "+d.status.tradeRecords+" fiches et "+d.status.imageFiles+" images.";
@@ -836,6 +839,10 @@ if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
 if(!VALID_MODES.has(siteMode))siteMode="NQ"; setSiteMode(siteMode); $("models").classList.add("hidden"); $("dash").classList.remove("hidden"); updateModelUI(); document.querySelectorAll("[data-site-mode]").forEach(b=>b.addEventListener("click",()=>setSiteMode(b.dataset.siteMode)));
 renderJournal();resetJournalForm();refreshPatterns();refreshAIDataAccess();refreshObsidianStatus();renderStats();$("navDash")?.classList.add("active");
 $("jDate").addEventListener("change",updateJournalDate);$("jBefore").addEventListener("change",()=>previewJournalImage($("jBefore"),"jBeforePreview"));$("jAfter").addEventListener("change",()=>previewJournalImage($("jAfter"),"jAfterPreview"));
+const chatDraftKey=()=> "edgeflow.chatDraft."+activeModel;
+$("chatInput")?.addEventListener("input",e=>localStorage.setItem(chatDraftKey(),e.target.value));
+$("chatInput")?.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat();}});
+const savedChatDraft=localStorage.getItem(chatDraftKey()); if(savedChatDraft&&$("chatInput")) $("chatInput").value=savedChatDraft;
 </script>
 <script src="./voice-coach.js"></script>
 </body>
