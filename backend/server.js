@@ -397,50 +397,96 @@ async function importObsidianZip(buffer) {
   }
 }
 async function obsidianImageAnalysisLoop() {
-  if(!openai || obsidianJob.running) return;
   const trades=await loadObsidianTrades();
   const items=[];
   for(const trade of trades) {
-    for(const file of (trade.imageFiles||[])) {
-      const already=trade.imageAnalyses?.some(x=>x.file===file);
-      if(!already) items.push({trade,file});
+    if(!["NQ","CRYPTO"].includes(trade.model)) continue;
+    for(const imageName of (trade.images||[])) {
+      const file=path.join(OBSIDIAN_DIR,"images",path.basename(imageName));
+      try { await fs.access(file); } catch { continue; }
+      if(!(trade.imageAnalyses||[]).some(x=>x.file===file)) items.push({trade,file});
     }
   }
-  obsidianJob={...obsidianJob,running:true,phase:"analyzing",total:items.length,processed:0,analyzedImages:0,error:null,startedAt:new Date().toISOString(),finishedAt:null};
-  await fs.mkdir(OBSIDIAN_DIR,{recursive:true});
+
+  obsidianJob={
+    running:true,phase:"analyzing",total:items.length,processed:0,
+    analyzedImages:0,error:null,startedAt:new Date().toISOString(),finishedAt:null
+  };
+  await saveObsidianJob();
+
+  if(!items.length) {
+    obsidianJob={...obsidianJob,running:false,phase:"complete",finishedAt:new Date().toISOString()};
+    await saveObsidianJob();
+    return;
+  }
+
   try {
     for(let i=0;i<items.length;i+=4) {
+      const usageFile=path.join(path.dirname(OBSIDIAN_JOB_FILE),"../ai-usage.json");
+      let usage={date:new Date().toISOString().slice(0,10),requests:0};
+      try {
+        usage=JSON.parse(await fs.readFile(usageFile,"utf8"));
+        if(usage.date!==new Date().toISOString().slice(0,10)) usage={date:new Date().toISOString().slice(0,10),requests:0};
+      } catch {}
+      if(usage.requests >= OBSIDIAN_DAILY_REQUEST_BUDGET) {
+        obsidianJob={...obsidianJob,running:false,phase:"paused-rate-limit",
+          error:"Budget screenshots atteint pour aujourd'hui ("+OBSIDIAN_DAILY_REQUEST_BUDGET+" requêtes réservées). Progression sauvegardée; relance demain pour reprendre."};
+        await saveObsidianJob();
+        return;
+      }
+
       const batch=items.slice(i,i+4);
       const content=[{type:"input_text",text:JSON.stringify({
-        task:"Analyze these historical trading screenshots for visual evidence only. Do not infer hidden data. For each image, identify chart-visible instrument/timeframe if readable, visible direction/structure, liquidity/sweep, Key Open, FVG/OB/RB, Fib/OTE, entry/SL/TP if visible, and execution quality. Separate FACTS, INTERPRETATION, UNKNOWN. Do not use final P&L as proof of setup quality.",
+        task:"Analyze these historical trading screenshots for visual evidence only. Return one clearly separated section per IMAGE_INDEX. Do not infer hidden data. Identify chart-visible instrument/timeframe if readable, visible direction/structure, liquidity/sweep, Key Open, FVG/OB/RB, Fib/OTE, entry/SL/TP if visible, and execution quality. Separate FACTS, INTERPRETATION, UNKNOWN.",
         modelSeparation:"NQ and CRYPTO remain separate.",
-        images:batch.map((x,n)=>({index:n+1,file:path.basename(x.file),model:x.trade.model,instrument:x.trade.instrument,outcome:x.trade.outcome,context:x.trade.context.slice(0,1200)}))
+        images:batch.map((x,n)=>({index:n+1,file:path.basename(x.file),model:x.trade.model,instrument:x.trade.instrument,outcome:x.trade.outcome,context:x.trade.context.slice(0,900)}))
       })}];
+
       for(const [n,x] of batch.entries()) {
         const data=await fs.readFile(x.file);
-        const mime=path.extname(x.file).toLowerCase()===".png"?"image/png":path.extname(x.file).toLowerCase()===".webp"?"image/webp":"image/jpeg";
+        const ext=path.extname(x.file).toLowerCase();
+        const mime=ext===".png"?"image/png":ext===".webp"?"image/webp":"image/jpeg";
         content.push({type:"input_image",image_url:"data:"+mime+";base64,"+data.toString("base64"),detail:"high"});
         content.push({type:"input_text",text:"IMAGE_INDEX="+(n+1)+" FILE="+path.basename(x.file)});
       }
-      const response=await openai.responses.create({
-        model:MODEL,reasoning:{effort:"high"},
-        input:[
-          {role:"system",content:BASE_SYSTEM+"\nHISTORICAL SCREENSHOT REVIEW: inspect only visible evidence and keep NQ/CRYPTO separated."},
-          {role:"user",content}
-        ]
-      });
+
+      let response;
+      try {
+        response=await openai.responses.create({
+          model:MODEL,
+          input:[
+            {role:"system",content:BASE_SYSTEM+"\nHISTORICAL SCREENSHOT REVIEW: inspect only visible evidence and keep NQ/CRYPTO separated."},
+            {role:"user",content}
+          ]
+        });
+      } catch(e) {
+        if(e?.status===429 || /rate.?limit|too many requests|free.*limit/i.test(String(e?.message||""))) {
+          obsidianJob={...obsidianJob,running:false,phase:"paused-rate-limit",
+            error:"OpenRouter a atteint une limite. Progression sauvegardée; relance plus tard pour reprendre sans retraiter les images."};
+          await saveObsidianJob();
+          return;
+        }
+        throw e;
+      }
+
       const analysis=response.output_text||"";
-      for(const x of batch) {
+      for(const [n,x] of batch.entries()) {
         const trade=trades.find(t=>t.id===x.trade.id);
-        if(trade) (trade.imageAnalyses ||= []).push({file:x.file,analysis,analyzedAt:new Date().toISOString()});
+        if(trade) (trade.imageAnalyses ||= []).push({
+          file:x.file,imageIndex:n+1,analysis,analyzedAt:new Date().toISOString()
+        });
       }
       obsidianJob.processed=Math.min(items.length,i+batch.length);
       obsidianJob.analyzedImages+=batch.length;
       await fs.writeFile(OBSIDIAN_TRADES_FILE,JSON.stringify(trades,null,2));
+      await saveObsidianJob();
     }
-    obsidianJob={...obsidianJob,running:false,phase:"complete",finishedAt:new Date().toISOString()};
+
+    obsidianJob={...obsidianJob,running:false,phase:"complete",finishedAt:new Date().toISOString(),error:null};
+    await saveObsidianJob();
   } catch(e) {
     obsidianJob={...obsidianJob,running:false,phase:"error",error:e.message,finishedAt:new Date().toISOString()};
+    await saveObsidianJob();
   }
 }
 async function loadLearning() {
@@ -704,7 +750,10 @@ app.post("/api/obsidian/analyze-images", async (req,res) => {
   obsidianImageAnalysisLoop().catch(()=>{});
   res.json({ok:true,started:true,job:obsidianJob});
 });
-app.get("/api/obsidian/job", (req,res)=>res.json(obsidianJob));
+app.get("/api/obsidian/job", async (req,res)=>{
+  const saved=await loadObsidianJob();
+  res.json(saved||obsidianJob);
+});
 
 app.get("/health", (req,res) => res.json({
   ok:true,
