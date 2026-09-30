@@ -170,6 +170,7 @@ const liveEvents = [];
 function upsertById(list,item){const id=item?.id??item?.contractId??item?.orderId;if(id==null){list.push(item);return;}const i=list.findIndex(x=>(x?.id??x?.contractId??x?.orderId)===id);if(i>=0)list[i]=item;else list.push(item);if(list.length>1000)list.splice(0,list.length-1000);}
 function contractName(id){const c=tradovate.contracts.get(Number(id));return c?.name||c?.symbol||(id?String(id):"NQ");}
 function parseFill(fill){const action=String(fill.action??fill.buySell??"").toUpperCase();return cleanTrade({id:"tradovate-fill-"+(fill.id??fill.orderId??Date.now()),timestamp:fill.timestamp||new Date().toISOString(),model:"NQ",instrument:contractName(fill.contractId),direction:/BUY|B|LONG/.test(action)?"LONG":"SHORT",entry:fill.price??null,risk:100,result:"OPEN",context:"Tradovate fill détecté automatiquement en lecture seule.",tags:["tradovate","live-fill"],brokerData:{fillId:fill.id??null,orderId:fill.orderId??null,contractId:fill.contractId??null,qty:fill.qty??null,action}});}
+function parseOrder(order){const action=String(order.action??order.buySell??"").toUpperCase();return cleanTrade({id:"tradovate-order-"+(order.id??Date.now()),timestamp:order.timestamp||new Date().toISOString(),model:"NQ",instrument:contractName(order.contractId),direction:/BUY|B|LONG/.test(action)?"LONG":"SHORT",entry:order.price??order.limitPrice??order.stopPrice??null,risk:100,result:"OPEN",context:"Ordre Tradovate détecté automatiquement en lecture seule.",tags:["tradovate","live-order"],brokerData:{orderId:order.id??null,contractId:order.contractId??null,qty:order.qty??null,action,ordStatus:order.ordStatus??null,orderType:order.orderType??order.ordType??null}});}
 function emitLive(event) {
   liveEvents.push({ timestamp:new Date().toISOString(), ...event });
   if (liveEvents.length > 500) liveEvents.shift();
@@ -222,7 +223,17 @@ async function connectTradovate() {
           const type=String(d.entityType).toLowerCase();
           if(type==="fill") d.eventType==="Deleted"?null:upsertById(tradovate.fills,entity);
           if(type==="position") upsertById(tradovate.positions,entity);
-          if(type==="order") upsertById(tradovate.orders,entity);
+          if(type==="order") {
+            upsertById(tradovate.orders,entity);
+            if(d.eventType!=="Deleted" && ["Created","Updated"].includes(String(d.eventType||""))){
+              const order=entity,orderKey="tradovate-order-event-"+String(order.id||order.timestamp||Date.now());
+              if(!tradovate.fillIds.has(orderKey)){
+                tradovate.fillIds.add(orderKey);
+                const detectedOrder=parseOrder(order);
+                emitLive({type:"trade_order",order,trade:detectedOrder});
+              }
+            }
+          }
           if(type==="account" && d.eventType!=="Deleted") upsertById(tradovate.accounts,entity);
           if(type==="contract") tradovate.contracts.set(Number(entity.id),entity);
           emitLive({type:"entity_event",entityType:d.entityType,eventType:d.eventType});
