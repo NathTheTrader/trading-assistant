@@ -1039,3 +1039,67 @@ body.landing-page .landing-corner{
 .app-page .ai-composer button{width:44px;border:1px solid #19a7ff;border-radius:5px;background:#071723;color:#19a7ff;font-size:17px;cursor:pointer}
 .app-page .ai-composer button:hover{background:#0b2332}
 @media(max-width:900px){.app-page .ai-chat{height:560px;min-height:560px}}
+
+/* V37 — CLEAN 4K SCENE + LIVE SESSION / CONNECTION POLISH */
+html,body,#app{background:#02050a!important}
+body,.app-page,.app-page button,.app-page input,.app-page select,.app-page textarea{
+  -webkit-font-smoothing:antialiased;
+  text-rendering:geometricPrecision;
+}
+.app-page{
+  background:#02050a!important;
+  position:relative;
+}
+.app-page:before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(2,5,10,.94) 0%,rgba(2,5,10,.82) 24%,rgba(2,5,10,.72) 58%,rgba(2,5,10,.9) 100%),
+    url("https://images.pexels.com/photos/28587525/pexels-photo-28587525.jpeg?cs=srgb&dl=pexels-fromsalih-28587525.jpg&fm=jpg") center/cover no-repeat;
+  opacity:.42;
+}
+.app-page.red:before{
+  background:
+    linear-gradient(90deg,rgba(2,5,10,.97) 0%,rgba(2,5,10,.88) 25%,rgba(2,5,10,.78) 65%,rgba(2,5,10,.94) 100%),
+    linear-gradient(135deg,rgba(255,20,55,.16),transparent 55%),
+    url("https://images.pexels.com/photos/28587525/pexels-photo-28587525.jpeg?cs=srgb&dl=pexels-fromsalih-28587525.jpg&fm=jpg") center/cover no-repeat;
+}
+.app-page.blue:before{
+  background:
+    linear-gradient(90deg,rgba(2,5,10,.97) 0%,rgba(2,5,10,.88) 25%,rgba(2,5,10,.78) 65%,rgba(2,5,10,.94) 100%),
+    linear-gradient(135deg,rgba(20,145,255,.16),transparent 55%),
+    url("https://images.pexels.com/photos/28587525/pexels-photo-28587525.jpeg?cs=srgb&dl=pexels-fromsalih-28587525.jpg&fm=jpg") center/cover no-repeat;
+}
+.app-shell,.main,.workspace{position:relative;z-index:1}
+.topbar{height:54px}
+.top-actions .live{min-width:92px;text-align:center}
+.top-actions .session{min-width:72px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.top-actions .session b{margin:0;font-size:6px}
+.top-actions .session i{font-style:normal;font-size:5px;color:#526b7b}
+.top-actions .live.session-live{color:#12e4a1;border-color:#155046}
+.session-live b,.session-list .is-live{color:#12e4a1}
+.session-closed{opacity:.7}
+.account-state{display:flex;align-items:center;gap:14px;padding:9px 12px;margin:0 0 9px;border:1px solid #1a2e40;border-radius:7px;background:rgba(3,9,15,.82)}
+.account-state>span{font-size:7px;font-weight:700;letter-spacing:.8px}
+.account-state>small{flex:1;font-size:7px;color:#71899a}
+.account-state button{font-size:6px;padding:7px 10px}
+.account-state.offline>span{color:#ff3155}
+.account-state.connected>span{color:#12e4a1}
+.dashboard-empty{min-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1px dashed #1c3448;border-radius:6px;background:rgba(2,7,12,.5)}
+.dashboard-empty b{font-size:8px;color:#9eb0bc;letter-spacing:1px}
+.dashboard-empty span{font-size:7px;color:#566d7e}
+.connection-stack{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.connection-live{grid-column:1/-1;min-height:125px;display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:15px}
+.connection-live .conn-icon{width:48px;height:48px}
+.connection-copy h3{margin:0 0 4px}
+.connection-copy p{margin:8px 0 0;color:#647c8d;font-size:7px;line-height:1.45}
+.connection b.ok{color:#12e4a1}.connection b.warn{color:#ffb25c}
+.connection.is-offline{border-color:#3b2630}
+.connection-help{margin-top:10px}
+.connection-help p{margin:0 0 12px;color:#71899a;font-size:8px}
+.setup-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.setup-grid div{padding:10px;border:1px solid #173247;border-radius:6px;background:#061019}
+.setup-grid small{display:block;font-size:5px;color:#4e6879;letter-spacing:1px;margin-bottom:4px}
+.setup-grid b{font-size:7px;color:#c9d7df}
+@media(max-width:900px){
+ .connection-stack{grid-template-columns:1fr}.connection-live{grid-column:auto}.setup-grid{grid-template-columns:1fr}
+}
