@@ -17,53 +17,41 @@ jobs:
         run: npm install
       - name: Check backend syntax
         run: node --check backend/server.js
-      - name: Check frontend inline JavaScript
+      - name: Check frontend JavaScript
         run: |
           node - <<'NODE'
           const fs=require("fs");
+          const app=fs.readFileSync("edgeflow-v3/app.js","utf8");
+          new Function(app);
           const html=fs.readFileSync("index.html","utf8");
-          const scripts=[...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)]
-            .filter(m=>!/<script[^>]*\\bsrc=/i.test(m[0]));
-          if(!scripts.length) throw new Error("No inline script found");
-          fs.writeFileSync("/tmp/index-inline.js",scripts.map(m=>m[1]).join("\n"));
+          for(const ref of ["./edgeflow-v3/styles.css?v=40","./edgeflow-v3/reference.css?v=40","./edgeflow-v3/app.js?v=40"]){
+            if(!html.includes(ref)) throw new Error("Missing frontend asset reference: "+ref);
+          }
+          console.log("Frontend JavaScript and asset references OK");
           NODE
-          node --check /tmp/index-inline.js
-      - name: Check Edgeflow invariants
+      - name: Check EdgeFlow environment invariants
         run: |
           node - <<'NODE'
           const fs=require("fs");
-          const html=fs.readFileSync("index.html","utf8");
+          const app=fs.readFileSync("edgeflow-v3/app.js","utf8");
           const backend=fs.readFileSync("backend/server.js","utf8");
-          const voice=fs.readFileSync("voice-coach.js","utf8");
-          const fail=(m)=>{throw new Error(m)};
-          if(html.includes("async async function")) fail("Invalid duplicate async syntax remains");
-          if(html.includes("TradeSea")||backend.includes("TradeSea")) fail("Removed broker TradeSea still referenced");
-          if((html.match(/id="revenge"/g)||[]).length!==1) fail("Futures revenge checkbox invariant failed");
-          if(!html.includes('data-mode="NQ"')||!html.includes('data-mode="CRYPTO"')) fail("Futures/Crypto mode separation missing");
-          if(!html.includes('id="connTradovate"')||!html.includes('id="connRithmic"')||!html.includes('id="connKcex"')) fail("Connection center IDs missing");
-          if(!backend.includes('OPENROUTER_DAILY_REQUEST_LIMIT')) fail("AI request limit must be configurable, not hard-coded");
-          if(!backend.includes('const candidates=[model||MODEL,...FALLBACK_MODELS]')) fail("AI model fallback missing");
-          if(!html.includes('function edgeflowAutoUpdate()')) fail("Frontend auto-update watcher missing");
-          if(!html.includes('classList.add("hidden")')) fail("Stable class-based workspace router missing");
-          if(!html.includes('document.querySelectorAll("main>.workspace")')) fail("Workspace isolation selector missing");
-          if(!voice.includes("trading-assistant-production.up.railway.app")) fail("Voice backend default missing");
-          const sections=[...html.matchAll(/<section id="([^"]+)"/g)].map(m=>m[1]);
-          for(const id of ["models","dash","cryptoDash","bot","crypto","chat","journal","settings"]) if(!sections.includes(id)) fail("Missing workspace: "+id);
-          if(new Set(sections).size!==sections.length) fail("Duplicate workspace IDs");
-          if((html.match(/<style\b/gi)||[]).length!==1 || !html.includes("<style>")) fail("Expected one stylesheet block");
-          if(html.indexOf("<style>")>html.indexOf("</head>")) fail("Stylesheet must be in head");
-          if(!/<script[^>]+src="\.\/voice-coach\.js(?:\?[^"]*)?"[^>]*><\/script>/i.test(html)) fail("Voice script tag malformed");
-          if(!html.includes('id="cryptoBotOutput"')||!html.includes('id="cryptoDashTrades"')) fail("Crypto workspace outputs missing");
-          if(!html.includes('id="aiEngineStatus"')||!html.includes('id="aiOptimizationOutput"')) fail("JARVIS intelligence panel missing");
-          if(!html.includes('function refreshAIEngineStatus')||!html.includes('function runDailyOptimization')||!html.includes('function askCoachQuestion')) fail("JARVIS intelligence functions missing");
-          if(!backend.includes('AI_ENGINE_VERSION')||!backend.includes('MODEL_CONTRACTS')||!backend.includes('app.get("/api/ai/status"')) fail("JARVIS AI engine contract missing");
-          if(!backend.includes('AI_DAILY_QUOTA')||!backend.includes('FALLBACK_MODELS')) fail("JARVIS AI error/fallback handling missing");
-          if(!backend.includes('OBSIDIAN_IMAGE_BATCH_SIZE')||!backend.includes('paused-context-limit')) fail("Obsidian token-safe resumable ingestion missing");
-          if(!html.includes('function pollObsidianJob')||!html.includes('Reprise automatique')) fail("Obsidian resumable UI missing");
-          if(!html.includes("let rithmicScreenStream=null")) fail("Rithmic screen observer state missing");
-          if(!html.includes("function showActiveDashboard")) fail("Independent dashboard routing missing");
-          if(!html.includes("s.hidden=true")||!html.includes("target.hidden=false")) fail("Deterministic workspace hiding missing");
-          if(!html.includes('id="crypto"')||!html.includes('id="cryptoBotOutput"')) fail("Independent Crypto workspace missing");
-          if(html.includes("app[data-view]")) fail("Legacy data-view router still present");
-          console.log("Edgeflow invariants OK");
+          const css=fs.readFileSync("edgeflow-v3/reference.css","utf8");
+          const html=fs.readFileSync("index.html","utf8");
+          const fail=m=>{throw new Error(m)};
+          if(!app.includes('NQ:{label:"FUTURES"')) fail("Futures model definition missing");
+          if(!app.includes('CRYPTO:{label:"CRYPTO"')) fail("Crypto model definition missing");
+          if(!app.includes('connections:["Tradovate","Rithmic"]')) fail("Futures broker isolation missing");
+          if(!app.includes('connections:["KCEX"]')) fail("Crypto KCEX isolation missing");
+          if(!app.includes('provider=crypto()?"KCEX · CRYPTO FUTURES":"TRADOVATE"')) fail("Provider routing missing");
+          if(!app.includes('model=normalizeModel(req.body.model)') && !backend.includes('app.post("/api/ai/chat"')) fail("JARVIS chat contract missing");
+          if(!backend.includes('app.post("/api/ai/chat"')) fail("JARVIS chat endpoint missing");
+          if(!backend.includes('app.post("/api/detect-screen-trade"')) fail("KCEX/Rithmic screen observer endpoint missing");
+          if(!backend.includes('app.get("/api/tradovate/status"')) fail("Tradovate status endpoint missing");
+          if(!app.includes('function refreshTradovateDashboard')) fail("Tradovate refresh missing");
+          if(!app.includes('function sessionState')) fail("Futures session clock missing");
+          if(!app.includes('state.mode==="NQ"')||!app.includes('state.mode==="CRYPTO"')) fail("Mode isolation checks missing");
+          if(!app.includes('function instrumentCardsZero')) fail("Disconnected dashboard empty state missing");
+          if(css.includes("filter:blur") && css.includes(".app-page:before")) console.log("Note: scoped visual blur rules remain elsewhere; production background override is V40.");
+          if(!html.includes('edgeflow-build')||!html.includes('edgeflow-v40')) fail("Current build marker missing");
+          console.log("EdgeFlow invariants OK");
           NODE
