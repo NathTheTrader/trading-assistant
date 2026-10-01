@@ -426,56 +426,31 @@
   }
 
   function ai(){
-    return title("INTELLIGENCE","AI Assistant","Edgeflow trading intelligence.",'<span class="ai-online">● ONLINE</span>')+
-      '<div class="ai-grid">'+
-      panel("EDGEFLOW JARVIS",
-        '<div class="ai-chat">'+
-          '<div class="ai-welcome"><b>JARVIS</b><small>Trading intelligence · '+(crypto()?"Crypto model":"Futures / NQ model")+'</small></div>'+
-          '<div id="aiMessages" class="ai-messages"><div class="ai-message jarvis"><b>JARVIS</b><p>Je suis prêt. Pose-moi une question sur ton trading, ton modèle, tes trades ou le contexte actuel.</p></div></div>'+
-          '<div class="ai-actions">'+
-            '<button onclick="aiQuick(this.textContent)">Analyze my last 5 trades <span>›</span></button>'+
-            '<button onclick="aiQuick(this.textContent)">Check market context (NQ) <span>›</span></button>'+
-            '<button onclick="aiQuick(this.textContent)">Find potential setups <span>›</span></button>'+
-            '<button onclick="aiQuick(this.textContent)">Review my journal <span>›</span></button>'+
-          '</div>'+
-          '<div class="ai-composer"><input id="aiInput" type="text" autocomplete="off" placeholder="Ask Jarvis anything..." onkeydown="if(event.key===\'Enter\')aiAsk()"><button onclick="aiAsk()">↗</button></div>'+
-        '</div>','ai-panel')+
-      panel("MODEL CONTEXT",
-        '<div class="context-grid"><div><small>ENVIRONMENT</small><b>'+d().label+'</b></div><div><small>ENTRY</small><b>LIMIT</b></div><div><small>TRIGGER</small><b>REJECTION BLOCK</b></div><div><small>RETRACE</small><b>0.50 · 0.62 · 0.705 · 0.79</b></div></div>')+
+    const q=crypto()?["Review my crypto journal","Check crypto market context","Review my last 5 crypto trades"]:["Analyze my last 5 trades","Check market context (NQ)","Review my Futures journal"];
+    const ctx=crypto()?"Crypto only · KCEX · Direction → Key Open sweep → HTF POI → entry → high RR":"Futures only · Tradovate/Rithmic · HTF bias → POI → liquidity → retracement → R.B → limit";
+    return title("INTELLIGENCE","AI Assistant","JARVIS · "+ctx,'<span class="ai-online">● ONLINE</span>')+
+      '<div class="ai-grid">'+panel("EDGEFLOW JARVIS",'<div class="ai-chat"><div class="ai-welcome"><b>JARVIS</b><small>'+esc(ctx)+'</small></div><div id="aiMessages" class="ai-messages"><div class="ai-message jarvis"><b>JARVIS</b><p>Je suis prêt. Le contexte '+(crypto()?"Crypto":"Futures/NQ")+' est verrouillé pour cette conversation.</p></div></div><div class="ai-actions">'+q.map(x=>'<button onclick="aiQuick(this.dataset.q)" data-q="'+esc(x)+'">'+esc(x)+' <span>›</span></button>').join("")+'</div><div class="ai-composer"><input id="aiInput" type="text" autocomplete="off" placeholder="Ask Jarvis anything..." onkeydown="if(event.key===\'Enter\')aiAsk()"><button id="aiSend" onclick="aiAsk()">↗</button></div></div>','ai-panel')+
+      panel("ACTIVE MODEL",crypto()?'<div class="context-grid"><div><small>ENVIRONMENT</small><b>CRYPTO</b></div><div><small>PROVIDER</small><b>KCEX PERPETUALS</b></div><div><small>MODEL</small><b>DIRECTION → KEY OPEN SWEEP → HTF POI → ENTRY → HIGH RR</b></div><div><small>FIB / OTE</small><b>SECONDARY</b></div></div>':'<div class="context-grid"><div><small>ENVIRONMENT</small><b>FUTURES / NQ</b></div><div><small>PROVIDER</small><b>TRADOVATE / RITHMIC</b></div><div><small>MODEL</small><b>HTF BIAS → POI → LIQUIDITY → RETRACEMENT → R.B → LIMIT</b></div><div><small>FIB</small><b>0.50 · 0.62 · 0.705 · 0.79</b></div></div>')+
       '</div>';
   }
   window.aiAsk=async function(){
-    const input=document.getElementById("aiInput");
-    const box=document.getElementById("aiMessages");
-    if(!input||!box)return;
-    const question=String(input.value||"").trim();
-    if(!question)return;
-    input.value="";
+    const input=document.getElementById("aiInput"),box=document.getElementById("aiMessages"),send=document.getElementById("aiSend");
+    if(!input||!box)return;const question=String(input.value||"").trim();if(!question)return;
+    input.value="";if(send)send.disabled=true;
     box.insertAdjacentHTML("beforeend",'<div class="ai-message user"><b>YOU</b><p>'+esc(question)+'</p></div>');
-    const loading=document.createElement("div");
-    loading.className="ai-message jarvis loading";
-    loading.innerHTML="<b>JARVIS</b><p>Analyse en cours...</p>";
-    box.appendChild(loading);
-    box.scrollTop=box.scrollHeight;
+    state.aiTurns.push({role:"user",content:question});
+    const loading=document.createElement("div");loading.className="ai-message jarvis loading";loading.innerHTML="<b>JARVIS</b><p>Analyse en cours...</p>";box.appendChild(loading);box.scrollTop=box.scrollHeight;
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),35000);
     try{
-      const response=await fetch("https://trading-assistant-production.up.railway.app/api/ai/chat",{
-        method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},
-        body:JSON.stringify({model:state.mode,question,history:state.journal.slice(0,30)})
-      });
-      const data=await response.json().catch(()=>({}));
-      if(!response.ok||!data.ok)throw new Error(data.error||"Jarvis API error.");
-      loading.classList.remove("loading");
-      loading.innerHTML="<b>JARVIS</b><p>"+esc(data.text||"Aucune réponse.")+"</p>";
-    }catch(e){
-      loading.classList.remove("loading");
-      loading.innerHTML="<b>JARVIS · ERROR</b><p>"+esc(String(e.message||e))+"</p>";
-    }
-    box.scrollTop=box.scrollHeight;
+      const r=await fetch(API_BASE+"/api/ai/chat",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},signal:controller.signal,body:JSON.stringify({model:state.mode,question,history:state.journal.slice(0,30),chatHistory:state.aiTurns.slice(-12)})});
+      const data=await r.json().catch(()=>({}));if(!r.ok||!data.ok)throw new Error(data.error||("Jarvis API error · HTTP "+r.status));
+      const answer=String(data.text||"Aucune réponse.").trim();state.aiTurns.push({role:"assistant",content:answer});
+      loading.classList.remove("loading");loading.innerHTML="<b>JARVIS</b><p>"+esc(answer)+"</p>";
+    }catch(err){loading.classList.remove("loading");loading.innerHTML="<b>JARVIS · ERROR</b><p>"+esc(err?.name==="AbortError"?"Timeout Jarvis (35 s).":String(err?.message||err))+"</p>";}
+    finally{clearTimeout(timer);if(send)send.disabled=false;input.focus();box.scrollTop=box.scrollHeight;}
   };
-  window.aiQuick=function(text){
-    const input=document.getElementById("aiInput");
-    if(input){input.value=String(text||"").trim();aiAsk();}
-  };
+  window.aiQuick=function(text){const input=document.getElementById("aiInput");if(input){input.value=String(text||"");aiAsk();}};
+
   function journal(){
     const entries=state.journal;
     const month=new Date().toLocaleString("en-US",{month:"long",year:"numeric"});
@@ -543,7 +518,7 @@
               '<label>DATE<input id="jDate" type="date" value="'+today+'" required></label>'+
               '<label>TIME<input id="jTime" type="time" value="'+now().slice(0,5)+'"></label>'+
               '<label>SIDE<select id="jSide"><option>Long</option><option>Short</option></select></label>'+
-              '<label>SETUP / MODEL<select id="jSetup"><option>R.B + FVG</option><option>Rejection Block</option><option>Sweep + OB</option><option>10H Open</option><option>FVG</option><option>Trend</option></select></label>'+
+              '<label>SETUP / MODEL<select id="jSetup">'+setupOptionsHtml()+'</select></label>'+
               '<label>GRADE<select id="jGrade"><option>A+</option><option>A</option><option>A-</option><option>B+</option><option>B</option><option>B-</option><option>C+</option><option>C</option></select></label>'+
               '<label>ENTRY<input id="jEntry" placeholder="24,862.75"></label><label>EXIT<input id="jExit" placeholder="24,840.25"></label><label>QTY<input id="jQty" placeholder="1"></label>'+
               '<label>P&L<input id="jPnl" type="number" step="0.01" placeholder="225"></label><label>RR<input id="jRR" placeholder="4.5"></label>'+
@@ -715,7 +690,7 @@
               '<label>SIDE<select id="bttSide"><option>Long</option><option>Short</option></select></label>'+
               '<label>P&L<input id="bttPnl" type="number" step="0.01" placeholder="225" required></label>'+
               '<label>RR<input id="bttRR" type="number" step="0.1" placeholder="3.5"></label>'+
-              '<label>SETUP<select id="bttSetup"><option>R.B</option><option>R.B + FVG</option><option>Sweep + OB</option><option>10H Open</option><option>FVG</option><option>Trend</option><option>Other</option></select></label>'+
+              '<label>SETUP<select id="bttSetup">'+setupOptionsHtml()+'</select></label>'+
               '<label class="bt-wide">NOTE<input id="bttNote" placeholder="What happened in the historical setup?"></label>'+
               '<button class="primary bt-wide" type="submit">+ ADD TRADE TO STUDY</button>'+
               '</form>'
@@ -755,7 +730,7 @@
             '<div class="journal-form-grid">'+
               '<label>NAME<input id="btName" required placeholder="London R.B Model"></label>'+
               '<label>INSTRUMENT<select id="btInstrument">'+d().instruments.map(x=>'<option>'+x+'</option>').join("")+'</select></label>'+
-              '<label>SESSION<select id="btSession"><option>London</option><option>Asia</option><option>NY AM</option><option>NY PM</option></select></label>'+
+              '<label>SESSION<select id="btSession">'+sessionOptionsHtml()+'</select></label>'+
               '<label>STUDY DATE<input id="btDate" type="date" required></label>'+
             '</div>'+
             '<label class="journal-wide">NOTES<textarea id="btNotes" rows="4" placeholder="Model rules, date range, filters and what this study is testing."></textarea></label>'+
