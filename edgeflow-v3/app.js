@@ -323,7 +323,7 @@
     return '<div class="dash premium-dashboard">'+
       '<div class="dash-banner"><div class="dash-brand"><div class="mini-mark">E</div><div><small>EDGEFLOW CORE • '+label+'</small><h1>'+label+'</h1><p>'+(crypto()?"BTC | ETH | SOL | BNB | XRP | HYPE":"MNQ | MES | MGC | RITHMIC | TRADOVATE")+'</p></div></div>'+
       '<div class="dash-sessions"><span class="live '+(connected?"":"offline")+'">'+statusText+'</span>'+sessionCards+'</div></div>'+
-      '<div class="account-state '+(connected?"connected":"offline")+'"><span>'+statusText+'</span><small>'+(connected?acct.account+" · live account data":"Connecte Tradovate dans Connections pour charger les données réelles.")+'</small><button onclick="edgeGo("connections")">CONNECTIONS</button></div>'+
+      '<div class="account-state '+(connected?"connected":"offline")+'"><span>'+statusText+'</span><small>'+(connected?acct.account+" · live account data":"Connecte Tradovate dans Connections pour charger les données réelles.")+'</small><button onclick="edgeGo(&#039;connections&#039;)">CONNECTIONS</button></div>'+
       '<div class="kpis">'+
       kpi("Account Balance",balanceText,connected?"Live Tradovate balance":"No account connected",connected?"positive":"")+
       kpi("Today P&L",pnlText,connected?"Realized P&L":"Waiting for connection",connected?(pnl>=0?"positive":"negative"):"")+
@@ -341,7 +341,7 @@
       '</aside></div></div>';
   }
   function instrumentCardsZero(){
-    return '<div class="instrument-grid">'+d().instruments.slice(0,crypto()?4:3).map(x=>'<div class="instrument-card"><div><b>'+x+'</b><small>WAITING FOR MARKET DATA</small></div><strong>—</strong><i>NO FEED</i></div>').join("")+'</div>';
+    return '<div class="asset-grid">'+d().instruments.slice(0,crypto()?4:3).map(x=>'<div class="instrument-card"><div><b>'+x+'</b><small>WAITING FOR MARKET DATA</small></div><strong>—</strong><i>NO FEED</i></div>').join("")+'</div>';
   }
 
   function title(k,t,s,button=""){return '<div class="page-title"><div><small>'+k+'</small><h1>'+t+'</h1><p>'+s+'</p></div>'+button+'</div>'}
@@ -659,6 +659,7 @@
       if(!state.mode){landing();return}
       const pages={overview:dashboard,trades,performance,ai,journal,analytics,backtests,connections,settings};
       shell((pages[state.view]||dashboard)());
+      if(state.mode==="NQ"&&state.view==="overview"&&(Date.now()-state.tradovate.lastFetch>5000)&&!state.tradovate.loading) refreshTradovateDashboard();
     }catch(err){
       console.error("EdgeFlow render error",err);
       document.body.className="app-page red";
@@ -666,5 +667,5 @@
     }
   }
   render();
-  setInterval(()=>{const e=document.querySelectorAll(".session b"); if(e.length)e[0].textContent=now()},1000);
+  setInterval(()=>{if(state.mode==="NQ"&&state.view==="overview"&&!state.tradovate.loading)renderDashboardOnly()},10000);
 })();
