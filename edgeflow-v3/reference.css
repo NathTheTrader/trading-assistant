@@ -688,3 +688,47 @@ body.landing-page .env-cards{display:flex;justify-content:center;gap:22px;margin
 .app-page .journal-modal textarea{font-size:12px;line-height:1.35}
 .app-page .journal-modal .modal-title{font-size:20px}
 .app-page .journal-modal .modal-subtitle{font-size:10px}
+
+/* V27 — FUNCTIONAL BACKTEST LAB */
+.bt-overview{display:grid;gap:8px}
+.bt{width:100%;overflow:auto}
+.bt-row{display:grid;grid-template-columns:minmax(190px,2fr) 90px 70px 85px 65px 120px 65px 34px;align-items:center;gap:8px;min-width:820px;padding:11px 8px;border-bottom:1px solid #102536;color:#8ea2b0;font-size:10px}
+.bt-row.head{color:#526b7b;font-size:8px;letter-spacing:.1em;text-transform:uppercase}
+.bt-row:last-child{border-bottom:0}
+.bt-name{display:flex;flex-direction:column;align-items:flex-start;gap:3px;background:none;border:0;color:#eaf2f6;cursor:pointer;text-align:left;padding:0}
+.bt-name b{font-size:11px;color:#eaf2f6}
+.bt-name small{font-size:8px;color:#5f7686;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
+.bt-open,.bt-delete,.bt-actions button{border:1px solid #18364a;background:#07131d;color:#8fa5b3;border-radius:5px;padding:7px 9px;font-size:8px;cursor:pointer}
+.bt-open:hover,.bt-delete:hover{border-color:#ff3155;color:#fff}
+.bt-delete{color:#647a88;padding:5px 8px}
+.bt-actions{display:flex;gap:7px}
+.bt-lab-head{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:8px}
+.bt-lab-head>div{padding:12px;border:1px solid #183246;border-radius:7px;background:#061019}
+.bt-lab-head small{display:block;color:#526b7b;font-size:8px;letter-spacing:.08em}
+.bt-lab-head b{display:block;margin-top:6px;color:#eaf2f6;font-size:13px}
+.bt-kpis{margin-bottom:8px}
+.bt-lab-grid{display:grid;grid-template-columns:340px minmax(0,1fr);gap:8px}
+.bt-form{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.bt-form label{color:#668091;font-size:9px;letter-spacing:.06em}
+.bt-form input,.bt-form select{width:100%;box-sizing:border-box;margin-top:5px;min-height:42px;padding:10px;border:1px solid #18364a;border-radius:5px;background:#050c12;color:#dce8ee;font-size:11px}
+.bt-form .bt-wide{grid-column:1/-1}
+.bt-form button{min-height:42px}
+.bt-trades{overflow:auto}
+.bt-trade-row{display:grid;grid-template-columns:85px 65px 90px 55px 100px minmax(150px,1fr) 30px;align-items:center;gap:7px;min-width:620px;padding:10px 6px;border-bottom:1px solid #102536;color:#8da1af;font-size:9px}
+.bt-trade-row.head{color:#526b7b;font-size:8px;letter-spacing:.08em}
+.bt-trade-row b{color:#dce8ee}
+.bt-trade-row .win{color:#14e4a1}.bt-trade-row .loss{color:#ff4265}
+.bt-notes{margin-top:8px}
+.bt-notes p{margin:0;color:#8196a5;font-size:10px;line-height:1.6}
+.bt-empty{padding:28px;text-align:center;color:#607887;font-size:10px}
+.backtest-modal-card{width:min(760px,94vw)}
+.backtest-modal-card .journal-form-grid{grid-template-columns:2fr 1fr 1fr 1fr}
+@media(max-width:900px){
+  .bt-lab-head{grid-template-columns:1fr 1fr}
+  .bt-lab-grid{grid-template-columns:1fr}
+  .backtest-modal-card .journal-form-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+  .bt-lab-head{grid-template-columns:1fr 1fr}
+  .backtest-modal-card .journal-form-grid{grid-template-columns:1fr}
+}
