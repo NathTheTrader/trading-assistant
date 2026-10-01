@@ -6,6 +6,38 @@ let mode=(new URLSearchParams(location.search).get("mode")||localStorage.getItem
 if(!["NQ","CRYPTO"].includes(mode)) mode="";
 let view=new URLSearchParams(location.search).get("view")||localStorage.getItem(VIEW_KEY)||"dashboard";
 const state={mode,view,journal:JSON.parse(localStorage.getItem("journal")||"[]")};
+const API_BASE="https://trading-assistant-production.up.railway.app";
+state.apiOnline=false; state.ai=null; state.connections=null; state.chat=[];
+async function api(path,options={}){
+  const r=await fetch((path.startsWith("http")?path:API_BASE+path),{
+    ...options,mode:"cors",
+    headers:{"Content-Type":"application/json",...(options.headers||{})}
+  });
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(data?.error||("HTTP "+r.status));
+  state.apiOnline=true; return data;
+}
+async function hydrate(){
+  try{
+    const [trades,ai,connections]=await Promise.all([
+      api("/api/trades?model="+encodeURIComponent(state.mode)),
+      api("/api/ai/status"),
+      api("/api/connections/status")
+    ]);
+    if(Array.isArray(trades)) state.journal=trades;
+    state.ai=ai; state.connections=connections;
+    localStorage.setItem("journal",JSON.stringify(state.journal));
+  }catch(e){state.apiOnline=false}
+}
+async function saveTradeRemote(t){
+  try{
+    const saved=await api("/api/trades",{method:"POST",body:JSON.stringify(t)});
+    if(saved?.id!=null) state.journal=state.journal.map(x=>String(x.id)===String(saved.id)?saved:x);
+    if(!state.journal.some(x=>String(x.id)===String(saved?.id))) state.journal.push(saved);
+    localStorage.setItem("journal",JSON.stringify(state.journal)); return saved;
+  }catch(e){throw e}
+}
+
 
 const icon={home:"⌂",trades:"▤",perf:"◔",ai:"✦",journal:"▣",analytics:"◫",backtests:"◌",connections:"⌁",settings:"⚙"};
 function money(v){const n=Number(v);return Number.isFinite(n)?(n>=0?"+":"-")+"$"+Math.abs(n).toLocaleString("en-US",{maximumFractionDigits:2}):"—"}
@@ -68,6 +100,6 @@ function settings(){return pageHead("SYSTEM","Settings","Environment preferences
 function setting(n,on){return '<div class="setting"><span>'+n+'</span><span class="switch '+(on?"on":"")+'"></span></div>'}
 function render(){const w=$("#workspace");if(!w)return;const pages={dashboard,trades,performance,ai,journal,analytics,backtests,connections,settings};w.innerHTML=(pages[state.view]||dashboard)();document.title="EDGEFLOW — "+modeName()+" · "+state.view.toUpperCase()}
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-function boot(){if(!state.mode){landing();return}shell();render();setInterval(()=>{$(".session b")?.replaceChildren(document.createTextNode(clock()))},1000)}
+async function boot(){if(!state.mode){landing();return}shell();render();await hydrate();shell();render();setInterval(()=>{$(".session b")?.replaceChildren(document.createTextNode(clock()))},1000);setInterval(async()=>{try{const t=await api("/api/trades?model="+encodeURIComponent(state.mode));if(Array.isArray(t)){state.journal=t;localStorage.setItem("journal",JSON.stringify(t));if(["dashboard","trades","journal","performance"].includes(state.view))render()}}catch(e){}},30000)}
 window.addEventListener("popstate",()=>{const q=new URLSearchParams(location.search);state.mode=(q.get("mode")||"").toUpperCase();state.view=q.get("view")||"dashboard";if(!["NQ","CRYPTO"].includes(state.mode)){state.mode="";landing()}else{shell();render()}})
 boot();
