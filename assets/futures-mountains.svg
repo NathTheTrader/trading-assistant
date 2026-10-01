@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+<defs>
+ <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#18050a"/><stop offset=".5" stop-color="#07090e"/><stop offset="1" stop-color="#02060d"/></linearGradient>
+ <linearGradient id="ridge" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ff3158" stop-opacity=".95"/><stop offset="1" stop-color="#3a0914" stop-opacity=".25"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="10"/></filter>
+</defs>
+<rect width="1600" height="900" fill="url(#sky)"/>
+<g opacity=".22" filter="url(#glow)" fill="#ff174d"><path d="M0 690 170 470 250 560 390 280 520 520 620 400 760 620 910 340 1050 560 1190 410 1330 610 1490 420 1600 500V900H0Z"/></g>
+<path d="M0 730 135 585 215 635 360 360 465 525 560 452 690 625 805 470 950 650 1095 420 1190 525 1325 345 1460 580 1600 420V900H0Z" fill="url(#ridge)"/>
+<path d="M0 800 180 690 270 738 430 510 565 690 680 600 830 760 970 575 1120 735 1290 500 1410 650 1530 545 1600 590V900H0Z" fill="#04070d"/>
+<g stroke="#ff3158" stroke-opacity=".55" fill="none">
+ <path d="M65 310V640M130 380V615M220 290V650M308 250V610M420 330V620M540 390V670M690 320V640M810 250V610M920 365V660M1090 280V620M1220 330V650M1370 240V620M1490 330V640"/>
+</g>
+<path d="M0 790 Q300 735 580 795 T1120 775 T1600 800" stroke="#ff3158" stroke-width="2" fill="none" opacity=".55"/>
+<path d="M0 840 Q340 780 680 845 T1600 835" stroke="#ff3158" stroke-opacity=".16" fill="none"/>
+</svg>
