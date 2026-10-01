@@ -5,10 +5,21 @@
   const q = new URLSearchParams(location.search);
   const savedMode = localStorage.getItem("edgeflow-mode");
   const savedView = localStorage.getItem("edgeflow-view");
+  let savedJournal = [];
+  try {
+    const raw = localStorage.getItem("edgeflow-journal");
+    const parsed = raw ? JSON.parse(raw) : [];
+    savedJournal = Array.isArray(parsed) ? parsed : [];
+  } catch (_) {
+    localStorage.removeItem("edgeflow-journal");
+  }
+  const validMode = ["NQ","CRYPTO"].includes(savedMode) ? savedMode : "";
+  const validViews = ["overview","trades","performance","ai","journal","analytics","backtests","connections","settings"];
+  const requestedView = q.get("view") || savedView || "overview";
   const state = { filters:{query:"",side:"ALL",instrument:"ALL",setup:"ALL"},
-    mode: q.get("mode")==="CRYPTO" ? "CRYPTO" : q.get("mode")==="NQ" ? "NQ" : savedMode || "",
-    view: q.get("view") || savedView || "overview",
-    journal: JSON.parse(localStorage.getItem("edgeflow-journal") || "[]")
+    mode: q.get("mode")==="CRYPTO" ? "CRYPTO" : q.get("mode")==="NQ" ? "NQ" : validMode,
+    view: validViews.includes(requestedView) ? requestedView : "overview",
+    journal: savedJournal
   };
   const DATA = {
     NQ: {
@@ -46,24 +57,57 @@
   const now=()=>new Date().toLocaleTimeString("en-CA",{hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit"});
   const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
   function go(mode,view="overview"){
+    if(!["NQ","CRYPTO"].includes(mode)) return;
+    if(!["overview","trades","performance","ai","journal","analytics","backtests","connections","settings"].includes(view)) view="overview";
     state.mode=mode; state.view=view;
     localStorage.setItem("edgeflow-mode",mode); localStorage.setItem("edgeflow-view",view);
     history.replaceState({}, "", "?mode="+mode+"&view="+view); render();
   }
   window.enterMode=m=>go(m,"overview");
   window.edgeGo=v=>go(state.mode,v);
-  window.edgeHome=()=>{state.mode="";state.view="overview";localStorage.removeItem("edgeflow-mode");history.replaceState({}, "", location.pathname);render()};
+  window.edgeHome=()=>{state.mode="";state.view="overview";localStorage.removeItem("edgeflow-mode");localStorage.removeItem("edgeflow-view");history.replaceState({}, "", location.pathname);render()};
+  window.resetEdgeflow=()=>{
+    localStorage.removeItem("edgeflow-mode");
+    localStorage.removeItem("edgeflow-view");
+    localStorage.removeItem("edgeflow-journal");
+    location.href=location.pathname;
+  };
   window.setFilter=(key,value)=>{state.filters[key]=value;render()};
   window.exportTrades=()=>{const blob=new Blob([JSON.stringify(d().rows,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="edgeflow-trades.json";a.click();URL.revokeObjectURL(a.href)};
   window.saveJournal=async e=>{
     e.preventDefault();
     const f=id=>document.getElementById(id),file=f("jScreenshot")&&f("jScreenshot").files[0];
     let screenshot="";
-    if(file)screenshot=await new Promise(resolve=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.readAsDataURL(file)});
+    if(file)screenshot=await new Promise(resolve=>{
+      const reader=new FileReader();
+      reader.onload=()=>{
+        const img=new Image();
+        img.onload=()=>{
+          const max=1400, scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+          const canvas=document.createElement("canvas");
+          canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+          canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+          const ctx=canvas.getContext("2d");
+          ctx.drawImage(img,0,0,canvas.width,canvas.height);
+          resolve(canvas.toDataURL("image/jpeg",.78));
+        };
+        img.onerror=()=>resolve("");
+        img.src=String(reader.result);
+      };
+      reader.onerror=()=>resolve("");
+      reader.readAsDataURL(file);
+    });
     state.journal.unshift({id:"j-"+Date.now(),symbol:f("jSymbol").value.trim().toUpperCase(),side:f("jSide").value,pnl:Number(f("jPnl").value)||0,setup:f("jSetup").value||"R.B",grade:f("jGrade").value,note:f("jNote").value||"Execution reviewed.",date:f("jDate").value,time:f("jTime").value,entry:f("jEntry").value,exit:f("jExit").value,qty:f("jQty").value,rr:f("jRR").value,session:f("jSession").value,screenshot});
     localStorage.setItem("edgeflow-journal",JSON.stringify(state.journal));render();
   };
-  window.exportJournal=window.exportTrades;
+  window.exportJournal=()=>{
+    const payload={exportedAt:new Date().toISOString(),environment:d().label,entries:state.journal};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url; a.download="edgeflow-journal.json"; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  };
   window.clearJournal=()=>{if(confirm("Clear the locally stored journal?")){state.journal=[];localStorage.setItem("edgeflow-journal","[]");render()}};
   window.deleteJournalEntry=id=>{state.journal=state.journal.filter(x=>String(x.id)!==String(id));localStorage.setItem("edgeflow-journal",JSON.stringify(state.journal));render()};
   const mountain=(color)=>{
@@ -157,18 +201,18 @@
       '<div class="ai-grid">'+panel("EDGEFLOW AI",'<div class="ai-chat"><div class="ai-welcome"><b>Edgeflow AI</b><small>Your trading intelligence.</small></div><div class="ai-actions">'+["Analyze my last 5 trades","Check market context (NQ)","Find potential setups","Summarize today’s news","Review my journal"].map(x=>'<button>'+x+' <span>›</span></button>').join("")+'</div><div class="ai-input">Ask Edgeflow anything... <b>↗</b></div></div>','ai-panel')+panel("MODEL CONTEXT",'<div class="context-grid"><div><small>ENVIRONMENT</small><b>'+d().label+'</b></div><div><small>ENTRY</small><b>LIMIT</b></div><div><small>TRIGGER</small><b>REJECTION BLOCK</b></div><div><small>RETRACE</small><b>0.50 · 0.62 · 0.705 · 0.79</b></div></div>')+'</div>';
   }
   function journal(){
-    const entries=state.journal.length?state.journal:d().rows.slice(0,5).map(r=>({symbol:r[1],side:r[2],pnl:r[6],setup:r[8],note:"Demo execution — replace with your own journal entry.",date:"2026-09-30"}));
+    const entries=state.journal;
     const wins=entries.filter(x=>!String(x.pnl).includes("-")).length;
     const total=entries.reduce((sum,x)=>sum+(Number(String(x.pnl).replace(/[^0-9.-]/g,""))||0),0);
     return title("JOURNAL","Trading Journal","A real execution journal: setup, fill, risk, result, screenshot and lesson.",'<div class="journal-actions"><button onclick="exportJournal()">EXPORT</button><button class="primary" onclick="document.getElementById(\'jSymbol\').focus()">+ NEW ENTRY</button></div>')+
       '<div class="journal-dashboard"><section class="journal-compose">'+
       panel("NEW JOURNAL ENTRY",'<form class="journal-form premium-journal-form" onsubmit="saveJournal(event)"><div class="journal-form-grid">'+
-      '<label>SYMBOL<input id="jSymbol" required placeholder="'+(crypto()?"BTC":"MNQ")+'"></label><label>DATE<input id="jDate" type="date" value="'+new Date().toISOString().slice(0,10)+'" required></label><label>TIME<input id="jTime" type="time" value="'+now()+'"></label>'+
+      '<label>SYMBOL<input id="jSymbol" required placeholder="'+(crypto()?"BTC":"MNQ")+'"></label><label>DATE<input id="jDate" type="date" value="'+new Date().toISOString().slice(0,10)+'" required></label><label>TIME<input id="jTime" type="time" value="'+now().slice(0,5)+'"></label>'+
       '<label>SIDE<select id="jSide"><option>Long</option><option>Short</option></select></label><label>SETUP / MODEL<select id="jSetup"><option>R.B + FVG</option><option>Rejection Block</option><option>Sweep + OB</option><option>10H Open</option><option>FVG</option><option>Trend</option></select></label><label>GRADE<select id="jGrade"><option>A+</option><option>A</option><option>A-</option><option>B+</option><option>B</option><option>B-</option><option>C+</option><option>C</option></select></label>'+
       '<label>ENTRY<input id="jEntry" placeholder="24,862.75"></label><label>EXIT<input id="jExit" placeholder="24,840.25"></label><label>QTY<input id="jQty" placeholder="1"></label><label>P&L<input id="jPnl" type="number" step="0.01" placeholder="225"></label><label>RR<input id="jRR" placeholder="4.5"></label><label>SESSION<select id="jSession"><option>London</option><option>Asia</option><option>NY AM</option><option>NY PM</option></select></label>'+
       '</div><label class="journal-wide">EXECUTION NOTES<textarea id="jNote" rows="6" placeholder="Why did you take the trade? Sweep, retracement, R.B, FVG, entry quality, management and lesson."></textarea></label><label class="journal-wide">TRADE SCREENSHOT<input id="jScreenshot" type="file" accept="image/*"></label><div class="journal-submit"><span>Stored locally in this browser</span><button class="primary" type="submit">SAVE TRADE</button></div></form>')+
       panel("JOURNAL STATS",'<div class="journal-stats"><div><small>ENTRIES</small><b>'+entries.length+'</b></div><div><small>WIN RATE</small><b>'+(entries.length?Math.round(wins/entries.length*100):0)+'%</b></div><div><small>NET P&L</small><b class="'+(total>=0?"win":"loss")+'">'+(total>=0?"+":"-")+"$"+Math.abs(total).toFixed(2)+'</b></div><div><small>MODEL</small><b>R.B / FIB</b></div></div>')+
-      '</section><section class="journal-history-panel">'+panel("RECENT ENTRIES",'<div class="journal-toolbar"><span>'+entries.length+' records</span><button onclick="clearJournal()">CLEAR</button></div><div class="journal-cards">'+entries.map(x=>'<article class="journal-card"><div class="journal-card-top"><div><b>'+esc(x.symbol||"—")+' <i class="'+String(x.side||"").toLowerCase()+'">'+esc(x.side||"")+'</i></b><small>'+esc(x.date||"")+' · '+esc(x.time||"")+'</small></div><strong class="'+(String(x.pnl).includes("-")?"loss":"win")+'">'+esc(x.pnl)+'</strong></div><div class="journal-tags"><span>'+esc(x.setup||"R.B")+'</span><span>RR '+esc(x.rr||"—")+'</span><span>'+esc(x.grade||"—")+'</span><span>'+esc(x.session||"—")+'</span></div><p>'+esc(x.note||"No note added.")+'</p>'+(x.screenshot?'<img src="'+x.screenshot+'" alt="Trade screenshot">':"")+'<button class="journal-delete" onclick="deleteJournalEntry(this.dataset.id)" data-id="'+esc(x.id||"")+'">DELETE</button></article>').join("")+'</div>')+'</section></div>';
+      '</section><section class="journal-history-panel">'+panel("RECENT ENTRIES",'<div class="journal-toolbar"><span>'+entries.length+' records</span><button onclick="clearJournal()">CLEAR</button></div><div class="journal-cards">'+(entries.length?entries.map(x=>'<article class="journal-card"><div class="journal-card-top"><div><b>'+esc(x.symbol||"—")+' <i class="'+String(x.side||"").toLowerCase()+'">'+esc(x.side||"")+'</i></b><small>'+esc(x.date||"")+' · '+esc(x.time||"")+'</small></div><strong class="'+(String(x.pnl).includes("-")?"loss":"win")+'">'+esc(x.pnl)+'</strong></div><div class="journal-tags"><span>'+esc(x.setup||"R.B")+'</span><span>RR '+esc(x.rr||"—")+'</span><span>'+esc(x.grade||"—")+'</span><span>'+esc(x.session||"—")+'</span></div><p>'+esc(x.note||"No note added.")+'</p>'+(x.screenshot?'<img src="'+x.screenshot+'" alt="Trade screenshot">':"")+'<button class="journal-delete" onclick="deleteJournalEntry(this.dataset.id)" data-id="'+esc(x.id||"")+'">DELETE</button></article>').join("")+'</div>': '<div class="journal-empty"><b>No journal entries yet.</b><span>Save your first trade above. It will remain stored in this browser.</span></div>')+'</div>')+'</section></div>';
   }
   function analytics(){
     const bars=[["Asia",42],["London",78],["NY AM",61],["NY PM",34]];
@@ -186,9 +230,15 @@
     return title("SYSTEM","Settings","Environment controls and preferences.")+'<div class="settings-grid">'+panel("ENVIRONMENT",'<div class="setting"><span>Active Environment</span><b>'+d().label+'</b></div><div class="setting"><span>Theme</span><b>Dark Mode</b></div><div class="setting"><span>Compact Mode</span><b>ON</b></div>')+panel("TRADING MODEL",'<div class="setting"><span>Entry Type</span><b>LIMIT</b></div><div class="setting"><span>Primary Trigger</span><b>REJECTION BLOCK</b></div><div class="setting"><span>Risk Per Trade</span><b>$100</b></div><div class="setting"><span>Fib Retracements</span><b>0.50 · 0.62 · 0.705 · 0.79</b></div>')+panel("NOTIFICATIONS",'<div class="setting"><span>Trade Alerts</span><b class="on-text">ON</b></div><div class="setting"><span>AI Insights</span><b class="on-text">ON</b></div><div class="setting"><span>News Warnings</span><b class="on-text">ON</b></div>')+panel("DATA & SYNC",'<div class="setting"><span>Last Sync</span><b>'+now()+'</b></div><div class="setting"><span>Journal Storage</span><b>LOCAL</b></div>')+'</div>';
   }
   function render(){
-    if(!state.mode){landing();return}
-    const pages={overview:dashboard,trades,performance,ai,journal,analytics,backtests,connections,settings};
-    shell((pages[state.view]||dashboard)());
+    try{
+      if(!state.mode){landing();return}
+      const pages={overview:dashboard,trades,performance,ai,journal,analytics,backtests,connections,settings};
+      shell((pages[state.view]||dashboard)());
+    }catch(err){
+      console.error("EdgeFlow render error",err);
+      document.body.className="app-page red";
+      root.innerHTML='<div class="fatal"><div class="fatal-card"><div class="fatal-mark">E</div><h1>EDGEFLOW</h1><p>The workspace could not be rendered. Your journal data has not been intentionally deleted.</p><button onclick="resetEdgeflow()">RESET LOCAL APP STATE</button><button onclick="location.reload()">RELOAD</button></div></div>';
+    }
   }
   render();
   setInterval(()=>{const e=document.querySelectorAll(".session b"); if(e.length)e[0].textContent=now()},1000);
