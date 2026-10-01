@@ -89,7 +89,7 @@
   window.saveJournal=async e=>{
     e.preventDefault();
     const f=id=>document.getElementById(id),file=f("jScreenshot")&&f("jScreenshot").files[0];
-    let screenshot="";
+    let screenshot=window.__jarvisPending?.screenshot||"";
     if(file)screenshot=await new Promise(resolve=>{
       const reader=new FileReader();
       reader.onload=()=>{
@@ -120,18 +120,52 @@
     window.__jarvisImageFile=file;
     const st=document.getElementById("jarvisStatus"); if(st)st.textContent="IMAGE LOADED";
   };
-  window.jarvisAnalyze=()=>{
+  window.jarvisAnalyze=async()=>{
     const st=document.getElementById("jarvisStatus");
     const note=document.getElementById("jarvisNote");
     if(!window.__jarvisImageFile){if(st)st.textContent="UPLOAD IMAGE FIRST";return}
-    if(st)st.textContent="VISION ENGINE REQUIRED";
-    if(note)note.textContent="The screenshot is loaded. The deployed GitHub Pages version needs a connected vision API to actually interpret chart pixels. Once connected, Jarvis will extract the trade fields and write the journal entry automatically.";
+    try{
+      if(st)st.textContent="JARVIS IS ANALYZING...";
+      if(note)note.textContent="Vision en cours : lecture du graphique, extraction du trade et vérification avec le modèle "+(crypto()?"Crypto":"Futures")+".";
+      const dataUrl=await new Promise(resolve=>{
+        const reader=new FileReader();
+        reader.onload=()=>resolve(String(reader.result||""));
+        reader.onerror=()=>resolve("");
+        reader.readAsDataURL(window.__jarvisImageFile);
+      });
+      if(!dataUrl)throw new Error("Impossible de lire la capture.");
+      const response=await fetch("https://trading-assistant-production.up.railway.app/api/jarvis/journal",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({model:state.mode,imageDataUrl:dataUrl})
+      });
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||!data.ok)throw new Error(data.error||"Jarvis API error.");
+      window.__jarvisPending={...data.result,screenshot:dataUrl};
+      if(st)st.textContent="ANALYSIS COMPLETE · "+Number(data.result.confidence||0)+"% CONFIDENCE";
+      const r=data.result||{};
+      const fields=[
+        ["SYMBOL",r.symbol],["SIDE",r.side],["ENTRY",r.entry],["EXIT / TP",r.exit],
+        ["RR",r.rr],["SETUP",r.setup],["GRADE",r.grade],["SESSION",r.session]
+      ];
+      const box=document.getElementById("jarvisFields");
+      if(box)box.innerHTML=fields.map(x=>'<div><small>'+esc(x[0])+'</small><b>'+esc(x[1]??"UNKNOWN")+'</b></div>').join("");
+      if(note)note.textContent=r.note||"Jarvis n'a pas pu générer une note.";
+    }catch(e){
+      if(st)st.textContent="JARVIS ERROR";
+      if(note)note.textContent=String(e.message||e);
+    }
   };
   window.jarvisSendToJournal=()=>{
-    const file=window.__jarvisImageFile;
-    if(!file){alert("Upload a trade screenshot first.");return}
+    const pending=window.__jarvisPending;
+    if(!pending){if(window.__jarvisImageFile)jarvisAnalyze();else alert("Analyse une capture avec Jarvis d'abord.");return}
     edgeGo("journal");
-    setTimeout(()=>{openJournalForm();const input=document.getElementById("jScreenshot");if(input){try{const dt=new DataTransfer();dt.items.add(file);input.files=dt.files}catch(_){}}},80);
+    setTimeout(()=>{
+      openJournalForm();
+      const set=(id,value)=>{const el=document.getElementById(id);if(el&&value!=null)el.value=String(value)};
+      set("jSymbol",pending.symbol);set("jSide",pending.side);set("jEntry",pending.entry);set("jExit",pending.exit);
+      set("jQty",pending.qty);set("jPnl",pending.pnl);set("jRR",pending.rr);set("jSetup",pending.setup);set("jGrade",pending.grade);set("jSession",pending.session);set("jNote",pending.note);
+      const st=document.querySelector(".journal-modal-actions span");if(st)st.textContent="Jarvis prefilled this entry · screenshot attached";
+    },120);
   };
   window.exportJournal=()=>{
     const payload={exportedAt:new Date().toISOString(),environment:d().label,environmentKey:state.mode,entries:state.journal};
