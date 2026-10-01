@@ -81,3 +81,34 @@ body.landing-page{overflow:hidden}.landing{height:100vh;min-height:620px;positio
   .asset-grid{grid-template-columns:1fr}
   .connections{grid-template-columns:1fr}
 }
+
+
+/* V9 — REFERENCE BACKGROUND: red/blue mountain environment */
+html,body,#app{background:#02060b}
+body.app-page{background:#02060b url("./assets/edgeflow-bg.svg") center top / cover fixed no-repeat}
+body.landing-page{background:#02060b}
+.app-page .app-shell{background:linear-gradient(90deg,rgba(2,6,11,.22),rgba(2,6,11,.10),rgba(2,6,11,.22))}
+.app-page .main{background:linear-gradient(90deg,rgba(2,6,11,.30),rgba(2,6,11,.10) 48%,rgba(2,6,11,.28))}
+.app-page .topbar{background:rgba(3,10,16,.82);backdrop-filter:blur(14px)}
+.app-page .sidebar{background:linear-gradient(180deg,rgba(4,11,18,.92),rgba(2,7,12,.88));backdrop-filter:blur(12px)}
+.app-page .workspace{background:linear-gradient(180deg,rgba(2,6,11,.06),rgba(2,6,11,.18))}
+.app-page .panel,.app-page .kpi,.app-page .asset,.app-page .filters,.app-page .connection{
+  background:linear-gradient(180deg,rgba(7,18,27,.90),rgba(4,10,16,.86));
+  backdrop-filter:blur(8px)
+}
+.app-page .dash-banner{background:linear-gradient(105deg,rgba(255,32,72,.20),rgba(7,19,29,.82) 50%,rgba(4,11,17,.84))}
+.app-page.blue .dash-banner{background:linear-gradient(105deg,rgba(21,157,255,.20),rgba(7,19,29,.82) 50%,rgba(4,11,17,.84))}
+body.landing-page .landing{
+  background:#02060b url("./assets/edgeflow-bg.svg") center / cover no-repeat;
+}
+body.landing-page .land{background:transparent!important}
+body.landing-page .mountain{display:none}
+body.landing-page .landing:before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 45%,rgba(2,6,11,.10),rgba(2,6,11,.38) 75%,rgba(2,6,11,.58));
+  z-index:1;pointer-events:none
+}
+body.landing-page .landing-center{z-index:5}
+@media(max-width:900px){
+  body.app-page{background-position:center top}
+}
