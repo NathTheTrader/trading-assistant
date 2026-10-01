@@ -293,6 +293,9 @@
   function instrumentCards(){
     return '<div class="asset-grid">'+d().assets.map(x=>'<article class="asset"><div><b>'+x[0]+'</b><i>◈</i></div><strong>'+x[1]+'</strong><small>'+x[2]+' trades <em>'+x[3]+'</em></small></article>').join("")+'</div>';
   }
+  function instrumentCardsZero(){
+    return '<div class="asset-grid">'+d().instruments.slice(0,crypto()?4:3).map(x=>'<article class="instrument-card"><div><b>'+esc(x)+'</b></div><strong>—</strong><small>NO LIVE FEED</small><i>WAITING</i></article>').join("")+'</div>';
+  }
   function dashboard(){
     const sessions=sessionState();
     const acct=crypto()?{connected:state.kcex.running,balance:null,realized:null,unrealized:null,account:"KCEX",positions:[],orders:state.kcex.events,fills:[]}:liveAccount();
