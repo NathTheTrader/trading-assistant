@@ -1,4 +1,4 @@
-import "dotenv/config";
+// EDGEFLOW deployment marker: frontend V3 and backend are intentionally rebuilt together.\nimport "dotenv/config";
 import express from "express";
 import cors from "cors";
 import OpenAI from "openai";
