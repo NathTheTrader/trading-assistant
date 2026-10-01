@@ -975,3 +975,46 @@ body.landing-page .landing-corner{
   .app-page .ai-grid{grid-template-columns:1fr}
   .app-page .ai-chat{height:260px;min-height:260px}
 }
+
+/* V33 — AI ASSISTANT READABILITY */
+.app-page .ai-chat{
+  min-height:360px;
+  height:360px;
+}
+.app-page .ai-welcome{
+  padding:14px 13px;
+}
+.app-page .ai-welcome b{
+  font-size:15px;
+}
+.app-page .ai-welcome small{
+  font-size:8px;
+}
+.app-page .ai-actions{
+  gap:6px;
+  margin-top:10px;
+}
+.app-page .ai-actions button{
+  padding:11px 12px;
+  font-size:9px;
+  min-height:34px;
+}
+.app-page .ai-actions span{
+  font-size:13px;
+}
+.app-page .ai-input{
+  padding:12px;
+  font-size:9px;
+}
+.app-page .context-grid{
+  gap:5px;
+}
+.app-page .context-grid div{
+  padding:10px 5px;
+}
+.app-page .context-grid small{
+  font-size:7px;
+}
+.app-page .context-grid b{
+  font-size:13px;
+}
