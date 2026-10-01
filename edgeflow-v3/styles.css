@@ -52,3 +52,44 @@
 @keyframes edgeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 @media(max-width:1000px){.ref-kpis{grid-template-columns:repeat(4,1fr)}.ref-main-grid{grid-template-columns:1fr}.ref-bottom-grid{grid-template-columns:1fr}.hero-controls{display:none}}
 @media(max-width:650px){.ref-kpis{grid-template-columns:repeat(2,1fr)}.instrument-grid{grid-template-columns:1fr 1fr}.workspace{padding:18px}.sidebar{width:220px}.main{margin-left:220px}}
+
+/* ===== SUPPLIED REFERENCE: LANDING REBUILD ===== */
+.landing-page{background:#02050a}
+.landing-v4{position:relative;min-height:100vh;overflow:hidden;background:#02050a}
+.landing-side{position:absolute;top:0;bottom:0;width:50%;overflow:hidden}
+.landing-futures{left:0;background:radial-gradient(circle at 50% 55%,rgba(255,25,60,.24),transparent 48%),linear-gradient(135deg,#100207,#02050a 75%)}
+.landing-crypto{right:0;background:radial-gradient(circle at 50% 55%,rgba(15,145,255,.24),transparent 48%),linear-gradient(225deg,#031426,#02050a 75%)}
+.land-art{position:absolute;left:-5%;right:-5%;bottom:0;height:62%;opacity:.96}
+.land-art svg{width:100%;height:100%;filter:drop-shadow(0 -10px 35px rgba(255,24,63,.15))}
+.landing-crypto .land-art svg{filter:drop-shadow(0 -10px 35px rgba(21,156,255,.18))}
+.land-glow{position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.04) 50%,rgba(0,0,0,.48) 100%)}
+.landing-crypto .land-glow{background:linear-gradient(270deg,transparent 0%,rgba(0,0,0,.04) 50%,rgba(0,0,0,.48) 100%)}
+.landing-v4:after{content:"";position:absolute;z-index:2;top:0;bottom:0;left:50%;width:1px;background:linear-gradient(transparent,rgba(180,210,235,.22),transparent);box-shadow:0 0 50px rgba(80,160,230,.15)}
+.landing-center-v4{position:absolute;z-index:5;left:50%;top:50%;width:min(820px,72vw);transform:translate(-50%,-50%);text-align:center}
+.landing-logo-v4{width:78px;height:78px;margin:0 auto 9px;filter:drop-shadow(0 0 24px rgba(31,154,255,.45))}
+.landing-logo-v4 svg{width:100%;height:100%}.landing-brand-v4{font:700 28px Rajdhani,sans-serif;letter-spacing:7px}.landing-brand-v4 span{color:#159cff}.landing-tag-v4{font-size:7px;color:#71889b;letter-spacing:3px;margin-top:3px}.landing-choice{font-size:10px;color:#dce7ef;letter-spacing:3px;margin-top:23px}
+.environment-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:17px;text-align:left}
+.environment-card{height:160px;border-radius:10px;padding:18px 20px;position:relative;border:1px solid;background:linear-gradient(145deg,rgba(8,13,19,.78),rgba(3,7,12,.82));box-shadow:0 18px 45px rgba(0,0,0,.35);backdrop-filter:blur(7px)}
+.futures-card{border-color:rgba(255,28,65,.75);box-shadow:0 0 30px rgba(255,24,60,.16),0 18px 45px rgba(0,0,0,.4)}
+.crypto-card{border-color:rgba(25,151,255,.75);box-shadow:0 0 30px rgba(21,156,255,.16),0 18px 45px rgba(0,0,0,.4)}
+.env-icon{font-size:20px;color:var(--red);margin-bottom:3px}.crypto-card .env-icon{color:var(--blue)}
+.env-card-title{font:700 18px Rajdhani;letter-spacing:2px;color:#ff385c}.crypto-card .env-card-title{color:#22a3ff}.env-card-sub{font-size:7px;color:#8094a5;letter-spacing:1.2px;margin-top:1px}
+.env-features{display:grid;grid-template-columns:1fr 1fr;gap:5px 14px;margin-top:13px;color:#8194a5;font-size:7px}.env-features span{color:var(--red);margin-right:3px}.crypto-card .env-features span{color:var(--blue)}
+.environment-card button{position:absolute;right:15px;bottom:15px;width:40px;height:40px;border-radius:50%;background:transparent;color:#fff;border:1px solid currentColor;font-size:20px}.futures-card button{color:#ff385c}.crypto-card button{color:#22a3ff}
+.landing-motto{position:absolute;z-index:5;left:0;right:0;bottom:25px;text-align:center;color:#40566a;font-size:7px;letter-spacing:3px}.landing-standard{position:absolute;z-index:5;right:3%;bottom:22px;color:#53697c;font-size:6px;line-height:1.6;letter-spacing:1.5px;text-align:left}
+.landing-v4 .mountains path:first-child{opacity:.92}
+@media(max-width:900px){.landing-center-v4{width:88vw}.environment-card{height:150px}.environment-cards{gap:9px}.landing-standard{display:none}}
+@media(max-width:650px){.landing-side{height:50%;width:100%}.landing-futures{top:0;bottom:auto}.landing-crypto{top:50%;bottom:auto}.landing-center-v4{top:50%;transform:translate(-50%,-50%);width:92vw}.landing-logo-v4{width:55px;height:55px}.landing-brand-v4{font-size:21px}.environment-cards{grid-template-columns:1fr}.environment-card{height:120px}.environment-card:nth-child(2){display:none}.landing-motto{display:none}}
+/* ===== REFERENCE SCALE / SHELL ===== */
+:root{--sidebar:205px}
+.sidebar{width:var(--sidebar);padding:14px 10px}
+.brand{padding:2px 6px 15px}.brand-icon{width:31px;height:31px}.brand-icon svg{width:18px}.brand-name{font-size:15px}.brand-sub{font-size:6px}
+.market-toggle{margin-bottom:11px}.market-toggle button{height:30px;font-size:7px}
+.nav-label{font-size:6px;margin:11px 6px 5px}.nav{gap:2px}.nav button{min-height:38px;padding:6px 7px;gap:8px}.nav-icon{width:13px;font-size:10px}.nav strong{font-size:8px}.nav small{font-size:5.5px}
+.sidebar-bottom{left:10px;right:10px;bottom:10px}.connection-chip{padding:7px}.connection-chip div{font-size:5.5px}.connection-chip p{font-size:5.5px}
+.main{margin-left:var(--sidebar)}.topbar{height:49px;padding:0 18px}.crumb{font-size:6.5px}.top-actions{gap:5px}.live{padding:5px 7px;font-size:6px}.session{padding:5px 7px;font-size:5.5px}.avatar{width:22px;height:22px;font-size:6px}
+.workspace{padding:18px 18px 30px;max-width:1500px}.page-head{margin-bottom:12px}.page-head h1{font-size:26px}.page-head p{font-size:7px}.eyebrow{font-size:6px}.btn{height:30px;font-size:7px}
+.ref-hero{min-height:88px;padding:13px 15px}.ref-hero h1{font-size:24px}.hero-symbols{font-size:6px}.session-box{min-width:57px;padding:5px 4px;font-size:5px}.session-box b{font-size:6px}
+.ref-kpis{gap:5px}.ref-kpis .card{min-height:61px;padding:9px}.ref-kpis .kpi-value{font-size:14px}.ref-kpis .kpi-label{font-size:5.5px}.ref-kpis .kpi-sub{font-size:5.5px}
+.ref-main-grid{gap:5px}.ref-section{padding:9px}.ref-title{font-size:5.5px;margin-bottom:6px}.instrument-grid{gap:4px}.instrument-card{padding:7px}.instrument-name{font-size:6.5px}.instrument-price{font-size:13px}.instrument-meta{font-size:5px}
+.ref-main-grid .trade-row{padding:6px 5px}.ref-main-grid .trade-row strong{font-size:6.5px}.ref-main-grid .trade-row span{font-size:5.5px}.ref-bottom-grid{gap:5px}.big-model{font-size:12px}.model-tags{margin-top:6px}.model-tags span{font-size:5px;padding:4px 5px}
