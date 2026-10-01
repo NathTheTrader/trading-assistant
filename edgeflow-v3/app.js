@@ -29,7 +29,8 @@
   const state = { filters:{query:"",side:"ALL",instrument:"ALL",setup:"ALL"},
     mode: requestedMode,
     view: validViews.includes(requestedView) ? requestedView : "overview",
-    journal: loadJournal(requestedMode)
+    journal: loadJournal(requestedMode),
+    activeBacktest: null
   };
   const DATA = {
     NQ: {
@@ -376,9 +377,193 @@
     return title("ANALYTICS","Analytics","Deep statistics across sessions, instruments and setups.")+
       '<div class="analytics-grid">'+panel("SESSION PERFORMANCE",'<div class="bars">'+bars.map(x=>'<div><span>'+x[0]+'</span><i><b style="width:'+x[1]+'%"></b></i><em>'+x[1]+'%</em></div>').join("")+'</div>')+panel("PERFORMANCE BY SETUP",statsTable())+panel("EXECUTION DISCIPLINE",'<div class="discipline large"><div>RETRACEMENT<strong>0.50 / 0.62 / 0.705 / 0.79</strong></div><div>ENTRY<strong>LIMIT ONLY</strong></div><div>IMPULSE<strong>BLOCKED</strong></div><div>RISK<strong>$100 / TRADE</strong></div></div>')+'</div>';
   }
+
+  const backtestKey=mode=>"edgeflow-backtests:"+mode;
+  const loadBacktests=mode=>{
+    try{
+      const raw=localStorage.getItem(backtestKey(mode));
+      const parsed=raw?JSON.parse(raw):[];
+      return Array.isArray(parsed)?parsed:[];
+    }catch(_){ return []; }
+  };
+  const saveBacktests=list=>localStorage.setItem(backtestKey(state.mode),JSON.stringify(list));
+  const backtestStats=bt=>{
+    const trades=Array.isArray(bt.trades)?bt.trades:[];
+    const pnls=trades.map(x=>Number(x.pnl)||0);
+    const wins=pnls.filter(x=>x>0), losses=pnls.filter(x=>x<0);
+    const grossWin=wins.reduce((a,b)=>a+b,0), grossLoss=Math.abs(losses.reduce((a,b)=>a+b,0));
+    const net=pnls.reduce((a,b)=>a+b,0);
+    const rr=trades.map(x=>Number(x.rr)).filter(x=>Number.isFinite(x));
+    return {
+      count:trades.length,
+      wins:wins.length,
+      losses:losses.length,
+      winRate:trades.length?Math.round(wins.length/trades.length*100):0,
+      pf:grossLoss?grossWin/grossLoss:(grossWin?Infinity:0),
+      avgRR:rr.length?rr.reduce((a,b)=>a+b,0)/rr.length:0,
+      net:net,
+      expectancy:trades.length?net/trades.length:0
+    };
+  };
+  window.openBacktestForm=()=>{
+    const m=document.getElementById("backtest-modal");
+    if(m)m.hidden=false;
+  };
+  window.closeBacktestForm=()=>{
+    const m=document.getElementById("backtest-modal");
+    if(m)m.hidden=true;
+  };
+  window.createBacktest=e=>{
+    e.preventDefault();
+    const f=id=>document.getElementById(id);
+    const bt={
+      id:"bt-"+Date.now(),
+      name:f("btName").value.trim()||"Untitled Study",
+      instrument:f("btInstrument").value,
+      session:f("btSession").value,
+      date:f("btDate").value,
+      notes:f("btNotes").value.trim(),
+      createdAt:new Date().toISOString(),
+      trades:[]
+    };
+    const list=loadBacktests(state.mode);
+    list.unshift(bt);
+    saveBacktests(list);
+    state.activeBacktest=bt.id;
+    closeBacktestForm();
+    render();
+  };
+  window.openBacktest=id=>{
+    state.activeBacktest=String(id);
+    render();
+  };
+  window.closeBacktest=()=>{
+    state.activeBacktest=null;
+    render();
+  };
+  window.deleteBacktest=id=>{
+    if(!confirm("Delete this backtest and all of its historical trades?"))return;
+    const list=loadBacktests(state.mode).filter(x=>String(x.id)!==String(id));
+    saveBacktests(list);
+    if(String(state.activeBacktest)===String(id))state.activeBacktest=null;
+    render();
+  };
+  window.addBacktestTrade=e=>{
+    e.preventDefault();
+    const list=loadBacktests(state.mode);
+    const bt=list.find(x=>String(x.id)===String(state.activeBacktest));
+    if(!bt)return;
+    const f=id=>document.getElementById(id);
+    bt.trades=Array.isArray(bt.trades)?bt.trades:[];
+    bt.trades.push({
+      id:"btt-"+Date.now(),
+      date:f("bttDate").value,
+      side:f("bttSide").value,
+      pnl:Number(f("bttPnl").value)||0,
+      rr:Number(f("bttRR").value)||0,
+      setup:f("bttSetup").value,
+      note:f("bttNote").value.trim()
+    });
+    saveBacktests(list);
+    render();
+  };
+  window.deleteBacktestTrade=id=>{
+    const list=loadBacktests(state.mode);
+    const bt=list.find(x=>String(x.id)===String(state.activeBacktest));
+    if(!bt)return;
+    bt.trades=(bt.trades||[]).filter(x=>String(x.id)!==String(id));
+    saveBacktests(list);
+    render();
+  };
+  window.exportBacktest=id=>{
+    const bt=loadBacktests(state.mode).find(x=>String(x.id)===String(id));
+    if(!bt)return;
+    const blob=new Blob([JSON.stringify(bt,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;a.download=(bt.name||"edgeflow-backtest").replace(/[^a-z0-9_-]+/gi,"-").toLowerCase()+".json";
+    a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  };
+
   function backtests(){
-    const r=[["London R.B Model","MNQ","105","68%","3.2","Sep 19, 2026"],["10H Open Study","MES","75","64%","2.8","Sep 10, 2026"],["Asia Retracement","MGC","52","60%","2.1","Sep 05, 2026"],["FVG Model","MNQ","120","72%","3.4","Aug 28, 2026"],["Trend Model","MES","85","58%","2.1","Aug 20, 2026"]];
-    return title("RESEARCH","Backtests","Models, samples and historical validation.",'<button class="primary">+ NEW BACKTEST</button>')+panel("BACKTEST LIBRARY",'<div class="bt"><div class="bt-row head"><span>NAME</span><span>INSTRUMENT</span><span>TRADES</span><span>WIN RATE</span><span>PF</span><span>DATE</span></div>'+r.map(x=>'<div class="bt-row"><b>'+x[0]+'</b><span>'+x[1]+'</span><span>'+x[2]+'</span><span>'+x[3]+'</span><span>'+x[4]+'</span><span>'+x[5]+'</span></div>').join("")+'</div>');
+    const list=loadBacktests(state.mode);
+    if(state.activeBacktest){
+      const bt=list.find(x=>String(x.id)===String(state.activeBacktest));
+      if(bt){
+        const st=backtestStats(bt);
+        const trades=(bt.trades||[]).map(x=>
+          '<div class="bt-trade-row">'+
+          '<span>'+esc(x.date||"—")+'</span><b>'+esc(x.side||"—")+'</b>'+
+          '<span class="'+((Number(x.pnl)||0)>=0?"win":"loss")+'">'+((Number(x.pnl)||0)>=0?"+":"-")+"$"+Math.abs(Number(x.pnl)||0).toFixed(2)+'</span>'+
+          '<span>'+esc(x.rr||"—")+'</span><span>'+esc(x.setup||"—")+'</span>'+
+          '<span>'+esc(x.note||"")+'</span>'+
+          '<button class="bt-delete" data-id="'+esc(x.id||"")+'" onclick="deleteBacktestTrade(this.dataset.id)">×</button>'+
+          '</div>'
+        ).join("");
+        const pf=Number.isFinite(st.pf)?st.pf.toFixed(2):"∞";
+        return title("RESEARCH","Backtest Lab",esc(bt.name),'<div class="bt-actions"><button onclick="exportBacktest(\''+esc(bt.id)+'\')">EXPORT</button><button onclick="closeBacktest()">← LIBRARY</button></div>')+
+          '<div class="bt-lab-head">'+
+            '<div><small>INSTRUMENT</small><b>'+esc(bt.instrument)+'</b></div>'+
+            '<div><small>SESSION</small><b>'+esc(bt.session)+'</b></div>'+
+            '<div><small>STUDY DATE</small><b>'+esc(bt.date||"—")+'</b></div>'+
+            '<div><small>TRADES</small><b>'+st.count+'</b></div>'+
+          '</div>'+
+          '<div class="kpis bt-kpis">'+kpi("Win Rate",st.winRate+"%",st.wins+"W / "+st.losses+"L")+kpi("Profit Factor",pf,"Gross win / loss")+kpi("Avg RR",st.avgRR?st.avgRR.toFixed(2):"—","Recorded RR")+kpi("Net P&L",(st.net>=0?"+":"-")+"$"+Math.abs(st.net).toFixed(2),"Historical sample",st.net>=0?"positive":"negative")+kpi("Expectancy",(st.expectancy>=0?"+":"-")+"$"+Math.abs(st.expectancy).toFixed(2),"Per historical trade")+'</div>'+
+          '<div class="bt-lab-grid">'+
+            panel("ADD HISTORICAL TRADE",
+              '<form class="bt-form" onsubmit="addBacktestTrade(event)">'+
+              '<label>DATE<input id="bttDate" type="date" required></label>'+
+              '<label>SIDE<select id="bttSide"><option>Long</option><option>Short</option></select></label>'+
+              '<label>P&L<input id="bttPnl" type="number" step="0.01" placeholder="225" required></label>'+
+              '<label>RR<input id="bttRR" type="number" step="0.1" placeholder="3.5"></label>'+
+              '<label>SETUP<select id="bttSetup"><option>R.B</option><option>R.B + FVG</option><option>Sweep + OB</option><option>10H Open</option><option>FVG</option><option>Trend</option><option>Other</option></select></label>'+
+              '<label class="bt-wide">NOTE<input id="bttNote" placeholder="What happened in the historical setup?"></label>'+
+              '<button class="primary bt-wide" type="submit">+ ADD TRADE TO STUDY</button>'+
+              '</form>'
+            )+
+            panel("HISTORICAL TRADES",
+              '<div class="bt-trades"><div class="bt-trade-row head"><span>DATE</span><span>SIDE</span><span>P&L</span><span>RR</span><span>SETUP</span><span>NOTE</span><span></span></div>'+
+              (trades||'<div class="bt-empty">No historical trades yet. Add the first sample above.</div>')+'</div>'
+            )+
+          '</div>'+
+          (bt.notes?'<section class="panel bt-notes"><div class="panel-head"><span>STUDY NOTES</span></div><p>'+esc(bt.notes)+'</p></section>':"");
+      }
+      state.activeBacktest=null;
+    }
+    const rows=list.map(bt=>{
+      const st=backtestStats(bt);
+      const pf=Number.isFinite(st.pf)?st.pf.toFixed(2):"∞";
+      return '<div class="bt-row" data-id="'+esc(bt.id)+'">'+
+        '<button class="bt-name" data-id="'+esc(bt.id)+'" onclick="openBacktest(this.dataset.id)"><b>'+esc(bt.name)+'</b><small>'+esc(bt.notes||"Open study")+'</small></button>'+
+        '<span>'+esc(bt.instrument)+'</span><span>'+st.count+'</span><span>'+st.winRate+'%</span><span>'+pf+'</span><span>'+esc(bt.date||"—")+'</span>'+
+        '<button class="bt-open" data-id="'+esc(bt.id)+'" onclick="openBacktest(this.dataset.id)">OPEN</button>'+
+        '<button class="bt-delete" data-id="'+esc(bt.id)+'" onclick="deleteBacktest(this.dataset.id)">×</button>'+
+      '</div>';
+    }).join("");
+    return title("RESEARCH","Backtests","Build a historical sample, record every setup and calculate the real statistics.",'<button class="primary" onclick="openBacktestForm()">+ NEW BACKTEST</button>')+
+      '<div class="bt-overview">'+
+        panel("BACKTEST LIBRARY",
+          '<div class="bt"><div class="bt-row head"><span>NAME</span><span>INSTRUMENT</span><span>TRADES</span><span>WIN RATE</span><span>PF</span><span>DATE</span><span></span><span></span></div>'+
+          (rows||'<div class="bt-empty">No backtests yet. Create a study to start recording historical setups.</div>')+
+          '</div>'
+        )+
+      '</div>'+
+      '<div id="backtest-modal" class="journal-modal" hidden>'+
+        '<div class="journal-modal-backdrop" onclick="closeBacktestForm()"></div>'+
+        '<section class="journal-modal-card backtest-modal-card">'+
+          '<div class="journal-modal-head"><div><small>RESEARCH</small><h2>New Backtest Study</h2></div><button onclick="closeBacktestForm()">×</button></div>'+
+          '<form class="journal-form" onsubmit="createBacktest(event)">'+
+            '<div class="journal-form-grid">'+
+              '<label>NAME<input id="btName" required placeholder="London R.B Model"></label>'+
+              '<label>INSTRUMENT<select id="btInstrument">'+d().instruments.map(x=>'<option>'+x+'</option>').join("")+'</select></label>'+
+              '<label>SESSION<select id="btSession"><option>London</option><option>Asia</option><option>NY AM</option><option>NY PM</option></select></label>'+
+              '<label>STUDY DATE<input id="btDate" type="date" required></label>'+
+            '</div>'+
+            '<label class="journal-wide">NOTES<textarea id="btNotes" rows="4" placeholder="Model rules, date range, filters and what this study is testing."></textarea></label>'+
+            '<div class="journal-modal-actions"><span>Stored locally for '+d().label+'</span><button type="button" onclick="closeBacktestForm()">CANCEL</button><button class="primary" type="submit">CREATE STUDY</button></div>'+
+          '</form>'+
+        '</section>'+
+      '</div>';
   }
   function connections(){
     return title("SYSTEM","Connections","Broker and service integrations.")+'<div class="connections">'+d().connections.map(x=>'<article class="connection"><div class="conn-icon '+(x[2]==="K"?"blue":"")+'">'+x[2]+'</div><h3>'+x[0]+'</h3><small>'+x[1]+'</small><b>● Connected</b><button>Manage</button></article>').join("")+'</div>';
