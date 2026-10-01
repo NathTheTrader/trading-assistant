@@ -5,21 +5,26 @@
   const q = new URLSearchParams(location.search);
   const savedMode = localStorage.getItem("edgeflow-mode");
   const savedView = localStorage.getItem("edgeflow-view");
-  let savedJournal = [];
-  try {
-    const raw = localStorage.getItem("edgeflow-journal");
-    const parsed = raw ? JSON.parse(raw) : [];
-    savedJournal = Array.isArray(parsed) ? parsed : [];
-  } catch (_) {
-    localStorage.removeItem("edgeflow-journal");
-  }
   const validMode = ["NQ","CRYPTO"].includes(savedMode) ? savedMode : "";
   const validViews = ["overview","trades","performance","ai","journal","analytics","backtests","connections","settings"];
+  const requestedMode = q.get("mode")==="CRYPTO" ? "CRYPTO" : q.get("mode")==="NQ" ? "NQ" : validMode;
   const requestedView = q.get("view") || savedView || "overview";
+  const journalKey=mode=>"edgeflow-journal:"+mode;
+  const loadJournal=mode=>{
+    if(!mode) return [];
+    try{
+      const raw=localStorage.getItem(journalKey(mode));
+      const parsed=raw?JSON.parse(raw):[];
+      return Array.isArray(parsed)?parsed:[];
+    }catch(_){
+      localStorage.removeItem(journalKey(mode));
+      return [];
+    }
+  };
   const state = { filters:{query:"",side:"ALL",instrument:"ALL",setup:"ALL"},
-    mode: q.get("mode")==="CRYPTO" ? "CRYPTO" : q.get("mode")==="NQ" ? "NQ" : validMode,
+    mode: requestedMode,
     view: validViews.includes(requestedView) ? requestedView : "overview",
-    journal: savedJournal
+    journal: loadJournal(requestedMode)
   };
   const DATA = {
     NQ: {
@@ -59,7 +64,7 @@
   function go(mode,view="overview"){
     if(!["NQ","CRYPTO"].includes(mode)) return;
     if(!["overview","trades","performance","ai","journal","analytics","backtests","connections","settings"].includes(view)) view="overview";
-    state.mode=mode; state.view=view;
+    state.mode=mode; state.view=view; state.journal=loadJournal(mode);
     localStorage.setItem("edgeflow-mode",mode); localStorage.setItem("edgeflow-view",view);
     history.replaceState({}, "", "?mode="+mode+"&view="+view); render();
   }
@@ -98,18 +103,18 @@
       reader.readAsDataURL(file);
     });
     state.journal.unshift({id:"j-"+Date.now(),symbol:f("jSymbol").value.trim().toUpperCase(),side:f("jSide").value,pnl:Number(f("jPnl").value)||0,setup:f("jSetup").value||"R.B",grade:f("jGrade").value,note:f("jNote").value||"Execution reviewed.",date:f("jDate").value,time:f("jTime").value,entry:f("jEntry").value,exit:f("jExit").value,qty:f("jQty").value,rr:f("jRR").value,session:f("jSession").value,screenshot});
-    localStorage.setItem("edgeflow-journal",JSON.stringify(state.journal));render();
+    localStorage.setItem(journalKey(state.mode),JSON.stringify(state.journal));render();
   };
   window.exportJournal=()=>{
-    const payload={exportedAt:new Date().toISOString(),environment:d().label,entries:state.journal};
+    const payload={exportedAt:new Date().toISOString(),environment:d().label,environmentKey:state.mode,entries:state.journal};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
     a.href=url; a.download="edgeflow-journal.json"; a.click();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
   };
-  window.clearJournal=()=>{if(confirm("Clear the locally stored journal?")){state.journal=[];localStorage.setItem("edgeflow-journal","[]");render()}};
-  window.deleteJournalEntry=id=>{state.journal=state.journal.filter(x=>String(x.id)!==String(id));localStorage.setItem("edgeflow-journal",JSON.stringify(state.journal));render()};
+  window.clearJournal=()=>{if(confirm("Clear the locally stored journal for this environment?")){state.journal=[];localStorage.setItem(journalKey(state.mode),"[]");render()}};
+  window.deleteJournalEntry=id=>{state.journal=state.journal.filter(x=>String(x.id)!==String(id));localStorage.setItem(journalKey(state.mode),JSON.stringify(state.journal));render()};
   const mountain=(color)=>{
     const red=color==="r", c=red?"#ff173f":"#168dff", hi=red?"#ff5a68":"#53c5ff", glow=red?"#ff163f":"#128cff";
     return '<svg class="mountain" viewBox="0 0 1200 650" preserveAspectRatio="none" aria-hidden="true"><defs>'+
