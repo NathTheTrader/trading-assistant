@@ -17,114 +17,111 @@ jobs:
         run: npm install --no-save playwright@1.55.0
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Serve frontend
+
+      - name: Wait for GitHub Pages
         run: |
-          python3 -m http.server 4173 >/tmp/edgeflow-http.log 2>&1 &
-          echo $! > /tmp/edgeflow-http.pid
-      - name: Exercise Edgeflow workspaces
+          set -euo pipefail
+          url="https://naththetrader.github.io/trading-assistant/"
+          for i in $(seq 1 24); do
+            html="$(curl -fsSL --retry 2 --retry-delay 2 "$url" || true)"
+            if printf '%s' "$html" | grep -q 'edgeflow-build.*edgeflow-v40'; then
+              echo "GitHub Pages is serving EdgeFlow V40."
+              exit 0
+            fi
+            echo "Waiting for Pages deployment ($i/24)..."
+            sleep 5
+          done
+          echo "GitHub Pages did not expose EdgeFlow V40 within the wait window."
+          exit 1
+
+      - name: Exercise production GitHub Pages frontend
         run: |
+          mkdir -p /tmp/edgeflow-artifacts
           node <<'NODE'
           const { chromium } = require("playwright");
           (async()=>{
             const browser=await chromium.launch({headless:true});
-            const page=await browser.newPage({viewport:{width:1440,height:900}});
-            await page.route("https://trading-assistant-production.up.railway.app/**",async route=>{
-              const u=new URL(route.request().url());
-              let body={ok:true},status=200;
-              if(u.pathname==="/api/history/ai-context")body={ok:true,sampleSize:0,model:u.searchParams.get("model")||"NQ"};
-              else if(u.pathname==="/api/obsidian/status")body={ok:true,imported:false,tradeRecords:0,imageFiles:0,imageAnalyses:0,job:{}};
-              else if(u.pathname==="/api/connections/status")body={readOnly:true,tradovate:{connected:false,configured:false},rithmic:{configured:false,connected:false},kcex:{available:true,mode:"screen-observer",apiDirect:false}};
-              else if(u.pathname==="/api/tradovate/status")body={connected:false,configured:false};
-              else if(u.pathname==="/api/tradovate/events")body=[];
-              else if(u.pathname==="/api/chat" && route.request().method()==="POST"){const p=JSON.parse(route.request().postData()||"{}");body={ok:true,text:"Smoke JARVIS "+(p.model||"NQ")};}
-              else if(u.pathname==="/api/trades" && route.request().method()==="POST"){status=201;body={ok:true,...JSON.parse(route.request().postData()||"{}")};}
-              else if(u.pathname==="/api/trades")body=[];
-              await route.fulfill({status,contentType:"application/json",body:JSON.stringify(body),headers:{"access-control-allow-origin":"*"}});
-            });
+            const page=await browser.newPage({viewport:{width:1920,height:1080},deviceScaleFactor:1});
             const errors=[];
             page.on("pageerror",e=>errors.push("pageerror: "+e.message));
             page.on("console",m=>{if(m.type()==="error"&&!/403/.test(m.text()))errors.push("console: "+m.text())});
-            await page.goto("http://127.0.0.1:4173/index.html",{waitUntil:"domcontentloaded"});
-            await page.waitForTimeout(100);
-            if(errors.length)throw new Error("Edgeflow startup errors: "+errors.join("\n"));
-            const click=async sel=>page.locator(sel).evaluate(el=>el.click());
-            const switchMode=async mode=>{
-              const wait=page.waitForURL(url=>new URL(url).searchParams.get("mode")===mode,{waitUntil:"domcontentloaded"});
-              await page.locator(mode==="CRYPTO"?"#modeCRYPTO":"#modeNQ").evaluate(el=>el.click());
-              await wait;
-              await page.waitForLoadState("load").catch(()=>{});
-              await page.waitForSelector("#navDash",{state:"visible"});
-              await page.waitForTimeout(150);
-            };
-            const visible=()=>page.locator("main > .workspace:not(.hidden)").evaluateAll(xs=>xs.filter(x=>!x.hidden&&x.style.display!=="none").map(x=>x.id));
-            const expectVisible=async id=>{const v=await visible();if(v.length!==1||v[0]!==id)throw new Error("Expected "+id+" visible, got "+JSON.stringify(v));};
 
-            await expectVisible("models");
-            if(await page.locator("#models").count()!==1)throw new Error("Environment gateway missing");
-            const futuresWait=page.waitForURL(url=>new URL(url).searchParams.get("mode")==="NQ",{waitUntil:"domcontentloaded"});
-            await page.locator("#models .gateway-futures").click();
-            await futuresWait;
-            await page.waitForLoadState("load").catch(()=>{});
-            await expectVisible("dash");
-            if(await page.locator("#dash").count()!==1)throw new Error("Futures Dashboard missing");
+            await page.route("https://trading-assistant-production.up.railway.app/**",async route=>{
+              const u=new URL(route.request().url());
+              let body={ok:true},status=200;
+              if(u.pathname==="/api/tradovate/status") body={ok:true,connected:false,configured:false,accounts:[],cashBalances:[],positions:[],orders:[],recentFills:[]};
+              else if(u.pathname==="/api/tradovate/events") body=[];
+              else if(u.pathname==="/api/connections/status") body={ok:true,readOnly:true,tradovate:{connected:false,configured:false,accounts:[],cashBalances:[]},rithmic:{configured:false,connected:false},kcex:{available:true,mode:"screen-observer",apiDirect:false}};
+              else if(u.pathname==="/api/ai/status") body={ok:true,engine:"JARVIS",provider:"gemini",primaryModel:"gemini-3.5-flash-lite"};
+              else if(u.pathname==="/api/ai/chat" && route.request().method()==="POST"){const p=JSON.parse(route.request().postData()||"{}");body={ok:true,text:"Smoke JARVIS "+(p.model||"NQ")};}
+              else if(u.pathname==="/api/obsidian/status") body={ok:true,imported:false,tradeRecords:0,imageFiles:0,imageAnalyses:0,job:{}};
+              else if(u.pathname==="/api/history/ai-context") body={ok:true,model:u.searchParams.get("model")||"NQ",sampleSize:0};
+              else if(u.pathname==="/api/trades") body=[];
+              else if(u.pathname==="/api/jarvis/journal" && route.request().method()==="POST") body={ok:true,text:"Smoke image analysis",confidence:90};
+              await route.fulfill({status,contentType:"application/json",body:JSON.stringify(body),headers:{"access-control-allow-origin":"*","cache-control":"no-store"}});
+            });
 
-            await click("#navBotFutures");await expectVisible("bot");
-            if(await page.locator("#bot #btiming").count()!==1||await page.locator("#bot #bhtf").count()!==1||await page.locator("#bot #bpoi").count()!==1||await page.locator("#bot #bfib").count()!==1||await page.locator("#bot #brb").count()!==1||await page.locator("#bot #brr").count()!==1||await page.locator("#bot #bbacktest").count()!==1)throw new Error("Futures checklist incomplete");
+            const base="https://naththetrader.github.io/trading-assistant/";
+            const visible=()=>page.locator(".app-shell .workspace").count();
+            const assert=async(cond,msg)=>{if(!cond)throw new Error(msg)};
 
-            await switchMode("CRYPTO");await expectVisible("cryptoDash");
-            await click("#navDash");await expectVisible("cryptoDash");
-            await click("#navBotCrypto");await expectVisible("crypto");
-            if(await page.locator("#crypto #cryptoInstrumentBot").count()!==1||await page.locator("#crypto #cDirection").count()!==1||await page.locator("#crypto #cKeyOpen").count()!==1)throw new Error("Crypto Bot controls incomplete");
+            await page.goto(base,{waitUntil:"domcontentloaded"});
+            await page.waitForSelector(".env.red");
+            await page.waitForSelector(".env.blue");
+            await assert(await page.locator(".fatal").count()===0,"Fatal screen on landing page");
 
-            await click("#navChat");await expectVisible("chat");
-            await page.locator("#chatInput").fill("Test Crypto");
-            await page.click("#chat button:has-text('ENVOYER')");
-            await page.waitForTimeout(250);
-            if(!(await page.locator("#chat .bubble.me").count()===1))throw new Error("JARVIS user bubble missing");
-            if(!(await page.locator("#chat .bubble.ai").count()>=2))throw new Error("JARVIS response missing");
+            await page.locator(".env.red").click();
+            await page.waitForURL(url=>new URL(url).searchParams.get("mode")==="NQ");
+            await page.waitForSelector(".dash");
+            await assert(await page.locator(".account-state").count()===1,"Futures account state missing");
+            await assert((await page.locator(".dash").innerText()).includes("FUTURES"),"Futures dashboard text missing");
+            await assert(!(await page.locator(".fatal").count()),"Fatal screen after entering Futures");
 
-            await switchMode("NQ");await click("#navJournal");await expectVisible("journal");
-            if(await page.locator("#jDate").count()!==1)throw new Error("Journal date input missing");
-            await page.locator("#jDate").fill("2026-09-15");
-            await page.locator("#jDate").dispatchEvent("change");
-            if((await page.locator("#jDate").inputValue())!=="2026-09-15")throw new Error("Journal date cannot be changed");
-            await page.locator("#jDate").fill("2026-09-16");
-            await page.locator("#jDate").dispatchEvent("change");
-            if((await page.locator("#jDate").inputValue())!=="2026-09-16")throw new Error("Journal date cannot move forward");
-            if(!await page.locator("#journalDaySelect").isVisible())throw new Error("Journal day selector missing");
-            await page.locator("#jResult").selectOption("WIN");
-            await page.locator("#jR").fill("2");
-            await page.locator("#jPnL").fill("200");
-            await page.locator("#jContext").fill("Futures date and journal smoke test");
-            await page.click("button:has-text('ENREGISTRER')");
-            await page.waitForTimeout(350);
+            await page.locator("nav button").filter({hasText:"Trades"}).click();
+            await page.waitForSelector(".filters");
+            await assert((await page.locator("body").innerText()).includes("TRADOVATE"),"Futures provider not present in Trades");
 
-            await switchMode("CRYPTO");await expectVisible("cryptoDash");
+            await page.locator("nav button").filter({hasText:"AI Assistant"}).click();
+            await page.waitForSelector("#aiInput");
+            await page.locator("#aiInput").fill("Smoke test Futures");
+            await page.locator("#aiSend").click();
+            await page.waitForSelector(".ai-message.jarvis:not(.loading)");
+            await assert((await page.locator(".ai-messages").innerText()).includes("Smoke JARVIS NQ"),"Futures JARVIS response missing");
 
-            const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem("journal")||"[]"));
-            const split=stored.reduce((a,x)=>(a[x.model]=(a[x.model]||0)+1,a),{});
-            if(split.NQ!==1||split.CRYPTO)throw new Error("Journal model split invalid: "+JSON.stringify(split));
-            if(!stored.some(x=>x.model==="NQ"&&x.dateISO==="2026-09-16"))throw new Error("Futures selected date not persisted");
-            
+            await page.goto(base+"?mode=CRYPTO&view=overview",{waitUntil:"domcontentloaded"});
+            await page.waitForSelector(".dash");
+            const cryptoText=await page.locator(".dash").innerText();
+            await assert(cryptoText.includes("CRYPTO"),"Crypto dashboard text missing");
+            await assert(cryptoText.includes("KCEX · CRYPTO FUTURES"),"KCEX Crypto Futures provider missing");
+            await assert(!cryptoText.includes("TRADOVATE"),"Tradovate leaked into Crypto dashboard");
+            await assert(!cryptoText.includes("RITHMIC"),"Rithmic leaked into Crypto dashboard");
 
-            await switchMode("NQ");await click("#navDash");await expectVisible("dash");
-            if((await page.locator("#dashTrades").textContent()).trim()!=="1")throw new Error("Futures Dashboard did not read Futures Journal");
-            await switchMode("CRYPTO");await click("#navDash");await expectVisible("cryptoDash");
-            if((await page.locator("#cryptoDashTrades").textContent()).trim()!=="0")throw new Error("Futures journal leaked into Crypto Dashboard");
-            await switchMode("NQ");await click("#navDash");await expectVisible("dash");
-            if((await page.locator("#dashTrades").textContent()).trim()!=="1")throw new Error("Futures Journal missing from Futures Dashboard");
+            await page.locator("nav button").filter({hasText:"Connections"}).click();
+            await page.waitForSelector(".connection-live");
+            const cryptoConn=await page.locator(".workspace").innerText();
+            await assert(cryptoConn.includes("KCEX · CRYPTO FUTURES"),"Crypto connection center missing KCEX");
+            await assert(!cryptoConn.includes("TRADOVATE"),"Tradovate leaked into Crypto connections");
+            await assert(!cryptoConn.includes("RITHMIC"),"Rithmic leaked into Crypto connections");
 
-            await click("#navSettings");await expectVisible("settings");
-            if(await page.locator("#settings .connection-card").count()!==3)throw new Error("Connection center incomplete");
+            await page.locator("nav button").filter({hasText:"AI Assistant"}).click();
+            await page.locator("#aiInput").fill("Smoke test Crypto");
+            await page.locator("#aiSend").click();
+            await page.waitForSelector(".ai-message.jarvis:not(.loading)");
+            await assert((await page.locator(".ai-messages").innerText()).includes("Smoke JARVIS CRYPTO"),"Crypto JARVIS response missing");
 
-            await switchMode("NQ");await expectVisible("dash");
-            await click("#navBotFutures");await expectVisible("bot");
-            await switchMode("CRYPTO");await expectVisible("cryptoDash");
-            await click("#navBotCrypto");await expectVisible("crypto");
-            await switchMode("NQ");await expectVisible("dash");
-            await click("#navBotFutures");await expectVisible("bot");
-            if(errors.length)throw new Error(errors.join("\n"));
-            console.log("EDGEFLOW browser smoke OK");
+            await page.screenshot({path:"/tmp/edgeflow-artifacts/edgeflow-production-final.png",fullPage:true});
+            require("fs").writeFileSync("/tmp/edgeflow-artifacts/edgeflow-production.html",await page.content());
+
+            if(errors.length)throw new Error("Browser errors:\n"+errors.join("\n"));
             await browser.close();
+            console.log("EDGEFLOW production browser smoke OK");
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
+
+      - name: Upload production browser artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: edgeflow-production-browser
+          path: /tmp/edgeflow-artifacts
+          if-no-files-found: ignore
