@@ -281,11 +281,11 @@
       '<div class="engine"><b>EDGEFLOW CORE</b><small>'+d().connections.join(" · ")+' · ENGINE</small><i></i></div></aside>';
   }
   function topbar(){
-    const ss=sessionState();
-    const live=ss.find(x=>x.live);
-    const next=ss.find(x=>!x.live);
-    return '<header class="topbar"><div class="crumb">EDGEFLOW CORE <em>•</em> '+d().label+'</div><div class="top-actions">'+
-      '<span class="live '+(live?'session-live':'')+'">● '+(live?live.name+' LIVE':'MARKET CLOSED')+'</span>'+
+    if(crypto()){
+      return '<header class="topbar"><div class="crumb">EDGEFLOW CORE <em>•</em> CRYPTO</div><div class="top-actions"><span class="live session-live">● 24/7 OPEN</span><span class="session"><b>KCEX</b><i>PERPETUALS</i></span><span class="session"><b>MODEL</b><i>CRYPTO</i></span><span class="session"><b>KEY OPEN</b><i>SWEEP</i></span><span class="avatar">N</span><span class="user">Nath⌄</span></div></header>';
+    }
+    const ss=sessionState(),live=ss.find(x=>x.live);
+    return '<header class="topbar"><div class="crumb">EDGEFLOW CORE <em>•</em> FUTURES</div><div class="top-actions"><span class="live '+(live?"session-live":"")+'">● '+(live?live.name+" LIVE":"MARKET CLOSED")+'</span>'+
       '<span class="session">LDN <b>'+ss[0].label+'</b><i>'+ss[0].countdown+'</i></span>'+
       '<span class="session">NY PRE <b>'+ss[1].label+'</b><i>'+ss[1].countdown+'</i></span>'+
       '<span class="session">NY <b>'+ss[2].label+'</b><i>'+ss[2].countdown+'</i></span>'+
@@ -307,7 +307,7 @@
   }
   function dashboard(){
     const label=d().label;
-    const sessions=sessionState();
+    const sessions=crypto()?[]:sessionState();
     const acct=crypto()?{connected:false,balance:0,realized:0,unrealized:0,account:"KCEX",positions:[],orders:[],fills:[]} : liveAccount();
     const connected=Boolean(acct.connected);
     const money=n=>"$"+Math.abs(Number(n)||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -329,7 +329,7 @@
     const balanceLabel=crypto()?"Portfolio Balance":"Account Balance";
     const balanceText=connected?money(acct.balance):"$0.00";
     const pnlText=connected?signed(pnl)+money(pnl):"$0.00";
-    const sessionCards=sessions.map(x=>'<span class="'+(x.live?"session-live":"session-closed")+'"><b>'+x.name+'</b><small>'+x.label+'</small><em>'+(x.live?x.start+"–"+x.end:x.countdown)+'</em></span>').join("");
+    const sessionCards=crypto()?'<span class="session-live"><b>24/7</b><small>OPEN</small><em>KCEX PERPETUALS</em></span>':sessions.map(x=>'<span class="'+(x.live?"session-live":"session-closed")+'"><b>'+x.name+'</b><small>'+x.label+'</small><em>'+(x.live?x.start+"–"+x.end:x.countdown)+'</em></span>').join("");
     return '<div class="dash premium-dashboard">'+
       '<div class="dash-banner"><div class="dash-brand"><div class="mini-mark">E</div><div><small>EDGEFLOW CORE • '+label+'</small><h1>'+label+'</h1><p>'+(crypto()?"BTC | ETH | SOL | BNB | XRP | HYPE | FLOKI":"MNQ | MES | MGC | RITHMIC | TRADOVATE")+'</p></div></div>'+
       '<div class="dash-sessions"><span class="live '+(connected?"":"offline")+'">'+statusText+'</span>'+sessionCards+'</div></div>'+
@@ -346,7 +346,7 @@
       panel(crypto()?"TOP COINS":"TOP INSTRUMENTS",connected?instrumentCards():instrumentCardsZero())+
       panel(connected?"RECENT LIVE TRADES":"RECENT TRADES",tradeRows)+
       '</div><aside class="dashboard-side">'+
-      panel("SESSION CONTEXT",'<div class="session-list">'+sessions.map(x=>'<div><b class="'+(x.live?"is-live":"")+'">● '+x.name+'</b><span>'+(x.live?x.start+"–"+x.end:x.countdown)+'</span></div>').join("")+'</div>')+
+      panel(crypto()?"MARKET STATUS":"SESSION CONTEXT",crypto()?'<div class="session-list"><div><b class="is-live">● 24/7 MARKET</b><span>OPEN</span></div><div><b>● KCEX</b><span>PERPETUALS</span></div><div><b>● KEY OPEN</b><span>MANIPULATION / SWEEP</span></div></div>':'<div class="session-list">'+sessions.map(x=>'<div><b class="'+(x.live?"is-live":"")+'">● '+x.name+'</b><span>'+(x.live?x.start+"–"+x.end:x.countdown)+'</span></div>').join("")+'</div>')+
       panel(crypto()?"CRYPTO STATUS":"ACCOUNT STATUS",'<div class="rules"><div><span>Connection</span><b>'+(connected?"ONLINE":"OFFLINE")+'</b></div><div><span>Provider</span><b>'+broker+'</b></div><div><span>Positions</span><b>'+acct.positions.length+'</b></div><div><span>Orders</span><b>'+acct.orders.length+'</b></div></div>')+
       '</aside></div></div>';
   }
@@ -850,10 +850,14 @@
   setInterval(()=>{
     if(state.mode==="NQ"&&state.view==="overview"&&!state.tradovate.loading&&(Date.now()-state.tradovate.lastFetch>5000))refreshTradovateDashboard();
     if(state.mode&&document.querySelector(".topbar")){
-      const t=document.querySelector(".topbar"),ss=sessionState(),live=ss.find(x=>x.live);
-      const nodes=t.querySelectorAll(".session");
-      if(nodes.length>=4){[0,1,2,3].forEach((i)=>{const b=nodes[i].querySelector("b"),em=nodes[i].querySelector("i");if(b)b.textContent=ss[i].label;if(em)em.textContent=ss[i].countdown});}
-      const liveEl=t.querySelector(".live");if(liveEl)liveEl.textContent="● "+(live?live.name+" LIVE":"MARKET CLOSED");
+      const t=document.querySelector(".topbar");
+      if(!crypto()){
+        const ss=sessionState(),live=ss.find(x=>x.live),nodes=t.querySelectorAll(".session");
+        if(nodes.length>=4){[0,1,2,3].forEach((i)=>{const b=nodes[i].querySelector("b"),em=nodes[i].querySelector("i");if(b)b.textContent=ss[i].label;if(em)em.textContent=ss[i].countdown});}
+        const liveEl=t.querySelector(".live");if(liveEl)liveEl.textContent="● "+(live?live.name+" LIVE":"MARKET CLOSED");
+      }else{
+        const liveEl=t.querySelector(".live");if(liveEl)liveEl.textContent="● 24/7 OPEN";
+      }
     }
   },1000);
 })();
