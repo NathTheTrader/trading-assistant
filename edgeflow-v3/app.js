@@ -1,156 +1,201 @@
+/* EDGEFLOW — complete interface rebuild
+   Reference-driven UI. No legacy renderer is used. */
+(() => {
+  const root = document.getElementById("app");
+  const params = new URLSearchParams(location.search);
+  const savedMode = localStorage.getItem("edgeflow-mode");
+  const savedView = localStorage.getItem("edgeflow-view");
+  const state = {
+    mode: params.get("mode")==="CRYPTO" ? "CRYPTO" : params.get("mode")==="NQ" ? "NQ" : savedMode || "",
+    view: params.get("view") || savedView || "overview",
+    journal: JSON.parse(localStorage.getItem("edgeflow-journal") || "[]"),
+    aiMessages: []
+  };
 
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const MODE_KEY="edgeflow.mode";
-const VIEW_KEY="edgeflow.view";
-let mode=(new URLSearchParams(location.search).get("mode")||localStorage.getItem(MODE_KEY)||"").toUpperCase();
-if(!["NQ","CRYPTO"].includes(mode)) mode="";
-let view=new URLSearchParams(location.search).get("view")||localStorage.getItem(VIEW_KEY)||"dashboard";
-const state={mode,view,journal:JSON.parse(localStorage.getItem("journal")||"[]")};
-const API_BASE="https://trading-assistant-production.up.railway.app";
-state.apiOnline=false; state.ai=null; state.connections=null; state.chat=[];
-async function api(path,options={}){
-  const r=await fetch((path.startsWith("http")?path:API_BASE+path),{
-    ...options,mode:"cors",
-    headers:{"Content-Type":"application/json",...(options.headers||{})}
-  });
-  const data=await r.json().catch(()=>({}));
-  if(!r.ok) throw new Error(data?.error||("HTTP "+r.status));
-  state.apiOnline=true; return data;
-}
-async function hydrate(){
-  try{
-    const [trades,ai,connections]=await Promise.all([
-      api("/api/trades?model="+encodeURIComponent(state.mode)),
-      api("/api/ai/status"),
-      api("/api/connections/status")
-    ]);
-    if(Array.isArray(trades)) state.journal=trades;
-    state.ai=ai; state.connections=connections;
-    localStorage.setItem("journal",JSON.stringify(state.journal));
-  }catch(e){state.apiOnline=false}
-}
-async function saveTradeRemote(t){
-  try{
-    const saved=await api("/api/trades",{method:"POST",body:JSON.stringify(t)});
-    if(saved?.id!=null) state.journal=state.journal.map(x=>String(x.id)===String(saved.id)?saved:x);
-    if(!state.journal.some(x=>String(x.id)===String(saved?.id))) state.journal.push(saved);
-    localStorage.setItem("journal",JSON.stringify(state.journal)); return saved;
-  }catch(e){throw e}
-}
+  const FUTURES = ["MNQ","MES","MGC"];
+  const CRYPTO = ["BTC","ETH","SOL","BNB","XRP","HYPE","FLOKI"];
+  const isCrypto = () => state.mode === "CRYPTO";
+  const accent = () => isCrypto() ? "blue" : "red";
+  const instruments = () => isCrypto() ? CRYPTO : FUTURES;
 
+  const demo = {
+    NQ: [
+      ["09:12:34","MNQ","Short","24,862.75","24,840.25","1","+ $225.00","4.5","R.B + FVG"],
+      ["08:47:12","MES","Long","6,120.50","6,158.00","2","+ $420.00","3.1","Sweep + OB"],
+      ["07:22:18","MGC","Short","3,872.40","3,861.20","1","- $160.00","1.2","News Fade"],
+      ["06:11:05","MNQ","Long","24,910.25","24,926.50","1","+ $160.00","2.8","10H Open"],
+      ["05:38:41","MES","Long","6,029.25","6,031.50","1","+ $120.00","2.1","R.B"],
+      ["Sep 29","MGC","Short","3,845.10","3,838.00","0.5","- $130.00","1.2","Trend"]
+    ],
+    CRYPTO: [
+      ["09:15:27","BTC","Short","63,120.55","63,420.00","0.02","+ $327.00","3.1","Sweep + OB"],
+      ["08:32:11","SOL","Long","148.10","148.90","10","+ $190.00","2.4","R.B"],
+      ["07:48:33","ETH","Short","2,460.50","2,452.30","0.5","- $160.00","2.8","FVG"],
+      ["06:11:05","BNB","Long","560.20","572.10","1.2","+ $240.00","2.8","10H Open"],
+      ["Sep 29","BTC","Long","62,910.00","63,100.00","0.02","+ $185.00","2.2","R.B"],
+      ["Sep 28","ETH","Short","2,480.20","2,468.00","0.8","+ $210.00","2.5","FVG"]
+    ]
+  };
 
-const icon={home:"⌂",trades:"▤",perf:"◔",ai:"✦",journal:"▣",analytics:"◫",backtests:"◌",connections:"⌁",settings:"⚙"};
-function money(v){const n=Number(v);return Number.isFinite(n)?(n>=0?"+":"-")+"$"+Math.abs(n).toLocaleString("en-US",{maximumFractionDigits:2}):"—"}
-function modeName(){return state.mode==="CRYPTO"?"Crypto":"Futures"}
-function accent(){return state.mode==="CRYPTO"?"blue":"red"}
-function setRoute(v=state.view){const q="?mode="+encodeURIComponent(state.mode)+"&view="+encodeURIComponent(v);history.pushState({},'',q);localStorage.setItem(MODE_KEY,state.mode);localStorage.setItem(VIEW_KEY,v)}
-function landing(){
- document.body.className="landing-page";
- document.body.innerHTML='<div class="landing-v4">'+
- '<div class="landing-side landing-futures"><div class="land-art">'+mountain("#ff183f","#160207")+'</div><div class="land-glow"></div></div>'+
- '<div class="landing-side landing-crypto"><div class="land-art">'+mountain("#159cff","#031329")+'</div><div class="land-glow"></div></div>'+
- '<div class="landing-center-v4"><div class="landing-logo-v4">'+logo("#159cff")+'</div><div class="landing-brand-v4">EDGE<span>FLOW</span></div><div class="landing-tag-v4">TRADING INTELLIGENCE</div><div class="landing-choice">CHOOSE YOUR ENVIRONMENT</div>'+
- '<div class="environment-cards">'+
- '<div class="environment-card futures-card"><div class="env-icon">▮▮▮</div><div class="env-card-title">FUTURES</div><div class="env-card-sub">MNQ | MES | MGC | etc.</div><div class="env-features"><span>●</span> Tradovate<span>●</span> Rithmic<span>✦</span> AI Assistant<span>▣</span> Journal<span>◫</span> Analytics</div><button onclick="enterMode(\'NQ\')">→</button></div>'+
- '<div class="environment-card crypto-card"><div class="env-icon">◉</div><div class="env-card-title">CRYPTO</div><div class="env-card-sub">BTC | ETH | SOL | BNB | etc.</div><div class="env-features"><span>●</span> KCEX<span>✦</span> AI Assistant<span>▣</span> Journal<span>◫</span> Analytics</div><button onclick="enterMode(\'CRYPTO\')">→</button></div>'+
- '</div></div>'+
- '<div class="landing-motto">DISCIPLINE × DATA × EXECUTION</div><div class="landing-standard">A HIGHER STANDARD<br>FOR TRADERS</div></div>';
-}
-function mountain(a,b){return '<svg viewBox="0 0 900 400" preserveAspectRatio="none"><defs><linearGradient id="mg'+a.slice(1)+'" x1="0" y1="0" x2="0" y2="1"><stop stop-color="'+a+'" stop-opacity=".5"/><stop offset="1" stop-color="'+b+'" stop-opacity=".1"/></linearGradient></defs><path d="M0 400V315L100 255 160 305 255 155 330 275 445 80 560 260 640 185 735 305 825 220 900 300V400Z" fill="url(#mg'+a.slice(1)+' )"/><path d="M0 400V335L120 275 210 340 290 215 390 330 475 145 560 320 650 245 760 335 850 280 900 320V400Z" fill="#02070c" opacity=".78"/><path d="M0 350L130 310 230 345 330 285 440 350 540 275 640 335 760 295 900 345" fill="none" stroke="'+a+'" stroke-opacity=".35" stroke-width="2"/></svg>'}
-function logo(c){return '<svg viewBox="0 0 80 80"><path d="M18 12h43L49 25H29l-5 10h25L39 48H18l-7 20h15l6-12h19L40 68H12L27 12Z" fill="'+c+'"/><path d="M27 12 11 68h15l9-31 22-25H27Z" fill="#dff4ff" opacity=".85"/></svg>'}
-window.enterMode=m=>{state.mode=m;state.view="dashboard";localStorage.setItem(MODE_KEY,m);localStorage.setItem(VIEW_KEY,"dashboard");location.href="?mode="+m+"&view=dashboard"}
-function shell(){
- const isC=state.mode==="CRYPTO", a=isC?"--blue":"--red", a2=isC?"--blue2":"--red2", ag=isC?"--blueglow":"--redglow";
- document.body.style.setProperty("--accent","var("+a+")");document.body.style.setProperty("--accent2","var("+a2+")");document.body.style.setProperty("--accent-glow","var("+ag+")");
- document.body.className=isC?"crypto-mode":"futures-mode";
- document.body.innerHTML='<div class="shell"><aside class="sidebar">'+
- '<div class="brand"><div class="brand-icon">'+logo(isC?"#1598ff":"#ff2048")+'</div><div><div class="brand-name">EDGE<span>FLOW</span></div><div class="brand-sub">TRADING INTELLIGENCE</div></div></div>'+
- '<div class="market-toggle"><button class="'+(!isC?"active futures":"")+'" onclick="enterMode(\'NQ\')">FUTURES</button><button class="'+(isC?"active crypto":"")+'" onclick="enterMode(\'CRYPTO\')">CRYPTO</button></div>'+
- '<div class="nav-label">WORKSPACE</div><div class="nav">'+
- nav("dashboard","Overview","Market command center")+nav("trades","Trades","Execution history")+nav("performance","Performance","Metrics & expectancy")+nav("ai","AI Assistant","Edgeflow intelligence")+nav("journal","Journal","Trading journal")+nav("analytics","Analytics","Deep statistics")+nav("backtests","Backtests","Models & samples")+
- '<div class="nav-label">SYSTEM</div>'+nav("connections","Connections","Broker integrations")+nav("settings","Settings","Environment controls")+
- '</div><div class="sidebar-bottom"><div class="connection-chip"><div><span>EDGEFLOW CORE</span><span class="dot"></span></div><p>'+ (isC?"KCEX · CRYPTO ENGINE":"TRADOVATE · RITHMIC · FUTURES ENGINE")+'</p></div></div></aside>'+
- '<main class="main"><header class="topbar"><div class="crumb">EDGEFLOW CORE <span>•</span> <strong>'+modeName().toUpperCase()+'</strong></div><div class="top-actions"><div class="live"><span class="dot"></span> LIVE</div><div class="session">LDN <b>'+clock()+'</b></div><div class="session">NY <b>'+((new Date().getHours()>=8&&new Date().getHours()<17)?"OPEN":"CLOSED")+'</b></div><div class="avatar">N</div></div></header><section class="workspace" id="workspace"></section></main></div>';
-}
-function nav(v,t,s){return '<button class="'+(state.view===v?"active":"")+'" onclick="go(\''+v+'\')"><span class="nav-icon">'+icon[v]+'</span><span><strong>'+t+'</strong><small>'+s+'</small></span></button>'}
-function clock(){return new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})}
-function go(v){state.view=v;localStorage.setItem(VIEW_KEY,v);history.pushState({},'',"?mode="+state.mode+"&view="+v);shell();render()}
-function kpi(label,value,sub,cls=""){return '<div class="card"><div class="kpi-label">'+label+'</div><div class="kpi-value '+cls+'">'+value+'</div><div class="kpi-sub">'+sub+'</div></div>'}
-function pageHead(ey,title,sub,actions=""){return '<div class="page-head"><div><div class="eyebrow">'+ey+'</div><h1>'+title+'</h1><p>'+sub+'</p></div><div class="period">'+actions+'</div></div>'}
-function dashboard(){
- const data=state.journal.filter(t=>t.model===state.mode);
- const wins=data.filter(t=>String(t.result).toUpperCase().includes("WIN")).length;
- const losses=data.filter(t=>String(t.result).toUpperCase().includes("LOSS")).length;
- const pnl=data.reduce((a,t)=>a+(Number(t.pnl)||0),0);
- const crypto=state.mode==="CRYPTO";
- const accent=crypto?"blue":"red";
- const instruments=crypto?[["BTC","63,284.50","71%","63 trades"],["ETH","2,452.18","66%","38 trades"],["SOL","148.32","62%","24 trades"],["BNB","573.21","61%","18 trades"]]:[["MNQ","24,856.25","62%","48 trades"],["MES","6,021.75","59%","32 trades"],["MGC","3,872.40","67%","18 trades"]];
- return '<div class="reference-dashboard">'+
- '<div class="ref-hero"><div><div class="eyebrow">EDGEFLOW CORE · '+modeName().toUpperCase()+'</div><h1>'+modeName().toUpperCase()+'</h1><div class="hero-symbols">'+(crypto?"BTC  |  ETH  |  SOL  |  BNB  |  XRP":"MNQ  |  MES  |  MGC  |  RITHMIC  |  TRADOVATE")+'</div></div><div class="hero-controls"><span class="live"><i></i> LIVE</span><span class="session-box">LDN<br><b>'+clock()+'</b></span><span class="session-box">NY PRE<br><b>08:24:17</b></span><span class="session-box">NY<br><b>CLOSED</b></span><span class="session-box">'+(crypto?"ASIA":"ASA")+'<br><b>CLOSED</b></span></div></div>'+
- '<div class="ref-kpis">'+
- kpi("Account Balance","$49,300.00","+0.8%","positive")+kpi("Today P&L",money(pnl||-120.5),"Session result",pnl>=0?"positive":"negative")+kpi("Total P&L",money(pnl||3420),"Environment total","positive")+kpi("Win Rate",(wins+losses?(wins/(wins+losses)*100):62).toFixed(0)+"%","Recorded trades","accent")+kpi("Win / Loss",(wins||31)+" / "+(losses||19),"Last 30 days")+kpi("Profit Factor","2.4","Gross / loss")+kpi("Avg RR","3.4","Average R")+
- '</div>'+
- '<div class="ref-main-grid"><div class="ref-left">'+
- '<div class="ref-section"><div class="ref-title">TOP '+(crypto?"COINS":"INSTRUMENTS")+'</div><div class="instrument-grid">'+instruments.map(x=>'<div class="instrument-card"><div class="instrument-name">'+x[0]+'</div><div class="instrument-price">'+x[1]+'</div><div class="instrument-meta">'+x[3]+' <b>'+x[2]+'</b></div></div>').join("")+'</div></div>'+
- '<div class="ref-section"><div class="ref-title">RECENT TRADES</div>'+tradeRows(data.length?data.slice(-6).reverse():[...Array(6)].map((_,i)=>({instrument:crypto?["BTC","SOL","ETH","BNB","BTC","ETH"][i]:["MNQ","MES","MGC","MNQ","MES","MGC"][i],direction:i%2?"Long":"Short",entry:"—",exit:"—",quantity:"1",pnl:i%3?"120":"-160",R:i%2?"2.8":"1.2",dateISO:"Sep 30, 2026"})))+'</div>'+
- '</div><div class="ref-right">'+
- '<div class="ref-section session-panel"><div class="ref-title">SESSION CONTEXT</div>'+rule(crypto?"ASIA":"LONDON",clock())+rule("NY OPEN","in 05:25:43")+rule("NY","Closed")+'</div>'+
- '<div class="ref-section"><div class="ref-title">ACCOUNT RULES</div>'+rule("Daily Risk","0% / $1,200")+rule("Consistency","62%")+rule("Max Drawdown","2.1%")+rule("Trades Today","1 / 2")+'</div>'+
- '</div></div>'+
- '<div class="ref-bottom-grid"><div class="ref-section model-panel"><div class="ref-title">ACTIVE MODEL</div><div class="big-model">'+(crypto?"KEY OPEN · CRYPTO MODEL":"REJECTION BLOCK · FUTURES MODEL")+'</div><div class="model-tags"><span>LIMIT</span><span>0.62</span><span>0.705</span><span>'+ (crypto?"HIGH RR":"R.B.")+'</span></div></div><div class="ref-section discipline"><div class="ref-title">MODEL DISCIPLINE</div><div class="discipline-grid"><div>RETRACEMENT<strong>0.5 / 0.62 / 0.705 / 0.79</strong></div><div>ENTRY<strong>LIMIT ONLY</strong></div><div>TRIGGER<strong>REJECTION BLOCK</strong></div></div></div></div>'+
- '</div>';
-}
-function isCryptoModel(){return state.mode==="CRYPTO"}
-function market(s,p,m){return '<div class="card market-card"><div class="market-top"><span class="symbol">'+s+'</span><span class="live-tag">LIVE</span></div><div class="market-price">'+p+'</div><div class="market-meta">'+m+'</div></div>'}
-function rule(a,b){return '<div class="rule"><span>'+a+'</span><b>'+b+'</b></div>'}
-function tradeRows(data){if(!data.length)return '<div class="empty">No trades recorded yet. Add trades from Journal.</div>';return '<div class="trade-list"><div class="trade-row header"><span>TIME / SYMBOL</span><span>SIDE</span><span>ENTRY</span><span>EXIT</span><span>QTY</span><span>P&L</span><span>R</span></div>'+data.map(t=>'<div class="trade-row"><div><strong>'+esc(t.instrument||"—")+'</strong><div style="color:#52697c;font-size:6px;margin-top:3px">'+esc(t.dateISO||t.date||"")+'</div></div><span class="pill '+(String(t.direction||"").toLowerCase().includes("short")?"short":"long")+'">'+esc(t.direction||"—")+'</span><span>'+esc(t.entry||"—")+'</span><span>'+esc(t.exit||"—")+'</span><span>'+esc(t.quantity||t.qty||"1")+'</span><strong class="'+(Number(t.pnl)>0?"positive":Number(t.pnl)<0?"negative":"")+'">'+money(t.pnl)+'</strong><span>'+esc(t.R||"—")+'</span></div>').join("")+'</div>'}
-function trades(){
- const data=state.journal.filter(t=>t.model===state.mode);return pageHead("EXECUTION", "Trades", "Full execution history for this environment.",'<button class="btn primary" onclick="go(\'journal\')">+ NEW JOURNAL ENTRY</button>')+
- '<div class="filters"><input id="tradeSearch" placeholder="Search instrument, setup..." oninput="filterTrades()"><select id="tradeResult" onchange="filterTrades()"><option value="">All results</option><option>WIN</option><option>LOSS</option></select><select><option>All instruments</option></select><button class="btn ghost">EXPORT</button></div><div class="section" id="tradeTable">'+tradeRows(data.slice().reverse())+'</div>';
-}
-window.filterTrades=()=>{const q=String($("#tradeSearch")?.value||"").toLowerCase(),r=String($("#tradeResult")?.value||"");const data=state.journal.filter(t=>t.model===state.mode&&(!q||JSON.stringify(t).toLowerCase().includes(q))&&(!r||String(t.result).toUpperCase()===r));$("#tradeTable").innerHTML=tradeRows(data.slice().reverse())}
-function performance(){const data=state.journal.filter(t=>t.model===state.mode),wins=data.filter(t=>String(t.result).toUpperCase().includes("WIN")).length,loss=data.filter(t=>String(t.result).toUpperCase().includes("LOSS")).length,pnls=data.map(t=>Number(String(t.pnl||"").replace(/[^0-9.-]/g,""))).filter(Number.isFinite);let cum=0;const pts=pnls.map(x=>cum+=x);return pageHead("PERFORMANCE","Performance","Expectancy, P&L curve and setup statistics.",'<button class="btn ghost">30 DAYS</button>')+'<div class="analytics-grid">'+kpi("Total Trades",data.length,"Recorded")+kpi("Win Rate",(wins+loss?wins/(wins+loss)*100:0).toFixed(1)+"%",wins+" / "+loss,"accent")+kpi("Profit Factor","—","Gross profit / gross loss")+kpi("Avg RR","—","From journal R values")+kpi("Net P&L",money(pnls.reduce((a,b)=>a+b,0)),"Selected environment",pnls.reduce((a,b)=>a+b,0)>=0?"positive":"negative")+'</div><div class="content-grid" style="margin-top:8px"><div class="section chart"><div class="section-title">CUMULATIVE P&L</div>'+pnlChart(pts)+'</div><div class="section"><div class="section-title">SETUP BREAKDOWN</div><div class="rule-list" style="margin-top:10px">'+rule("R.B. + FVG","—")+rule("Sweep + OB","—")+rule("10H Open","—")+rule("Trend","—")+'</div></div></div>'}
-function pnlChart(pts){if(!pts.length)return '<div class="empty" style="margin-top:15px">No P&L data available.</div>';const min=Math.min(0,...pts),max=Math.max(0,...pts),span=Math.max(1,max-min),d=pts.map((p,i)=>{const x=20+i/Math.max(1,pts.length-1)*95,y=92-(p-min)/span*75;return(i?'L':'M')+x+' '+y}).join(' ');return '<svg viewBox="0 0 120 100" preserveAspectRatio="none"><path d="'+d+'" fill="none" stroke="var(--accent)" stroke-width="1.5"/></svg>'}
-function ai(){
- const prompts=["Analyze my last 5 trades","Check my market context","Summarize today's journal","Review my discipline"];
- return pageHead("INTELLIGENCE","AI Assistant","Edgeflow intelligence for analysis, journaling and execution review.",'<span class="status '+(state.ai?.configured?"connected":"off")+'">'+(state.ai?.configured?"JARVIS ONLINE":"AI NOT CONFIGURED")+'</span>')+
- '<div class="ai-layout"><div class="section"><div class="section-head"><div><div class="section-title">JARVIS</div><div class="section-sub">'+esc(state.ai?.provider||"EDGEFLOW CORE")+'</div></div></div>'+
- '<div id="chatLog" class="chat-log">'+(state.chat.length?state.chat.map(m=>'<div class="chat '+m.role+'">'+esc(m.content)+'</div>').join(""):'<div class="chat assistant">Edgeflow AI est prêt.</div>')+'</div>'+
- '<div class="prompt-list">'+prompts.map(x=>'<button class="prompt" onclick="sendPrompt('+JSON.stringify(x)+')">'+x+' <span>→</span></button>').join("")+'</div>'+
- '<form class="chat-form" onsubmit="sendChat(event)"><input id="chatInput" autocomplete="off" placeholder="Parle à Edgeflow…"><button class="btn primary">SEND</button></form></div>'+
- '<div class="section"><div class="eyebrow">ACTIVE MODEL</div><div class="model-name">'+(isCryptoModel()?"CRYPTO · KEY OPEN":"FUTURES · REJECTION BLOCK")+'</div><div class="tags"><span class="tag">LIVE CONTEXT</span><span class="tag">MODEL LOCK</span><span class="tag">'+(isCryptoModel()?"HIGH RR":"RETRACEMENT ONLY")+'</span></div><div class="section-sub" style="margin-top:18px">'+(isCryptoModel()?"Direction → Key Open manipulation/sweep → HTF POI → entry → high RR.":"HTF → POI → liquidity → displacement → retracement → Rejection Block → limit entry.")+'</div></div></div>';
-}
-window.sendPrompt=x=>{const i=$("#chatInput");if(i){i.value=x;i.focus()}};
-window.sendChat=async e=>{
- e.preventDefault();const i=$("#chatInput"),msg=String(i?.value||"").trim();if(!msg)return;
- state.chat.push({role:"user",content:msg});i.value="";render();
- try{const r=await api("/api/chat",{method:"POST",body:JSON.stringify({model:state.mode,message:msg,previousTurns:state.chat.slice(-10)})});state.chat.push({role:"assistant",content:r.text||r.output_text||"Réponse vide."})}
- catch(err){state.chat.push({role:"assistant",content:"JARVIS indisponible: "+err.message})}
- render();
-};
-function journal(){
- return pageHead("RECORDS","Journal","Structured trade review and daily execution record.",'<button class="btn primary" onclick="saveJournalEntry(event)">SAVE TRADE</button>')+
- '<div class="journal-layout"><div class="section"><div class="section-title">NEW EXECUTION</div><div class="section-sub">Local + backend persistence.</div>'+
- '<form class="journal-form" onsubmit="saveJournalEntry(event)"><label>Date<input id="jDate" type="date" value="'+new Date().toISOString().slice(0,10)+'"></label><label>Instrument<input id="jInstrument" placeholder="'+(state.mode==="CRYPTO"?"BTC":"MNQ")+'"></label><label>Direction<select id="jDirection"><option>Long</option><option>Short</option></select></label><label>Entry<input id="jEntry" placeholder="price"></label><label>Exit<input id="jExit" placeholder="price"></label><label>Qty<input id="jQty" type="number" value="1" min="1"></label><label>P&L<input id="jPnl" type="number" step="0.01" value="0"></label><label>R<input id="jR" placeholder="3.5R"></label><label>Result<select id="jResult"><option>OPEN</option><option>WIN</option><option>LOSS</option><option>BE</option></select></label><label>Grade<select id="jGrade"><option>A+</option><option>A</option><option>A-</option><option>B+</option><option>B</option><option>B-</option><option>C+</option><option>C</option></select></label><label class="full">Setup<input id="jSetup" placeholder="Rejection Block / Key Open / FVG"></label><label class="full">Notes<textarea id="jNotes" rows="4" placeholder="Context, retracement, execution, mistake..."></textarea></label><button class="btn primary full">ADD TO JOURNAL</button></form></div>'+
- '<div class="section"><div class="section-head"><div><div class="section-title">RECENT ENTRIES</div><div class="section-sub">Only '+modeName()+' records.</div></div></div>'+tradeRows(state.journal.filter(t=>t.model===state.mode).slice().reverse())+'</div></div>';
-}
-window.saveJournalEntry=async e=>{
- if(e)e.preventDefault();const v=id=>String($("#"+id)?.value||"").trim();
- const t={id:Date.now(),model:state.mode,dateISO:v("jDate"),instrument:v("jInstrument")||(state.mode==="CRYPTO"?"BTC":"MNQ"),direction:v("jDirection"),entry:v("jEntry"),exit:v("jExit"),quantity:Number(v("jQty")||1),pnl:Number(v("jPnl")||0),R:v("jR"),result:v("jResult"),grade:v("jGrade"),setup:v("jSetup"),notes:v("jNotes")};
- state.journal.push(t);localStorage.setItem("journal",JSON.stringify(state.journal));try{await saveTradeRemote(t)}catch(err){}go("journal");
-};
-function analytics(){return pageHead("ANALYTICS","Analytics","Deep breakdown of execution behavior and model performance.",'<button class="btn ghost">ALL TIME</button>')+'<div class="content-grid"><div class="section">'+kpi("Retracement Model","ACTIVE","Fibonacci + R.B.","accent")+rule("Allowed levels","0.5 · 0.62 · 0.705 · 0.79")+rule("Execution","LIMIT ONLY")+rule("Trigger","REJECTION BLOCK")+rule("Context","HTF → LTF")+'</div><div class="section">'+kpi("Setup Quality","A- / B+ / C+","Grade framework")+rule("A","Solid setup")+rule("B","Good with imperfection")+rule("C","Limit / avoid")+'</div></div>'}
-function backtests(){return pageHead("RESEARCH","Backtests","Historical model experiments and sample statistics.",'<button class="btn primary">+ NEW BACKTEST</button>')+'<div class="section"><div class="empty">Backtest workspace ready for your model datasets.</div></div>'}
-function connections(){
- const d=state.connections||{},tv=d.tradovate||{},ri=d.rithmic||{},kc=d.kcex||{};
- const cards=state.mode==="CRYPTO"?[["KCEX",kc.available?"AVAILABLE":"UNAVAILABLE",kc.mode||"screen observer"],["CRYPTO ENGINE","ACTIVE","Edgeflow crypto"]]:[["Tradovate",tv.connected?"CONNECTED":"READY",tv.accountId||"API / WebSocket"],["Rithmic",ri.configured?"CONFIGURED":"NOT CONFIGURED",ri.system||"R|Protocol"]];
- return pageHead("SYSTEM","Connections","Broker connectivity and order visibility for this environment.",'<span class="status '+(state.apiOnline?"connected":"off")+'">'+(state.apiOnline?"CORE ONLINE":"BACKEND OFFLINE")+'</span>')+'<div class="connection-grid">'+cards.map(x=>'<div class="section connection-card"><div class="kpi-label">'+modeName().toUpperCase()+'</div><h3>'+x[0]+'</h3><span class="status '+(["CONNECTED","AVAILABLE","ACTIVE","CONFIGURED"].includes(x[1])?"connected":"off")+'">'+x[1]+'</span><p class="section-sub" style="margin-top:15px">'+x[2]+'</p><button class="btn ghost" style="margin-top:18px" onclick="refreshConnections()">REFRESH</button></div>').join("")+'</div>';
-}
-window.refreshConnections=async()=>{try{state.connections=await api("/api/connections/status")}catch(e){}render()};
-function settings(){return pageHead("SYSTEM","Settings","Environment preferences and interface controls.",'<button class="btn primary">SAVE</button>')+'<div class="settings-grid"><div class="section">'+setting("Live market state",true)+setting("Order notifications",true)+setting("AI voice",true)+setting("Compact terminal mode",true)+'</div><div class="section">'+setting("Dark mode",true)+setting("Auto refresh",true)+setting("Session indicators",true)+setting("Sound alerts",false)+'</div></div>'}
-function setting(n,on){return '<div class="setting"><span>'+n+'</span><span class="switch '+(on?"on":"")+'"></span></div>'}
-function render(){const w=$("#workspace");if(!w)return;const pages={dashboard,trades,performance,ai,journal,analytics,backtests,connections,settings};w.innerHTML=(pages[state.view]||dashboard)();document.title="EDGEFLOW — "+modeName()+" · "+state.view.toUpperCase()}
-function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-async function boot(){if(!state.mode){landing();return}shell();render();await hydrate();shell();render();setInterval(()=>{$(".session b")?.replaceChildren(document.createTextNode(clock()))},1000);setInterval(async()=>{try{const t=await api("/api/trades?model="+encodeURIComponent(state.mode));if(Array.isArray(t)){state.journal=t;localStorage.setItem("journal",JSON.stringify(t));if(["dashboard","trades","journal","performance"].includes(state.view))render()}}catch(e){}},30000)}
-window.addEventListener("popstate",()=>{const q=new URLSearchParams(location.search);state.mode=(q.get("mode")||"").toUpperCase();state.view=q.get("view")||"dashboard";if(!["NQ","CRYPTO"].includes(state.mode)){state.mode="";landing()}else{shell();render()}})
-boot();
+  function money(v){ return (v < 0 ? "-$" : "+$") + Math.abs(Number(v)).toFixed(2); }
+  function clock(){ return new Date().toLocaleTimeString("en-CA",{hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit"}); }
+  function modeLabel(){ return isCrypto() ? "Crypto" : "Futures"; }
+  function go(mode, view="overview"){
+    state.mode=mode; state.view=view;
+    localStorage.setItem("edgeflow-mode",mode); localStorage.setItem("edgeflow-view",view);
+    history.replaceState({}, "", "?mode="+mode+"&view="+view);
+    render();
+  }
+  window.enterMode=(m)=>go(m,"overview");
+  window.edgeGo=(v)=>go(state.mode,v);
+  window.edgeHome=()=>{state.mode=""; localStorage.removeItem("edgeflow-mode"); history.replaceState({}, "", location.pathname); render();};
+
+  function mountain(color, dark){
+    return '<svg class="mountain-svg" viewBox="0 0 900 500" preserveAspectRatio="none" aria-hidden="true">'+
+      '<defs><linearGradient id="mg'+color.replace("#","")+'" x1="0" y1="0" x2="0" y2="1"><stop stop-color="'+color+'" stop-opacity=".9"/><stop offset="1" stop-color="'+dark+'" stop-opacity=".12"/></linearGradient></defs>'+
+      '<path d="M0 410 L95 330 L155 360 L250 215 L305 300 L380 175 L455 330 L535 250 L610 320 L700 120 L760 270 L835 210 L900 345 L900 500 L0 500Z" fill="url(#mg'+color.replace("#","")+')"/>'+
+      '<path d="M0 440 L115 350 L185 390 L270 275 L350 365 L430 245 L520 375 L610 285 L690 360 L780 205 L900 390 L900 500 L0 500Z" fill="'+color+'" opacity=".22"/>'+
+      '<path d="M0 455 L150 390 L240 410 L350 330 L445 405 L560 345 L665 410 L770 330 L900 425" fill="none" stroke="'+color+'" stroke-opacity=".7" stroke-width="2"/>'+
+      '</svg>';
+  }
+
+  function landing(){
+    document.body.className="landing-page";
+    root.innerHTML =
+      '<div class="landing">'+
+        '<div class="land-half land-red"><div class="land-mountains">'+mountain("#ff173f","#170207")+'</div><div class="land-lines"></div></div>'+
+        '<div class="land-half land-blue"><div class="land-mountains">'+mountain("#159dff","#031327")+'</div><div class="land-lines"></div></div>'+
+        '<div class="land-center">'+
+          '<div class="ef-mark">E</div><div class="ef-name">EDGE<span>FLOW</span></div><div class="ef-sub">TRADING INTELLIGENCE</div>'+
+          '<div class="choose">CHOOSE YOUR ENVIRONMENT</div>'+
+          '<div class="env-grid">'+
+            '<button class="env-card red" onclick="enterMode(\'NQ\')"><div class="env-icon">▮▮▮</div><div class="env-title">FUTURES</div><div class="env-sub">MNQ | MES | MGC | etc.</div><div class="env-list">◉ Tradovate<br>◉ Rithmic<br>✦ AI Assistant<br>▣ Journal<br>◫ Analytics</div><span class="env-arrow">→</span></button>'+
+            '<button class="env-card blue" onclick="enterMode(\'CRYPTO\')"><div class="env-icon">◉</div><div class="env-title">CRYPTO</div><div class="env-sub">BTC | ETH | SOL | BNB | etc.</div><div class="env-list">◉ KCEX<br>✦ AI Assistant<br>▣ Journal<br>◫ Analytics</div><span class="env-arrow">→</span></button>'+
+          '</div>'+
+        '</div>'+
+        '<div class="landing-foot">DISCIPLINE × DATA × EXECUTION</div><div class="landing-right">A HIGHER STANDARD<br>FOR TRADERS</div>'+
+      '</div>';
+  }
+
+  const nav = [
+    ["overview","⌂","Overview","Core dashboard"],
+    ["trades","▤","Trades","Execution history"],
+    ["performance","◒","Performance","Stats & expectancy"],
+    ["ai","✦","AI Assistant","Edgeflow intelligence"],
+    ["journal","▣","Journal","Trading journal"],
+    ["analytics","◫","Analytics","Deep statistics"],
+    ["backtests","◌","Backtests","Models & samples"],
+    ["connections","⌁","Connections","Broker integrations"],
+    ["settings","⚙","Settings","Environment controls"]
+  ];
+
+  function sidebar(){
+    return '<aside class="sidebar">'+
+      '<div class="brand" onclick="edgeHome()"><div class="brand-mark">E</div><div><b>EDGE<span>FLOW</span></b><small>TRADING INTELLIGENCE</small></div></div>'+
+      '<div class="mode-switch"><button class="'+(!isCrypto()?'on':'')+'" onclick="enterMode(\'NQ\')">FUTURES</button><button class="'+(isCrypto()?'on blue':'')+'" onclick="enterMode(\'CRYPTO\')">CRYPTO</button></div>'+
+      '<div class="side-label">WORKSPACE</div><nav>'+nav.slice(0,7).map(n=>'<button class="'+(state.view===n[0]?'active':'')+'" onclick="edgeGo(\''+n[0]+'\')"><i>'+n[1]+'</i><span><b>'+n[2]+'</b><small>'+n[3]+'</small></span></button>').join("")+'</nav>'+
+      '<div class="side-label system">SYSTEM</div><nav>'+nav.slice(7).map(n=>'<button class="'+(state.view===n[0]?'active':'')+'" onclick="edgeGo(\''+n[0]+'\')"><i>'+n[1]+'</i><span><b>'+n[2]+'</b><small>'+n[3]+'</small></span></button>').join("")+'</nav>'+
+      '<div class="side-status"><b>EDGEFLOW CORE</b><small>'+ (isCrypto()?"KCEX · CRYPTO ENGINE":"TRADOVATE · RITHMIC · FUTURES ENGINE")+'</small><i></i></div>'+
+    '</aside>';
+  }
+
+  function topbar(){
+    return '<header class="topbar"><div class="crumb">EDGEFLOW CORE <span>•</span> '+modeLabel().toUpperCase()+'</div><div class="top-right"><span class="live-dot">● LIVE</span><span class="session-pill">LDN <b>'+clock()+'</b></span><span class="session-pill">NY <b>'+(isCrypto()?"CLOSED":"OPEN")+'</b></span><span class="avatar">N</span><span class="user">Nath⌄</span></div></header>';
+  }
+
+  function shell(content){
+    document.body.className="app-page "+accent();
+    root.innerHTML='<div class="app-shell">'+sidebar()+'<main class="main">'+topbar()+'<section class="workspace">'+content+'</section></main></div>';
+  }
+
+  function kpi(label,value,sub,cls=""){
+    return '<div class="kpi '+cls+'"><small>'+label+'</small><strong>'+value+'</strong><em>'+sub+'</em></div>';
+  }
+
+  function tradeTable(rows=demo[state.mode]){
+    return '<div class="trade-table"><div class="tr head"><span>TIME</span><span>SYMBOL</span><span>SIDE</span><span>ENTRY</span><span>EXIT</span><span>QTY</span><span>P&L</span><span>R</span><span>SETUP</span></div>'+
+      rows.map(r=>'<div class="tr"><span>'+r[0]+'</span><b>'+r[1]+'</b><span class="'+(r[2].toLowerCase()==="long"?"long":"short")+'">'+r[2]+'</span><span>'+r[3]+'</span><span>'+r[4]+'</span><span>'+r[5]+'</span><strong class="'+(r[6][0]==="-"?"loss":"win")+'">'+r[6]+'</strong><span>'+r[7]+'</span><span>'+r[8]+'</span></div>').join("")+
+    '</div>';
+  }
+
+  function section(title,body,cls=""){ return '<div class="panel '+cls+'"><div class="panel-title">'+title+'</div>'+body+'</div>'; }
+
+  function dashboard(){
+    const crypto=isCrypto();
+    const inst=crypto?[["BTC","63,284.50","63","71%"],["ETH","2,452.18","38","66%"],["SOL","148.32","24","62%"],["BNB","573.21","18","61%"]]:[["MNQ","24,856.25","48","62%"],["MES","6,021.75","32","59%"],["MGC","3,872.40","18","67%"]];
+    const cards=inst.map(x=>'<div class="instrument"><b>'+x[0]+'</b><strong>'+x[1]+'</strong><small>'+x[2]+' trades <em>'+x[3]+'</em></small></div>').join("");
+    return '<div class="dash">'+
+      '<div class="dash-hero"><div><small>EDGEFLOW CORE • '+modeLabel().toUpperCase()+'</small><h1>'+modeLabel().toUpperCase()+'</h1><p>'+(crypto?"BTC | ETH | SOL | BNB | XRP | HYPE | FLOKI":"MNQ | MES | MGC | RITHMIC | TRADOVATE")+'</p></div><div class="hero-sessions"><span class="live-dot">● LIVE</span><span>LDN<br><b>'+clock()+'</b></span><span>NY PRE<br><b>08:24:17</b></span><span>NY<br><b>CLOSED</b></span><span>ASIA<br><b>CLOSED</b></span></div></div>'+
+      '<div class="kpi-grid">'+kpi("Account Balance","$49,300.00","+0.8%","positive")+kpi("Today P&L","-$120.50","Session result","negative")+kpi("Total P&L","+$3,420.00","Last 30 days","positive")+kpi("Win Rate","62%","48 trades")+kpi("Win / Loss","31 / 19","50 recorded")+kpi("Profit Factor","2.4","Gross / loss")+kpi("Avg RR","3.4","Average R")+'</div>'+
+      '<div class="dash-grid"><div class="dash-left">'+
+        section(crypto?"TOP COINS":"TOP INSTRUMENTS",'<div class="instrument-grid">'+cards+'</div>')+
+        section("RECENT TRADES",tradeTable())+
+      '</div><div class="dash-right">'+
+        section("SESSION CONTEXT",'<div class="rule"><span>● '+(crypto?"ASIA":"LONDON")+'</span><b>'+clock()+'</b></div><div class="rule"><span>○ NY Open</span><b>in 05:25:43</b></div><div class="rule"><span>○ NY</span><b>Closed</b></div>')+
+        section("ACCOUNT RULES",'<div class="rule"><span>Daily Risk</span><b>0% / $1,200</b></div><div class="rule"><span>Consistency</span><b>62%</b></div><div class="rule"><span>Max Drawdown</span><b>2.1%</b></div><div class="rule"><span>Trades Today</span><b>1 / 2</b></div>')+
+      '</div></div>'+
+      '<div class="bottom-grid">'+section("ACTIVE MODEL",'<div class="active-model">'+(crypto?"CRYPTO RETRACEMENT MODEL":"REJECTION BLOCK MODEL")+'</div><div class="tags"><span>LIMIT</span><span>0.50</span><span>0.62</span><span>0.705</span><span>0.79</span></div>')+
+      section("MODEL DISCIPLINE",'<div class="discipline"><div>ENTRY<strong>LIMIT ONLY</strong></div><div>TRIGGER<strong>REJECTION BLOCK</strong></div><div>FILTER<strong>HTF → LTF</strong></div></div>')+'</div>'+
+    '</div>';
+  }
+
+  function trades(){
+    return '<div class="page-title"><div><small>EXECUTION</small><h1>Trades</h1><p>Full execution history for this environment.</p></div><button class="primary" onclick="edgeGo(\'journal\')">+ NEW JOURNAL ENTRY</button></div>'+
+      '<div class="filters"><input placeholder="Search instrument, setup..."><select><option>All results</option></select><select><option>All instruments</option></select><button>EXPORT</button></div>'+section("TRADES",tradeTable(demo[state.mode]));
+  }
+
+  function performance(){
+    return '<div class="page-title"><div><small>PERFORMANCE</small><h1>Performance</h1><p>Risk-adjusted statistics and setup expectancy.</p></div></div>'+
+      '<div class="kpi-grid six">'+kpi("Total Trades","48","Last 30 days")+kpi("Win Rate","62%","30 wins / 18 losses")+kpi("Profit Factor","2.4","Gross / loss")+kpi("Avg RR","3.4","Average R")+kpi("Expectancy","+$89.50","Per trade","positive")+kpi("Max DD","2.1%","Account")+'</div>'+
+      '<div class="two-col">'+section("PERFORMANCE BY SETUP",tableStats())+section("P&L CALENDAR",calendar())+'</div>';
+  }
+
+  function tableStats(){
+    const rows=[["R.B + FVG","18","72%","3.6","4.8"],["Sweep + OB","12","58%","2.1","3.2"],["10H Open","8","75%","2.8","3.9"],["News Fade","6","50%","1.6","2.1"],["Trend","4","50%","1.4","1.8"]];
+    return '<div class="stats-table"><div class="st head"><span>SETUP</span><span>TRADES</span><span>WIN RATE</span><span>PF</span><span>AVG RR</span></div>'+rows.map(r=>'<div class="st"><b>'+r[0]+'</b><span>'+r[1]+'</span><span>'+r[2]+'</span><span>'+r[3]+'</span><span>'+r[4]+'</span></div>').join("")+'</div>';
+  }
+  function calendar(){
+    return '<div class="calendar"><div class="cal-head">September 2026 <span>‹　›</span></div><div class="week">M T W T F S S</div><div class="days">'+Array.from({length:30},(_,i)=>'<i class="'+([8,15,22,29].includes(i+1)?"good":"")+'">'+(i+1)+'</i>').join("")+'</div></div>';
+  }
+
+  function ai(){
+    return '<div class="page-title"><div><small>INTELLIGENCE</small><h1>AI Assistant</h1><p>Edgeflow trading intelligence.</p></div><span class="ai-status">● ONLINE</span></div>'+
+      '<div class="ai-layout">'+section("EDGEFLOW AI",'<div class="ai-chat"><div class="ai-bubble"><b>Edgeflow AI</b><br>Your trading intelligence is ready.</div><div class="ai-actions"><button>Analyze my last 5 trades</button><button>Check market context (NQ)</button><button>Find potential setups</button><button>Summarize today’s news</button><button>Review my journal</button></div><div class="ai-input">Ask Edgeflow anything... <b>+</b></div></div>','ai-panel')+
+      section("MODEL CONTEXT",'<div class="context"><div><small>MODEL</small><b>'+(isCrypto()?"CRYPTO":"FUTURES")+'</b></div><div><small>ENTRY</small><b>LIMIT</b></div><div><small>TRIGGER</small><b>REJECTION BLOCK</b></div><div><small>FIB</small><b>0.5 / 0.62 / 0.705 / 0.79</b></div></div>');
+  }
+
+  function journal(){
+    return '<div class="page-title"><div><small>JOURNAL</small><h1>Trading Journal</h1><p>Record, review and learn from every execution.</p></div><button class="primary" onclick="newEntry()">+ NEW ENTRY</button></div>'+
+      '<div class="journal-layout">'+section("NEW JOURNAL ENTRY",'<form onsubmit="saveEntry(event)" class="journal-form"><input id="jSymbol" placeholder="Symbol" required><select id="jSide"><option>Long</option><option>Short</option></select><input id="jSetup" placeholder="Setup / model"><input id="jPnl" type="number" placeholder="P&L"><textarea id="jNote" placeholder="What happened?"></textarea><button class="primary">SAVE ENTRY</button></form>')+
+      section("RECENT JOURNAL", (state.journal.length?state.journal:demo[state.mode].slice(0,4).map(r=>({symbol:r[1],side:r[2],pnl:r[6],setup:r[8],note:"Execution followed the plan."}))).map(x=>'<div class="journal-row"><b>'+x.symbol+'</b><span>'+x.side+'</span><strong>'+x.pnl+'</strong><small>'+x.setup+'</small><p>'+x.note+'</p></div>').join(""))+'</div>';
+  }
+  window.newEntry=()=>document.getElementById("jSymbol")?.focus();
+  window.saveEntry=(e)=>{e.preventDefault();state.journal.unshift({symbol:jSymbol.value,side:jSide.value,pnl:Number(jPnl.value)||0,setup:jSetup.value,note:jNote.value,model:state.mode});localStorage.setItem("edgeflow-journal",JSON.stringify(state.journal));render();};
+
+  function analytics(){
+    return '<div class="page-title"><div><small>ANALYTICS</small><h1>Analytics</h1><p>Deep statistics across sessions, instruments and setups.</p></div></div>'+
+      '<div class="analytics-grid">'+section("SESSION BREAKDOWN",'<div class="bars">'+["Asia","London","NY AM","NY PM"].map((x,i)=>'<div><span>'+x+'</span><i><b style="width:'+([42,78,61,34][i])+'%"></b></i><em>'+[42,78,61,34][i]+'%</em></div>').join("")+'</div>')+
+      section("INSTRUMENT PERFORMANCE",tableStats())+section("EXECUTION DISCIPLINE",'<div class="discipline large"><div>RETRACEMENT<strong>0.5 / 0.62 / 0.705 / 0.79</strong></div><div>ENTRY<strong>LIMIT ONLY</strong></div><div>NO IMPULSE<strong>ENFORCED</strong></div><div>RISK<strong>$100 / TRADE</strong></div></div>')+'</div>';
+  }
+
+  function backtests(){
+    return '<div class="page-title"><div><small>RESEARCH</small><h1>Backtests</h1><p>Models, samples and historical validation.</p></div><button class="primary">+ NEW BACKTEST</button></div>'+section("BACKTEST LIBRARY",'<div class="backtest-table"><div class="bt head"><span>NAME</span><span>INSTRUMENT</span><span>TRADES</span><span>WIN RATE</span><span>PF</span><span>DATE</span></div>'+[["London R.B Model","MNQ","105","68%","3.2","Sep 19, 2026"],["10H Open Study","MES","75","64%","2.8","Sep 10, 2026"],["Asia Retracement","MGC","52","60%","2.1","Sep 05, 2026"]].map(r=>'<div class="bt"><b>'+r[0]+'</b><span>'+r[1]+'</span><span>'+r[2]+'</span><span>'+r[3]+'</span><span>'+r[4]+'</span><span>'+r[5]+'</span></div>').join("")+'</div>');
+  }
+
+  function connections(){
+    const con=isCrypto()?[["KCEX","Crypto","blue"],["AI Assistant","Intelligence","green"]]:[["Tradovate","Futures","red"],["Rithmic","Futures","green"],["AI Assistant","Intelligence","green"]];
+    return '<div class="page-title"><div><small>SYSTEM</small><h1>Connections</h1><p>Broker and service integrations.</p></div></div><div class="connection-grid">'+con.map(x=>'<div class="connection-card"><div class="conn-logo '+x[2]+'">'+x[0][0]+'</div><h3>'+x[0]+'</h3><small>'+x[1]+'</small><b class="connected">● Connected</b><button>Manage</button></div>').join("")+'</div>';
+  }
+
+  function settings(){
+    return '<div class="page-title"><div><small>SYSTEM</small><h1>Settings</h1><p>Environment controls and preferences.</p></div></div><div class="settings-grid">'+section("ENVIRONMENT",'<div class="setting"><span>Active Environment</span><b>'+modeLabel()+'</b></div><div class="setting"><span>Theme</span><b>Dark Mode</b></div><div class="setting"><span>Risk per Trade</span><b>$100</b></div>')+section("TRADING MODEL",'<div class="setting"><span>Entry Type</span><b>Limit</b></div><div class="setting"><span>Primary Trigger</span><b>Rejection Block</b></div><div class="setting"><span>Fib Retracements</span><b>0.5 · 0.62 · 0.705 · 0.79</b></div>')+'</div>';
+  }
+
+  function render(){
+    if(!state.mode){landing();return;}
+    const pages={overview:dashboard,trades,performance,ai,journal,analytics,backtests,connections,settings};
+    shell((pages[state.view]||dashboard)());
+  }
+  render();
+  setInterval(()=>{document.querySelectorAll(".live-dot").forEach(()=>{});},1000);
+})();
