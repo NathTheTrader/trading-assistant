@@ -24,7 +24,7 @@ jobs:
           const app=fs.readFileSync("edgeflow-v3/app.js","utf8");
           new Function(app);
           const html=fs.readFileSync("index.html","utf8");
-          for(const ref of ["./edgeflow-v3/styles.css?v=40","./edgeflow-v3/reference.css?v=40","./edgeflow-v3/app.js?v=40"]){
+          for(const ref of ["./edgeflow-v3/styles.css?v=41","./edgeflow-v3/reference.css?v=41","./edgeflow-v3/app.js?v=41"]){
             if(!html.includes(ref)) throw new Error("Missing frontend asset reference: "+ref);
           }
           console.log("Frontend JavaScript and asset references OK");
@@ -52,6 +52,6 @@ jobs:
           if(!app.includes('state.mode==="NQ"')||!app.includes('state.mode==="CRYPTO"')) fail("Mode isolation checks missing");
           if(!app.includes('function instrumentCardsZero')) fail("Disconnected dashboard empty state missing");
           if(css.includes("filter:blur") && css.includes(".app-page:before")) console.log("Note: scoped visual blur rules remain elsewhere; production background override is V40.");
-          if(!html.includes('edgeflow-build')||!html.includes('edgeflow-v40')) fail("Current build marker missing");
+          if(!html.includes('edgeflow-build')||!html.includes('edgeflow-v41')) fail("Current build marker missing");
           console.log("EdgeFlow invariants OK");
           NODE
