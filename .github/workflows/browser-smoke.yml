@@ -98,7 +98,7 @@ jobs:
             await page.waitForSelector("#aiInput");
             await page.locator("#aiInput").fill("Smoke test Futures");
             await page.locator("#aiSend").click();
-            await page.waitForSelector(".ai-message.jarvis:not(.loading)");
+            await page.waitForFunction(()=>document.querySelector("#aiMessages")?.innerText.includes("Smoke JARVIS NQ"),null,{timeout:10000});
             await assert((await page.locator(".ai-messages").innerText()).includes("Smoke JARVIS NQ"),"Futures JARVIS response missing");
 
             await page.goto(base+"?mode=CRYPTO&view=overview",{waitUntil:"domcontentloaded"});
@@ -124,7 +124,7 @@ jobs:
             await noFatal("crypto-ai");
             await page.locator("#aiInput").fill("Smoke test Crypto");
             await page.locator("#aiSend").click();
-            await page.waitForSelector(".ai-message.jarvis:not(.loading)");
+            await page.waitForFunction(()=>document.querySelector("#aiMessages")?.innerText.includes("Smoke JARVIS CRYPTO"),null,{timeout:10000});
             await assert((await page.locator(".ai-messages").innerText()).includes("Smoke JARVIS CRYPTO"),"Crypto JARVIS response missing");
 
             await page.screenshot({path:"/tmp/edgeflow-artifacts/edgeflow-production-final.png",fullPage:true});
