@@ -112,6 +112,27 @@
     state.journal.unshift({id:"j-"+Date.now(),symbol:f("jSymbol").value.trim().toUpperCase(),side:f("jSide").value,pnl:Number(f("jPnl").value)||0,setup:f("jSetup").value||"R.B",grade:f("jGrade").value,note:f("jNote").value||"Execution reviewed.",date:f("jDate").value,time:f("jTime").value,entry:f("jEntry").value,exit:f("jExit").value,qty:f("jQty").value,rr:f("jRR").value,session:f("jSession").value,screenshot});
     localStorage.setItem(journalKey(state.mode),JSON.stringify(state.journal));render();
   };
+  window.jarvisPreview=e=>{
+    const file=e.target.files&&e.target.files[0], box=document.getElementById("jarvis-preview");
+    if(!file||!box)return;
+    const url=URL.createObjectURL(file);
+    box.innerHTML='<img src="'+url+'" alt="Trade screenshot"><span>'+esc(file.name)+'</span>';
+    window.__jarvisImageFile=file;
+    const st=document.getElementById("jarvisStatus"); if(st)st.textContent="IMAGE LOADED";
+  };
+  window.jarvisAnalyze=()=>{
+    const st=document.getElementById("jarvisStatus");
+    const note=document.getElementById("jarvisNote");
+    if(!window.__jarvisImageFile){if(st)st.textContent="UPLOAD IMAGE FIRST";return}
+    if(st)st.textContent="VISION ENGINE REQUIRED";
+    if(note)note.textContent="The screenshot is loaded. The deployed GitHub Pages version needs a connected vision API to actually interpret chart pixels. Once connected, Jarvis will extract the trade fields and write the journal entry automatically.";
+  };
+  window.jarvisSendToJournal=()=>{
+    const file=window.__jarvisImageFile;
+    if(!file){alert("Upload a trade screenshot first.");return}
+    edgeGo("journal");
+    setTimeout(()=>{openJournalForm();const input=document.getElementById("jScreenshot");if(input){try{const dt=new DataTransfer();dt.items.add(file);input.files=dt.files}catch(_){}}},80);
+  };
   window.exportJournal=()=>{
     const payload={exportedAt:new Date().toISOString(),environment:d().label,environmentKey:state.mode,entries:state.journal};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
@@ -209,8 +230,28 @@
       '<div class="kpis six">'+kpi("Total Trades","48","Last 30 days")+kpi("Win Rate","62%","30 / 18")+kpi("Profit Factor","2.4","Gross / loss")+kpi("Avg RR","3.4","Average R")+kpi("Expectancy","+$89.50","Per trade","positive")+kpi("Max Drawdown","2.1%","Account")+'</div><div class="two-col">'+panel("PERFORMANCE BY SETUP",statsTable())+panel("P&L CALENDAR",calendar())+'</div>';
   }
   function ai(){
-    return title("INTELLIGENCE","AI Assistant","Edgeflow trading intelligence.",'<span class="ai-online">● ONLINE</span>')+
-      '<div class="ai-grid">'+panel("EDGEFLOW AI",'<div class="ai-chat"><div class="ai-welcome"><b>Edgeflow AI</b><small>Your trading intelligence.</small></div><div class="ai-actions">'+["Analyze my last 5 trades","Check market context (NQ)","Find potential setups","Summarize today’s news","Review my journal"].map(x=>'<button>'+x+' <span>›</span></button>').join("")+'</div><div class="ai-input">Ask Edgeflow anything... <b>↗</b></div></div>','ai-panel')+panel("MODEL CONTEXT",'<div class="context-grid"><div><small>ENVIRONMENT</small><b>'+d().label+'</b></div><div><small>ENTRY</small><b>LIMIT</b></div><div><small>TRIGGER</small><b>REJECTION BLOCK</b></div><div><small>RETRACE</small><b>0.50 · 0.62 · 0.705 · 0.79</b></div></div>')+'</div>';
+    return title("INTELLIGENCE","JARVIS","Trading intelligence + visual trade analysis.",'<span class="ai-online">● ONLINE</span>')+
+      '<div class="jarvis-layout">'+
+        '<section class="panel jarvis-hero">'+
+          '<div class="jarvis-orb">E</div><div><small>EDGEFLOW JARVIS</small><h2>Visual Trade Intelligence</h2><p>Send a chart or trade screenshot. Jarvis can structure the information for your journal.</p></div>'+
+        '</section>'+
+        '<section class="panel jarvis-upload">'+
+          '<div class="panel-head"><span>TRADE VISION</span><b>SCREENSHOT → JOURNAL</b></div>'+
+          '<div class="jarvis-drop" id="jarvisDrop">'+
+            '<div class="jarvis-upload-icon">⌁</div><strong>DROP YOUR TRADE SCREENSHOT</strong><small>Chart, TradingView, execution or result screenshot</small>'+
+            '<input id="jarvisImage" type="file" accept="image/*" onchange="jarvisPreview(event)">'+
+          '</div>'+
+          '<div id="jarvis-preview" class="jarvis-preview"></div>'+
+          '<div class="jarvis-actions"><button class="primary" onclick="jarvisAnalyze()">ANALYZE WITH JARVIS</button><button onclick="edgeGo(\'journal\')">OPEN JOURNAL</button></div>'+
+        '</section>'+
+        '<section class="panel jarvis-result">'+
+          '<div class="panel-head"><span>JARVIS EXTRACTION</span><b id="jarvisStatus">WAITING FOR IMAGE</b></div>'+
+          '<div id="jarvisFields" class="jarvis-fields"><div><small>SYMBOL</small><b>—</b></div><div><small>SIDE</small><b>—</b></div><div><small>ENTRY</small><b>—</b></div><div><small>EXIT / TP</small><b>—</b></div><div><small>RR</small><b>—</b></div><div><small>SETUP</small><b>—</b></div><div><small>GRADE</small><b>—</b></div><div><small>SESSION</small><b>—</b></div></div>'+
+          '<div id="jarvisNote" class="jarvis-note">Jarvis will generate the execution note here after the vision engine is connected.</div>'+
+          '<button class="primary jarvis-journal-btn" onclick="jarvisSendToJournal()">SEND TO JOURNAL</button>'+
+        '</section>'+
+        '<section class="panel"><div class="panel-head"><span>MODEL CONTEXT</span></div><div class="context-grid"><div><small>ENVIRONMENT</small><b>'+d().label+'</b></div><div><small>ENTRY</small><b>LIMIT</b></div><div><small>TRIGGER</small><b>REJECTION BLOCK</b></div><div><small>RETRACE</small><b>0.50 · 0.62 · 0.705 · 0.79</b></div></div></section>'+
+      '</div>';
   }
   function journal(){
     const entries=state.journal;
