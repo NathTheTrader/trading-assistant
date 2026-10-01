@@ -9,6 +9,7 @@ import multer from "multer";
 import AdmZip from "adm-zip";
 import { createHash } from "node:crypto";
 import os from "node:os";
+import { fileURLToPath } from "node:url";
 
 const app = express();
 app.use(cors({ origin: process.env.FRONTEND_ORIGIN || true }));
@@ -16,6 +17,14 @@ app.use(express.json({ limit: "15mb" }));
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 90 * 1024 * 1024 } });
 
 const PORT = Number(process.env.PORT || 3000);
+const BACKEND_DIR = path.dirname(fileURLToPath(import.meta.url));
+const FRONTEND_DIR = path.resolve(BACKEND_DIR, "..");
+
+// Edgeflow is deployed from the backend service on Railway. Serve the actual
+// frontend from the repository root so the public Railway domain is a real site,
+// not only an API service.
+app.get("/", (req,res) => res.sendFile(path.join(FRONTEND_DIR, "index.html")));
+app.get("/voice-coach.js", (req,res) => res.sendFile(path.join(FRONTEND_DIR, "voice-coach.js")));
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "https://naththetrader.github.io";
 function requirePrivateRequest(req,res,next){
   const accessKey=process.env.EDGEFLOW_ACCESS_KEY || "";
