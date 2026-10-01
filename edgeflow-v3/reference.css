@@ -611,3 +611,80 @@ body.landing-page .env-cards{display:flex;justify-content:center;gap:22px;margin
   .journal-jarvis-grid{grid-template-columns:1fr}
   .journal-jarvis-upload{border-right:0;border-bottom:1px solid #102738}
 }
+
+/* V26 — GLOBAL TYPOGRAPHY PASS
+   The interface was too compressed. Increase readable text across every workspace
+   while keeping the dense EdgeFlow layout. */
+.app-page{
+  --font-ui:11px;
+  --font-label:10px;
+  --font-meta:9px;
+}
+.app-page,.app-page button,.app-page input,.app-page select,.app-page textarea{
+  font-size:var(--font-ui);
+}
+.app-page .sidebar .brand b{font-size:19px}
+.app-page .sidebar .brand small{font-size:8px}
+.app-page .mode-switch button{font-size:10px;height:38px}
+.app-page .side-caption{font-size:9px}
+.app-page nav b{font-size:11px}
+.app-page nav small{font-size:8px}
+.app-page nav button{min-height:47px;padding:9px 10px}
+.app-page .ni{font-size:14px}
+.app-page .engine b{font-size:9px}
+.app-page .engine small{font-size:8px}
+.app-page .crumb{font-size:9px}
+.app-page .live,.app-page .session{font-size:8px}
+.app-page .user{font-size:9px}
+.app-page .page-title small{font-size:9px}
+.app-page .page-title h1{font-size:38px}
+.app-page .page-title p{font-size:10px}
+.app-page .primary{font-size:10px;padding:12px 16px}
+.app-page .dash-banner small{font-size:9px}
+.app-page .dash-banner h1{font-size:36px}
+.app-page .dash-banner p{font-size:9px}
+.app-page .dash-sessions>span:not(.live){font-size:8px}
+.app-page .kpi small{font-size:8px}
+.app-page .kpi strong{font-size:20px}
+.app-page .kpi em{font-size:8px}
+.app-page .panel-head{font-size:9px;height:23px}
+.app-page .asset b{font-size:10px}
+.app-page .asset strong{font-size:19px}
+.app-page .asset small{font-size:8px}
+.app-page .row{font-size:9px}
+.app-page .row b{font-size:10px}
+.app-page .row-head{font-size:8px}
+.app-page .session-list>div,.app-page .rules>div,.app-page .setting{font-size:9px}
+.app-page .model-name{font-size:18px}
+.app-page .chips i{font-size:8px}
+.app-page .filters input,.app-page .filters select,.app-page .filters button{font-size:9px}
+.app-page .stats .stat{font-size:9px}
+.app-page .calendar header{font-size:16px}
+.app-page .days i{font-size:9px}
+.app-page .ai-actions button{font-size:10px}
+.app-page .ai-input{font-size:10px}
+.app-page .journal-form input,.app-page .journal-form select,.app-page .journal-form textarea{font-size:11px}
+.app-page .journal-list b{font-size:11px}
+.app-page .journal-list p,.app-page .journal-list small{font-size:9px}
+.app-page .bars>div{font-size:9px}
+.app-page .bt-row{font-size:9px}
+.app-page .connection h3{font-size:18px}
+.app-page .connection small,.app-page .connection>b{font-size:9px}
+.app-page .settings-grid .panel{font-size:10px}
+.app-page .journal-jarvis .panel-head{font-size:9px}
+.app-page .journal-jarvis .jarvis-drop strong{font-size:11px}
+.app-page .journal-jarvis .jarvis-drop small,
+.app-page .journal-jarvis .jarvis-note{font-size:10px}
+.app-page .journal-jarvis .jarvis-actions button,
+.app-page .journal-jarvis .jarvis-journal-btn{font-size:10px}
+.app-page .journal-jarvis-result .jarvis-fields small{font-size:8px}
+.app-page .journal-jarvis-result .jarvis-fields b{font-size:11px}
+
+/* New Trade Entry modal: readable, not microscopic. */
+.app-page .journal-modal .journal-form label,
+.app-page .journal-modal label{font-size:10px}
+.app-page .journal-modal input,
+.app-page .journal-modal select,
+.app-page .journal-modal textarea{font-size:12px;line-height:1.35}
+.app-page .journal-modal .modal-title{font-size:20px}
+.app-page .journal-modal .modal-subtitle{font-size:10px}
