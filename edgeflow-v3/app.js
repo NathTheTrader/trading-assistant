@@ -45,10 +45,16 @@ function modeName(){return state.mode==="CRYPTO"?"Crypto":"Futures"}
 function accent(){return state.mode==="CRYPTO"?"blue":"red"}
 function setRoute(v=state.view){const q="?mode="+encodeURIComponent(state.mode)+"&view="+encodeURIComponent(v);history.pushState({},'',q);localStorage.setItem(MODE_KEY,state.mode);localStorage.setItem(VIEW_KEY,v)}
 function landing(){
- document.body.innerHTML='<div class="landing"><div class="landing-grid"></div>'+
- '<div class="env futures"><div class="mountains">'+mountain("#ff163f","#26030b")+'</div><div class="env-content"><div><h2>FUTURES</h2><p>MNQ · MES · MGC · RITHMIC · TRADOVATE</p><button class="env-btn" onclick="enterMode(\'NQ\')">ENTER FUTURES <span>→</span></button></div></div></div>'+
- '<div class="env crypto"><div class="mountains">'+mountain("#1598ff","#03162b")+'</div><div class="env-content"><div><h2>CRYPTO</h2><p>BTC · ETH · SOL · BNB · XRP · KCEX</p><button class="env-btn" onclick="enterMode(\'CRYPTO\')">ENTER CRYPTO <span>→</span></button></div></div></div>'+
- '<div class="landing-divider"></div><div class="landing-center"><div class="logo-mark">'+logo("#1598ff")+'</div><div class="logo">EDGE<span>FLOW</span></div><div class="tagline">TRADING INTELLIGENCE</div><div class="choose">CHOOSE YOUR ENVIRONMENT</div></div><div class="landing-footer">DISCIPLINE × DATA × EXECUTION</div></div>';
+ document.body.className="landing-page";
+ document.body.innerHTML='<div class="landing-v4">'+
+ '<div class="landing-side landing-futures"><div class="land-art">'+mountain("#ff183f","#160207")+'</div><div class="land-glow"></div></div>'+
+ '<div class="landing-side landing-crypto"><div class="land-art">'+mountain("#159cff","#031329")+'</div><div class="land-glow"></div></div>'+
+ '<div class="landing-center-v4"><div class="landing-logo-v4">'+logo("#159cff")+'</div><div class="landing-brand-v4">EDGE<span>FLOW</span></div><div class="landing-tag-v4">TRADING INTELLIGENCE</div><div class="landing-choice">CHOOSE YOUR ENVIRONMENT</div>'+
+ '<div class="environment-cards">'+
+ '<div class="environment-card futures-card"><div class="env-icon">▮▮▮</div><div class="env-card-title">FUTURES</div><div class="env-card-sub">MNQ | MES | MGC | etc.</div><div class="env-features"><span>●</span> Tradovate<span>●</span> Rithmic<span>✦</span> AI Assistant<span>▣</span> Journal<span>◫</span> Analytics</div><button onclick="enterMode(\'NQ\')">→</button></div>'+
+ '<div class="environment-card crypto-card"><div class="env-icon">◉</div><div class="env-card-title">CRYPTO</div><div class="env-card-sub">BTC | ETH | SOL | BNB | etc.</div><div class="env-features"><span>●</span> KCEX<span>✦</span> AI Assistant<span>▣</span> Journal<span>◫</span> Analytics</div><button onclick="enterMode(\'CRYPTO\')">→</button></div>'+
+ '</div></div>'+
+ '<div class="landing-motto">DISCIPLINE × DATA × EXECUTION</div><div class="landing-standard">A HIGHER STANDARD<br>FOR TRADERS</div></div>';
 }
 function mountain(a,b){return '<svg viewBox="0 0 900 400" preserveAspectRatio="none"><defs><linearGradient id="mg'+a.slice(1)+'" x1="0" y1="0" x2="0" y2="1"><stop stop-color="'+a+'" stop-opacity=".5"/><stop offset="1" stop-color="'+b+'" stop-opacity=".1"/></linearGradient></defs><path d="M0 400V315L100 255 160 305 255 155 330 275 445 80 560 260 640 185 735 305 825 220 900 300V400Z" fill="url(#mg'+a.slice(1)+' )"/><path d="M0 400V335L120 275 210 340 290 215 390 330 475 145 560 320 650 245 760 335 850 280 900 320V400Z" fill="#02070c" opacity=".78"/><path d="M0 350L130 310 230 345 330 285 440 350 540 275 640 335 760 295 900 345" fill="none" stroke="'+a+'" stroke-opacity=".35" stroke-width="2"/></svg>'}
 function logo(c){return '<svg viewBox="0 0 80 80"><path d="M18 12h43L49 25H29l-5 10h25L39 48H18l-7 20h15l6-12h19L40 68H12L27 12Z" fill="'+c+'"/><path d="M27 12 11 68h15l9-31 22-25H27Z" fill="#dff4ff" opacity=".85"/></svg>'}
