@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+<defs>
+<radialGradient id="r" cx="18%" cy="54%" r="48%"><stop offset="0" stop-color="#ff203f" stop-opacity=".62"/><stop offset=".38" stop-color="#9d1027" stop-opacity=".28"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<radialGradient id="b" cx="82%" cy="50%" r="48%"><stop offset="0" stop-color="#159dff" stop-opacity=".58"/><stop offset=".4" stop-color="#0c4f93" stop-opacity=".24"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<linearGradient id="bg" x1="0" x2="1"><stop stop-color="#13070b"/><stop offset=".48" stop-color="#02070d"/><stop offset="1" stop-color="#06111d"/></linearGradient>
+<linearGradient id="rm" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ff284c" stop-opacity=".9"/><stop offset=".55" stop-color="#55101e" stop-opacity=".72"/><stop offset="1" stop-color="#070b10"/></linearGradient>
+<linearGradient id="bm" x1="1" y1="0" x2="0" y2="1"><stop stop-color="#29aaff" stop-opacity=".9"/><stop offset=".55" stop-color="#0d4779" stop-opacity=".7"/><stop offset="1" stop-color="#070b10"/></linearGradient>
+<linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#07121b" stop-opacity="0"/><stop offset="1" stop-color="#020509" stop-opacity=".92"/></linearGradient>
+<filter id="g"><feGaussianBlur stdDeviation="5"/></filter>
+</defs>
+<rect width="1600" height="1000" fill="url(#bg)"/>
+<rect width="1600" height="1000" fill="url(#r)"/><rect width="1600" height="1000" fill="url(#b)"/>
+<path d="M0 690 70 545 125 610 190 410 255 535 315 350 370 520 430 430 505 610 570 520 650 690Z" fill="url(#rm)"/>
+<path d="M950 690 1010 550 1065 625 1125 430 1185 525 1240 350 1300 505 1360 265 1415 455 1475 170 1535 410 1600 300 1600 720Z" fill="url(#bm)"/>
+<g fill="none" stroke-linecap="round">
+<path d="M0 708 75 568 125 620 190 432 255 545 315 370 370 530 430 448 505 625" stroke="#ff3857" stroke-opacity=".5" stroke-width="3"/>
+<path d="M1000 700 1065 640 1125 452 1185 545 1240 370 1300 525 1360 285 1415 475 1475 190 1535 430 1600 320" stroke="#36b2ff" stroke-opacity=".52" stroke-width="3"/>
+</g>
+<g opacity=".32" filter="url(#g)" stroke="#ff2148" stroke-width="2"><path d="M190 520V190M315 490V120M430 585V240M85 600V280"/></g>
+<g opacity=".3" filter="url(#g)" stroke="#1ea7ff" stroke-width="2"><path d="M1125 560V250M1240 500V150M1360 430V90M1475 380V50"/></g>
+<g opacity=".35" fill="#ff3a56"><circle cx="110" cy="250" r="2"/><circle cx="270" cy="180" r="1.5"/><circle cx="420" cy="220" r="2"/><circle cx="520" cy="340" r="1.5"/></g>
+<g opacity=".35" fill="#39b4ff"><circle cx="1080" cy="250" r="1.5"/><circle cx="1190" cy="170" r="2"/><circle cx="1340" cy="210" r="1.5"/><circle cx="1510" cy="130" r="2"/></g>
+<rect y="520" width="1600" height="480" fill="url(#floor)"/>
+<g opacity=".14" fill="none"><path d="M0 780Q400 720 800 790T1600 770" stroke="#ff284c"/><path d="M0 820Q400 760 800 830T1600 810" stroke="#1da8ff"/><path d="M0 875Q400 815 800 885T1600 865" stroke="#31566e"/></g>
+<rect width="1600" height="1000" fill="#02060b" opacity=".24"/>
+</svg>
