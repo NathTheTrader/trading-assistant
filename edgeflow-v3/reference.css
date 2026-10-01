@@ -524,3 +524,25 @@ body.landing-page .env-cards{display:flex;justify-content:center;gap:22px;margin
 .modal-journal-form{padding:16px}.modal-journal-form .journal-form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.modal-journal-form label{color:#5d7586;font-size:6px;letter-spacing:.08em}.modal-journal-form input,.modal-journal-form select,.modal-journal-form textarea{width:100%;box-sizing:border-box;margin-top:5px;border:1px solid #17364a;border-radius:5px;background:#050c12;color:#dbe6eb;padding:9px;font-size:8px}.modal-journal-form textarea{resize:vertical}.modal-journal-form .journal-wide{display:block;margin-top:9px}.journal-modal-actions{display:flex;justify-content:flex-end;align-items:center;gap:7px;margin-top:12px;padding-top:11px;border-top:1px solid #102738}.journal-modal-actions span{margin-right:auto;color:#476174;font-size:6px}.journal-modal-actions button{padding:9px 12px;border:1px solid #17364a;border-radius:5px;background:#07121b;color:#91a5b3;font-size:7px}.journal-modal-actions button.primary{background:#ff1746;color:#fff;border-color:#ff1746}
 @media(max-width:900px){.journal-main{grid-template-columns:1fr}.journal-calendar-panel,.journal-history-panel{min-height:auto}.modal-journal-form .journal-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.modal-journal-form .journal-form-grid{grid-template-columns:1fr}.journal-summary{grid-template-columns:1fr 1fr}.journal-summary>div:last-child{grid-column:1/-1}}
+
+/* V20 — SIDEBAR READABILITY */
+.app-page .sidebar{width:230px;padding:16px 12px}
+.app-page .main{margin-left:230px}
+.app-page .brand{gap:10px;padding:2px 7px 17px}
+.app-page .brand-e{width:34px;height:34px;font-size:19px}
+.app-page .brand b{font-size:17px;letter-spacing:2.2px}
+.app-page .brand small{font-size:6px;letter-spacing:1.4px}
+.app-page .mode-switch{margin:0 5px 17px}
+.app-page .mode-switch button{height:34px;font-size:9px}
+.app-page .side-caption{margin:14px 7px 6px;font-size:8px;letter-spacing:1.8px}
+.app-page .side-caption.system{margin-top:18px}
+.app-page nav{gap:3px}
+.app-page nav button{min-height:43px;padding:7px 9px;gap:10px;border-radius:7px}
+.app-page .ni{width:17px;font-size:13px}
+.app-page nav b{font-size:11px;line-height:1.1}
+.app-page nav small{font-size:7px;margin-top:3px}
+.app-page .engine{left:12px;right:12px;bottom:12px;padding:10px}
+.app-page .engine b{font-size:8px;letter-spacing:1px}
+.app-page .engine small{font-size:6px;margin-top:4px}
+.app-page .engine i{right:9px;top:10px}
+@media(max-width:900px){.app-page .sidebar{display:none}.app-page .main{margin-left:0}}
