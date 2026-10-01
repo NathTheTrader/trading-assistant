@@ -46,6 +46,31 @@
   const accent=()=>crypto()?"blue":"red";
   const now=()=>new Date().toLocaleTimeString("en-CA",{hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit"});
   const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+  const setupOptions=()=>crypto()?["Key Open Sweep","HTF POI","Liquidity Sweep","Entry Location","High-RR","Other"]:["R.B + FVG","Rejection Block","Sweep + OB","10H Open","FVG","Trend"];
+  const sessionOptions=()=>crypto()?["24/7","Asia","London","NY AM","NY PM"]:["London","Asia","NY AM","NY PM"];
+  const modelLabel=()=>crypto()?"Crypto":"Futures / NQ";
+  const statsFromJournal=(entries=state.journal)=>{
+    const xs=Array.isArray(entries)?entries:[];
+    const pnls=xs.map(x=>Number(x.pnl)).filter(Number.isFinite);
+    const wins=pnls.filter(x=>x>0),losses=pnls.filter(x=>x<0);
+    const grossWin=wins.reduce((a,b)=>a+b,0),grossLoss=Math.abs(losses.reduce((a,b)=>a+b,0));
+    const rr=xs.map(x=>Number(x.rr)).filter(Number.isFinite);
+    let run=0,peak=0,maxDD=0;
+    for(const p of pnls){run+=p;peak=Math.max(peak,run);maxDD=Math.max(maxDD,peak-run);}
+    const today=new Date().toISOString().slice(0,10);
+    const todayPnl=xs.filter(x=>String(x.date||"").slice(0,10)===today).reduce((a,x)=>a+(Number(x.pnl)||0),0);
+    return {count:xs.length,wins:wins.length,losses:losses.length,winRate:xs.length?wins.length/xs.length:null,pf:grossLoss?grossWin/grossLoss:(grossWin?Infinity:null),avgRR:rr.length?rr.reduce((a,b)=>a+b,0)/rr.length:null,total:pnls.reduce((a,b)=>a+b,0),todayPnl,maxDD};
+  };
+  const pct=n=>Number.isFinite(Number(n))?Math.round(Number(n)*100)+"%":"—";
+  const rrText=n=>Number.isFinite(Number(n))?Number(n).toFixed(2):"—";
+  const money=n=>Number.isFinite(Number(n))?(Number(n)>=0?"+":"-")+"$"+Math.abs(Number(n)).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"—";
+  const setupOptionsHtml=()=>setupOptions().map(x=>"<option>"+esc(x)+"</option>").join("");
+  const sessionOptionsHtml=()=>sessionOptions().map(x=>"<option>"+esc(x)+"</option>").join("");
+  const journalRows=()=>state.journal.map(x=>[x.time||x.date||"—",String(x.symbol||"—").toUpperCase(),x.side||"—",x.entry||"—",x.exit||"—",x.qty||"—",money(Number(x.pnl)),x.rr||"—",x.setup||"—"]);
+  const futuresLiveRows=()=>{const a=liveAccount();return a.connected?(a.fills||[]).slice(-12).reverse().map(f=>[f.timestamp?new Date(f.timestamp).toLocaleTimeString("en-CA",{hour12:false}):"—",f.instrument||"—",/SELL|SHORT|S/i.test(String(f.action||f.buySell||""))?"Short":"Long",f.price!=null?Number(f.price).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"—","—",f.qty??"—","LIVE","—","TRADOVATE"]):[]};
+  const cryptoObservedRows=()=>state.kcex.events.slice(-12).reverse().map(x=>[x.time||"—",x.instrument||"—",x.direction||"—",x.price??"—","—",x.quantity??"—","DETECTED","—",x.orderType||"ORDER"]);
+  const currentRows=()=>crypto()?cryptoObservedRows().concat(state.journal.slice(0,6).map(x=>[x.time||x.date||"—",x.symbol||"—",x.side||"—",x.entry||"—",x.exit||"—",x.qty||"—",money(Number(x.pnl)),"—",x.setup||"—"])):futuresLiveRows().concat(state.journal.slice(0,6).map(x=>[x.time||x.date||"—",x.symbol||"—",x.side||"—",x.entry||"—",x.exit||"—",x.qty||"—",money(Number(x.pnl)),x.rr||"—",x.setup||"—"]));
+
   function go(mode,view="overview"){
     if(!["NQ","CRYPTO"].includes(mode)) return;
     if(!["overview","trades","performance","ai","journal","analytics","backtests","connections","settings"].includes(view)) view="overview";
