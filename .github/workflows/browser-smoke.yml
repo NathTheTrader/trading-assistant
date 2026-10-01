@@ -59,6 +59,12 @@ jobs:
             const visible=()=>page.locator("main > .workspace:not(.hidden)").evaluateAll(xs=>xs.filter(x=>!x.hidden&&x.style.display!=="none").map(x=>x.id));
             const expectVisible=async id=>{const v=await visible();if(v.length!==1||v[0]!==id)throw new Error("Expected "+id+" visible, got "+JSON.stringify(v));};
 
+            await expectVisible("models");
+            if(await page.locator("#models").count()!==1)throw new Error("Environment gateway missing");
+            const futuresWait=page.waitForURL(url=>new URL(url).searchParams.get("mode")==="NQ",{waitUntil:"domcontentloaded"});
+            await page.locator("#models .gateway-futures").click();
+            await futuresWait;
+            await page.waitForLoadState("load").catch(()=>{});
             await expectVisible("dash");
             if(await page.locator("#dash").count()!==1)throw new Error("Futures Dashboard missing");
 
