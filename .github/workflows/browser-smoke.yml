@@ -24,14 +24,14 @@ jobs:
           url="https://naththetrader.github.io/trading-assistant/"
           for i in $(seq 1 24); do
             html="$(curl -fsSL --retry 2 --retry-delay 2 "$url" || true)"
-            if printf '%s' "$html" | grep -q 'edgeflow-build.*edgeflow-v44'; then
-              echo "GitHub Pages is serving EdgeFlow V40."
+            if printf '%s' "$html" | grep -q 'edgeflow-build.*edgeflow-v45'; then
+              echo "GitHub Pages is serving EdgeFlow V45."
               exit 0
             fi
             echo "Waiting for Pages deployment ($i/24)..."
             sleep 5
           done
-          echo "GitHub Pages did not expose EdgeFlow V40 within the wait window."
+          echo "GitHub Pages did not expose EdgeFlow V45 within the wait window."
           exit 1
 
       - name: Exercise production GitHub Pages frontend
@@ -144,6 +144,9 @@ jobs:
             }
 
 
+            await page.goto(base+"?mode=CRYPTO&view=ai",{waitUntil:"domcontentloaded"});
+            await page.waitForSelector("#aiInput");
+            await page.locator("#aiInput").fill("Smoke test Crypto");
             await page.locator("#aiSend").click();
             await page.waitForFunction(()=>document.querySelector("#aiMessages")?.innerText.includes("Smoke JARVIS CRYPTO"),null,{timeout:10000});
             await assert((await page.locator(".ai-messages").innerText()).includes("Smoke JARVIS CRYPTO"),"Crypto JARVIS response missing");
