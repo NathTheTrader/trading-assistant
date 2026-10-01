@@ -30,7 +30,8 @@
     mode: requestedMode,
     view: validViews.includes(requestedView) ? requestedView : "overview",
     journal: loadJournal(requestedMode),
-    activeBacktest: null
+    activeBacktest: null,
+    tradovate:{status:null,loading:false,lastFetch:0,error:""}
   };
   const DATA = {
     NQ: {
@@ -85,6 +86,54 @@
     localStorage.removeItem("edgeflow-journal:CRYPTO");
     location.href=location.pathname;
   };
+
+  function sessionState(){
+    const parts=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date());
+    const h=Number(parts.find(x=>x.type==="hour")?.value||0), m=Number(parts.find(x=>x.type==="minute")?.value||0);
+    const mins=h*60+m;
+    const defs=[["LONDON",180,300],["NY PRE",450,570],["NY",570,960],["ASIA",1230,1350]];
+    const fmt=n=>String(Math.floor(n/60)%24).padStart(2,"0")+":"+String(n%60).padStart(2,"0");
+    const next=(start)=>{let d=start-mins;if(d<=0)d+=1440;return d};
+    return defs.map(x=>{
+      const live=x[1]<=mins&&mins<x[2];
+      const until=live?x[2]-mins:next(x[1]);
+      return {name:x[0],live,until,label:live?"LIVE":"CLOSED",countdown:Math.floor(until/60)+"h "+String(until%60).padStart(2,"0")+"m",start:fmt(x[1]),end:fmt(x[2])};
+    });
+  }
+  async function refreshTradovateDashboard(){
+    if(state.mode!=="NQ"||state.tradovate.loading)return;
+    state.tradovate.loading=true;
+    try{
+      const response=await fetch("https://trading-assistant-production.up.railway.app/api/tradovate/status",{headers:{Accept:"application/json"}});
+      const data=await response.json();
+      if(!response.ok)throw new Error(data.error||"Tradovate status unavailable");
+      state.tradovate.status=data;
+      state.tradovate.error="";
+      state.tradovate.lastFetch=Date.now();
+    }catch(e){state.tradovate.error=String(e.message||e)}
+    finally{state.tradovate.loading=false;if(state.view==="overview"&&state.mode==="NQ")renderDashboardOnly();}
+  }
+  function liveAccount(){
+    const st=state.tradovate.status||{};
+    const a=(st.accounts||[]).find(x=>x.active)||st.accounts?.[0]||{};
+    const c=(st.cashBalances||[])[0]||{};
+    const num=(...xs)=>{for(const x of xs){const n=Number(x);if(Number.isFinite(n))return n}return 0};
+    const balance=num(a.balance,a.netLiq,a.cashBalance,c.netLiq,c.cashBalance,c.totalCashValue,c.cashBalanceValue);
+    const realized=num(a.realizedPnL,c.realizedPnL);
+    const unrealized=num(a.unrealizedPnL,c.unrealizedPnL);
+    const connected=Boolean(st.connected);
+    return {connected,balance,realized,unrealized,account:a.name||"Tradovate",positions:st.positions||[],orders:st.orders||[],fills:st.recentFills||[]};
+  }
+  function renderDashboardOnly(){
+    const el=document.querySelector(".app-page .page-content")||document.querySelector(".app-page");
+    if(!el)return;
+    const current=document.querySelector(".dash");
+    if(!current)return;
+    const wrap=document.createElement("div");
+    wrap.innerHTML=dashboard();
+    const next=wrap.firstElementChild;
+    current.replaceWith(next);
+  }
   window.setFilter=(key,value)=>{state.filters[key]=value;render()};
   window.exportTrades=()=>{const blob=new Blob([JSON.stringify(d().rows,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="edgeflow-trades.json";a.click();URL.revokeObjectURL(a.href)};
   window.saveJournal=async e=>{
@@ -246,19 +295,53 @@
   }
   function dashboard(){
     const label=d().label;
+    const sessions=sessionState();
+    const acct=liveAccount();
+    const connected=acct.connected;
+    const money=n=>"$"+Math.abs(Number(n)||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+    const signed=n=>(Number(n)||0)>=0?"+":"-";
+    const fills=acct.fills||[];
+    const today=new Date().toISOString().slice(0,10);
+    const todays=fills.filter(x=>String(x.timestamp||"").slice(0,10)===today);
+    const pnl=acct.realized;
+    const liveRows=connected?todays.slice(-6).reverse().map(f=>[
+      new Date(f.timestamp||Date.now()).toLocaleTimeString("en-CA",{hour12:false}),
+      f.instrument||"—",
+      /SELL|SHORT|S/.test(String(f.action||f.buySell||"").toUpperCase())?"Short":"Long",
+      f.price!=null?Number(f.price).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"—",
+      "—",
+      f.qty??"—",
+      "LIVE",
+      "—",
+      "Tradovate"
+    ]):[];
+    const tradeRows=connected&&liveRows.length?rows(liveRows,true):'<div class="dashboard-empty"><b>NO LIVE TRADES</b><span>Tradovate is connected. A fill will appear here automatically.</span></div>';
+    const statusText=connected?"● TRADOVATE CONNECTED":"○ TRADOVATE NOT CONNECTED";
+    const balanceText=connected?money(acct.balance):"$0.00";
+    const pnlText=connected?signed(pnl)+money(pnl):"$0.00";
+    const sessionCards=sessions.map(x=>'<span class="'+(x.live?"session-live":"session-closed")+'"><b>'+x.name+'</b><small>'+x.label+'</small><em>'+(x.live?x.start+"–"+x.end:x.countdown)+'</em></span>').join("");
     return '<div class="dash premium-dashboard">'+
       '<div class="dash-banner"><div class="dash-brand"><div class="mini-mark">E</div><div><small>EDGEFLOW CORE • '+label+'</small><h1>'+label+'</h1><p>'+(crypto()?"BTC | ETH | SOL | BNB | XRP | HYPE":"MNQ | MES | MGC | RITHMIC | TRADOVATE")+'</p></div></div>'+
-      '<div class="dash-sessions"><span class="live">● LIVE</span><span>LDN<br><b>'+now()+'</b></span><span>NY PRE<br><b>08:24:17</b></span><span>NY<br><b>CLOSED</b></span><span>ASIA<br><b>CLOSED</b></span></div></div>'+
+      '<div class="dash-sessions"><span class="live '+(connected?"":"offline")+'">'+statusText+'</span>'+sessionCards+'</div></div>'+
+      '<div class="account-state '+(connected?"connected":"offline")+'"><span>'+statusText+'</span><small>'+(connected?acct.account+" · live account data":"Connecte Tradovate dans Connections pour charger les données réelles.")+'</small><button onclick="edgeGo("connections")">CONNECTIONS</button></div>'+
       '<div class="kpis">'+
-      kpi("Account Balance","$49,300.00","+0.8%","positive")+kpi("Today P&L","-$120.50","Session result","negative")+kpi("Total P&L","+$3,420.00","Last 30 days","positive")+kpi("Win Rate","62%","48 trades")+kpi("Win / Loss","31 / 19","50 recorded")+kpi("Profit Factor","2.4","Gross / loss")+kpi("Avg RR","3.4","Average R")+
+      kpi("Account Balance",balanceText,connected?"Live Tradovate balance":"No account connected",connected?"positive":"")+
+      kpi("Today P&L",pnlText,connected?"Realized P&L":"Waiting for connection",connected?(pnl>=0?"positive":"negative"):"")+
+      kpi("Unrealized P&L",connected?signed(acct.unrealized)+money(acct.unrealized):"$0.00",connected?"Open positions":"No live data",connected?(acct.unrealized>=0?"positive":"negative"):"")+
+      kpi("Open Positions",String(acct.positions.length),connected?"Tradovate":"No account connected")+
+      kpi("Live Orders",String(acct.orders.length),connected?"Tradovate":"No account connected")+
+      kpi("Live Fills",String(acct.fills.length),connected?"Tradovate":"No account connected")+
       '</div>'+
       '<div class="dashboard-grid compact-grid"><div class="dashboard-main">'+
-      panel(crypto()?"TOP COINS":"TOP INSTRUMENTS",instrumentCards())+
-      panel("RECENT TRADES",rows())+
+      panel(crypto()?"TOP COINS":"TOP INSTRUMENTS",connected?instrumentCards():instrumentCardsZero())+
+      panel("RECENT LIVE TRADES",tradeRows)+
       '</div><aside class="dashboard-side">'+
-      panel("SESSION CONTEXT",'<div class="session-list"><div><b>● '+d().session[0]+'</b><span>'+now()+'</span></div><div><b>○ '+d().session[1]+'</b><span>in 05:25:43</span></div><div><b>○ '+d().session[2]+'</b><span>Closed</span></div></div>')+
-      panel("ACCOUNT RULES",'<div class="rules"><div><span>Daily Risk</span><b>0% / $1,200</b></div><div><span>Consistency</span><b>62%</b></div><div><span>Max Drawdown</span><b>2.1%</b></div><div><span>Trades Today</span><b>1 / 2</b></div></div>')+
+      panel("SESSION CONTEXT",'<div class="session-list">'+sessions.map(x=>'<div><b class="'+(x.live?"is-live":"")+'">● '+x.name+'</b><span>'+(x.live?x.start+"–"+x.end:x.countdown)+'</span></div>').join("")+'</div>')+
+      panel("ACCOUNT STATUS",'<div class="rules"><div><span>Connection</span><b>'+(connected?"ONLINE":"OFFLINE")+'</b></div><div><span>Account</span><b>'+esc(acct.account)+'</b></div><div><span>Positions</span><b>'+acct.positions.length+'</b></div><div><span>Orders</span><b>'+acct.orders.length+'</b></div></div>')+
       '</aside></div></div>';
+  }
+  function instrumentCardsZero(){
+    return '<div class="instrument-grid">'+d().instruments.slice(0,crypto()?4:3).map(x=>'<div class="instrument-card"><div><b>'+x+'</b><small>WAITING FOR MARKET DATA</small></div><strong>—</strong><i>NO FEED</i></div>').join("")+'</div>';
   }
 
   function title(k,t,s,button=""){return '<div class="page-title"><div><small>'+k+'</small><h1>'+t+'</h1><p>'+s+'</p></div>'+button+'</div>'}
