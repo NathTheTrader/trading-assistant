@@ -92,9 +92,9 @@ jobs:
             await page.locator("#jDate").dispatchEvent("change");
             if((await page.locator("#jDate").inputValue())!=="2026-09-16")throw new Error("Journal date cannot move forward");
             if(!await page.locator("#journalDaySelect").isVisible())throw new Error("Journal day selector missing");
-            await page.locator("#jResult").fill("WIN");
-            await page.locator("#jR").fill("+2R");
-            await page.locator("#jPnL").fill("+200");
+            await page.locator("#jResult").selectOption("WIN");
+            await page.locator("#jR").fill("2");
+            await page.locator("#jPnL").fill("200");
             await page.locator("#jContext").fill("Futures date and journal smoke test");
             await page.click("button:has-text('ENREGISTRER')");
             await page.waitForTimeout(350);
