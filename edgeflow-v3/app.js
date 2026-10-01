@@ -752,7 +752,12 @@
   }
   render();
   setInterval(()=>{
-    if(state.mode==="NQ"&&state.view==="overview"&&!state.tradovate.loading)refreshTradovateDashboard();
-    if(state.mode&&document.querySelector(".topbar")){const t=document.querySelector(".topbar");const ss=sessionState();const live=ss.find(x=>x.live);const nodes=t.querySelectorAll(".session");if(nodes.length>=4){[0,1,2,3].forEach((i)=>{const b=nodes[i].querySelector("b"),em=nodes[i].querySelector("i");if(b)b.textContent=ss[i].label;if(em)em.textContent=ss[i].countdown});}const liveEl=t.querySelector(".live");if(liveEl)liveEl.textContent="● "+(live?live.name+" LIVE":"MARKET CLOSED");}
+    if(state.mode==="NQ"&&state.view==="overview"&&!state.tradovate.loading&&(Date.now()-state.tradovate.lastFetch>5000))refreshTradovateDashboard();
+    if(state.mode&&document.querySelector(".topbar")){
+      const t=document.querySelector(".topbar"),ss=sessionState(),live=ss.find(x=>x.live);
+      const nodes=t.querySelectorAll(".session");
+      if(nodes.length>=4){[0,1,2,3].forEach((i)=>{const b=nodes[i].querySelector("b"),em=nodes[i].querySelector("i");if(b)b.textContent=ss[i].label;if(em)em.textContent=ss[i].countdown});}
+      const liveEl=t.querySelector(".live");if(liveEl)liveEl.textContent="● "+(live?live.name+" LIVE":"MARKET CLOSED");
+    }
   },1000);
 })();
