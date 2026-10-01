@@ -138,7 +138,7 @@
     current.replaceWith(next);
   }
   window.setFilter=(key,value)=>{state.filters[key]=value;render()};
-  window.exportTrades=()=>{const blob=new Blob([JSON.stringify(d().rows,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="edgeflow-trades.json";a.click();URL.revokeObjectURL(a.href)};
+  window.exportTrades=()=>{const payload={exportedAt:new Date().toISOString(),environment:d().label,mode:state.mode,trades:currentRows()};const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="edgeflow-"+state.mode.toLowerCase()+"-trades.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
   window.saveJournal=async e=>{
     e.preventDefault();
     const f=id=>document.getElementById(id),file=f("jScreenshot")&&f("jScreenshot").files[0];
