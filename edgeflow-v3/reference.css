@@ -546,3 +546,26 @@ body.landing-page .env-cards{display:flex;justify-content:center;gap:22px;margin
 .app-page .engine small{font-size:6px;margin-top:4px}
 .app-page .engine i{right:9px;top:10px}
 @media(max-width:900px){.app-page .sidebar{display:none}.app-page .main{margin-left:0}}
+
+/* V21 — NEW TRADE ENTRY MODAL ONLY. JOURNAL PAGE UNCHANGED. */
+.journal-modal-card{width:min(980px,94vw)}
+.journal-modal-head{padding:22px 24px}
+.journal-modal-head small{font-size:9px;letter-spacing:.18em}
+.journal-modal-head h2{font-size:28px;margin-top:5px}
+.journal-modal-head button{font-size:30px}
+.modal-journal-form{padding:22px 24px}
+.modal-journal-form .journal-form-grid{gap:13px}
+.modal-journal-form label{font-size:9px;letter-spacing:.09em}
+.modal-journal-form input,.modal-journal-form select,.modal-journal-form textarea{margin-top:7px;padding:13px 12px;font-size:11px;min-height:44px}
+.modal-journal-form textarea{min-height:145px;line-height:1.5}
+.modal-journal-form .journal-wide{margin-top:14px}
+.journal-modal-actions{margin-top:16px;padding-top:15px}
+.journal-modal-actions span{font-size:8px}
+.journal-modal-actions button{padding:12px 17px;font-size:9px}
+@media(max-width:900px){
+  .journal-modal-card{width:96vw}
+  .modal-journal-form .journal-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .modal-journal-form .journal-form-grid{grid-template-columns:1fr}
+}
