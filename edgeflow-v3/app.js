@@ -294,57 +294,6 @@
     return '<div class="asset-grid">'+d().assets.map(x=>'<article class="asset"><div><b>'+x[0]+'</b><i>◈</i></div><strong>'+x[1]+'</strong><small>'+x[2]+' trades <em>'+x[3]+'</em></small></article>').join("")+'</div>';
   }
   function dashboard(){
-    const label=d().label;
-    const sessions=crypto()?[]:sessionState();
-    const acct=crypto()?{connected:false,balance:0,realized:0,unrealized:0,account:"KCEX",positions:[],orders:[],fills:[]} : liveAccount();
-    const connected=Boolean(acct.connected);
-    const money=n=>"$"+Math.abs(Number(n)||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
-    const signed=n=>(Number(n)||0)>=0?"+":"-";
-    const fills=acct.fills||[];
-    const today=new Date().toISOString().slice(0,10);
-    const todays=fills.filter(x=>String(x.timestamp||"").slice(0,10)===today);
-    const pnl=acct.realized;
-    const liveRows=connected?todays.slice(-6).reverse().map(f=>[
-      new Date(f.timestamp||Date.now()).toLocaleTimeString("en-CA",{hour12:false}),
-      f.instrument||"—",
-      /SELL|SHORT|S/.test(String(f.action||f.buySell||"").toUpperCase())?"Short":"Long",
-      f.price!=null?Number(f.price).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"—",
-      "—",f.qty??"—","LIVE","—",crypto()?"KCEX":"Tradovate"
-    ]):[];
-    const tradeRows=connected&&liveRows.length?rows(liveRows,true):'<div class="dashboard-empty"><b>NO LIVE TRADES</b><span>'+ (crypto()?"Connect KCEX to load live crypto orders and fills.":"Tradovate is connected. A fill will appear here automatically.")+'</span></div>';
-    const broker=crypto()?"KCEX":"TRADOVATE";
-    const statusText=connected?"● "+broker+" CONNECTED":"○ "+broker+" NOT CONNECTED";
-    const balanceLabel=crypto()?"Portfolio Balance":"Account Balance";
-    const balanceText=connected?money(acct.balance):"$0.00";
-    const pnlText=connected?signed(pnl)+money(pnl):"$0.00";
-    const sessionCards=crypto()?'<span class="session-live"><b>24/7</b><small>OPEN</small><em>KCEX · CRYPTO FUTURES</em></span>':sessions.map(x=>'<span class="'+(x.live?"session-live":"session-closed")+'"><b>'+x.name+'</b><small>'+x.label+'</small><em>'+(x.live?x.start+"–"+x.end:x.countdown)+'</em></span>').join("");
-    return '<div class="dash premium-dashboard">'+
-      '<div class="dash-banner"><div class="dash-brand"><div class="mini-mark">E</div><div><small>EDGEFLOW CORE • '+label+'</small><h1>'+label+'</h1><p>'+(crypto()?"BTC | ETH | SOL | BNB | XRP | HYPE | FLOKI":"MNQ | MES | MGC | RITHMIC | TRADOVATE")+'</p></div></div>'+
-      '<div class="dash-sessions"><span class="live '+(connected?"":"offline")+'">'+statusText+'</span>'+sessionCards+'</div></div>'+
-      '<div class="account-state '+(connected?"connected":"offline")+'"><span>'+statusText+'</span><small>'+(connected?acct.account+" · live account data":(crypto()?"Connect KCEX in the Crypto environment to load live data.":"Connect Tradovate in Connections to load live account data."))+'</small><button onclick="edgeGo(&#039;connections&#039;)">CONNECTIONS</button></div>'+
-      '<div class="kpis">'+
-      kpi(balanceLabel,balanceText,connected?"Live account balance":"No account connected",connected?"positive":"")+
-      kpi("Today P&L",pnlText,connected?"Realized P&L":"Waiting for connection",connected?(pnl>=0?"positive":"negative"):"")+
-      kpi("Unrealized P&L",connected?signed(acct.unrealized)+money(acct.unrealized):"$0.00",connected?"Open positions":"No live data",connected?(acct.unrealized>=0?"positive":"negative"):"")+
-      kpi(crypto()?"Open Positions":"Open Positions",String(acct.positions.length),connected?broker:"No account connected")+
-      kpi("Live Orders",String(acct.orders.length),connected?broker:"No account connected")+
-      kpi("Live Fills",String(acct.fills.length),connected?broker:"No account connected")+
-      '</div>'+
-      '<div class="dashboard-grid compact-grid"><div class="dashboard-main">'+
-      panel(crypto()?"TOP COINS":"TOP INSTRUMENTS",connected?instrumentCards():instrumentCardsZero())+
-      panel(connected?"RECENT LIVE TRADES":"RECENT TRADES",tradeRows)+
-      '</div><aside class="dashboard-side">'+
-      panel(crypto()?"MARKET STATUS":"SESSION CONTEXT",crypto()?'<div class="session-list"><div><b class="is-live">● 24/7 MARKET</b><span>OPEN</span></div><div><b>● KCEX</b><span>PERPETUALS</span></div><div><b>● KEY OPEN</b><span>MANIPULATION / SWEEP</span></div></div>':'<div class="session-list">'+sessions.map(x=>'<div><b class="'+(x.live?"is-live":"")+'">● '+x.name+'</b><span>'+(x.live?x.start+"–"+x.end:x.countdown)+'</span></div>').join("")+'</div>')+
-      panel(crypto()?"CRYPTO STATUS":"ACCOUNT STATUS",'<div class="rules"><div><span>Connection</span><b>'+(connected?"ONLINE":"OFFLINE")+'</b></div><div><span>Provider</span><b>'+broker+'</b></div><div><span>Positions</span><b>'+acct.positions.length+'</b></div><div><span>Orders</span><b>'+acct.orders.length+'</b></div></div>')+
-      '</aside></div></div>';
-  }
-
-  function instrumentCardsZero(){
-    return '<div class="asset-grid">'+d().instruments.slice(0,crypto()?4:3).map(x=>'<div class="instrument-card"><div><b>'+esc(x)+'</b><small>WAITING FOR LIVE DATA</small></div><strong>—</strong><i>NO FEED</i></div>').join("")+'</div>';
-  }
-
-  function title(k,t,s,button=""){return '<div class="page-title"><div><small>'+k+'</small><h1>'+t+'</h1><p>'+s+'</p></div>'+button+'</div>'}
-  function dashboard(){
     const sessions=sessionState();
     const acct=crypto()?{connected:state.kcex.running,balance:null,realized:null,unrealized:null,account:"KCEX",positions:[],orders:state.kcex.events,fills:[]}:liveAccount();
     const connected=Boolean(acct.connected);
