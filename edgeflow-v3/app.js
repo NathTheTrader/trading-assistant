@@ -692,8 +692,7 @@
           '<p>'+(state.kcex.running?"KCEX window is being sampled.":"Share the KCEX trading window to detect visible order changes.")+'</p>'+
           (state.kcex.error?'<div class="conn-error">'+esc(state.kcex.error)+'</div>':"")+
           (state.kcex.lastDetected?'<div class="conn-last">LAST: '+esc(state.kcex.lastDetected.instrument)+" · "+esc(state.kcex.lastDetected.direction)+" · "+esc(state.kcex.lastDetected.time)+'</div>':"")+
-          '</div>'+
-          '<button class="primary" onclick="'+(state.kcex.running?"stopKcexObserver()":"startKcexObserver()")+'">'+(state.kcex.running?"STOP OBSERVER":"START OBSERVER")+'</button>'+
+          '</div><button class="primary" onclick="'+(state.kcex.running?"stopKcexObserver()":"startKcexObserver()")+'">'+(state.kcex.running?"STOP OBSERVER":"START OBSERVER")+'</button>'+
         '</article>'+
         '<article class="connection"><div class="conn-icon blue">J</div><div class="conn-copy"><h3>JARVIS AI</h3><small>CRYPTO MODEL · ISOLATED CONTEXT</small><b class="ok">● ONLINE</b><p>Crypto-only reasoning context.</p></div><button onclick="edgeGo(\'ai\')">OPEN JARVIS</button></article>'+
         '</div>'+
@@ -706,16 +705,16 @@
       '<div class="connections connection-stack">'+
       '<article class="connection connection-live '+(tvConnected?"is-connected":"is-offline")+'">'+
         '<div class="conn-icon">T</div><div class="conn-copy"><h3>TRADOVATE</h3><small>FUTURES ONLY · ACCOUNT / POSITIONS / ORDERS / FILLS</small><b class="'+(tvConnected?"ok":"warn")+'">● '+tvStatus+'</b>'+
-        '<p>'+(tvConnected?"Live Tradovate account data is flowing.":(tvConfigured?"Credentials are configured. Click connect.":"Railway server credentials are missing."))+'</p>'+
+        '<p>'+(tvConnected?"Live Tradovate account data is flowing.":(tvConfigured?"Credentials are configured. Click connect.":"No server credentials configured yet."))+'</p>'+
         (tvMissing.length?'<div class="conn-missing">MISSING: '+tvMissing.map(x=>esc(x)).join(" · ")+'</div>':"")+
         (state.tradovate.error?'<div class="conn-error">'+esc(state.tradovate.error)+'</div>':"")+
-        '</div>'+
-        '<button class="primary" onclick="connectTradovateUI()">'+(tvConnected?"REFRESH":"CONNECT")+'</button>'+
+        '</div><button class="primary" onclick="'+(tvConfigured?"connectTradovateUI()":"openTradovateConfig()")+'">'+(tvConnected?"REFRESH":"CONNECT")+'</button>'+
       '</article>'+
       '<article class="connection"><div class="conn-icon">R</div><div class="conn-copy"><h3>RITHMIC</h3><small>FUTURES ONLY · ACCOUNT FEED</small><b class="warn">○ NOT CONFIGURED</b><p>Rithmic credentials are not configured on Railway.</p></div><button onclick="alert(\'Rithmic credentials are not configured on Railway yet.\')">MANAGE</button></article>'+
       '<article class="connection"><div class="conn-icon">J</div><div class="conn-copy"><h3>JARVIS AI</h3><small>FUTURES MODEL · ISOLATED CONTEXT</small><b class="ok">● ONLINE</b><p>Futures/NQ-only reasoning context.</p></div><button onclick="edgeGo(\'ai\')">OPEN JARVIS</button></article>'+
       '</div>'+
-      '<section class="panel connection-help"><div class="panel-head"><span>FUTURES PIPELINE</span></div><p>Tradovate credentials stay on Railway. EdgeFlow reads account, position, order and fill state for Futures only.</p><div class="setup-grid"><div><small>PROVIDER</small><b>TRADOVATE / RITHMIC</b></div><div><small>MODEL</small><b>FUTURES / NQ</b></div><div><small>ENTRY</small><b>R.B · LIMIT</b></div></div></section>';
+      '<section class="panel connection-help"><div class="panel-head"><span>FUTURES PIPELINE</span></div><p>Tradovate credentials are used only for this active backend session unless configured as Railway environment variables.</p><div class="setup-grid"><div><small>PROVIDER</small><b>TRADOVATE / RITHMIC</b></div><div><small>MODEL</small><b>FUTURES / NQ</b></div><div><small>ENTRY</small><b>R.B · LIMIT</b></div></div></section>'+
+      '<div id="tradovate-modal" class="tradovate-modal" hidden><div class="tradovate-modal-backdrop" onclick="closeTradovateConfig()"></div><section class="tradovate-modal-card"><div class="tradovate-modal-head"><div><small>FUTURES · PRIVATE SESSION</small><h2>Connect Tradovate</h2></div><button onclick="closeTradovateConfig()">×</button></div><p class="tradovate-modal-note">Credentials are sent over HTTPS to EdgeFlow and kept only in the running backend session. They are not stored in browser localStorage.</p><form class="tradovate-form" onsubmit="connectTradovateForm(event)"><div class="tradovate-form-grid"><label>ENVIRONMENT<select id="tvEnvironment"><option value="LIVE">LIVE</option><option value="DEMO">DEMO</option></select></label><label>USERNAME<input id="tvUsername" autocomplete="username" required></label><label>PASSWORD<input id="tvPassword" type="password" autocomplete="current-password" required></label><label>APP ID<input id="tvAppId" required></label><label>CLIENT ID (CID)<input id="tvCid" required></label><label>API SECRET (SEC)<input id="tvSec" type="password" required></label><label>APP VERSION<input id="tvAppVersion" value="1.0.0"></label></div><div id="tvFormError" class="tradovate-form-error"></div><div class="tradovate-modal-actions"><button type="button" onclick="closeTradovateConfig()">CANCEL</button><button class="primary" id="tvConnectSubmit" type="submit">CONNECT TRADOVATE</button></div></form></section></div>';
   }
   async function detectKcexFrame(){
     if(!state.kcex.running||state.kcex.processing||!state.kcex.video||state.kcex.video.readyState<2)return;
@@ -761,23 +760,21 @@
     state.kcex={...state.kcex,running:false,processing:false,stream:null,video:null,canvas:null,previousImage:"",timer:null};
     render();
   };
-  window.connectTradovateUI=async()=>{
-    const button=document.querySelector(".connection-live .primary");
-    if(button){button.disabled=true;button.textContent="CONNECTING...";}
-    state.tradovate.error="";
+  window.openTradovateConfig=()=>{const m=document.getElementById("tradovate-modal");if(m)m.hidden=false};
+  window.closeTradovateConfig=()=>{const m=document.getElementById("tradovate-modal");if(m)m.hidden=true};
+  window.connectTradovateForm=async e=>{
+    e.preventDefault();
+    const g=id=>document.getElementById(id),submit=g("tvConnectSubmit"),error=g("tvFormError");
+    if(submit){submit.disabled=true;submit.textContent="CONNECTING..."} if(error)error.textContent="";
+    const body={environment:g("tvEnvironment").value,username:g("tvUsername").value,password:g("tvPassword").value,appId:g("tvAppId").value,cid:g("tvCid").value,sec:g("tvSec").value,appVersion:g("tvAppVersion").value||"1.0.0"};
     try{
-      const response=await fetch(API_BASE+"/api/tradovate/connect",{method:"POST",headers:{Accept:"application/json","Content-Type":"application/json"},body:"{}"});
-      const data=await response.json().catch(()=>({}));
+      const r=await fetch(API_BASE+"/api/tradovate/connect",{method:"POST",headers:{Accept:"application/json","Content-Type":"application/json"},body:JSON.stringify(body)});
+      const data=await r.json().catch(()=>({}));
       state.tradovate.status=data.status||data;
-      if(!response.ok||data.ok===false)throw new Error(data.error||"Tradovate connection failed.");
-      state.tradovate.lastFetch=Date.now();
-    }catch(e){
-      state.tradovate.error=String(e?.message||e);
-      if(!state.tradovate.status)state.tradovate.status={connected:false,configured:false,missing:["TRADOVATE_USERNAME","TRADOVATE_PASSWORD","TRADOVATE_APP_ID","TRADOVATE_CID","TRADOVATE_SEC"]};
-    }finally{
-      if(button)button.disabled=false;
-      render();
-    }
+      if(!r.ok||data.ok===false)throw new Error(data.error||"Tradovate connection failed.");
+      closeTradovateConfig();render();
+    }catch(err){if(error)error.textContent=String(err?.message||err);}
+    finally{if(submit){submit.disabled=false;submit.textContent="CONNECT TRADOVATE"}}
   };
   function settings(){
     return title("SYSTEM","Settings","Controls for the selected environment only.")+
