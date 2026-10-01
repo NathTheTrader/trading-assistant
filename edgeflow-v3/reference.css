@@ -932,3 +932,31 @@ body.landing-page .landing-corner{
     grid-template-columns:1fr!important;
   }
 }
+
+/* V31 — LIVE ACCOUNT / SESSION DASHBOARD */
+.account-state{display:flex;align-items:center;gap:12px;margin:0 0 8px;padding:9px 12px;border:1px solid #183246;border-radius:6px;background:rgba(3,10,16,.82)}
+.account-state span{font-size:9px;letter-spacing:.09em;font-weight:700;color:#ff3d60}
+.account-state.connected span{color:#14e4a1}
+.account-state small{color:#6f8492;font-size:9px;flex:1}
+.account-state button{border:1px solid #1c3b50;background:#07131c;color:#9bb0bd;border-radius:4px;padding:6px 9px;font-size:8px;cursor:pointer}
+.account-state button:hover{border-color:#ff3155;color:#fff}
+.dash-sessions{display:flex!important;align-items:stretch;gap:5px!important}
+.dash-sessions>span{min-width:66px!important;padding:6px 7px!important;border:1px solid #163244;border-radius:5px;background:rgba(2,9,15,.68);font-size:7px!important;line-height:1.25}
+.dash-sessions>span.live{min-width:90px!important;color:#14e4a1!important;border-color:rgba(20,228,161,.35)!important}
+.dash-sessions>span.live.offline{color:#ff3d60!important;border-color:rgba(255,61,96,.35)!important}
+.dash-sessions .session-live b{display:block;color:#e8f2f6;font-size:8px}
+.dash-sessions .session-live small{display:block;color:#14e4a1;font-size:7px}
+.dash-sessions .session-live em,.dash-sessions .session-closed em{display:block;color:#6d8493;font-size:7px;font-style:normal;margin-top:2px}
+.dash-sessions .session-closed b{display:block;color:#8196a4;font-size:8px}
+.dash-sessions .session-closed small{display:block;color:#536b79;font-size:7px}
+.session-list .is-live{color:#14e4a1!important}
+.dashboard-empty{min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#587080}
+.dashboard-empty b{font-size:9px;letter-spacing:.12em;color:#7d93a1}
+.dashboard-empty span{font-size:9px}
+.instrument-card{position:relative}
+.instrument-card strong{display:block;color:#5b7280!important;font-size:16px!important}
+.instrument-card i{font-style:normal;color:#536b79;font-size:7px}
+@media(max-width:1000px){
+  .dash-sessions{display:none!important}
+  .account-state{flex-wrap:wrap}
+}
