@@ -507,7 +507,7 @@ const TRADOVATE_API = process.env.TRADOVATE_API_URL || "https://live.tradovateap
 const TRADOVATE_WS = process.env.TRADOVATE_WS_URL || "wss://live.tradovateapi.com/v1/websocket";
 const tradovate = {
   ws: null, connected: false, token: null, expirationTime: null, userId: null,
-  accounts: [], positions: [], orders: [], fills: [], contracts: new Map(), lastMessageAt: null, requestId: 0, reconnectTimer: null, heartbeat: null, fillIds: new Set(), reconnecting: false
+  cashBalances: [], accounts: [], positions: [], orders: [], fills: [], contracts: new Map(), lastMessageAt: null, requestId: 0, reconnectTimer: null, heartbeat: null, fillIds: new Set(), reconnecting: false
 };
 const liveEvents = [];
 function upsertById(list,item){const id=item?.id??item?.contractId??item?.orderId;if(id==null){list.push(item);return;}const i=list.findIndex(x=>(x?.id??x?.contractId??x?.orderId)===id);if(i>=0)list[i]=item;else list.push(item);if(list.length>1000)list.splice(0,list.length-1000);}
@@ -594,6 +594,7 @@ async function connectTradovate() {
         }
         for(const key of ["accounts","positions","orders","fills","cashBalances","contracts"]) if(Array.isArray(d[key])){
           if(key==="accounts") tradovate.accounts=d[key];
+          if(key==="cashBalances") tradovate.cashBalances=d[key];
           if(key==="positions") tradovate.positions=d[key];
           if(key==="orders") tradovate.orders=d[key];
           if(key==="fills") d[key].forEach(x=>upsertById(tradovate.fills,x));
@@ -613,7 +614,7 @@ async function renewTradovate() {
   if(!response.ok||!data.accessToken) throw new Error(data.errorText||"Tradovate token renewal failed");
   tradovate.token=data.accessToken;tradovate.expirationTime=data.expirationTime||null;
 }
-function tradovateStatus(){const required=["TRADOVATE_USERNAME","TRADOVATE_PASSWORD","TRADOVATE_APP_ID","TRADOVATE_CID","TRADOVATE_SEC"];const missing=required.filter(k=>!process.env[k]);return {configured:missing.length===0,missing,connected:tradovate.connected,userId:tradovate.userId,accounts:tradovate.accounts.map(a=>({id:a.id,name:a.name,active:a.active})),positions:tradovate.positions.map(p=>({...p,instrument:contractName(p.contractId)})),orders:tradovate.orders.slice(-100),recentFills:tradovate.fills.slice(-100).map(f=>({...f,instrument:contractName(f.contractId)})),expirationTime:tradovate.expirationTime,lastMessageAt:tradovate.lastMessageAt};}
+function tradovateStatus(){const required=["TRADOVATE_USERNAME","TRADOVATE_PASSWORD","TRADOVATE_APP_ID","TRADOVATE_CID","TRADOVATE_SEC"];const missing=required.filter(k=>!process.env[k]);return {configured:missing.length===0,missing,connected:tradovate.connected,userId:tradovate.userId,accounts:tradovate.accounts.map(a=>({id:a.id,name:a.name,active:a.active,balance:a.balance??a.netLiq??a.cashBalance??null,realizedPnL:a.realizedPnL??null,unrealizedPnL:a.unrealizedPnL??null})),cashBalances:tradovate.cashBalances,positions:tradovate.positions.map(p=>({...p,instrument:contractName(p.contractId)})),orders:tradovate.orders.slice(-100),recentFills:tradovate.fills.slice(-100).map(f=>({...f,instrument:contractName(f.contractId)})),expirationTime:tradovate.expirationTime,lastMessageAt:tradovate.lastMessageAt};}
 
 function normalizeObsidianPath(rel) {
   const markers=["CRYPTO/","FUNDED NEW EDGE/","BACKTEST/","Journal/","WEEKLY RECAP/"];
