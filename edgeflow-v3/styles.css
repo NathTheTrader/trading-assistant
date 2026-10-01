@@ -34,3 +34,21 @@
 .workspace>.section,.workspace>.card{box-shadow:0 20px 55px rgba(0,0,0,.2)}
 .trades .section{padding:16px}
 #tradeTable{padding:16px}
+
+/* ===== EDGEFLOW V4 REFERENCE UI ===== */
+.reference-dashboard{display:grid;gap:10px;animation:edgeIn .35s ease}
+.ref-hero{min-height:108px;border:1px solid #17354c;border-radius:8px;background:linear-gradient(100deg,color-mix(in srgb,var(--accent) 12%,#050b11),#07131d 55%,#040b12);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden}
+.ref-hero:after{content:"";position:absolute;inset:auto -10% -65% 20%;height:150px;background:radial-gradient(ellipse,color-mix(in srgb,var(--accent) 25%,transparent),transparent 65%);pointer-events:none}
+.ref-hero h1{font:700 30px Rajdhani,sans-serif;letter-spacing:2px;margin:4px 0 0}.hero-symbols{font-size:8px;color:#6e8497;letter-spacing:1.4px;margin-top:5px}
+.hero-controls{display:flex;gap:6px;align-items:center;z-index:1}.session-box{min-width:68px;text-align:center;border:1px solid #18364d;border-radius:5px;padding:7px 6px;color:#6e8395;font-size:6px;letter-spacing:1px}.session-box b{font-size:8px;color:#d7e2ea;letter-spacing:0}
+.ref-kpis{display:grid;grid-template-columns:1.25fr 1fr 1fr .9fr .9fr .9fr .8fr;gap:7px}.ref-kpis .card{min-height:72px;padding:11px 12px}.ref-kpis .kpi-value{font-size:17px}
+.ref-main-grid{display:grid;grid-template-columns:minmax(0,2.25fr) minmax(235px,.75fr);gap:8px}.ref-left,.ref-right{display:grid;gap:8px;align-content:start}
+.ref-section{border:1px solid #17354c;border-radius:7px;background:linear-gradient(180deg,#07111a,#050b11);padding:11px 12px;box-shadow:inset 0 1px rgba(255,255,255,.015),0 14px 35px rgba(0,0,0,.14)}
+.ref-title{font-size:7px;color:#6c8396;letter-spacing:1.4px;font-weight:800;margin-bottom:8px}.instrument-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.instrument-card{border:1px solid color-mix(in srgb,var(--accent) 23%,#17354c);border-radius:5px;padding:9px;background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 8%,#071019),#050a10)}.instrument-name{font-size:8px;font-weight:800;color:#e4edf3}.instrument-price{font:600 15px Rajdhani;margin-top:4px}.instrument-meta{font-size:6px;color:#5e7689;margin-top:4px}.instrument-meta b{float:right;color:var(--green)}
+.ref-right .rule{padding:8px 0;border-bottom:1px solid #10283a}.ref-right .rule:last-child{border-bottom:0}.ref-right .rule b{font-size:8px}
+.ref-bottom-grid{display:grid;grid-template-columns:1fr 1.7fr;gap:8px}.big-model{font:700 15px Rajdhani;letter-spacing:1px}.model-tags{display:flex;gap:5px;margin-top:10px}.model-tags span{font-size:6px;border:1px solid color-mix(in srgb,var(--accent) 30%,#17354c);padding:5px 7px;border-radius:4px;color:var(--accent)}
+.discipline-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.discipline-grid div{font-size:6px;color:#5d7487}.discipline-grid strong{display:block;color:#dce6ed;font-size:8px;margin-top:4px}
+.ref-main-grid .trade-row{grid-template-columns:1.05fr .8fr .9fr .9fr .45fr .75fr .4fr}.ref-main-grid .trade-row{padding:8px 7px}.ref-main-grid .trade-row strong{font-size:8px}.ref-main-grid .trade-row span{font-size:7px}
+@keyframes edgeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media(max-width:1000px){.ref-kpis{grid-template-columns:repeat(4,1fr)}.ref-main-grid{grid-template-columns:1fr}.ref-bottom-grid{grid-template-columns:1fr}.hero-controls{display:none}}
+@media(max-width:650px){.ref-kpis{grid-template-columns:repeat(2,1fr)}.instrument-grid{grid-template-columns:1fr 1fr}.workspace{padding:18px}.sidebar{width:220px}.main{margin-left:220px}}
