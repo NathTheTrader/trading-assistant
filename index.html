@@ -1248,278 +1248,389 @@ nav{gap:3px!important}nav button{position:relative!important;min-height:48px!imp
 @keyframes efSweep{to{transform:translateX(100%)}}
 @media(max-width:1050px){.side{width:225px!important;flex-basis:225px!important}.main{padding:0 20px 40px!important}.edgeflow-topbar{margin:0 -20px 24px;padding:0 20px}.topbar-center{display:none}.dashboard-kpis{grid-template-columns:repeat(3,1fr)!important}}
 @media(max-width:760px){.side{width:70px!important;flex-basis:70px!important;padding:14px 8px!important}.brand{justify-content:center!important}.brand>div:last-child,.brand-sub,.mode-switch,.nav-title,.nav-group-label,.side-bottom,.side-ai-status,nav button small,nav button b,nav button em{display:none!important}.brand{padding-bottom:15px!important}.brand-mark{width:42px!important;height:42px!important}.main{padding:0 12px 30px!important}.edgeflow-topbar{margin:0 -12px 18px;padding:0 12px;height:48px}.topbar-right span:not(.topbar-signal){display:none}.workspace-header h1{font-size:27px!important}.dashboard-kpis{grid-template-columns:repeat(2,1fr)!important}}
-</style></head><body>
+</style></head><body class="edgeflow-redesign">
+<style>
+/* =========================================================
+   EDGEFLOW 2026 — PRODUCT UI REBUILD
+   ========================================================= */
+:root{
+  --ef-bg:#05080d;--ef-bg2:#080c12;--ef-panel:#0a1018;--ef-panel2:#0d141e;
+  --ef-line:#1b2634;--ef-line2:#263446;--ef-text:#edf3f9;--ef-muted:#738298;
+  --ef-red:#ff284f;--ef-red2:#e3133d;--ef-red-soft:rgba(255,40,79,.10);
+  --ef-blue:#248fff;--ef-blue2:#1264cf;--ef-blue-soft:rgba(36,143,255,.11);
+  --ef-green:#22d99a;--ef-yellow:#ffba52;--ef-shadow:0 24px 80px rgba(0,0,0,.48);
+}
+*{box-sizing:border-box}
+body.edgeflow-redesign{margin:0;background:
+ radial-gradient(circle at 70% -10%,rgba(40,96,150,.10),transparent 33%),
+ linear-gradient(180deg,#04070b,#060a10 48%,#05080d);
+ color:var(--ef-text);font-family:Inter,Manrope,system-ui,sans-serif;letter-spacing:.01em}
+.edgeflow-redesign .app{display:grid;grid-template-columns:230px minmax(0,1fr);min-height:100vh;background:transparent}
+.edgeflow-redesign .side{position:fixed;left:0;top:0;bottom:0;width:230px;padding:18px 12px;border-right:1px solid #151e29;background:linear-gradient(180deg,#070b11 0%,#060a0f 100%);z-index:30}
+.edgeflow-redesign .brand{padding:8px 9px 18px;display:flex;align-items:center;gap:11px}
+.edgeflow-redesign .brand-mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(145deg,#1b2230,#0c111a);border:1px solid rgba(255,255,255,.10);color:#ff3156;box-shadow:0 12px 28px rgba(0,0,0,.35)}
+.edgeflow-redesign .brand-title{font-size:15px;line-height:1;font-weight:900;letter-spacing:.8px}.edgeflow-redesign .brand-title span{color:var(--ef-red)}
+.edgeflow-redesign .brand-sub{margin-top:5px;font-size:7px;letter-spacing:1.55px;color:#69788b;font-weight:800}
+.edgeflow-redesign .mode-switch{margin:2px 4px 18px;padding:3px;border-radius:10px;background:#0a0f16;border:1px solid #1a2634;display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.edgeflow-redesign .mode-switch button{border:0;padding:9px 4px;border-radius:7px;background:transparent;color:#6f7d90;font-size:9px;font-weight:900;letter-spacing:1px}
+.edgeflow-redesign body.nq-mode .mode-switch #modeNQ,.edgeflow-redesign .mode-switch #modeNQ.active{background:var(--ef-red-soft);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,40,79,.27)}
+.edgeflow-redesign body.crypto-mode .mode-switch #modeCRYPTO,.edgeflow-redesign .mode-switch #modeCRYPTO.active{background:var(--ef-blue-soft);color:#fff;box-shadow:inset 0 0 0 1px rgba(36,143,255,.28)}
+.edgeflow-redesign .nav-title,.edgeflow-redesign .nav-group-label{margin:0 10px 8px;color:#526174;font-size:8px;font-weight:900;letter-spacing:1.55px}
+.edgeflow-redesign .nav-group-label{margin-top:17px;margin-bottom:7px}
+.edgeflow-redesign nav{display:grid;gap:3px}
+.edgeflow-redesign nav button{position:relative;width:100%;display:flex;align-items:center;gap:10px;border:1px solid transparent;border-radius:8px;background:transparent;color:#728196;padding:9px 10px;text-align:left}
+.edgeflow-redesign nav button:hover{background:#0d141d;color:#dfe7ef;border-color:#1a2634}
+.edgeflow-redesign nav button.active{color:#fff;background:linear-gradient(90deg,var(--ef-red-soft),rgba(255,255,255,.015));border-color:rgba(255,40,79,.25);box-shadow:inset 2px 0 0 var(--ef-red)}
+.edgeflow-redesign body.crypto-mode nav button.active{background:linear-gradient(90deg,var(--ef-blue-soft),rgba(255,255,255,.015));border-color:rgba(36,143,255,.25);box-shadow:inset 2px 0 0 var(--ef-blue)}
+.edgeflow-redesign .nav-icon{width:16px;color:#718096;font-size:13px}.edgeflow-redesign nav button.active .nav-icon{color:var(--ef-red)}
+.edgeflow-redesign body.crypto-mode nav button.active .nav-icon{color:var(--ef-blue)}
+.edgeflow-redesign nav b{display:block;font-size:11px;font-weight:800;line-height:1.2}.edgeflow-redesign nav small{display:block;margin-top:2px;font-size:7px;color:#4f5d6f;letter-spacing:.3px}.edgeflow-redesign nav button.active small{color:#78879a}
+.edgeflow-redesign nav em{margin-left:auto;padding:3px 5px;border-radius:4px;border:1px solid rgba(255,40,79,.25);color:#ff6f89;font-size:7px;font-style:normal;font-weight:900}
+.edgeflow-redesign .side-bottom{position:absolute;left:12px;right:12px;bottom:14px}
+.edgeflow-redesign .side-ai-status{display:flex;align-items:center;gap:8px;padding:9px 10px;margin-bottom:7px;border:1px solid #182330;background:#090e15;border-radius:9px}
+.edgeflow-redesign .ai-status-orb{width:6px;height:6px;border-radius:50%;background:var(--ef-green);box-shadow:0 0 10px rgba(34,217,154,.6)}
+.edgeflow-redesign .side-ai-status b{font-size:7px;letter-spacing:1.1px}.edgeflow-redesign .side-ai-status small{display:block;margin-top:3px;color:#4f6072;font-size:7px}
+.edgeflow-redesign .ai-status-pulse{margin-left:auto;width:5px;height:5px;border-radius:50%;background:var(--ef-green)}
+.edgeflow-redesign .connection-mini{padding:10px;border-radius:9px;background:linear-gradient(145deg,#0a1017,#070b11);border:1px solid #182330}
+.edgeflow-redesign .connection-mini .mini-head{font-size:7px;letter-spacing:1.25px;color:#586679}.edgeflow-redesign .connection-mini .dot{width:5px;height:5px}.edgeflow-redesign .mini-sub{font-size:8px;line-height:1.4;color:#6d7b8d}
+.edgeflow-redesign .main{grid-column:2;width:auto;max-width:none;margin:0;padding:0 26px 35px;min-width:0}
+.edgeflow-redesign .edgeflow-topbar{height:54px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #121b25;font-size:8px;font-weight:900;letter-spacing:1.3px;color:#66758a}
+.edgeflow-redesign .topbar-left,.edgeflow-redesign .topbar-center,.edgeflow-redesign .topbar-right{display:flex;align-items:center;gap:8px}.edgeflow-redesign .topbar-left strong{color:var(--ef-red)}.edgeflow-redesign body.crypto-mode .topbar-left strong{color:var(--ef-blue)}
+.edgeflow-redesign .topbar-live{width:5px;height:5px;background:var(--ef-red);border-radius:50%;box-shadow:0 0 10px var(--ef-red)}
+.edgeflow-redesign body.crypto-mode .topbar-live{background:var(--ef-blue);box-shadow:0 0 10px var(--ef-blue)}
+.edgeflow-redesign .topbar-sep{color:#2d3947}.edgeflow-redesign .topbar-readonly{padding:5px 7px;border:1px solid #1f2a38;border-radius:5px;color:#667487;font-size:7px}
+.edgeflow-redesign .topbar-signal{color:var(--ef-green);font-size:7px}
+.edgeflow-redesign .workspace{max-width:1440px;margin:0 auto;padding-top:22px}
+.edgeflow-redesign .workspace-header{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin:0 0 16px;padding:2px 0 15px;border-bottom:1px solid #17202c}
+.edgeflow-redesign .workspace-header h1{margin:0;font-size:25px;line-height:1.05;font-weight:900;letter-spacing:-.8px}.edgeflow-redesign .workspace-header .sub{margin-top:7px;font-size:9px;color:#657489}
+.edgeflow-redesign .eyebrow{margin-bottom:7px;color:var(--ef-red);font-size:7px;font-weight:950;letter-spacing:1.7px}.edgeflow-redesign body.crypto-mode .eyebrow{color:var(--ef-blue)}
+.edgeflow-redesign .status{padding:6px 8px;border-radius:5px;border:1px solid rgba(255,40,79,.20);background:rgba(255,40,79,.07);color:#ff7187;font-size:7px;font-weight:900;letter-spacing:.7px}.edgeflow-redesign .status.green{border-color:rgba(34,217,154,.20);background:rgba(34,217,154,.06);color:var(--ef-green)}
+.edgeflow-redesign .dashboard-period-bar{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:10px 12px;border:1px solid #182330;border-radius:9px;background:#080e15;margin-bottom:11px}
+.edgeflow-redesign .dashboard-period-kicker{color:#516176;font-size:7px;font-weight:900;letter-spacing:1.2px;margin-right:8px}.edgeflow-redesign .dashboard-period-bar strong{font-size:10px}
+.edgeflow-redesign .dashboard-period-actions{display:flex;align-items:center;gap:5px}
+.edgeflow-redesign .secondary,.edgeflow-redesign .primary,.edgeflow-redesign .danger{border-radius:6px;font-size:8px;font-weight:900;letter-spacing:.35px;padding:8px 10px;border:1px solid #253244}
+.edgeflow-redesign .secondary{background:#0d141d;color:#c8d2de}.edgeflow-redesign .secondary:hover{background:#131c27;border-color:#344457}
+.edgeflow-redesign .primary{background:linear-gradient(135deg,var(--ef-red2),var(--ef-red));border-color:transparent;color:#fff;box-shadow:0 8px 24px rgba(255,40,79,.12)}.edgeflow-redesign body.crypto-mode .primary{background:linear-gradient(135deg,var(--ef-blue2),var(--ef-blue));box-shadow:0 8px 24px rgba(36,143,255,.12)}
+.edgeflow-redesign input,.edgeflow-redesign select,.edgeflow-redesign textarea{border:1px solid #223042;background:#080d14;color:#eef4fa;border-radius:6px;outline:none;font-size:9px}.edgeflow-redesign input:focus,.edgeflow-redesign select:focus,.edgeflow-redesign textarea:focus{border-color:rgba(255,40,79,.45);box-shadow:0 0 0 2px rgba(255,40,79,.06)}
+.edgeflow-redesign .grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}
+.edgeflow-redesign .card,.edgeflow-redesign .section{position:relative;border:1px solid #182432;border-radius:9px;background:linear-gradient(145deg,#0a1017,#080d13);box-shadow:0 12px 30px rgba(0,0,0,.16);overflow:hidden}
+.edgeflow-redesign .card:before,.edgeflow-redesign .section:before{content:"";position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent)}
+.edgeflow-redesign .card{padding:12px 12px 11px}.edgeflow-redesign .label{font-size:7px;color:#58677a;letter-spacing:1.1px;font-weight:900;text-transform:uppercase}.edgeflow-redesign .value{margin-top:8px;font-size:19px;line-height:1;font-weight:950;letter-spacing:-.6px}.edgeflow-redesign .value.small{font-size:13px}.edgeflow-redesign .sub{color:#607084;font-size:8px;line-height:1.45}
+.edgeflow-redesign .green{color:var(--ef-green)}.edgeflow-redesign .red{color:var(--ef-red)}.edgeflow-redesign .blue{color:var(--ef-blue)}.edgeflow-redesign .orange{color:var(--ef-yellow)}
+.edgeflow-redesign .dashboard-kpis .card:nth-child(1){grid-column:span 2}.edgeflow-redesign .dashboard-kpis .card:nth-child(2),.edgeflow-redesign .dashboard-kpis .card:nth-child(3),.edgeflow-redesign .dashboard-kpis .card:nth-child(4),.edgeflow-redesign .dashboard-kpis .card:nth-child(5),.edgeflow-redesign .dashboard-kpis .card:nth-child(6){grid-column:span 1}
+.edgeflow-redesign .dashboard-kpis .card{min-height:74px}.edgeflow-redesign .dashboard-kpis .kpi-win:after{content:"";position:absolute;right:12px;bottom:12px;width:26px;height:26px;border-radius:50%;border:3px solid #163b4c;border-top-color:var(--ef-blue);border-right-color:var(--ef-blue)}
+.edgeflow-redesign .dashboard-feature-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,.8fr);gap:8px;margin-top:8px}.edgeflow-redesign .dashboard-recent-panel,.edgeflow-redesign .dashboard-context-panel{padding:12px}
+.edgeflow-redesign .section-head-inline{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.edgeflow-redesign .section h2{margin:0;font-size:12px;font-weight:900}.edgeflow-redesign .section h3{font-size:10px}
+.edgeflow-redesign .dashboard-activity-list{margin-top:9px;display:grid;gap:4px}.edgeflow-redesign .dashboard-activity-list .row{background:#080e15;border:1px solid #172330;border-radius:7px;padding:8px 9px;font-size:8px}
+.edgeflow-redesign .dashboard-context-title{font-size:16px;font-weight:950;letter-spacing:-.5px;margin-top:5px}.edgeflow-redesign .dashboard-tags{display:flex;gap:4px;flex-wrap:wrap;margin:9px 0}.edgeflow-redesign .tag{padding:4px 6px;border-radius:4px;background:rgba(255,40,79,.07);border:1px solid rgba(255,40,79,.16);color:#ff7289;font-size:6px;font-weight:950;letter-spacing:.8px}
+.edgeflow-redesign .rows{display:grid;gap:4px}.edgeflow-redesign .row{display:flex;justify-content:space-between;gap:10px;padding:8px 9px;border:1px solid #172330;background:#080e15;border-radius:7px;font-size:8px}.edgeflow-redesign .row strong{font-weight:900;color:#dce4ed}
+.edgeflow-redesign .actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.edgeflow-redesign .dashboard-footer-metrics{display:grid;grid-template-columns:repeat(4,1fr);margin-top:8px;border:1px solid #182432;border-radius:8px;background:#080e15;overflow:hidden}
+.edgeflow-redesign .dashboard-footer-metrics>div{padding:9px 10px;border-right:1px solid #182432}.edgeflow-redesign .dashboard-footer-metrics>div:last-child{border-right:0}.edgeflow-redesign .dashboard-footer-metrics span{display:block;color:#526174;font-size:6px;font-weight:900;letter-spacing:1px;text-transform:uppercase}.edgeflow-redesign .dashboard-footer-metrics strong{display:block;margin-top:4px;font-size:10px}
+.edgeflow-redesign .hidden{display:none!important}
+.edgeflow-redesign .workspace-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(320px,.8fr);gap:8px;margin-top:8px}.edgeflow-redesign .workspace-grid>.section{padding:12px}
+.edgeflow-redesign .bot-live-cards{grid-template-columns:repeat(4,1fr)}
+.edgeflow-redesign .live-card{min-height:112px}.edgeflow-redesign .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}.edgeflow-redesign .check-card{position:relative;min-height:52px!important;padding:9px!important;background:#080e15!important;border:1px solid #182432!important;border-radius:7px!important}
+.edgeflow-redesign .check-main{display:flex;align-items:center;gap:8px}.edgeflow-redesign .check-icon{width:24px;height:24px;border-radius:6px;background:#0f1721;color:#72839a;font-size:9px}.edgeflow-redesign .check-title{font-size:8px;font-weight:850}.edgeflow-redesign .check-meta{font-size:6px;margin-top:2px}.edgeflow-redesign .check-switch{width:30px;height:18px;border-radius:99px}.edgeflow-redesign .check-switch:after{width:12px;height:12px;top:2px;left:2px}.edgeflow-redesign .check-card input:checked + .check-switch:after{left:15px}
+.edgeflow-redesign .live-check-score{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;padding:8px 9px;margin-top:7px;border:1px solid #182432;background:#080e15;border-radius:7px}.edgeflow-redesign .live-check-score span{font-size:6px;color:#526174;font-weight:900;letter-spacing:1px}.edgeflow-redesign .live-check-score strong{font-size:10px}.edgeflow-redesign .live-check-score em{font-style:normal;color:var(--ef-red);font-size:10px;font-weight:950}
+.edgeflow-redesign .image-drop{margin-top:7px;padding:8px;border:1px dashed #273444;border-radius:7px}.edgeflow-redesign .image-drop-title{font-size:8px;font-weight:900}.edgeflow-redesign .image-drop-sub{font-size:6px;color:#59697d}.edgeflow-redesign .image-inputs{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}.edgeflow-redesign .image-input{padding:6px;border:1px solid #172330;border-radius:6px;background:#070c12}.edgeflow-redesign .image-input label{display:block!important;border:0!important;padding:0!important;margin:0 0 4px!important;background:transparent!important;font-size:6px!important;color:#66758a!important}.edgeflow-redesign .image-input input[type=file]{width:100%;font-size:7px;padding:5px}.edgeflow-redesign .image-preview{display:none;width:100%;max-height:130px;object-fit:contain;margin-top:5px}
+.edgeflow-redesign .photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.edgeflow-redesign .photo-box{padding:7px;border:1px solid #182432;border-radius:7px;background:#080e15}.edgeflow-redesign .photo-box img{width:100%;max-height:220px;object-fit:contain;background:#05090e;border-radius:5px}
+.edgeflow-redesign .ai-box{padding:8px;border:1px solid #182432;border-radius:7px;background:linear-gradient(145deg,#0a1119,#070d14);font-size:8px;color:#c6d0db}.edgeflow-redesign .decision{padding:9px;border-radius:6px;background:rgba(34,217,154,.06);border:1px solid rgba(34,217,154,.16);color:var(--ef-green);font-size:8px;font-weight:900;text-align:center}.edgeflow-redesign .decision.bad{background:rgba(255,40,79,.06);border-color:rgba(255,40,79,.18);color:#ff6c86}
+.edgeflow-redesign .table-wrap{overflow:auto;border:1px solid #182432;border-radius:7px}.edgeflow-redesign .table{width:100%;min-width:720px;border-collapse:collapse;font-size:7px}.edgeflow-redesign .table th,.edgeflow-redesign .table td{padding:7px 8px;border-bottom:1px solid #15202b;text-align:left}.edgeflow-redesign .table th{font-size:6px;letter-spacing:1px;color:#56677a;background:#080e15;text-transform:uppercase}.edgeflow-redesign .table td{color:#c0cbd7}
+.edgeflow-redesign .chat-shell{display:grid;grid-template-columns:minmax(0,1.35fr) 330px;height:calc(100vh - 145px);min-height:560px;gap:8px}.edgeflow-redesign .jarvis-console{display:flex;flex-direction:column;border:1px solid #1b2938;border-radius:10px;background:radial-gradient(circle at 50% 0%,rgba(255,40,79,.06),transparent 34%),#080e15;overflow:hidden}.edgeflow-redesign .jarvis-console-head{display:flex;justify-content:space-between;align-items:center;padding:12px 13px;border-bottom:1px solid #16222e}.edgeflow-redesign .jarvis-identity{display:flex;gap:9px;align-items:center}.edgeflow-redesign .jarvis-orb-static{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,40,79,.28);background:radial-gradient(circle,rgba(255,40,79,.16),transparent 65%),#0b1017}.edgeflow-redesign .jarvis-orb-static:before{content:"";width:9px;height:9px;border-radius:50%;background:var(--ef-red);box-shadow:0 0 18px var(--ef-red)}.edgeflow-redesign .jarvis-kicker{font-size:6px;letter-spacing:1.5px;color:#627286;font-weight:900}.edgeflow-redesign .jarvis-identity h2{margin:4px 0 0;font-size:15px}.edgeflow-redesign .jarvis-header-right{display:flex;gap:5px}.edgeflow-redesign .jarvis-model-tab{padding:6px 8px;border-radius:6px;border:1px solid #243246;background:#0c131c;color:#718196;font-size:7px;font-weight:900}.edgeflow-redesign .jarvis-model-tab.active{color:#fff;border-color:rgba(255,40,79,.25);background:rgba(255,40,79,.08)}
+.edgeflow-redesign .jarvis-chat-body{flex:1;display:flex;flex-direction:column;padding:10px}.edgeflow-redesign .chat-messages{flex:1;overflow:auto;display:flex;flex-direction:column;gap:7px}.edgeflow-redesign .bubble{max-width:80%;padding:9px 10px;border-radius:8px;border:1px solid #1a2735;font-size:8px;line-height:1.6}.edgeflow-redesign .bubble.ai{background:#0c131c;align-self:flex-start}.edgeflow-redesign .bubble.me{background:rgba(255,40,79,.07);border-color:rgba(255,40,79,.15);align-self:flex-end}.edgeflow-redesign .chat-input{display:flex;gap:5px;margin-top:7px}.edgeflow-redesign .chat-input input{flex:1;padding:9px}
+.edgeflow-redesign .workspace-grid.jarvis-side{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 7px}.edgeflow-redesign .workspace-grid.jarvis-side .ai-box{min-height:74px}
+.edgeflow-redesign .journal-layout{display:grid;grid-template-columns:1.25fr .75fr;gap:8px}.edgeflow-redesign .journal-form,.edgeflow-redesign .journal-side{padding:12px}.edgeflow-redesign .form{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}.edgeflow-redesign .form label{display:grid;gap:5px;padding:0;border:0;background:transparent;color:#6e7d90;font-size:6px;letter-spacing:.6px;text-transform:uppercase;font-weight:900}.edgeflow-redesign .form input,.edgeflow-redesign .form select,.edgeflow-redesign .form textarea{width:100%;padding:8px}.edgeflow-redesign .form .full{grid-column:1/-1}.edgeflow-redesign .journal-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:7px}.edgeflow-redesign .journal-meta .mini-kpi{padding:8px;border:1px solid #182432;border-radius:7px;background:#080e15}.edgeflow-redesign .mini-kpi span{display:block;font-size:6px;color:#536276}.edgeflow-redesign .mini-kpi strong{display:block;margin-top:3px;font-size:10px}
+.edgeflow-redesign .calendar-shell{padding:10px;border:1px solid #182432;border-radius:8px;background:#080e15}.edgeflow-redesign .calendar-head{display:flex;justify-content:space-between;align-items:center}.edgeflow-redesign .calendar-head h3{margin:0;font-size:10px}.edgeflow-redesign .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:7px}.edgeflow-redesign .calendar-grid span{display:grid;place-items:center;height:23px;border-radius:4px;font-size:6px;color:#536277}.edgeflow-redesign .calendar-grid span.day{border:1px solid #16232f;color:#99a8b8}.edgeflow-redesign .calendar-grid span.win{background:rgba(34,217,154,.12);color:var(--ef-green)}.edgeflow-redesign .calendar-grid span.loss{background:rgba(255,40,79,.10);color:#ff6783}
+.edgeflow-redesign .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.edgeflow-redesign .settings-card{padding:12px}.edgeflow-redesign .connection-list{display:grid;gap:5px}.edgeflow-redesign .connection-row{display:flex;align-items:center;gap:8px;padding:9px;border:1px solid #182432;border-radius:7px;background:#080e15}.edgeflow-redesign .connection-logo{width:27px;height:27px;border-radius:6px;display:grid;place-items:center;font-size:9px;font-weight:950;background:#111923;color:#fff}.edgeflow-redesign .connection-copy{min-width:0}.edgeflow-redesign .connection-copy b{display:block;font-size:8px}.edgeflow-redesign .connection-copy small{display:block;margin-top:2px;font-size:6px;color:#536277}.edgeflow-redesign .connection-status{margin-left:auto;font-size:6px;padding:4px 5px;border-radius:4px;border:1px solid #263444;color:#6d7d92}.edgeflow-redesign .connection-status.live{color:var(--ef-green);border-color:rgba(34,217,154,.18);background:rgba(34,217,154,.05)}.edgeflow-redesign .connection-status.ready{color:#ffca75;border-color:rgba(255,186,82,.16)}
+.edgeflow-redesign .gateway{position:relative;min-height:calc(100vh - 54px);display:flex;flex-direction:column;justify-content:center;overflow:hidden;border-radius:10px}.edgeflow-redesign .gateway-stage{position:absolute;inset:0;overflow:hidden}.edgeflow-redesign .gateway-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.82}.edgeflow-redesign .gateway-red{background-image:linear-gradient(90deg,rgba(4,7,12,.06),rgba(4,7,12,.42) 62%,rgba(4,7,12,.90)),url("./assets/futures-mountains.svg");clip-path:polygon(0 0,51% 0,51% 100%,0 100%)}.edgeflow-redesign .gateway-blue{background-image:linear-gradient(270deg,rgba(4,7,12,.06),rgba(4,7,12,.42) 38%,rgba(4,7,12,.90)),url("./assets/crypto-mountains.svg");clip-path:polygon(51% 0,100% 0,100% 100%,51% 100%)}.edgeflow-redesign .gateway-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:60px 60px;mask-image:linear-gradient(to bottom,transparent,#000 20%,#000 80%,transparent)}.edgeflow-redesign .gateway-center{position:relative;z-index:2;text-align:center;padding:30px 20px}.edgeflow-redesign .gateway-logo-mark{width:70px;height:70px;margin:0 auto 10px;display:grid;place-items:center}.edgeflow-redesign .gateway-logo-mark svg{width:64px;height:64px;filter:drop-shadow(0 15px 30px rgba(36,143,255,.28))}.edgeflow-redesign .gateway-center h1{margin:0;font-size:52px;line-height:1;font-weight:950;letter-spacing:8px;text-shadow:0 12px 40px rgba(0,0,0,.45)}.edgeflow-redesign .gateway-center h1 span{color:#7b8fa8}.edgeflow-redesign .gateway-kicker{margin-top:12px;font-size:9px;letter-spacing:2.8px;font-weight:900;color:#d5dde7}.edgeflow-redesign .gateway-sub{margin-top:7px;font-size:8px;letter-spacing:2px;color:#8191a4;text-transform:uppercase}
+.edgeflow-redesign .gateway-choice-grid{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;max-width:760px;width:92%;margin:4px auto 45px;gap:14px}.edgeflow-redesign .gateway-choice{position:relative;min-height:220px;padding:20px;text-align:left;overflow:hidden;border-radius:14px;background:rgba(7,11,16,.60);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(8px);color:#fff}.edgeflow-redesign .gateway-choice:hover{transform:translateY(-3px);filter:brightness(1.06)}.edgeflow-redesign .gateway-choice:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 15%,rgba(255,49,88,.17),transparent 42%);opacity:.9}.edgeflow-redesign .gateway-choice.gateway-crypto:before{background:radial-gradient(circle at 30% 15%,rgba(36,143,255,.18),transparent 42%)}.edgeflow-redesign .gateway-choice-kicker{position:relative;display:block;font-size:7px;letter-spacing:1.5px;color:#7e90a5;font-weight:900}.edgeflow-redesign .gateway-choice strong{position:relative;display:block;margin-top:8px;font-size:24px;letter-spacing:1.7px}.edgeflow-redesign .gateway-desc{position:relative;display:block;margin-top:5px;font-size:8px;color:#8493a6;letter-spacing:.8px}.edgeflow-redesign .gateway-rule{position:relative;display:block;width:65%;height:1px;background:linear-gradient(90deg,var(--ef-red),transparent);margin:17px 0 12px}.edgeflow-redesign .gateway-crypto .gateway-rule{background:linear-gradient(90deg,var(--ef-blue),transparent)}.edgeflow-redesign .gateway-meta{position:relative;font-size:7px;color:#6f8094;letter-spacing:1px}.edgeflow-redesign .gateway-arrow{position:absolute;right:17px;bottom:15px;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.18);display:grid;place-items:center;font-size:17px}.edgeflow-redesign .gateway-icon{position:absolute;right:20px;top:18px;font-size:24px;font-weight:950;color:var(--ef-red);opacity:.85}.edgeflow-redesign .gateway-crypto .gateway-icon{color:var(--ef-blue)}.edgeflow-redesign .gateway-footer{position:absolute;left:22px;right:22px;bottom:16px;z-index:3;display:flex;justify-content:space-between;color:#607085;font-size:6px;letter-spacing:1.25px;font-weight:900}
+.edgeflow-redesign .trade-pop{background:#080e15;border:1px solid rgba(255,40,79,.35);border-radius:10px;box-shadow:0 26px 80px rgba(0,0,0,.75);width:360px}.edgeflow-redesign .trade-pop-head{padding:10px 12px}.edgeflow-redesign .trade-pop-body{padding:12px}.edgeflow-redesign .trade-pop-grid{gap:5px}.edgeflow-redesign .trade-pop-item{padding:7px;background:#070c12;border:1px solid #182432}.edgeflow-redesign .trade-pop-item span{font-size:6px}.edgeflow-redesign .trade-pop-item b{margin-top:3px;font-size:8px}
+.edgeflow-redesign .observer-live{display:flex;gap:6px;align-items:center;font-size:7px;color:#65768a;margin-top:7px}.edgeflow-redesign .observer-live i{width:6px;height:6px;border-radius:50%;background:#49586b}.edgeflow-redesign .observer-live.on i{background:var(--ef-green);box-shadow:0 0 9px rgba(34,217,154,.65)}
+.edgeflow-redesign .mobile-menu{display:none}
+@media(max-width:1100px){.edgeflow-redesign .app{grid-template-columns:205px minmax(0,1fr)}.edgeflow-redesign .side{width:205px}.edgeflow-redesign .grid{grid-template-columns:repeat(3,1fr)}.edgeflow-redesign .dashboard-kpis .card:nth-child(n){grid-column:span 1}.edgeflow-redesign .dashboard-feature-grid,.edgeflow-redesign .journal-layout,.edgeflow-redesign .settings-grid,.edgeflow-redesign .chat-shell{grid-template-columns:1fr}}
+@media(max-width:760px){.edgeflow-redesign .app{display:block}.edgeflow-redesign .side{position:sticky;top:0;width:100%;height:auto;padding:8px;z-index:40;border-right:0;border-bottom:1px solid #14202b}.edgeflow-redesign .brand{padding:2px 7px 9px}.edgeflow-redesign .side-bottom{display:none}.edgeflow-redesign .nav-title,.edgeflow-redesign .nav-group-label{display:none}.edgeflow-redesign nav{display:flex;overflow:auto}.edgeflow-redesign nav button{flex:0 0 auto;width:auto}.edgeflow-redesign nav button span:nth-child(2) small{display:none}.edgeflow-redesign .main{padding:0 12px 28px}.edgeflow-redesign .topbar-center{display:none}.edgeflow-redesign .topbar-right .topbar-readonly,.edgeflow-redesign .topbar-right .topbar-signal{display:none}.edgeflow-redesign .workspace{padding-top:14px}.edgeflow-redesign .workspace-header{align-items:flex-start}.edgeflow-redesign .workspace-header h1{font-size:21px}.edgeflow-redesign .grid,.edgeflow-redesign .bot-live-cards{grid-template-columns:1fr 1fr}.edgeflow-redesign .dashboard-period-bar{display:block}.edgeflow-redesign .dashboard-period-actions{margin-top:7px}.edgeflow-redesign .dashboard-footer-metrics{grid-template-columns:1fr 1fr}.edgeflow-redesign .dashboard-footer-metrics>div:nth-child(2){border-right:0}.edgeflow-redesign .gateway-center h1{font-size:36px;letter-spacing:5px}.edgeflow-redesign .gateway-choice-grid{grid-template-columns:1fr}.edgeflow-redesign .gateway-choice{min-height:180px}.edgeflow-redesign .gateway-footer{display:none}.edgeflow-redesign .form,.edgeflow-redesign .image-inputs,.edgeflow-redesign .check-grid{grid-template-columns:1fr}.edgeflow-redesign .journal-meta{grid-template-columns:1fr 1fr}.edgeflow-redesign .chat-shell{height:auto;min-height:640px}}
+</style>
+
 <div class="app">
-<aside class="side">
-  <div class="brand">
-    <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40" width="35" height="35"><path d="M20 3 35 11.5v17L20 37 5 28.5v-17L20 3Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M26.8 11.5H14.2v17h12.6M14.2 20h9.4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></div>
-    <div><div class="brand-title">EDGE<span>FLOW</span></div><div class="brand-sub">TRADING INTELLIGENCE</div></div>
-  </div>
-  <div class="mode-switch" role="group" aria-label="Modèle actif">
-    <button id="modeNQ" data-site-mode="NQ" type="button" onclick="switchMode('NQ')">FUTURES</button>
-    <button id="modeCRYPTO" data-site-mode="CRYPTO" type="button" onclick="switchMode('CRYPTO')">CRYPTO</button>
-  </div>
-  <div class="nav-title">WORKSPACE</div>
-  <nav>
-    <div class="nav-group-label">MARKETS</div>
-    <button id="navDash" onclick="showActiveDashboard(this)"><span class="nav-icon">⌂</span><span><b>Dashboard</b><small>Performance & analytics</small></span></button>
-    <button id="navBotFutures" data-mode="NQ" onclick="openBotWorkspace('NQ','bot',this)"><span class="nav-icon">F</span><span><b>Bot Futures</b><small>NQ intelligence</small></span></button>
-    <button id="navBotCrypto" data-mode="CRYPTO" onclick="openBotWorkspace('CRYPTO','crypto',this)"><span class="nav-icon">C</span><span><b>Bot Crypto</b><small>Market intelligence</small></span></button>
-    <div class="nav-group-label nav-ai-label">INTELLIGENCE</div>
-    <button id="navChat" onclick="show('chat',this)"><span class="nav-icon ai-icon">✦</span><span><b>JARVIS</b><small>AI trading core</small></span><em>AI</em></button>
-    <button id="navJournal" onclick="show('journal',this)"><span class="nav-icon">▤</span><span><b>Journal</b><small>Trades & review</small></span></button>
-    <div class="nav-group-label nav-system-label">SYSTEM</div>
-    <button id="navSettings" onclick="show('settings',this)"><span class="nav-icon">⌘</span><span><b>Settings</b><small>Connections & voice</small></span></button>
-  </nav>
-  <div class="side-bottom">
-    <div class="side-ai-status"><span class="ai-status-orb"></span><div><b>EDGEFLOW CORE</b><small>Systems operational</small></div><span class="ai-status-pulse"></span></div>
-    <div class="connection-mini">
-      <div class="mini-head"><span>ACTIVE ENVIRONMENT</span><span class="dot"></span></div>
-      <div id="activeModeLabel" class="mini-sub">FUTURES</div>
-      <div id="connectionMiniSub" class="mini-sub">Futures : Tradovate / Rithmic · lecture seule.</div>
+  <aside class="side">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40" width="38" height="38"><path d="M20 3 35 11.5v17L20 37 5 28.5v-17L20 3Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M27 11.5H14v17h13M14 20h10" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></div>
+      <div><div class="brand-title">EDGE<span>FLOW</span></div><div class="brand-sub">TRADING INTELLIGENCE</div></div>
     </div>
-  </div>
-</aside>
-<main class="main"><div class="edgeflow-topbar">
-  <div class="topbar-left"><span class="topbar-live"></span><span>EDGEFLOW CORE</span><i></i><strong id="topbarEnvironment">FUTURES</strong></div>
-  <div class="topbar-center"><span>MARKET INTELLIGENCE</span><span class="topbar-sep">/</span><span id="topbarContext">LIVE WORKSPACE</span></div>
-  <div class="topbar-right"><span class="topbar-readonly">READ ONLY</span><span id="topbarClock">--:--:--</span><span class="topbar-signal">● SYSTEM ONLINE</span></div>
-</div>
 
-<section id="models" class="workspace edgeflow-gateway" hidden aria-hidden="true">
-  <div class="gateway-noise"></div><div class="gateway-grid"></div><div class="gateway-world gateway-world-red"></div><div class="gateway-world gateway-world-blue"></div>
-  <div class="gateway-topline"><span>EDGEFLOW</span><span>TRADING INTELLIGENCE · 2026</span><span>DISCIPLINE × DATA × EXECUTION</span></div>
-  <div class="gateway-center">
-    <div class="gateway-mark"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M25 14h48l14 14v58H25z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M67 28H39v44h29M39 50h22" fill="none" stroke="currentColor" stroke-width="4"/></svg></div>
-    <div class="gateway-kicker">THE TRADING INTELLIGENCE PLATFORM</div><h1>EDGE<span>FLOW</span></h1><p>Choose your environment.</p><div class="gateway-sub">Same edge. Different markets.</div>
-  </div>
-  <div class="gateway-choice-grid">
-    <button class="gateway-choice gateway-futures" type="button" onclick="selectModel('NQ')"><span class="gateway-choice-glow"></span><span class="gateway-icon">F</span><span class="gateway-choice-kicker">01 · FUTURES</span><strong>FUTURES</strong><span class="gateway-desc">NQ · MNQ · MES · MGC</span><span class="gateway-rule"></span><span class="gateway-meta">TRADOVATE · RITHMIC · JARVIS</span><span class="gateway-arrow">↗</span></button>
-    <button class="gateway-choice gateway-crypto" type="button" onclick="selectModel('CRYPTO')"><span class="gateway-choice-glow"></span><span class="gateway-icon">C</span><span class="gateway-choice-kicker">02 · CRYPTO</span><strong>CRYPTO</strong><span class="gateway-desc">BTC · ETH · SOL · BNB · XRP</span><span class="gateway-rule"></span><span class="gateway-meta">KCEX · JARVIS · ANALYTICS</span><span class="gateway-arrow">↗</span></button>
-  </div>
-  <div class="gateway-footer"><span>READ ONLY · NO AUTO EXECUTION</span><span>SELECT AN ENVIRONMENT TO ENTER</span><span>EDGEFLOW v2</span></div>
-</section>
-
-<section id="dash" class="workspace" data-model="NQ">
-  <div class="workspace-header"><div><div class="eyebrow">FUTURES · PERFORMANCE</div><h1>Futures Dashboard</h1><div class="sub">NQ / MNQ / MES / MGC · données et statistiques du modèle Futures uniquement.</div></div><div class="status green">● FUTURES ACTIF</div></div>
-  <div class="dashboard-period-bar"><div><span class="dashboard-period-kicker">PÉRIODE</span><strong id="dashPeriodTitle">—</strong></div><div class="dashboard-period-actions"><button class="secondary dashboard-month-btn" type="button" onclick="changeDashboardMonth('NQ',-1)">‹</button><select id="dashMonthSelect" class="dashboard-month-select" onchange="setDashboardMonth('NQ',this.value)" aria-label="Mois Futures"></select><button class="secondary dashboard-month-btn" type="button" onclick="changeDashboardMonth('NQ',1)">›</button><button class="secondary" type="button" onclick="setDashboardMonth('NQ',localDateISO().slice(0,7))">MOIS ACTUEL</button></div></div>
-  <div class="grid dashboard-kpis edgeflow-kpi-grid">
-    <div class="card"><div class="label">Total trades</div><div class="value" id="dashTrades">0</div><div class="sub">Futures uniquement</div></div>
-    <div class="card kpi-win"><div class="label">Win rate</div><div class="value" id="dashWinrate">—</div><div class="sub">WIN / (WIN + LOSS)</div></div>
-    <div class="card"><div class="label">Win / Loss</div><div class="value small" id="dashWinLoss">—</div><div class="sub">Trades gagnants / perdants</div></div>
-    <div class="card"><div class="label">Profit Factor</div><div class="value" id="dashProfitFactor">—</div><div class="sub">Gross profit / gross loss</div></div>
-    <div class="card"><div class="label">Avg RR</div><div class="value blue" id="dashAvgR">—</div><div class="sub">R réalisé moyen</div></div>
-    <div class="card"><div class="label">P&L cumulé</div><div class="value" id="dashPnl">—</div><div class="sub" id="dashPnlMeta">P&L renseigné dans le Journal</div></div>
-  </div>
-  <div class="dashboard-feature-grid">
-    <div class="section dashboard-recent-panel"><div class="section-head-inline"><div><div class="eyebrow">ACTIVITÉ</div><h2>Recent trades</h2><div class="sub">Dernières exécutions du modèle Futures</div></div><span id="dashDataStatus" class="status">● LOCAL</span></div><div id="dashLatest" class="dashboard-activity-list"><div class="empty">Aucune activité enregistrée.</div></div></div>
-    <div class="section dashboard-context-panel"><div class="eyebrow">FUTURES ENGINE</div><h2>Modèle actif</h2><div class="dashboard-context-title">Rejection Block · Fibonacci</div><div id="modelDescription" class="sub">HTF bias · POI · liquidité/manipulation · retracement Fibonacci · Rejection Block · entrée limite.</div><div class="dashboard-tags"><span class="tag">R.B.</span><span class="tag">0.5</span><span class="tag">0.62</span><span class="tag">0.705</span><span class="tag">0.79</span><span class="tag">LIMIT</span></div><div class="divider"></div><div class="rows"><div class="row"><span>Marché</span><strong>NQ / MNQ / MES / MGC</strong></div><div class="row"><span>Connexions</span><strong>Tradovate · Rithmic</strong></div><div class="row"><span>Exécution</span><strong>READ ONLY</strong></div></div><div class="actions"><button class="primary" onclick="show('bot',this)">ANALYSER UN SETUP</button><button class="secondary" onclick="show('journal',this)">OUVRIR LE JOURNAL</button></div></div>
-  </div>
-  <div class="dashboard-footer-metrics"><div><span>Trades P&L</span><strong id="dashPnlCount">0</strong></div><div><span>Peak P&L</span><strong id="dashPeakPnl">—</strong></div><div><span>Max Drawdown</span><strong id="dashMaxDD">—</strong></div><div><span>Source</span><strong id="dashSourceLabel">Journal</strong></div></div>
-</section>
-
-<section id="cryptoDash" class="workspace hidden" data-model="CRYPTO">
-  <div class="workspace-header"><div><div class="eyebrow">CRYPTO · PERFORMANCE</div><h1>Crypto Dashboard</h1><div class="sub">BTC / ETH / SOL / BNB / XRP / HYPE / FLOKI · données et statistiques Crypto uniquement.</div></div><div class="status green">● CRYPTO ACTIF</div></div>
-  <div class="dashboard-period-bar"><div><span class="dashboard-period-kicker">PÉRIODE</span><strong id="cryptoDashPeriodTitle">—</strong></div><div class="dashboard-period-actions"><button class="secondary dashboard-month-btn" type="button" onclick="changeDashboardMonth('CRYPTO',-1)">‹</button><select id="cryptoDashMonthSelect" class="dashboard-month-select" onchange="setDashboardMonth('CRYPTO',this.value)" aria-label="Mois Crypto"></select><button class="secondary dashboard-month-btn" type="button" onclick="changeDashboardMonth('CRYPTO',1)">›</button><button class="secondary" type="button" onclick="setDashboardMonth('CRYPTO',localDateISO().slice(0,7))">MOIS ACTUEL</button></div></div>
-  <div class="grid dashboard-kpis edgeflow-kpi-grid">
-    <div class="card"><div class="label">Total trades</div><div class="value" id="cryptoDashTrades">0</div><div class="sub">Crypto uniquement</div></div>
-    <div class="card kpi-win"><div class="label">Win rate</div><div class="value" id="cryptoDashWinrate">—</div><div class="sub">WIN / (WIN + LOSS)</div></div>
-    <div class="card"><div class="label">Win / Loss</div><div class="value small" id="cryptoDashWinLoss">—</div><div class="sub">Trades gagnants / perdants</div></div>
-    <div class="card"><div class="label">Profit Factor</div><div class="value" id="cryptoDashProfitFactor">—</div><div class="sub">Gross profit / gross loss</div></div>
-    <div class="card"><div class="label">Avg RR</div><div class="value blue" id="cryptoDashAvgR">—</div><div class="sub">R réalisé moyen</div></div>
-    <div class="card"><div class="label">P&L cumulé</div><div class="value" id="cryptoDashPnl">—</div><div class="sub" id="cryptoDashPnlMeta">P&L renseigné dans le Journal</div></div>
-  </div>
-  <div class="dashboard-feature-grid">
-    <div class="section dashboard-recent-panel"><div class="section-head-inline"><div><div class="eyebrow">ACTIVITÉ</div><h2>Recent trades</h2><div class="sub">Dernières exécutions du modèle Crypto</div></div><span id="cryptoDashDataStatus" class="status">● LOCAL</span></div><div id="cryptoDashLatest" class="dashboard-activity-list"><div class="empty">Aucune activité enregistrée.</div></div></div>
-    <div class="section dashboard-context-panel"><div class="eyebrow">CRYPTO ENGINE</div><h2>Modèle actif</h2><div class="dashboard-context-title">Key Open · HTF POI · High RR</div><div id="cryptoModelDescription" class="sub">Direction du marché · Key Open manipulé/sweep · POI HTF aligné · entrée · high RR.</div><div class="dashboard-tags"><span class="tag">KEY OPEN</span><span class="tag">HTF POI</span><span class="tag">HIGH RR</span><span class="tag">KCEX</span></div><div class="divider"></div><div class="rows"><div class="row"><span>Marché</span><strong>BTC / ETH / SOL / BNB / XRP</strong></div><div class="row"><span>Connexion</span><strong>KCEX</strong></div><div class="row"><span>Exécution</span><strong>READ ONLY</strong></div></div><div class="actions"><button class="primary" onclick="show('crypto',this)">ANALYSER UN SETUP</button><button class="secondary" onclick="show('journal',this)">OUVRIR LE JOURNAL</button></div></div>
-  </div>
-  <div class="dashboard-footer-metrics"><div><span>Trades P&L</span><strong id="cryptoDashPnlCount">0</strong></div><div><span>Peak P&L</span><strong id="cryptoDashPeakPnl">—</strong></div><div><span>Max Drawdown</span><strong id="cryptoDashMaxDD">—</strong></div><div><span>Source</span><strong id="cryptoDashSourceLabel">Journal</strong></div></div>
-</section>
-
-<section id="bot" class="workspace hidden" data-model="NQ">
-  <div class="workspace-header"><div><div class="eyebrow">FUTURES · BOT</div><h1>Bot Futures</h1><div class="sub">Analyse multimodale du modèle NQ. Tradovate et Rithmic restent en lecture seule.</div></div><div id="tvLiveStatus" class="status">● DÉCONNECTÉ</div></div>
-  <div class="grid bot-live-cards">
-    <div class="card live-card"><div class="label">TRADOVATE</div><div id="tvConnectionMain" class="value small">FUTURES</div><div id="tvConnectionText" class="sub">Backend non connecté</div><div class="actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
-    <div class="card live-card"><div class="label">POSITION NQ</div><div id="tvPositionMain" class="value small">FLAT</div><div id="tvPositionSub" class="sub">Aucune position active</div></div>
-    <div class="card live-card"><div class="label">DERNIER FILL</div><div id="tvFillMain" class="value small">—</div><div id="tvFillSub" class="sub">Aucun fill récent</div></div>
-    <div class="card live-card"><div class="label">ÉTAT · MODÈLE</div><div><span id="tvBotState" class="value small green">PRÊT</span><span class="live-divider">·</span><span class="value small red">NQ</span></div><div class="sub">Lecture seule · aucune exécution</div></div>
-  </div>
-  <div class="workspace-grid" style="margin-top:12px">
-    <div class="section">
-      <h2>Tester le modèle Futures</h2>
-      <div class="check-grid">
-        <label class="check-card"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Timing / Session</span><span class="check-meta">+5 · fenêtre</span></span></span><input id="btiming" type="checkbox" checked><span class="check-switch"></span></label>
-        <label class="check-card"><span class="check-main"><span class="check-icon">H</span><span class="check-copy"><span class="check-title">HTF bias aligné</span><span class="check-meta">+5 · structure</span></span></span><input id="bhtf" type="checkbox" checked><span class="check-switch"></span></label>
-        <label class="check-card"><span class="check-main"><span class="check-icon">P</span><span class="check-copy"><span class="check-title">POI propre</span><span class="check-meta">+5 · zone</span></span></span><input id="bpoi" type="checkbox" checked><span class="check-switch"></span></label>
-        <label class="check-card"><span class="check-main"><span class="check-icon">F</span><span class="check-copy"><span class="check-title">Retracement Fibonacci</span><span class="check-meta">+5 · 0.5 / 0.62 / 0.705 / 0.79</span></span></span><input id="bfib" type="checkbox" checked><span class="check-switch"></span></label>
-        <label class="check-card"><span class="check-main"><span class="check-icon">R</span><span class="check-copy"><span class="check-title">Rejection Block</span><span class="check-meta">+5 · zone d'entrée</span></span></span><input id="brb" type="checkbox" checked><span class="check-switch"></span></label>
-        <label class="check-card"><span class="check-main"><span class="check-icon">↕</span><span class="check-copy"><span class="check-title">Entrée / R:R propre</span><span class="check-meta">+5 · pas trop tôt/tard</span></span></span><input id="brr" type="checkbox" checked><span class="check-switch"></span></label>
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Setup backtesté</span><span class="check-meta">KILLER · requis</span></span></span><input id="bbacktest" type="checkbox" checked><span class="check-switch"></span></label>
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Liquidité près du SL</span><span class="check-meta">KILLER</span></span></span><input id="bliq" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card imperfection"><span class="check-main"><span class="check-icon">M</span><span class="check-copy"><span class="check-title">Structure messy</span><span class="check-meta">-5 · IMPERFECTION</span></span></span><input id="bmessy" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Entrée trop tôt / trop tard</span><span class="check-meta">KILLER</span></span></span><input id="btimebad" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">KILLER comportemental</span></span></span><input id="btilt" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Trade pour récupérer</span><span class="check-meta">KILLER comportemental</span></span></span><input id="revenge" type="checkbox"><span class="check-switch"></span></label>
-      </div>
-      <div id="botLiveScore" class="live-check-score"><span>PRÉ-CHECK</span><strong id="botLiveScoreValue">30/30</strong><em id="botLiveScoreGrade">A+</em></div>
-      <textarea id="bnotes" placeholder="HTF bias → POI → liquidité / sweep → retracement → R.B. → entrée → SL/TP → news…"></textarea>
-      <div class="image-drop" style="margin-top:10px"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots</div><div class="image-drop-sub">AVANT = setup. APRÈS = résultat.</div></div><span class="pill">2 max</span></div><div class="image-inputs">
-        <div class="image-input"><label for="bBefore">AVANT / SETUP</label><input id="bBefore" type="file" accept="image/*" data-image-preview="bBeforePreview" onchange="previewJournalImage(this,'bBeforePreview')"><img id="bBeforePreview" class="image-preview"></div>
-        <div class="image-input"><label for="bAfter">APRÈS / RÉSULTAT</label><input id="bAfter" type="file" accept="image/*" data-image-preview="bAfterPreview" onchange="previewJournalImage(this,'bAfterPreview')"><img id="bAfterPreview" class="image-preview"></div>
-      </div></div>
-      <div class="actions"><button class="primary" onclick="runBotTest()">ANALYSER AVEC JARVIS</button></div>
+    <div class="mode-switch" role="group" aria-label="Environnement">
+      <button id="modeNQ" data-site-mode="NQ" type="button" onclick="switchMode('NQ')">FUTURES</button>
+      <button id="modeCRYPTO" data-site-mode="CRYPTO" type="button" onclick="switchMode('CRYPTO')">CRYPTO</button>
     </div>
-    <div class="section"><h2>Analyse</h2><div id="botOutput"><div class="empty">Aucun setup analysé.</div></div><div class="divider"></div><h2>Événements Tradovate</h2><div id="tvDetails" class="rows"><div class="row"><span>Utilisateur</span><span>—</span></div><div class="row"><span>Dernier fill</span><span>—</span></div></div><div id="tvLastEvent" class="ai-box" style="margin-top:8px">Aucun événement récent.</div><div id="tvAI" class="ai-box" style="margin-top:8px">Aucune analyse live.</div></div>
-  </div>
-  <div class="section" style="margin-top:12px"><h2>Rithmic · observateur</h2><div class="ai-box"><b>Lecture seule</b><div class="sub" style="margin-top:6px">Partage la fenêtre de R|Trader. EDGEFLOW compare des captures et cherche uniquement une nouvelle activité de trade visible.</div></div><div class="actions"><button class="primary" onclick="startRithmicScreenShare()">PARTAGER RITHMIC</button><button class="secondary" onclick="stopRithmicScreenShare()">ARRÊTER</button><button class="secondary" onclick="toggleRithmicObserver()">ARMER</button><button class="secondary" onclick="analyzeRithmicScreen()">ANALYSER</button></div><div id="rithmicScreenStatus" class="sub" style="margin-top:8px">Pas de partage actif.</div><video id="rithmicScreenPreview" autoplay muted playsinline style="display:none;width:100%;max-height:400px;margin-top:9px;background:#07090d;border-radius:9px"></video><div id="rithmicObserverState" class="observer-live"><i></i><span>Observateur désarmé</span></div><div id="rithmicAIOutput" class="ai-box" style="margin-top:9px">Aucune capture analysée.</div></div>
-</section>
 
-<section id="crypto" class="workspace hidden" data-model="CRYPTO">
-  <div class="workspace-header"><div><div class="eyebrow">CRYPTO · BOT</div><h1>Bot Crypto</h1><div class="sub">Analyse du modèle Crypto. KCEX reste en lecture seule et aucune exécution n’est effectuée.</div></div><div id="cryptoLiveStatus" class="status green">● CRYPTO</div></div>
-  <div class="grid bot-live-cards">
-    <div class="card live-card"><div class="label">KCEX</div><div id="kcexConnectionMain" class="value small">CRYPTO</div><div id="kcexConnectionText" class="sub">Order Watch · lecture seule</div><div class="actions"><button class="primary" onclick="startKCEXScreenShare()">SURVEILLER</button><button class="secondary" onclick="analyzeKCEXScreen()">ACTUALISER</button></div></div>
-    <div class="card live-card"><div class="label">POSITION</div><div id="kcexPositionMain" class="value small">FLAT</div><div id="kcexPositionSub" class="sub">Aucune position active</div></div>
-    <div class="card live-card"><div class="label">DERNIER ORDRE</div><div id="kcexOrderMain" class="value small">—</div><div id="kcexOrderSub" class="sub">Aucun ordre détecté</div></div>
-    <div class="card live-card"><div class="label">ÉTAT · MODÈLE</div><div><span id="cryptoBotState" class="value small green">PRÊT</span><span class="live-divider">·</span><span class="value small blue">CRYPTO</span></div><div class="sub">Lecture seule · aucune exécution</div></div>
-  </div>
+    <div class="nav-title">WORKSPACE</div>
+    <nav>
+      <div class="nav-group-label">MARKETS</div>
+      <button id="navDash" onclick="showActiveDashboard(this)"><span class="nav-icon">⌂</span><span><b>Overview</b><small>Dashboard & live stats</small></span></button>
+      <button id="navBotFutures" data-mode="NQ" onclick="openBotWorkspace('NQ','bot',this)"><span class="nav-icon">▥</span><span><b>Bot Futures</b><small>NQ intelligence</small></span></button>
+      <button id="navBotCrypto" data-mode="CRYPTO" onclick="openBotWorkspace('CRYPTO','crypto',this)"><span class="nav-icon">◈</span><span><b>Bot Crypto</b><small>Market intelligence</small></span></button>
+      <div class="nav-group-label">INTELLIGENCE</div>
+      <button id="navChat" onclick="show('chat',this)"><span class="nav-icon">✦</span><span><b>JARVIS</b><small>AI trading core</small></span><em>AI</em></button>
+      <button id="navJournal" onclick="show('journal',this)"><span class="nav-icon">▤</span><span><b>Journal</b><small>Trades & review</small></span></button>
+      <div class="nav-group-label">SYSTEM</div>
+      <button id="navSettings" onclick="show('settings',this)"><span class="nav-icon">⚙</span><span><b>Settings</b><small>Connections & voice</small></span></button>
+    </nav>
 
-  <div class="workspace-grid" style="margin-top:12px">
-    <div class="section">
-      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
-        <div><h2>Tester le modèle Crypto</h2><div class="sub">Direction du marché · Key Open manipulé · POI HTF · entrée · high RR.</div></div>
-        <label style="display:flex;align-items:center;gap:7px;font-size:9px;color:#8a95a4">INSTRUMENT <select id="cryptoInstrumentBot" style="width:125px"><option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>XRP</option><option>HYPE</option><option>FLOKI</option></select></label>
+    <div class="side-bottom">
+      <div class="side-ai-status"><span class="ai-status-orb"></span><div><b>EDGEFLOW CORE</b><small>Systems operational</small></div><span class="ai-status-pulse"></span></div>
+      <div class="connection-mini">
+        <div class="mini-head"><span>ACTIVE ENVIRONMENT</span><span class="dot"></span></div>
+        <div id="activeModeLabel" class="mini-sub">FUTURES</div>
+        <div id="connectionMiniSub" class="mini-sub">Tradovate · Rithmic · lecture seule.</div>
       </div>
-      <div class="check-grid" style="margin-top:10px">
-        <label class="check-card"><span class="check-main"><span class="check-icon">D</span><span class="check-copy"><span class="check-title">Direction du marché</span><span class="check-meta">+5 · biais clair</span></span></span><input id="cDirection" type="checkbox" checked><span class="check-switch"></span></label>
-        <label class="check-card"><span class="check-main"><span class="check-icon">K</span><span class="check-copy"><span class="check-title">Key Open manipulé</span><span class="check-meta">+5 · sweep / manipulation</span></span></span><input id="cKeyOpen" type="checkbox" checked><span class="check-switch"></span></label>
-        <label class="check-card"><span class="check-main"><span class="check-icon">P</span><span class="check-copy"><span class="check-title">POI HTF propre</span><span class="check-meta">+5 · zone alignée</span></span></span><input id="cPOI" type="checkbox" checked><span class="check-switch"></span></label>
-        <label class="check-card"><span class="check-main"><span class="check-icon">L</span><span class="check-copy"><span class="check-title">Liquidité / sweep clair</span><span class="check-meta">+5 · contexte</span></span></span><input id="cLiquidity" type="checkbox" checked><span class="check-switch"></span></label>
-        <label class="check-card"><span class="check-main"><span class="check-icon">E</span><span class="check-copy"><span class="check-title">Entrée propre</span><span class="check-meta">+5 · pas forcée</span></span></span><input id="cEntry" type="checkbox" checked><span class="check-switch"></span></label>
-        <label class="check-card"><span class="check-main"><span class="check-icon">R</span><span class="check-copy"><span class="check-title">High RR</span><span class="check-meta">+5 · asymétrie</span></span></span><input id="cRR" type="checkbox" checked><span class="check-switch"></span></label>
-
-        <label class="check-card imperfection"><span class="check-main"><span class="check-icon">O</span><span class="check-copy"><span class="check-title">OTE / Fib secondaire</span><span class="check-meta">-3 · pas requis</span></span></span><input id="cOTE" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card imperfection"><span class="check-main"><span class="check-icon">M</span><span class="check-copy"><span class="check-title">Structure messy</span><span class="check-meta">-5 · imperfection</span></span></span><input id="cMessy" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card imperfection"><span class="check-main"><span class="check-icon">K</span><span class="check-copy"><span class="check-title">Key Open faible / tardif</span><span class="check-meta">-5 · qualité réduite</span></span></span><input id="cKOWeak" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card imperfection"><span class="check-main"><span class="check-icon">P</span><span class="check-copy"><span class="check-title">POI HTF moyen</span><span class="check-meta">-5 · qualité réduite</span></span></span><input id="cPOIWeak" type="checkbox"><span class="check-switch"></span></label>
-
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Key Open absent</span><span class="check-meta">KILLER · modèle</span></span></span><input id="cKOAbsent" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">POI HTF absent</span><span class="check-meta">KILLER · modèle</span></span></span><input id="cPOIAbsent" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Entrée hors modèle</span><span class="check-meta">KILLER · exécution</span></span></span><input id="cEntryBad" type="checkbox"><span class="check-switch"></span></label>
-        <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">High RR insuffisant</span><span class="check-meta">KILLER · asymétrie</span></span></span><input id="cRRBad" type="checkbox"><span class="check-switch"></span></label>
-      </div>
-      <div id="cryptoLiveScore" class="live-check-score" style="margin-top:10px"><span>PRÉ-CHECK CRYPTO</span><strong id="cryptoLiveScoreValue">30/30</strong><em id="cryptoLiveScoreGrade">A+</em></div>
-      <textarea id="cryptoBotContext" placeholder="Direction du marché · Key Open manipulé/sweep · POI HTF · entrée · high RR · contexte réel…"></textarea>
-      <div class="image-drop" style="margin-top:10px"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots Crypto</div><div class="image-drop-sub">AVANT = setup. APRÈS = résultat.</div></div><span class="pill">2 max</span></div><div class="image-inputs">
-        <div class="image-input"><label for="cBefore">AVANT / SETUP</label><input id="cBefore" type="file" accept="image/*" data-image-preview="cBeforePreview" onchange="previewJournalImage(this,'cBeforePreview')"><img id="cBeforePreview" class="image-preview"></div>
-        <div class="image-input"><label for="cAfter">APRÈS / RÉSULTAT</label><input id="cAfter" type="file" accept="image/*" data-image-preview="cAfterPreview" onchange="previewJournalImage(this,'cAfterPreview')"><img id="cAfterPreview" class="image-preview"></div>
-      </div></div>
-      <div class="actions"><button class="primary" onclick="runBotTest()">ANALYSER AVEC JARVIS</button></div>
     </div>
-    <div class="section">
-      <h2>Analyse</h2>
-      <div id="cryptoBotOutput"><div class="empty">Aucun setup analysé.</div></div>
-      <div class="divider"></div>
-      <h2>KCEX · observateur</h2>
-      <div class="rows">
-        <div class="row"><span>État</span><span id="kcexStateRow">Écran non partagé</span></div>
-        <div class="row"><span>Dernier ordre</span><span id="kcexLastOrderRow">—</span></div>
-        <div class="row"><span>Mode</span><span>READ ONLY</span></div>
-      </div>
-      <div id="kcexAI" class="ai-box" style="margin-top:8px">Aucune analyse live.</div>
-    </div>
-  </div>
-  <div class="section" style="margin-top:12px"><h2>KCEX · observateur live</h2><div class="ai-box"><b>Lecture seule</b><div class="sub" style="margin-top:6px">Partage uniquement l’onglet KCEX. Edgeflow compare les captures et cherche un nouvel ordre/position visible.</div></div><div class="actions"><button class="primary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button><button class="secondary" onclick="startKCEXScreenShare()">PARTAGER KCEX</button><button class="secondary" onclick="stopKCEXScreenShare()">ARRÊTER</button><button class="secondary" onclick="analyzeKCEXScreen()">ANALYSER</button><button class="secondary" onclick="toggleKCEXAuto()">AUTO 15s</button></div><div id="kcexScreenStatus" class="sub" style="margin-top:8px">Pas de partage actif.</div><video id="kcexScreenPreview" autoplay muted playsinline style="display:none;width:100%;max-height:400px;margin-top:9px;background:#07090d;border-radius:9px"></video><div id="kcexObserverState" class="observer-live"><i></i><span>Observateur désarmé</span></div><div id="kcexAIOutput" class="ai-box" style="margin-top:9px">Aucune capture analysée.</div></div>
-</section>
+  </aside>
 
-<section id="chat" class="workspace hidden">
-  <div class="workspace-header"><div><div class="eyebrow">JARVIS</div><h1>JARVIS <span class="pill" id="chatModelPill"></span></h1><div class="sub">Contexte verrouillé sur le modèle actif : <span id="chatModeText"></span>.</div></div><div class="status">● CHAT PRÊT</div></div>
-  <div class="section jarvis-overview" style="margin-bottom:12px">
-    <div class="jarvis-console-head">
-      <div class="jarvis-identity">
-        <div class="jarvis-orb-static"><span></span></div>
-        <div><div class="jarvis-kicker">EDGEFLOW AI CORE</div><h2>JARVIS <span id="jarvisModeLabel" class="jarvis-mode-label">FUTURES INTELLIGENCE</span></h2><div class="sub">Même moteur. Contexte, mémoire, historique et règles verrouillés sur le marché actif.</div></div>
+  <main class="main">
+    <div class="edgeflow-topbar">
+      <div class="topbar-left"><span class="topbar-live"></span><span>EDGEFLOW CORE</span><i>•</i><strong id="topbarEnvironment">FUTURES</strong></div>
+      <div class="topbar-center"><span>MARKET INTELLIGENCE</span><span class="topbar-sep">/</span><span id="topbarContext">LIVE WORKSPACE</span></div>
+      <div class="topbar-right"><span class="topbar-readonly">READ ONLY</span><span id="topbarClock">--:--:--</span><span class="topbar-signal">● SYSTEM ONLINE</span></div>
+    </div>
+
+    <section id="models" class="workspace gateway" hidden aria-hidden="true">
+      <div class="gateway-stage"><div class="gateway-bg gateway-red"></div><div class="gateway-bg gateway-blue"></div><div class="gateway-grid"></div></div>
+      <div class="gateway-center">
+        <div class="gateway-logo-mark">
+          <svg viewBox="0 0 120 120" aria-hidden="true"><path d="M24 12h62l17 17v78H24z" fill="none" stroke="#3f9dff" stroke-width="3"/><path d="M86 29H40v57h49M40 58h31" fill="none" stroke="#58a9ff" stroke-width="7"/></svg>
+        </div>
+        <div class="gateway-kicker">THE TRADING INTELLIGENCE PLATFORM</div>
+        <h1>EDGE<span>FLOW</span></h1>
+        <div class="gateway-sub">CHOOSE YOUR ENVIRONMENT · SAME EDGE · DIFFERENT MARKETS</div>
       </div>
-      <div class="jarvis-header-right">
-        <span id="aiEngineStatus" class="status">● VÉRIFICATION</span>
-        <div class="jarvis-model-tabs" role="group" aria-label="Modèle JARVIS">
-          <button id="chatModeNQ" class="jarvis-model-tab" type="button" onclick="switchMode('NQ')">FUTURES</button>
-          <button id="chatModeCrypto" class="jarvis-model-tab" type="button" onclick="switchMode('CRYPTO')">CRYPTO</button>
+      <div class="gateway-choice-grid">
+        <button class="gateway-choice" type="button" onclick="selectModel('NQ')">
+          <span class="gateway-icon">▥</span><span class="gateway-choice-kicker">01 · FUTURES</span><strong>FUTURES</strong>
+          <span class="gateway-desc">MNQ · MES · MGC · NQ · futures intelligence</span><span class="gateway-rule"></span>
+          <span class="gateway-meta">TRADOVATE · RITHMIC · JARVIS · JOURNAL · ANALYTICS</span><span class="gateway-arrow">↗</span>
+        </button>
+        <button class="gateway-choice gateway-crypto" type="button" onclick="selectModel('CRYPTO')">
+          <span class="gateway-icon">◈</span><span class="gateway-choice-kicker">02 · CRYPTO</span><strong>CRYPTO</strong>
+          <span class="gateway-desc">BTC · ETH · SOL · BNB · XRP · digital-asset intelligence</span><span class="gateway-rule"></span>
+          <span class="gateway-meta">KCEX · JARVIS · JOURNAL · ANALYTICS</span><span class="gateway-arrow">↗</span>
+        </button>
+      </div>
+      <div class="gateway-footer"><span>DISCIPLINE × DATA × EXECUTION</span><span>READ ONLY · NO AUTO EXECUTION</span><span>EDGEFLOW 2026</span></div>
+    </section>
+
+    <section id="dash" class="workspace" data-model="NQ">
+      <div class="workspace-header"><div><div id="dashMarketEyebrow" class="eyebrow">FUTURES · PERFORMANCE</div><h1>Overview</h1><div class="sub">One command center for your Futures trading data, review and intelligence.</div></div><div class="status green">● FUTURES LIVE WORKSPACE</div></div>
+
+      <div class="dashboard-period-bar"><div><span class="dashboard-period-kicker">PERIOD</span><strong id="dashPeriodTitle">—</strong></div><div class="dashboard-period-actions"><button class="secondary" type="button" onclick="changeDashboardMonth('NQ',-1)">‹</button><select id="dashMonthSelect" onchange="setDashboardMonth('NQ',this.value)" aria-label="Mois Futures"></select><button class="secondary" type="button" onclick="changeDashboardMonth('NQ',1)">›</button><button class="secondary" type="button" onclick="setDashboardMonth('NQ',localDateISO().slice(0,7))">CURRENT</button></div></div>
+
+      <div class="grid dashboard-kpis">
+        <div class="card"><div class="label">Account Balance</div><div class="value" id="dashPnl">—</div><div class="sub" id="dashPnlMeta">Journal P&L</div></div>
+        <div class="card"><div class="label">Today P&L</div><div class="value green" id="dashTodayPnl">—</div><div class="sub">Current session</div></div>
+        <div class="card"><div class="label">Total P&L</div><div class="value green" id="dashTotalPnl">—</div><div class="sub">Selected period</div></div>
+        <div class="card kpi-win"><div class="label">Win Rate</div><div class="value" id="dashWinrate">—</div><div class="sub">WIN / (WIN + LOSS)</div></div>
+        <div class="card"><div class="label">Win / Loss</div><div class="value small" id="dashWinLoss">—</div><div class="sub">Winners / losers</div></div>
+        <div class="card"><div class="label">Profit Factor</div><div class="value" id="dashProfitFactor">—</div><div class="sub">Gross profit / loss</div></div>
+        <div class="card"><div class="label">Avg RR</div><div class="value blue" id="dashAvgR">—</div><div class="sub">Realized average</div></div>
+        <div class="card"><div class="label">Total Trades</div><div class="value" id="dashTrades">0</div><div class="sub">Futures only</div></div>
+      </div>
+
+      <div class="grid" style="margin-top:8px;grid-template-columns:repeat(3,1fr)">
+        <div class="card"><div class="label">NQ</div><div class="value small">—</div><div class="sub">Primary futures model</div></div>
+        <div class="card"><div class="label">MNQ</div><div class="value small">—</div><div class="sub">Micro futures model</div></div>
+        <div class="card"><div class="label">MES / MGC</div><div class="value small">—</div><div class="sub">Additional instruments</div></div>
+      </div>
+
+      <div class="dashboard-feature-grid">
+        <div class="section dashboard-recent-panel"><div class="section-head-inline"><div><div class="eyebrow">RECENT TRADES</div><h2>Recent activity</h2><div class="sub">Latest journal + server activity</div></div><span id="dashDataStatus" class="status">● LOCAL</span></div><div id="dashLatest" class="dashboard-activity-list"><div class="empty">Aucune activité enregistrée.</div></div></div>
+        <div class="section dashboard-context-panel"><div class="eyebrow">FUTURES ENGINE</div><h2>Active model</h2><div class="dashboard-context-title">Rejection Block · Fibonacci</div><div id="modelDescription" class="sub">HTF bias · POI · liquidité/manipulation · retracement · R.B. · limit entry.</div><div id="dashModelTag" class="dashboard-tags"><span class="tag">R.B.</span><span class="tag">0.5</span><span class="tag">0.62</span><span class="tag">0.705</span><span class="tag">0.79</span><span class="tag">LIMIT</span></div><div class="divider"></div><div class="rows"><div class="row"><span>Connections</span><strong>Tradovate · Rithmic</strong></div><div class="row"><span>Execution</span><strong>READ ONLY</strong></div><div class="row"><span>Data</span><strong>Journal + Server</strong></div></div><div class="actions"><button class="primary" onclick="show('bot',this)">ANALYZE SETUP</button><button class="secondary" onclick="show('journal',this)">OPEN JOURNAL</button></div></div>
+      </div>
+      <div class="dashboard-footer-metrics"><div><span>Trades P&L</span><strong id="dashPnlCount">0</strong></div><div><span>Peak P&L</span><strong id="dashPeakPnl">—</strong></div><div><span>Max Drawdown</span><strong id="dashMaxDD">—</strong></div><div><span>Source</span><strong id="dashSourceLabel">Journal</strong></div></div>
+    </section>
+
+    <section id="cryptoDash" class="workspace hidden" data-model="CRYPTO">
+      <div class="workspace-header"><div><div id="cryptoDashMarketEyebrow" class="eyebrow">CRYPTO · PERFORMANCE</div><h1>Overview</h1><div class="sub">Crypto-first trading journal, analytics and intelligence in a separate workspace.</div></div><div class="status green">● CRYPTO LIVE WORKSPACE</div></div>
+      <div class="dashboard-period-bar"><div><span class="dashboard-period-kicker">PERIOD</span><strong id="cryptoDashPeriodTitle">—</strong></div><div class="dashboard-period-actions"><button class="secondary" type="button" onclick="changeDashboardMonth('CRYPTO',-1)">‹</button><select id="cryptoDashMonthSelect" onchange="setDashboardMonth('CRYPTO',this.value)" aria-label="Mois Crypto"></select><button class="secondary" type="button" onclick="changeDashboardMonth('CRYPTO',1)">›</button><button class="secondary" type="button" onclick="setDashboardMonth('CRYPTO',localDateISO().slice(0,7))">CURRENT</button></div></div>
+      <div class="grid dashboard-kpis">
+        <div class="card"><div class="label">Account Balance</div><div class="value" id="cryptoDashPnl">—</div><div class="sub" id="cryptoDashPnlMeta">Journal P&L</div></div>
+        <div class="card"><div class="label">Today P&L</div><div class="value green">—</div><div class="sub">Current session</div></div>
+        <div class="card"><div class="label">Total P&L</div><div class="value green">—</div><div class="sub">Selected period</div></div>
+        <div class="card kpi-win"><div class="label">Win Rate</div><div class="value" id="cryptoDashWinrate">—</div><div class="sub">WIN / (WIN + LOSS)</div></div>
+        <div class="card"><div class="label">Win / Loss</div><div class="value small" id="cryptoDashWinLoss">—</div><div class="sub">Winners / losers</div></div>
+        <div class="card"><div class="label">Profit Factor</div><div class="value" id="cryptoDashProfitFactor">—</div><div class="sub">Gross profit / loss</div></div>
+        <div class="card"><div class="label">Avg RR</div><div class="value blue" id="cryptoDashAvgR">—</div><div class="sub">Realized average</div></div>
+        <div class="card"><div class="label">Total Trades</div><div class="value" id="cryptoDashTrades">0</div><div class="sub">Crypto only</div></div>
+      </div>
+      <div class="grid" style="margin-top:8px;grid-template-columns:repeat(4,1fr)">
+        <div class="card"><div class="label">BTC</div><div class="value small">—</div><div class="sub">Primary crypto</div></div>
+        <div class="card"><div class="label">ETH</div><div class="value small">—</div><div class="sub">Major alt</div></div>
+        <div class="card"><div class="label">SOL</div><div class="value small">—</div><div class="sub">Major alt</div></div>
+        <div class="card"><div class="label">BNB / XRP</div><div class="value small">—</div><div class="sub">Additional assets</div></div>
+      </div>
+      <div class="dashboard-feature-grid">
+        <div class="section dashboard-recent-panel"><div class="section-head-inline"><div><div class="eyebrow">RECENT TRADES</div><h2>Recent activity</h2><div class="sub">Crypto journal + server activity</div></div><span id="cryptoDashDataStatus" class="status">● LOCAL</span></div><div id="cryptoDashLatest" class="dashboard-activity-list"><div class="empty">Aucune activité enregistrée.</div></div></div>
+        <div class="section dashboard-context-panel"><div class="eyebrow">CRYPTO ENGINE</div><h2>Active model</h2><div class="dashboard-context-title">Key Open · HTF POI · High RR</div><div id="cryptoModelDescription" class="sub">Direction · Key Open manipulation/sweep · HTF POI alignment · entry · high RR.</div><div id="cryptoDashModelTag" class="dashboard-tags"><span class="tag">KEY OPEN</span><span class="tag">HTF POI</span><span class="tag">HIGH RR</span><span class="tag">KCEX</span></div><div class="divider"></div><div class="rows"><div class="row"><span>Connection</span><strong>KCEX</strong></div><div class="row"><span>Execution</span><strong>READ ONLY</strong></div><div class="row"><span>Data</span><strong>Journal + Server</strong></div></div><div class="actions"><button class="primary" onclick="show('crypto',this)">ANALYZE SETUP</button><button class="secondary" onclick="show('journal',this)">OPEN JOURNAL</button></div></div>
+      </div>
+      <div class="dashboard-footer-metrics"><div><span>Trades P&L</span><strong id="cryptoDashPnlCount">0</strong></div><div><span>Peak P&L</span><strong id="cryptoDashPeakPnl">—</strong></div><div><span>Max Drawdown</span><strong id="cryptoDashMaxDD">—</strong></div><div><span>Source</span><strong id="cryptoDashSourceLabel">Journal</strong></div></div>
+    </section>
+
+    <section id="bot" class="workspace hidden" data-model="NQ">
+      <div class="workspace-header"><div><div class="eyebrow">FUTURES · AI ASSISTANT</div><h1>Bot Futures</h1><div class="sub">Live read-only context + model checklist for NQ / MNQ / MES / MGC.</div></div><div id="tvLiveStatus" class="status">● DISCONNECTED</div></div>
+      <div class="grid bot-live-cards">
+        <div class="card live-card"><div class="label">TRADOVATE</div><div id="tvConnectionMain" class="value small">FUTURES</div><div id="tvConnectionText" class="sub">Backend status</div><div class="actions"><button class="primary" onclick="connectTradovateUI()">CONNECT</button><button class="secondary" onclick="refreshTradovateUI()">REFRESH</button></div></div>
+        <div class="card live-card"><div class="label">POSITION</div><div id="tvPositionMain" class="value small">FLAT</div><div id="tvPositionSub" class="sub">No active position</div></div>
+        <div class="card live-card"><div class="label">LAST FILL</div><div id="tvFillMain" class="value small">—</div><div id="tvFillSub" class="sub">No recent fill</div></div>
+        <div class="card live-card"><div class="label">MODEL STATE</div><div><span id="tvBotState" class="value small green">READY</span></div><div class="sub">READ ONLY · no execution</div></div>
+      </div>
+      <div class="workspace-grid">
+        <div class="section">
+          <div class="eyebrow">SETUP CHECK</div><h2>Test the Futures model</h2><div class="sub" style="margin:5px 0 8px">Required sequence: bias → POI → liquidity → retracement → R.B. → entry.</div>
+          <div class="check-grid">
+            <label class="check-card"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Timing / Session</span><span class="check-meta">window</span></span></span><input id="btiming" type="checkbox" checked><span class="check-switch"></span></label>
+            <label class="check-card"><span class="check-main"><span class="check-icon">H</span><span class="check-copy"><span class="check-title">HTF bias aligned</span><span class="check-meta">structure</span></span></span><input id="bhtf" type="checkbox" checked><span class="check-switch"></span></label>
+            <label class="check-card"><span class="check-main"><span class="check-icon">P</span><span class="check-copy"><span class="check-title">POI clean</span><span class="check-meta">zone</span></span></span><input id="bpoi" type="checkbox" checked><span class="check-switch"></span></label>
+            <label class="check-card"><span class="check-main"><span class="check-icon">F</span><span class="check-copy"><span class="check-title">Fib retracement</span><span class="check-meta">0.5 / 0.62 / 0.705 / 0.79</span></span></span><input id="bfib" type="checkbox" checked><span class="check-switch"></span></label>
+            <label class="check-card"><span class="check-main"><span class="check-icon">R</span><span class="check-copy"><span class="check-title">Rejection Block</span><span class="check-meta">entry zone</span></span></span><input id="brb" type="checkbox" checked><span class="check-switch"></span></label>
+            <label class="check-card"><span class="check-main"><span class="check-icon">↕</span><span class="check-copy"><span class="check-title">Entry / R:R</span><span class="check-meta">timing + location</span></span></span><input id="brr" type="checkbox" checked><span class="check-switch"></span></label>
+            <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Backtested</span><span class="check-meta">killer if missing</span></span></span><input id="bbacktest" type="checkbox" checked><span class="check-switch"></span></label>
+            <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Liquidity near SL</span><span class="check-meta">killer</span></span></span><input id="bliq" type="checkbox"><span class="check-switch"></span></label>
+            <label class="check-card"><span class="check-main"><span class="check-icon">M</span><span class="check-copy"><span class="check-title">Messy structure</span><span class="check-meta">imperfection</span></span></span><input id="bmessy" type="checkbox"><span class="check-switch"></span></label>
+            <label class="check-card killer"><span class="check-main"><span class="check-icon">T</span><span class="check-copy"><span class="check-title">Too early / too late</span><span class="check-meta">killer</span></span></span><input id="btimebad" type="checkbox"><span class="check-switch"></span></label>
+            <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Tilt</span><span class="check-meta">behavioral killer</span></span></span><input id="btilt" type="checkbox"><span class="check-switch"></span></label>
+            <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Revenge trade</span><span class="check-meta">behavioral killer</span></span></span><input id="revenge" type="checkbox"><span class="check-switch"></span></label>
+          </div>
+          <div id="botLiveScore" class="live-check-score"><span>PRE-CHECK</span><strong id="botLiveScoreValue">30/30</strong><em id="botLiveScoreGrade">A+</em></div>
+          <textarea id="bnotes" style="width:100%;min-height:80px;margin-top:7px" placeholder="HTF bias → POI → sweep → retracement → R.B. → entry → SL/TP → news…"></textarea>
+          <div class="image-drop"><div class="image-drop-title">SCREENSHOTS · BEFORE / AFTER</div><div class="image-drop-sub">Keep the evidence with the setup.</div><div class="image-inputs">
+            <div class="image-input"><label for="bBefore">BEFORE / SETUP</label><input id="bBefore" type="file" accept="image/*" data-image-preview="bBeforePreview" onchange="previewJournalImage(this,'bBeforePreview')"><img id="bBeforePreview" class="image-preview"></div>
+            <div class="image-input"><label for="bAfter">AFTER / RESULT</label><input id="bAfter" type="file" accept="image/*" data-image-preview="bAfterPreview" onchange="previewJournalImage(this,'bAfterPreview')"><img id="bAfterPreview" class="image-preview"></div>
+          </div></div>
+          <div class="actions"><button class="primary" onclick="runBotTest()">ANALYZE WITH JARVIS</button></div>
+        </div>
+        <div class="section">
+          <div class="eyebrow">JARVIS ANALYSIS</div><h2>Model output</h2><div id="botOutput"><div class="empty">No setup analyzed.</div></div>
+          <div class="divider"></div><div class="eyebrow">TRADOVATE EVENT FEED</div><div id="tvDetails" class="rows"><div class="row"><span>User</span><span>—</span></div><div class="row"><span>Last fill</span><span>—</span></div></div><div id="tvLastEvent" class="ai-box" style="margin-top:6px">No recent event.</div><div id="tvAI" class="ai-box" style="margin-top:6px">No live analysis.</div>
         </div>
       </div>
-    </div>
-    <div class="workspace-grid" style="margin-top:10px">
-      <div class="ai-box"><div class="label">MÉMOIRE ACTIVE</div><div id="aiMemoryStatus" style="margin-top:6px;font-size:12px;font-weight:800">—</div><div id="aiMemorySub" class="sub" style="margin-top:5px">—</div></div>
-      <div class="ai-box"><div class="label">OPTIMISATION</div><div class="actions" style="margin-top:8px"><button class="primary" onclick="runDailyOptimization()">REVUE DU JOUR</button><button class="secondary" onclick="askCoachQuestion()">QUESTION COACH</button></div></div>
-    </div>
-    <div id="aiOptimizationOutput" class="ai-box" style="margin-top:10px;display:none"></div>
-  </div>
-  <div class="section chat-shell jarvis-chat"><div class="jarvis-chat-top"><div><span class="jarvis-live-dot"></span><span id="chatModeText2">FUTURES</span> · SESSION ACTIVE</div><div class="jarvis-readonly">READ ONLY</div></div><div id="chatMessages" class="chat-messages"><div class="bubble ai"><b>JARVIS</b><div class="sub" style="margin-top:5px">Je suis prêt. Je réponds selon le modèle actif et son historique.</div></div></div><div class="chat-input"><textarea id="chatInput" rows="1" placeholder="Écris ici…"></textarea><button class="primary" onclick="sendChat()">ENVOYER</button></div></div>
-</section>
+      <div class="section" style="margin-top:8px;padding:12px"><div class="eyebrow">RITHMIC · ORDER WATCH</div><h2>Read-only observer</h2><div class="sub" style="margin:5px 0 7px">Share R|Trader. EDGEFLOW compares frames and looks only for visible order activity.</div><div class="actions"><button class="primary" onclick="startRithmicScreenShare()">SHARE RITHMIC</button><button class="secondary" onclick="stopRithmicScreenShare()">STOP</button><button class="secondary" onclick="toggleRithmicObserver()">ARM</button><button class="secondary" onclick="analyzeRithmicScreen()">ANALYZE</button></div><div id="rithmicScreenStatus" class="sub" style="margin-top:6px">No screen share.</div><video id="rithmicScreenPreview" autoplay muted playsinline style="display:none;width:100%;max-height:320px;margin-top:7px;background:#05090e;border-radius:7px"></video><div id="rithmicObserverState" class="observer-live"><i></i><span>Observer disarmed</span></div><div id="rithmicAIOutput" class="ai-box" style="margin-top:7px">No frame analyzed.</div></div>
+    </section>
 
-<section id="journal" class="workspace hidden">
-  <div class="workspace-header"><div><div class="eyebrow">HISTORIQUE</div><h1>Journal de trading</h1><div class="sub">Chaque entrée est enregistrée sous le modèle actif. Futures et Crypto restent séparés.</div></div><div class="status green">● JOURNAL ACTIF</div></div>
-  <div class="grid">
-    <div class="card"><div class="label">Mois actif</div><div class="value small" id="journalMonth">—</div></div>
-    <div class="card"><div class="label">Trades ce mois</div><div class="value" id="monthTrades">0</div></div>
-    <div class="card"><div class="label">Futures</div><div class="value red" id="monthNQ">0</div></div>
-    <div class="card"><div class="label">Crypto</div><div class="value blue" id="monthCrypto">0</div></div>
-  </div>
-  <div class="section" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:15px"><div><h2>Nouvelle entrée</h2><div class="sub">Le marché est verrouillé sur le modèle actif.</div></div><span class="tag" id="journalModeBadge">FUTURES</span></div>
-    <div class="field-grid" style="margin-top:12px">
-      <label>Date<div class="date-entry"><input id="jDate" type="date"><button type="button" class="secondary" onclick="setJournalViewDate(localDateISO())">AUJOURD’HUI</button></div><div id="jDateDisplay" class="sub" style="margin-top:6px"></div></label>
-      <label>Marché<select id="jMarket" disabled><option value="FUTURES">FUTURES</option><option value="CRYPTO">CRYPTO</option></select></label>
-      <label>Instrument<select id="jInstrument"></select></label>
-      <label>Session<input id="jSession" placeholder="NY AM / NY PM / London / Asia…"></label>
-      <label>Résultat<input id="jResult" placeholder="WIN / LOSS / BE"></label>
-      <label>Grade<input id="jGrade" placeholder="A+ / A / B+…"></label>
-      <label>R réalisé<input id="jR" placeholder="+4R / -1R"></label>
-      <label>$ P&L<input id="jPnL" placeholder="+400 / -100"></label>
-      <div class="full"><textarea id="jContext" placeholder="Contexte du trade…"></textarea></div>
-      <div class="full"><textarea id="jErrors" placeholder="Erreurs / points à améliorer…"></textarea></div>
-      <div class="full"><textarea id="jLesson" placeholder="Leçon concrète…"></textarea></div>
-      <div class="full"><div class="image-drop"><div class="image-drop-head"><div><div class="image-drop-title">Screenshots du trade</div><div class="image-drop-sub">AVANT et APRÈS sont conservés avec l’entrée.</div></div></div><div class="image-inputs"><div class="image-input"><label for="jBefore">AVANT</label><input id="jBefore" type="file" accept="image/*" data-image-preview="jBeforePreview" onchange="previewJournalImage(this,'jBeforePreview')"><img id="jBeforePreview" class="image-preview"></div><div class="image-input"><label for="jAfter">APRÈS</label><input id="jAfter" type="file" accept="image/*" data-image-preview="jAfterPreview" onchange="previewJournalImage(this,'jAfterPreview')"><img id="jAfterPreview" class="image-preview"></div></div></div></div>
-      <div class="full"><h3>🤖 JARVIS</h3><textarea id="jAI" readonly placeholder="Pré-analyse JARVIS…"></textarea></div>
-      <div class="full actions"><span id="journalSyncStatus" class="status" style="margin-right:auto">● PRÊT</span><button class="primary" onclick="prepareAIJournal()">PRÉ-ANALYSER</button><button class="primary" onclick="saveJournalEntry()">ENREGISTRER</button><button class="secondary" onclick="resetJournalForm()">RÉINITIALISER</button></div>
-    </div>
-  </div>
-  <div class="section journal-history-panel" style="margin-top:12px">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
-    <div><h2>Trades du jour</h2><div id="journalViewLabel" class="sub">—</div></div>
-    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-      <button class="secondary" style="min-width:36px;padding:0 10px" type="button" onclick="changeJournalViewDate(-1)">‹</button>
-      <select id="journalDaySelect" style="min-width:235px;height:36px;padding:0 9px;font-size:10px;font-weight:750" onchange="setJournalViewDate(this.value)" aria-label="Jour affiché"></select>
-      <button class="secondary" style="min-width:36px;padding:0 10px" type="button" onclick="changeJournalViewDate(1)">›</button>
-      <button class="secondary" type="button" onclick="setJournalViewDate(localDateISO())">AUJOURD'HUI</button>
-    </div>
-  </div>
-  <div id="journalDayArchive" style="margin-top:10px"></div>
+    <section id="crypto" class="workspace hidden" data-model="CRYPTO">
+      <div class="workspace-header"><div><div class="eyebrow">CRYPTO · AI ASSISTANT</div><h1>Bot Crypto</h1><div class="sub">Crypto setup analysis with a separate model contract and KCEX read-only observer.</div></div><div id="cryptoLiveStatus" class="status green">● CRYPTO</div></div>
+      <div class="grid bot-live-cards">
+        <div class="card live-card"><div class="label">KCEX</div><div id="kcexConnectionMain" class="value small">CRYPTO</div><div id="kcexConnectionText" class="sub">Order Watch · read only</div><div class="actions"><button class="primary" onclick="startKCEXScreenShare()">WATCH</button><button class="secondary" onclick="analyzeKCEXScreen()">REFRESH</button></div></div>
+        <div class="card live-card"><div class="label">POSITION</div><div id="kcexPositionMain" class="value small">FLAT</div><div id="kcexPositionSub" class="sub">No active position</div></div>
+        <div class="card live-card"><div class="label">LAST ORDER</div><div id="kcexOrderMain" class="value small">—</div><div id="kcexOrderSub" class="sub">No recent order</div></div>
+        <div class="card live-card"><div class="label">MODEL STATE</div><div id="cryptoBotState" class="value small green">READY</div><div class="sub">Read only · no execution</div></div>
+      </div>
+      <div class="workspace-grid">
+        <div class="section"><div class="eyebrow">SETUP CHECK</div><h2>Test the Crypto model</h2><div class="sub" style="margin:5px 0 8px">Direction → Key Open → HTF POI → liquidity → entry → high RR.</div>
+          <div class="check-grid">
+            <label class="check-card"><span class="check-main"><span class="check-icon">M</span><span class="check-copy"><span class="check-title">Market direction</span><span class="check-meta">core</span></span></span><input id="cDirection" type="checkbox" checked><span class="check-switch"></span></label>
+            <label class="check-card"><span class="check-main"><span class="check-icon">K</span><span class="check-copy"><span class="check-title">Key Open manipulated</span><span class="check-meta">sweep</span></span></span><input id="cKeyOpen" type="checkbox" checked><span class="check-switch"></span></label>
+            <label class="check-card"><span class="check-main"><span class="check-icon">P</span><span class="check-copy"><span class="check-title">HTF POI aligned</span><span class="check-meta">core</span></span></span><input id="cPOI" type="checkbox" checked><span class="check-switch"></span></label>
+            <label class="check-card"><span class="check-main"><span class="check-icon">L</span><span class="check-copy"><span class="check-title">Liquidity / sweep</span><span class="check-meta">context</span></span></span><input id="cLiquidity" type="checkbox" checked><span class="check-switch"></span></label>
+            <label class="check-card"><span class="check-main"><span class="check-icon">E</span><span class="check-copy"><span class="check-title">Entry location</span><span class="check-meta">clean</span></span></span><input id="cEntry" type="checkbox" checked><span class="check-switch"></span></label>
+            <label class="check-card"><span class="check-main"><span class="check-icon">R</span><span class="check-copy"><span class="check-title">High R:R</span><span class="check-meta">core</span></span></span><input id="cRR" type="checkbox" checked><span class="check-switch"></span></label>
+            <label class="check-card"><span class="check-main"><span class="check-icon">O</span><span class="check-copy"><span class="check-title">OTE / Fib</span><span class="check-meta">secondary</span></span></span><input id="cOTE" type="checkbox"><span class="check-switch"></span></label>
+            <label class="check-card"><span class="check-main"><span class="check-icon">M</span><span class="check-copy"><span class="check-title">Messy context</span><span class="check-meta">imperfection</span></span></span><input id="cMessy" type="checkbox"><span class="check-switch"></span></label>
+            <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Key Open absent / weak</span><span class="check-meta">killer</span></span></span><input id="cKOWeak" type="checkbox"><span class="check-switch"></span></label>
+            <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">POI weak / absent</span><span class="check-meta">killer</span></span></span><input id="cPOIWeak" type="checkbox"><span class="check-switch"></span></label>
+            <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Key Open absent</span><span class="check-meta">killer</span></span></span><input id="cKOAbsent" type="checkbox"><span class="check-switch"></span></label>
+            <label class="check-card killer"><span class="check-main"><span class="check-icon">!</span><span class="check-copy"><span class="check-title">Bad entry / R:R</span><span class="check-meta">killer</span></span></span><input id="cEntryBad" type="checkbox"><span class="check-switch"></span></label>
+          </div>
+          <div id="cryptoLiveScore" class="live-check-score"><span>PRE-CHECK</span><strong id="cryptoLiveScoreValue">30/30</strong><em id="cryptoLiveScoreGrade">A+</em></div>
+          <textarea id="cryptoBotContext" style="width:100%;min-height:80px;margin-top:7px" placeholder="Market direction → KO → HTF POI → liquidity → entry → R:R → context…"></textarea>
+          <div class="image-drop"><div class="image-drop-title">SCREENSHOTS · BEFORE / AFTER</div><div class="image-drop-sub">Keep the evidence with the setup.</div><div class="image-inputs">
+            <div class="image-input"><label for="cBefore">BEFORE / SETUP</label><input id="cBefore" type="file" accept="image/*" data-image-preview="cBeforePreview" onchange="previewJournalImage(this,'cBeforePreview')"><img id="cBeforePreview" class="image-preview"></div>
+            <div class="image-input"><label for="cAfter">AFTER / RESULT</label><input id="cAfter" type="file" accept="image/*" data-image-preview="cAfterPreview" onchange="previewJournalImage(this,'cAfterPreview')"><img id="cAfterPreview" class="image-preview"></div>
+          </div></div>
+          <div class="actions"><button class="primary" onclick="runBotTest()">ANALYZE WITH JARVIS</button></div>
+        </div>
+        <div class="section"><div class="eyebrow">JARVIS ANALYSIS</div><h2>Model output</h2><div id="cryptoBotOutput"><div class="empty">No setup analyzed.</div></div><div class="divider"></div><div class="eyebrow">KCEX ORDER WATCH</div><div id="kcexStateRow" class="rows"><div class="row"><span>State</span><span>—</span></div></div><div id="kcexLastOrderRow" class="rows" style="margin-top:4px"><div class="row"><span>Last order</span><span>—</span></div></div><div id="kcexAI" class="ai-box" style="margin-top:6px">No live analysis.</div></div>
+      </div>
+      <div class="section" style="margin-top:8px;padding:12px"><div class="eyebrow">KCEX · ORDER WATCH</div><h2>Read-only observer</h2><div class="actions"><button class="primary" onclick="startKCEXScreenShare()">SHARE KCEX</button><button class="secondary" onclick="stopKCEXScreenShare()">STOP</button><button class="secondary" onclick="toggleKCEXAuto()">ARM AUTO WATCH</button><button class="secondary" onclick="analyzeKCEXScreen()">ANALYZE</button></div><div id="kcexScreenStatus" class="sub" style="margin-top:6px">No screen share.</div><video id="kcexScreenPreview" autoplay muted playsinline style="display:none;width:100%;max-height:320px;margin-top:7px;background:#05090e;border-radius:7px"></video><div id="kcexObserverState" class="observer-live"><i></i><span>Observer disarmed</span></div><div id="kcexAIOutput" class="ai-box" style="margin-top:7px">No frame analyzed.</div></div>
+    </section>
+
+    <section id="chat" class="workspace hidden">
+      <div class="workspace-header"><div><div class="eyebrow">JARVIS · INTELLIGENCE CORE</div><h1>JARVIS</h1><div class="sub">Your trading intelligence layer: memory, analysis, review and live context.</div></div><div id="aiEngineStatus" class="status">● ENGINE CHECKING</div></div>
+      <div class="chat-shell">
+        <div class="jarvis-console">
+          <div class="jarvis-console-head"><div class="jarvis-identity"><div class="jarvis-orb-static"></div><div><div class="jarvis-kicker">EDGEFLOW AI</div><h2>JARVIS <span id="jarvisModeLabel">FUTURES INTELLIGENCE</span></h2><div class="sub">Same JARVIS identity · environment-aware context</div></div></div><div class="jarvis-header-right"><button id="chatModeNQ" class="jarvis-model-tab active" onclick="switchMode('NQ')">FUTURES</button><button id="chatModeCrypto" class="jarvis-model-tab" onclick="switchMode('CRYPTO')">CRYPTO</button><span id="chatModelPill" class="status">NQ MODÈLE</span></div></div>
+          <div class="jarvis-chat-body">
+            <div class="workspace-grid jarvis-side">
+              <div class="ai-box"><div class="label">AI MEMORY</div><div id="aiMemoryStatus" class="value small" style="margin-top:5px">—</div><div id="aiMemorySub" class="sub">Historical model context</div></div>
+              <div class="ai-box"><div class="label">DATA ACCESS</div><div id="aiDataAccess" class="sub" style="margin-top:6px">Checking server context…</div></div>
+            </div>
+            <div class="ai-box" style="margin-bottom:7px"><div class="label">DAILY OPTIMIZATION</div><div id="aiOptimizationOutput" class="sub" style="margin-top:5px">No optimization run today.</div><div class="actions"><button class="secondary" onclick="runDailyOptimization()">RUN OPTIMIZATION</button><button class="secondary" onclick="askCoachQuestion()">ASK COACH</button></div></div>
+            <div id="chatMessages" class="chat-messages"></div>
+            <div class="chat-input"><input id="chatInput" type="text" placeholder="Ask JARVIS anything about your trading…"><button class="primary" onclick="sendChat()">SEND</button></div>
+          </div>
+        </div>
+      </div>
+      <div id="chatModeText" class="hidden">NQ</div><div id="chatModeText2" class="hidden">NQ</div>
+    </section>
+
+    <section id="journal" class="workspace hidden">
+      <div class="workspace-header"><div><div class="eyebrow">JOURNAL · TRADES & REVIEW</div><h1>Journal</h1><div class="sub">Capture the setup, execution, evidence, result and lesson in one system.</div></div><div id="journalModeBadge" class="status">● FUTURES</div></div>
+      <div class="journal-meta">
+        <div class="mini-kpi"><span>TRADES</span><strong id="monthTrades">0</strong></div><div class="mini-kpi"><span>FUTURES</span><strong id="monthNQ">0</strong></div><div class="mini-kpi"><span>CRYPTO</span><strong id="monthCrypto">0</strong></div><div class="mini-kpi"><span>VIEW</span><strong id="journalViewLabel">—</strong></div>
+      </div>
+      <div class="journal-layout">
+        <div class="section journal-form">
+          <div class="section-head-inline"><div><div class="eyebrow">NEW ENTRY</div><h2>Trade journal</h2></div><button class="secondary" onclick="resetJournalForm()">RESET</button></div>
+          <div class="form" style="margin-top:8px">
+            <label>Date<input id="jDate" type="date"><span id="jDateDisplay" class="sub"></span></label>
+            <label>Market<select id="jMarket"><option value="NQ">Futures</option><option value="CRYPTO">Crypto</option></select></label>
+            <label>Instrument<input id="jInstrument" type="text" placeholder="MNQ / NQ / BTC / ETH…"></label>
+            <label>Session<input id="jSession" type="text" placeholder="Asia / London / NY…"></label>
+            <label>Result<select id="jResult"><option value="WIN">WIN</option><option value="LOSS">LOSS</option><option value="BE">BE</option><option value="OPEN">OPEN</option></select></label>
+            <label>Grade<select id="jGrade"><option value="A+">A+</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option></select></label>
+            <label>R<input id="jR" type="number" step="0.1" placeholder="3.4"></label>
+            <label>P&L<input id="jPnL" type="number" step="0.01" placeholder="225"></label>
+            <label class="full">Context<textarea id="jContext" placeholder="HTF bias, POI, sweep, retracement, setup context…"></textarea></label>
+            <label class="full">Errors<textarea id="jErrors" placeholder="What was imperfect or invalid?"></textarea></label>
+            <label class="full">Lesson<textarea id="jLesson" placeholder="What should JARVIS remember?"></textarea></label>
+          </div>
+          <div class="image-drop"><div class="image-drop-title">TRADE EVIDENCE</div><div class="image-drop-sub">Before / after screenshots stay attached to this journal entry.</div><div class="image-inputs">
+            <div class="image-input"><label for="jBefore">BEFORE</label><input id="jBefore" type="file" accept="image/*" data-image-preview="jBeforePreview" onchange="previewJournalImage(this,'jBeforePreview')"><img id="jBeforePreview" class="image-preview"></div>
+            <div class="image-input"><label for="jAfter">AFTER</label><input id="jAfter" type="file" accept="image/*" data-image-preview="jAfterPreview" onchange="previewJournalImage(this,'jAfterPreview')"><img id="jAfterPreview" class="image-preview"></div>
+          </div></div>
+          <div class="actions"><button class="primary" onclick="prepareAIJournal()">ANALYZE WITH JARVIS</button><button class="secondary" onclick="saveJournalEntry()">SAVE ENTRY</button><button class="secondary" onclick="resetJournalForm()">CLEAR</button></div>
+          <div id="jAI" class="ai-box" style="margin-top:7px">No AI journal analysis yet.</div>
+        </div>
+        <div class="section journal-side">
+          <div class="calendar-shell"><div class="calendar-head"><h3>Trading calendar</h3><span id="journalMonth" class="status">SEPTEMBER 2026</span></div><div id="journalDayArchive" class="calendar-grid"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div></div>
+          <div class="ai-box" style="margin-top:7px"><div class="eyebrow">DAY VIEW</div><div style="display:flex;gap:5px;margin-bottom:6px"><button class="secondary" onclick="changeJournalViewDate(-1)">‹</button><select id="journalDaySelect" style="flex:1" onchange="setJournalViewDate(this.value)"></select><button class="secondary" onclick="changeJournalViewDate(1)">›</button></div><div id="journalViewDate"></div></div>
+          <div class="ai-box" style="margin-top:7px"><div class="eyebrow">JARVIS REVIEW</div><div id="journalAI">No daily analysis yet.</div><div class="actions"><button class="secondary" onclick="askJournalAI()">REVIEW THIS DAY</button></div></div>
+          <div id="journalSyncStatus" class="sub" style="margin-top:7px">Local journal ready.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="settings" class="workspace hidden">
+      <div class="workspace-header"><div><div class="eyebrow">SYSTEM · CONFIGURATION</div><h1>Settings</h1><div class="sub">Connections, AI access, Obsidian memory and JARVIS voice.</div></div><div id="backendStatus" class="status">● CHECKING BACKEND</div></div>
+      <div class="settings-grid">
+        <div class="section settings-card"><div class="eyebrow">SERVER</div><h2>EDGEFLOW CORE</h2><div class="rows" style="margin-top:8px"><div class="row"><span>Backend URL</span><strong id="botApiUrlLabel">Railway</strong></div><div class="row"><span>Active model</span><strong id="settingsModel">NQ</strong></div><div class="row"><span>Mode</span><strong>READ ONLY</strong></div></div><div class="form" style="margin-top:8px"><label class="full">Bot API URL<input id="botApiUrl" type="text" placeholder="https://…"></label><label class="full">Access Key<input id="edgeflowAccessKey" type="password" placeholder="Optional"></label></div><div class="actions"><button class="primary" onclick="saveBotUrl()">SAVE URL</button><button class="secondary" onclick="testBotConnection()">TEST CONNECTION</button></div></div>
+
+        <div class="section settings-card"><div class="eyebrow">CONNECTIONS · FUTURES</div><h2>Tradovate / Rithmic</h2><div class="connection-list" style="margin-top:8px"><div class="connection-row"><div class="connection-logo">T</div><div class="connection-copy"><b>Tradovate</b><small>Futures · read only · account/position/fills</small></div><span id="connTradovate" class="connection-status">CHECKING</span></div><div class="connection-row"><div class="connection-logo">R</div><div class="connection-copy"><b>Rithmic</b><small>Futures · Order Watch observer</small></div><span id="connRithmic" class="connection-status">CHECKING</span></div></div><div class="actions"><button class="primary" onclick="connectTradovateUI()">CONNECT TRADOVATE</button><button class="secondary" onclick="refreshTradovateUI()">REFRESH</button></div><div class="rows" style="margin-top:6px"><div class="row"><span>Futures dashboard · Tradovate</span><span id="dashConnTradovate" class="connection-status">—</span></div><div class="row"><span>Futures dashboard · Rithmic</span><span id="dashConnRithmic" class="connection-status">—</span></div></div></div>
+
+        <div class="section settings-card"><div class="eyebrow">CONNECTION · CRYPTO</div><h2>KCEX</h2><div class="connection-row" style="margin-top:8px"><div class="connection-logo">K</div><div class="connection-copy"><b>KCEX</b><small>Crypto · read-only screen/order watch</small></div><span id="connKcex" class="connection-status">ORDER WATCH</span></div><div class="actions"><button class="primary" onclick="startKCEXScreenShare()">SHARE KCEX</button><button class="secondary" onclick="stopKCEXScreenShare()">STOP</button></div></div>
+
+        <div class="section settings-card"><div class="eyebrow">MEMORY</div><h2>Obsidian history</h2><div id="obsidianStatusBox" class="ai-box" style="margin-top:8px">Checking Obsidian status…</div><input id="obsidianZip" type="file" accept=".zip" style="width:100%;margin-top:7px"><div id="obsidianProgress" class="sub" style="margin-top:5px">No import running.</div><div class="actions"><button class="primary" onclick="importObsidianJournal()">IMPORT JOURNAL</button><button class="secondary" onclick="analyzeObsidianImages()">ANALYZE IMAGES</button></div></div>
+
+        <div class="section settings-card"><div class="eyebrow">JARVIS · VOICE</div><h2>JARVIS Original Voice</h2><div class="rows" style="margin-top:8px"><div class="row"><span>Status</span><strong id="jarvisVoiceStatus" class="status">● CHECKING</strong></div><div class="row"><span>Profile</span><strong id="jarvisVoiceName">JARVIS Original</strong></div><div class="row"><span>Engine</span><strong id="jarvisVoiceEngine">—</strong></div><div class="row"><span>Model</span><strong id="jarvisVoiceModel">—</strong></div></div><div id="jarvisVoiceHelp" class="ai-box" style="margin-top:7px">Checking voice system…</div><div class="actions"><button class="primary" onclick="designJarvisVoice()">ACTIVATE ORIGINAL VOICE</button></div></div>
+
+        <div class="section settings-card"><div class="eyebrow">MODEL</div><h2>Active environment</h2><div class="ai-box" style="margin-top:8px"><strong id="settingsModelDesc">Futures / Crypto environment is selected at the application level.</strong><div id="cryptoDashModelTag" class="hidden"></div></div><div class="actions"><button class="secondary" onclick="setSiteMode('NQ')">FUTURES</button><button class="secondary" onclick="setSiteMode('CRYPTO')">CRYPTO</button><button class="danger" onclick="clearLocalData()">CLEAR LOCAL DATA</button></div></div>
+      </div>
+    </section>
+  </main>
 </div>
-  <div class="section" style="margin-top:12px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><h2>Analyse du journal</h2><div class="sub">Lecture locale des erreurs et résultats.</div></div><button class="secondary" onclick="askJournalAI()">ANALYSER</button></div><div id="journalAI" style="margin-top:10px"></div></div>
-</section>
 
-<section id="settings" class="workspace hidden">
-  <div class="workspace-header"><div><div class="eyebrow">CONFIGURATION</div><h1>Paramètres</h1><div class="sub">Backend, connexions, mémoire et sécurité. Rien ici n'envoie automatiquement d'ordre.</div></div><div class="status">● LECTURE SEULE</div></div>
-  <div class="section"><h2>Serveur EDGEFLOW</h2><div class="rows"><div class="row"><span>Backend</span><span id="backendStatus" class="neutral">NON CONFIGURÉ</span></div></div><div class="actions"><input id="botApiUrl" placeholder="https://ton-backend.example.com" style="flex:1"><input id="edgeflowAccessKey" type="password" placeholder="Clé d’accès privée" autocomplete="off" style="flex:1"><button class="secondary" onclick="saveBotUrl()">ENREGISTRER</button><button class="secondary" onclick="testBotConnection()">TESTER</button></div></div>
-  <div class="section connection-center" data-model="NQ" style="margin-top:12px"><div class="workspace-header" style="margin-bottom:10px"><div><h2>Connexions Futures</h2><div class="sub">Lecture seule : JARVIS observe les ordres et fills, sans jamais exécuter.</div></div><span class="tag">FUTURES</span></div><div class="connection-grid">
-    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TV</div><div><div class="connection-name">Tradovate</div><div class="connection-type">API directe · événements temps réel</div></div></div><span id="connTradovate" class="connection-status">—</span></div><p>Synchronisation du compte, positions, ordres et fills via API + WebSocket.</p><div class="connection-actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
-    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">R</div><div><div class="connection-name">Rithmic</div><div class="connection-type">Observateur live · R|Trader</div></div></div><span id="connRithmic" class="connection-status warn">ÉCRAN</span></div><p>Le mode actuel surveille uniquement les actions visibles dans R|Trader. L’API R|Protocol nécessite un accès développeur Rithmic.</p><div class="connection-actions"><button class="primary" onclick="setSiteMode('NQ');show('bot',this);startRithmicScreenShare()">PARTAGER</button><button class="secondary" onclick="setSiteMode('NQ');show('bot',this);toggleRithmicObserver()">ARMER</button></div></div>
-  </div></div>
-  <div class="section connection-center" data-model="CRYPTO" style="margin-top:12px"><div class="workspace-header" style="margin-bottom:10px"><div><h2>Connexion Crypto</h2><div class="sub">KCEX est traité comme une source d’écran en lecture seule pour voir tes ordres au moment où tu les places.</div></div><span class="tag">CRYPTO</span></div><div class="connection-grid">
-    <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Order Watch · onglet KCEX</div></div></div><span id="connKcex" class="connection-status warn">ÉCRAN</span></div><p>Partage uniquement l’onglet KCEX. Edgeflow compare les captures et alerte lorsqu’un nouvel ordre/position devient visible.</p><div class="actions"><button class="primary" onclick="setSiteMode('CRYPTO');show('crypto',this);startKCEXScreenShare().then(()=>{if(kcexScreenStream)toggleKCEXAuto()})">SURVEILLER MES ORDRES</button><button class="secondary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button></div></div>
-  </div></div>
-  <div class="section" style="margin-top:12px"><h2>Obsidian · mémoire historique</h2><div id="obsidianStatusBox" class="ai-box">Aucun journal Obsidian importé sur le backend.</div><div class="actions"><input id="obsidianZip" type="file" accept=".zip,application/zip" style="flex:1"><button type="button" class="primary" onclick="importObsidianJournal()">IMPORTER</button><button type="button" class="secondary" onclick="analyzeObsidianImages()">ANALYSER LES IMAGES</button></div><div id="obsidianProgress" class="sub" style="margin-top:8px">Analyse visuelle en lecture seule.</div></div>
-  <div class="section jarvis-voice-settings" style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h2>Voix JARVIS</h2><div class="sub">Synthèse vocale du coach. Gemini est le moteur par défaut; ElevenLabs peut rester optionnel.</div></div><span id="jarvisVoiceStatus" class="status">● VÉRIFICATION</span></div><div class="voice-settings-grid" style="margin-top:10px"><div class="ai-box"><div class="label">PROFIL VOCAL</div><div id="jarvisVoiceName" style="margin-top:6px;font-weight:850">JARVIS Original</div><div id="jarvisVoiceEngine" class="sub" style="margin-top:4px">—</div></div><div class="ai-box"><div class="label">MOTEUR</div><div id="jarvisVoiceModel" style="margin-top:6px;font-weight:850">Eleven v4 Turbo</div><div class="sub" style="margin-top:4px">Gemini 3.8 Flash TTS · voix serveur.</div></div></div><div class="actions" style="margin-top:10px"><button type="button" class="primary" onclick="designJarvisVoice()">GÉNÉRER VOIX JARVIS</button></div><div id="jarvisVoiceHelp" class="sub" style="margin-top:8px">Gemini est déjà configuré sur le serveur. Le bouton peut générer une voix JARVIS originale persistante.</div></div>
-<div class="section" style="margin-top:12px"><h2>Sécurité</h2><div class="rows"><div class="row"><span>Exécution automatique</span><span class="no">DÉSACTIVÉE</span></div><div class="row"><span>Lecture seule</span><span class="yes">ACTIVE</span></div><div class="row"><span>Journal</span><span class="neutral">NAVIGATEUR LOCAL</span></div></div></div>
-  <div class="section" style="margin-top:12px"><h2>Modèle actif</h2><div id="settingsModel" class="tag">MODÈLE NQ</div><div id="settingsModelDesc" class="sub"></div><div class="actions"><button class="secondary" onclick="chooseModel()">CHANGER DE MODÈLE</button><button class="danger" onclick="clearLocalData()">EFFACER LES DONNÉES LOCALES</button></div></div>
-</section>
-
-</main>
+<div id="tradePopup" class="trade-pop" role="dialog" aria-live="polite" aria-label="Trade alert">
+  <div class="trade-pop-head"><div><div class="trade-pop-title">NEW TRADE ACTIVITY</div><div class="sub" id="popModel">FUTURES</div></div><button class="close-pop" onclick="closeTradePopup()">×</button></div>
+  <div class="trade-pop-body"><div class="trade-pop-grid"><div class="trade-pop-item"><span>BROKER</span><b id="popBroker">—</b></div><div class="trade-pop-item"><span>INSTRUMENT</span><b id="popInstrument">—</b></div><div class="trade-pop-item"><span>DIRECTION</span><b id="popDirection">—</b></div><div class="trade-pop-item"><span>ORDER</span><b id="popOrderType">—</b></div><div class="trade-pop-item"><span>PRICE</span><b id="popPrice">—</b></div><div class="trade-pop-item"><span>QTY</span><b id="popQty">—</b></div><div class="trade-pop-item"><span>RISK</span><b id="popRisk">—</b></div><div class="trade-pop-item"><span>SETUP</span><b id="popSetup">—</b></div></div><div class="ai-box" id="popContext">—</div><div class="actions"><button class="primary" onclick="analyzePopupTrade()">ANALYZE</button><button class="secondary" onclick="journalPopupTrade()">JOURNAL</button></div><div id="popAnalysis" class="ai-box" style="margin-top:6px">Waiting for analysis…</div></div>
 </div>
-<div id="tradePopup" class="trade-pop"><div class="trade-pop-head"><div class="trade-pop-title">TRADE DÉTECTÉ</div><button class="close-pop" onclick="closeTradePopup()">×</button></div><div class="trade-pop-body"><div class="trade-pop-grid">
-  <div class="trade-pop-item"><span>MODÈLE</span><b id="popModel">NQ</b></div><div class="trade-pop-item"><span>BROKER</span><b id="popBroker">RITHMIC</b></div><div class="trade-pop-item"><span>INSTRUMENT</span><b id="popInstrument">NQ</b></div><div class="trade-pop-item"><span>DIRECTION</span><b id="popDirection">—</b></div><div class="trade-pop-item"><span>TYPE</span><b id="popOrderType">—</b></div><div class="trade-pop-item"><span>PRIX</span><b id="popPrice">—</b></div><div class="trade-pop-item"><span>QTÉ</span><b id="popQty">—</b></div><div class="trade-pop-item"><span>RISQUE</span><b id="popRisk">$100</b></div>
-</div><div id="popSetup" class="ai-box">Détection visuelle</div><div id="popContext" class="sub" style="margin-top:8px"></div><div id="popAnalysis" class="decision bad" style="margin-top:10px">EN ATTENTE</div><div class="trade-pop-actions" style="margin-top:10px"><button class="primary" onclick="analyzePopupTrade()">ANALYSER</button><button class="secondary" onclick="journalPopupTrade()">JOURNAL</button></div></div></div>
-
-
+<div id="aiThinking" class="hidden"></div>
 <script>
 const nqDesc="HTF bias · POI · liquidité/manipulation · retracement Fibonacci · Rejection Block · entrée limite.";
 const cryptoDesc="Direction du marché · Key Open manipulé/sweep · POI HTF aligné · entrée · high RR. OTE/Fib secondaire.";
