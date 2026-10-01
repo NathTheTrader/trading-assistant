@@ -64,6 +64,14 @@ jobs:
             const base="https://naththetrader.github.io/trading-assistant/";
             const visible=()=>page.locator(".app-shell .workspace").count();
             const assert=async(cond,msg)=>{if(!cond)throw new Error(msg)};
+            const snapshot=async(label)=>{
+              const safe=label.replace(/[^a-z0-9_-]/gi,"-").toLowerCase();
+              await page.screenshot({path:"/tmp/edgeflow-artifacts/"+safe+".png",fullPage:true}).catch(()=>{});
+              require("fs").writeFileSync("/tmp/edgeflow-artifacts/"+safe+".html",await page.content());
+              console.log("SNAPSHOT",label,"URL",page.url());
+              console.log("BODY", (await page.locator("body").innerText()).slice(0,5000));
+            };
+            const noFatal=async(label)=>{if(await page.locator(".fatal").count()){await snapshot(label+"-fatal");throw new Error("Fatal screen: "+label)}};
 
             await page.goto(base,{waitUntil:"domcontentloaded"});
             await page.waitForSelector(".env.red");
@@ -73,12 +81,17 @@ jobs:
             await page.locator(".env.red").click();
             await page.waitForURL(url=>new URL(url).searchParams.get("mode")==="NQ");
             await page.waitForSelector(".dash");
+            await noFatal("futures-dashboard");
             await assert(await page.locator(".account-state").count()===1,"Futures account state missing");
             await assert((await page.locator(".dash").innerText()).includes("FUTURES"),"Futures dashboard text missing");
             await assert(!(await page.locator(".fatal").count()),"Fatal screen after entering Futures");
 
-            await page.locator("nav button").filter({hasText:"Trades"}).click();
-            await page.waitForSelector(".filters");
+            console.log("NAV BUTTONS",await page.locator("nav button").allTextContents());
+            await page.locator("nav button").filter({hasText:"Trades"}).first().click({force:true});
+            await page.waitForTimeout(250);
+            await noFatal("futures-trades");
+            await snapshot("futures-trades-debug");
+            await page.waitForSelector(".filters",{timeout:5000});
             await assert((await page.locator("body").innerText()).includes("TRADOVATE"),"Futures provider not present in Trades");
 
             await page.locator("nav button").filter({hasText:"AI Assistant"}).click();
@@ -90,20 +103,25 @@ jobs:
 
             await page.goto(base+"?mode=CRYPTO&view=overview",{waitUntil:"domcontentloaded"});
             await page.waitForSelector(".dash");
+            await noFatal("crypto-dashboard");
             const cryptoText=await page.locator(".dash").innerText();
             await assert(cryptoText.includes("CRYPTO"),"Crypto dashboard text missing");
             await assert(cryptoText.includes("KCEX · CRYPTO FUTURES"),"KCEX Crypto Futures provider missing");
             await assert(!cryptoText.includes("TRADOVATE"),"Tradovate leaked into Crypto dashboard");
             await assert(!cryptoText.includes("RITHMIC"),"Rithmic leaked into Crypto dashboard");
 
-            await page.locator("nav button").filter({hasText:"Connections"}).click();
-            await page.waitForSelector(".connection-live");
+            await page.locator("nav button").filter({hasText:"Connections"}).first().click({force:true});
+            await page.waitForTimeout(250);
+            await noFatal("crypto-connections");
+            await page.waitForSelector(".connection-live",{timeout:5000});
             const cryptoConn=await page.locator(".workspace").innerText();
             await assert(cryptoConn.includes("KCEX · CRYPTO FUTURES"),"Crypto connection center missing KCEX");
             await assert(!cryptoConn.includes("TRADOVATE"),"Tradovate leaked into Crypto connections");
             await assert(!cryptoConn.includes("RITHMIC"),"Rithmic leaked into Crypto connections");
 
-            await page.locator("nav button").filter({hasText:"AI Assistant"}).click();
+            await page.locator("nav button").filter({hasText:"AI Assistant"}).first().click({force:true});
+            await page.waitForTimeout(250);
+            await noFatal("crypto-ai");
             await page.locator("#aiInput").fill("Smoke test Crypto");
             await page.locator("#aiSend").click();
             await page.waitForSelector(".ai-message.jarvis:not(.loading)");
