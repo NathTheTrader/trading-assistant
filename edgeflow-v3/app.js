@@ -317,7 +317,7 @@
     const balanceLabel=crypto()?"Portfolio Balance":"Account Balance";
     const balanceText=connected?money(acct.balance):"$0.00";
     const pnlText=connected?signed(pnl)+money(pnl):"$0.00";
-    const sessionCards=crypto()?'<span class="session-live"><b>24/7</b><small>OPEN</small><em>KCEX PERPETUALS</em></span>':sessions.map(x=>'<span class="'+(x.live?"session-live":"session-closed")+'"><b>'+x.name+'</b><small>'+x.label+'</small><em>'+(x.live?x.start+"–"+x.end:x.countdown)+'</em></span>').join("");
+    const sessionCards=crypto()?'<span class="session-live"><b>24/7</b><small>OPEN</small><em>KCEX · CRYPTO FUTURES</em></span>':sessions.map(x=>'<span class="'+(x.live?"session-live":"session-closed")+'"><b>'+x.name+'</b><small>'+x.label+'</small><em>'+(x.live?x.start+"–"+x.end:x.countdown)+'</em></span>').join("");
     return '<div class="dash premium-dashboard">'+
       '<div class="dash-banner"><div class="dash-brand"><div class="mini-mark">E</div><div><small>EDGEFLOW CORE • '+label+'</small><h1>'+label+'</h1><p>'+(crypto()?"BTC | ETH | SOL | BNB | XRP | HYPE | FLOKI":"MNQ | MES | MGC | RITHMIC | TRADOVATE")+'</p></div></div>'+
       '<div class="dash-sessions"><span class="live '+(connected?"":"offline")+'">'+statusText+'</span>'+sessionCards+'</div></div>'+
@@ -350,9 +350,9 @@
     const connected=Boolean(acct.connected);
     const js=statsFromJournal();
     const recent=currentRows();
-    const provider=crypto()?"KCEX PERPETUALS":"TRADOVATE";
+    const provider=crypto()?"KCEX · CRYPTO FUTURES":"TRADOVATE";
     const statusText=connected?"● "+provider+" ACTIVE":"○ "+provider+" OFFLINE";
-    const liveNote=crypto()?(state.kcex.running?"KCEX screen observer active · read-only visual detection.":"KCEX observer offline · start it from Connections."):(acct.connected?"Tradovate live feed active.":"Tradovate is not connected.");
+    const liveNote=crypto()?(state.kcex.running?"KCEX screen observer active · read-only visual detection.":"KCEX crypto-futures observer offline · start it from Connections."):(acct.connected?"Tradovate live feed active.":"Tradovate is not connected.");
     const instrumentData=crypto()
       ? (state.kcex.events.length?state.kcex.events.reduce((a,x)=>{const k=String(x.instrument||"").toUpperCase();if(k)a[k]=(a[k]||0)+1;return a},{})
           : null)
@@ -364,7 +364,7 @@
     const sessionCards=sessions.map(x=>'<span class="'+(x.live?"session-live":"session-closed")+'"><b>'+x.name+'</b><small>'+x.label+'</small><em>'+(x.live?x.start+"–"+x.end:x.countdown)+'</em></span>').join("");
     const total=crypto()?null:(acct.connected?acct.realized:null);
     return '<div class="dash premium-dashboard">'+
-      '<div class="dash-banner"><div class="dash-brand"><div class="mini-mark">E</div><div><small>EDGEFLOW CORE • '+d().label+'</small><h1>'+d().label+'</h1><p>'+(crypto()?"BTC · ETH · SOL · BNB · XRP · HYPE · FLOKI · KCEX PERPETUALS":"MNQ · MES · MGC · TRADOVATE · RITHMIC")+'</p></div></div>'+
+      '<div class="dash-banner"><div class="dash-brand"><div class="mini-mark">E</div><div><small>EDGEFLOW CORE • '+d().label+'</small><h1>'+d().label+'</h1><p>'+(crypto()?"BTC · ETH · SOL · BNB · XRP · HYPE · FLOKI · KCEX · CRYPTO FUTURES":"MNQ · MES · MGC · TRADOVATE · RITHMIC")+'</p></div></div>'+
       '<div class="dash-sessions"><span class="live '+(connected?"":"offline")+'">'+statusText+'</span>'+sessionCards+'</div></div>'+
       '<div class="account-state '+(connected?"connected":"offline")+'"><span>'+statusText+'</span><small>'+esc(liveNote)+'</small><button onclick="edgeGo(&#039;connections&#039;)">CONNECTIONS</button></div>'+
       '<div class="kpis">'+
@@ -374,7 +374,7 @@
       kpi("Win Rate",pct(js.winRate),js.count?js.wins+"W / "+js.losses+"L":"No journal data")+
       kpi("Profit Factor",rrText(js.pf),"Recorded journal")+
       kpi("Avg RR",rrText(js.avgRR),crypto()?"Recorded journal":"Recorded journal")+
-      kpi(crypto()?"Detected Orders":"Open Positions",crypto()?(state.kcex.events.length||"—"):(acct.connected?acct.positions.length:"—"),crypto()?"KCEX observer":(acct.connected?"Tradovate live":"No live account"))+
+      kpi(crypto()?"Detected Orders":"Open Positions",crypto()?(state.kcex.events.length||"—"):(acct.connected?acct.positions.length:"—"),crypto()?"KCEX crypto-futures observer":(acct.connected?"Tradovate live":"No live account"))+
       '</div>'+
       '<div class="dashboard-grid compact-grid"><div class="dashboard-main">'+
       panel(crypto()?"TOP CRYPTO ACTIVITY":"TOP FUTURES INSTRUMENTS",cards)+
@@ -387,7 +387,7 @@
   }
   function trades(){
     const data=currentRows();
-    const empty='<div class="dashboard-empty"><b>NO EXECUTION DATA</b><span>'+esc(crypto()?"KCEX observer has not detected a visible order change yet.":"Tradovate is not connected and there are no recorded journal trades.")+'</span></div>';
+    const empty='<div class="dashboard-empty"><b>NO EXECUTION DATA</b><span>'+esc(crypto()?"KCEX crypto-futures observer has not detected a visible order change yet.":"Tradovate is not connected and there are no recorded journal trades.")+'</span></div>';
     const filtered=data.filter(r=>(state.filters.side==="ALL"||r[2]===state.filters.side)&&(state.filters.instrument==="ALL"||r[1]===state.filters.instrument)&&(!state.filters.query||r.join(" ").toLowerCase().includes(state.filters.query.toLowerCase())));
     return title("EXECUTION","Trades",crypto()?"KCEX activity plus Crypto journal records.":"Tradovate fills plus Futures journal records.",'<button class="primary" onclick="edgeGo(\'journal\')">+ NEW JOURNAL ENTRY</button>')+
       '<div class="filters"><input value="'+esc(state.filters.query)+'" oninput="setFilter(\'query\',this.value)" placeholder="Search '+(crypto()?"coin, provider, note...":"instrument, setup...")+'"><select onchange="setFilter(\'side\',this.value)"><option value="ALL">All sides</option><option value="Long">Long</option><option value="Short">Short</option></select><select onchange="setFilter(\'instrument\',this.value)"><option value="ALL">All instruments</option>'+d().instruments.map(x=>'<option value="'+esc(x)+'" '+(state.filters.instrument===x?"selected":"")+'>'+esc(x)+'</option>').join("")+'</select><button onclick="exportTrades()">EXPORT</button></div>'+
@@ -418,7 +418,7 @@
     const ctx=crypto()?"Crypto only · KCEX · Direction → Key Open sweep → HTF POI → entry → high RR":"Futures only · Tradovate/Rithmic · HTF bias → POI → liquidity → retracement → R.B → limit";
     return title("INTELLIGENCE","AI Assistant","JARVIS · "+ctx,'<span class="ai-online">● ONLINE</span>')+
       '<div class="ai-grid">'+panel("EDGEFLOW JARVIS",'<div class="ai-chat"><div class="ai-welcome"><b>JARVIS</b><small>'+esc(ctx)+'</small></div><div id="aiMessages" class="ai-messages"><div class="ai-message jarvis"><b>JARVIS</b><p>Je suis prêt. Le contexte '+(crypto()?"Crypto":"Futures/NQ")+' est verrouillé pour cette conversation.</p></div></div><div class="ai-actions">'+q.map(x=>'<button onclick="aiQuick(this.dataset.q)" data-q="'+esc(x)+'">'+esc(x)+' <span>›</span></button>').join("")+'</div><div class="ai-composer"><input id="aiInput" type="text" autocomplete="off" placeholder="Ask Jarvis anything..." onkeydown="if(event.key===\'Enter\')aiAsk()"><button id="aiSend" onclick="aiAsk()">↗</button></div></div>','ai-panel')+
-      panel("ACTIVE MODEL",crypto()?'<div class="context-grid"><div><small>ENVIRONMENT</small><b>CRYPTO</b></div><div><small>PROVIDER</small><b>KCEX PERPETUALS</b></div><div><small>MODEL</small><b>DIRECTION → KEY OPEN SWEEP → HTF POI → ENTRY → HIGH RR</b></div><div><small>FIB / OTE</small><b>SECONDARY</b></div></div>':'<div class="context-grid"><div><small>ENVIRONMENT</small><b>FUTURES / NQ</b></div><div><small>PROVIDER</small><b>TRADOVATE / RITHMIC</b></div><div><small>MODEL</small><b>HTF BIAS → POI → LIQUIDITY → RETRACEMENT → R.B → LIMIT</b></div><div><small>FIB</small><b>0.50 · 0.62 · 0.705 · 0.79</b></div></div>')+
+      panel("ACTIVE MODEL",crypto()?'<div class="context-grid"><div><small>ENVIRONMENT</small><b>CRYPTO</b></div><div><small>PROVIDER</small><b>KCEX · CRYPTO FUTURES</b></div><div><small>MODEL</small><b>DIRECTION → KEY OPEN SWEEP → HTF POI → ENTRY → HIGH RR</b></div><div><small>FIB / OTE</small><b>SECONDARY</b></div></div>':'<div class="context-grid"><div><small>ENVIRONMENT</small><b>FUTURES / NQ</b></div><div><small>PROVIDER</small><b>TRADOVATE / RITHMIC</b></div><div><small>MODEL</small><b>HTF BIAS → POI → LIQUIDITY → RETRACEMENT → R.B → LIMIT</b></div><div><small>FIB</small><b>0.50 · 0.62 · 0.705 · 0.79</b></div></div>')+
       '</div>';
   }
   window.aiAsk=async function(){
@@ -732,13 +732,13 @@
       return title("SYSTEM","Crypto Connections","KCEX is exclusive to Crypto. No Tradovate or Rithmic controls are shown here.")+
         '<div class="connections connection-stack">'+
         '<article class="connection connection-live '+(state.kcex.running?"is-connected":"is-offline")+'">'+
-          '<div class="conn-icon blue">K</div><div class="conn-copy"><h3>KCEX PERPETUALS</h3><small>CRYPTO ONLY · READ-ONLY SCREEN OBSERVER</small><b class="'+(state.kcex.running?"ok":"warn")+'">● '+(state.kcex.running?"OBSERVING":"OFFLINE")+'</b>'+
+          '<div class="conn-icon blue">K</div><div class="conn-copy"><h3>KCEX · CRYPTO FUTURES</h3><small>CRYPTO ONLY · READ-ONLY SCREEN OBSERVER</small><b class="'+(state.kcex.running?"ok":"warn")+'">● '+(state.kcex.running?"OBSERVING":"OFFLINE")+'</b>'+
           '<p>'+(state.kcex.running?"The shared KCEX window is being sampled. Only visible order/position changes are logged.":"Share only the KCEX trading window to start visual order detection.")+'</p></div>'+
           '<button class="primary" onclick="'+(state.kcex.running?"stopKcexObserver()":"startKcexObserver()")+'">'+(state.kcex.running?"STOP OBSERVER":"START OBSERVER")+'</button>'+
         '</article>'+
         '<article class="connection"><div class="conn-icon blue">J</div><h3>JARVIS AI</h3><small>CRYPTO MODEL · ISOLATED CONTEXT</small><b class="ok">● ONLINE</b><button onclick="edgeGo(\'ai\')">OPEN JARVIS</button></article>'+
         '</div>'+
-        '<section class="panel connection-help"><div class="panel-head"><span>CRYPTO PIPELINE</span></div><p>KCEX belongs to the Crypto environment in EdgeFlow. Futures broker integrations never appear in this workspace.</p><div class="setup-grid"><div><small>PROVIDER</small><b>KCEX PERPETUALS</b></div><div><small>MODEL</small><b>CRYPTO</b></div><div><small>READ MODE</small><b>SCREEN OBSERVER</b></div></div></section>';
+        '<section class="panel connection-help"><div class="panel-head"><span>CRYPTO PIPELINE</span></div><p>KCEX belongs to the Crypto environment in EdgeFlow. Futures broker integrations never appear in this workspace.</p><div class="setup-grid"><div><small>PROVIDER</small><b>KCEX · CRYPTO FUTURES</b></div><div><small>MODEL</small><b>CRYPTO</b></div><div><small>READ MODE</small><b>SCREEN OBSERVER</b></div></div></section>';
     }
     const tv=state.tradovate.status||{},tvConnected=Boolean(tv.connected),tvConfigured=Boolean(tv.configured);
     const tvStatus=tvConnected?"CONNECTED":(tvConfigured?"READY TO CONNECT":"CREDENTIALS REQUIRED");
@@ -766,7 +766,7 @@
       const current=cv.toDataURL("image/jpeg",.55);
       const r=await fetch(API_BASE+"/api/detect-screen-trade",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({broker:"KCEX",model:"CRYPTO",imageDataUrl:current,previousImageDataUrl:state.kcex.previousImage})});
       const data=await r.json().catch(()=>({}));
-      if(!r.ok||!data.ok)throw new Error(data.error||("KCEX observer HTTP "+r.status));
+      if(!r.ok||!data.ok)throw new Error(data.error||("KCEX crypto-futures observer HTTP "+r.status));
       if(data.detected){
         const event={id:"kcex-"+Date.now(),time:new Date().toLocaleTimeString("en-CA",{hour12:false}),instrument:data.instrument||"—",direction:data.direction||"—",orderType:data.orderType||"ORDER",price:data.price??null,quantity:data.quantity??null,confidence:Number(data.confidence||0),context:data.context||""};
         state.kcex.events.push(event);if(state.kcex.events.length>100)state.kcex.events.shift();state.kcex.lastDetected=event;
@@ -789,7 +789,7 @@
       state.kcex={...state.kcex,running:true,processing:false,stream,video,canvas,previousImage:"",events:state.kcex.events,lastDetected:state.kcex.lastDetected,error:"",timer:null};
       const track=stream.getVideoTracks()[0];track.addEventListener("ended",()=>stopKcexObserver());
       render();state.kcex.timer=setInterval(()=>detectKcexFrame(),3000);
-    }catch(err){state.kcex.error=String(err?.message||err);alert("KCEX observer: "+state.kcex.error);render();}
+    }catch(err){state.kcex.error=String(err?.message||err);alert("KCEX crypto-futures observer: "+state.kcex.error);render();}
   };
   window.stopKcexObserver=()=>{
     try{if(state.kcex.timer)clearInterval(state.kcex.timer);}catch{}
@@ -815,7 +815,7 @@
   function settings(){
     return title("SYSTEM","Settings","Controls for the selected environment only.")+
       '<div class="settings-grid">'+
-      panel("ENVIRONMENT",'<div class="setting"><span>Active Environment</span><b>'+d().label+'</b></div><div class="setting"><span>Provider</span><b>'+(crypto()?"KCEX PERPETUALS":"TRADOVATE / RITHMIC")+'</b></div><div class="setting"><span>Storage</span><b>LOCAL JOURNAL</b></div>')+
+      panel("ENVIRONMENT",'<div class="setting"><span>Active Environment</span><b>'+d().label+'</b></div><div class="setting"><span>Provider</span><b>'+(crypto()?"KCEX · CRYPTO FUTURES":"TRADOVATE / RITHMIC")+'</b></div><div class="setting"><span>Storage</span><b>LOCAL JOURNAL</b></div>')+
       (crypto()
         ? panel("CRYPTO MODEL",'<div class="setting"><span>Primary sequence</span><b>DIRECTION → KEY OPEN MANIPULATION / SWEEP → HTF POI → ENTRY → HIGH RR</b></div><div class="setting"><span>OTE / Fibonacci</span><b>SECONDARY ONLY</b></div><div class="setting"><span>Screen observer</span><b>'+(state.kcex.running?"ACTIVE":"OFFLINE")+'</b></div>')
         : panel("FUTURES MODEL",'<div class="setting"><span>Primary sequence</span><b>HTF BIAS → POI → LIQUIDITY → RETRACEMENT → REJECTION BLOCK → LIMIT</b></div><div class="setting"><span>Fibonacci</span><b>0.50 · 0.62 · 0.705 · 0.79</b></div><div class="setting"><span>Risk</span><b>$100 / TRADE</b></div>'))+
