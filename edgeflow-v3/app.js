@@ -305,8 +305,8 @@
   function dashboard(){
     const label=d().label;
     const sessions=sessionState();
-    const acct=liveAccount();
-    const connected=acct.connected;
+    const acct=crypto()?{connected:false,balance:0,realized:0,unrealized:0,account:"KCEX",positions:[],orders:[],fills:[]} : liveAccount();
+    const connected=Boolean(acct.connected);
     const money=n=>"$"+Math.abs(Number(n)||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
     const signed=n=>(Number(n)||0)>=0?"+":"-";
     const fills=acct.fills||[];
@@ -318,37 +318,36 @@
       f.instrument||"—",
       /SELL|SHORT|S/.test(String(f.action||f.buySell||"").toUpperCase())?"Short":"Long",
       f.price!=null?Number(f.price).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"—",
-      "—",
-      f.qty??"—",
-      "LIVE",
-      "—",
-      "Tradovate"
+      "—",f.qty??"—","LIVE","—",crypto()?"KCEX":"Tradovate"
     ]):[];
-    const tradeRows=connected&&liveRows.length?rows(liveRows,true):'<div class="dashboard-empty"><b>NO LIVE TRADES</b><span>Tradovate is connected. A fill will appear here automatically.</span></div>';
-    const statusText=connected?"● TRADOVATE CONNECTED":"○ TRADOVATE NOT CONNECTED";
+    const tradeRows=connected&&liveRows.length?rows(liveRows,true):'<div class="dashboard-empty"><b>NO LIVE TRADES</b><span>'+ (crypto()?"Connect KCEX to load live crypto orders and fills.":"Tradovate is connected. A fill will appear here automatically.")+'</span></div>';
+    const broker=crypto()?"KCEX":"TRADOVATE";
+    const statusText=connected?"● "+broker+" CONNECTED":"○ "+broker+" NOT CONNECTED";
+    const balanceLabel=crypto()?"Portfolio Balance":"Account Balance";
     const balanceText=connected?money(acct.balance):"$0.00";
     const pnlText=connected?signed(pnl)+money(pnl):"$0.00";
     const sessionCards=sessions.map(x=>'<span class="'+(x.live?"session-live":"session-closed")+'"><b>'+x.name+'</b><small>'+x.label+'</small><em>'+(x.live?x.start+"–"+x.end:x.countdown)+'</em></span>').join("");
     return '<div class="dash premium-dashboard">'+
-      '<div class="dash-banner"><div class="dash-brand"><div class="mini-mark">E</div><div><small>EDGEFLOW CORE • '+label+'</small><h1>'+label+'</h1><p>'+(crypto()?"BTC | ETH | SOL | BNB | XRP | HYPE":"MNQ | MES | MGC | RITHMIC | TRADOVATE")+'</p></div></div>'+
+      '<div class="dash-banner"><div class="dash-brand"><div class="mini-mark">E</div><div><small>EDGEFLOW CORE • '+label+'</small><h1>'+label+'</h1><p>'+(crypto()?"BTC | ETH | SOL | BNB | XRP | HYPE | FLOKI":"MNQ | MES | MGC | RITHMIC | TRADOVATE")+'</p></div></div>'+
       '<div class="dash-sessions"><span class="live '+(connected?"":"offline")+'">'+statusText+'</span>'+sessionCards+'</div></div>'+
-      '<div class="account-state '+(connected?"connected":"offline")+'"><span>'+statusText+'</span><small>'+(connected?acct.account+" · live account data":"Connecte Tradovate dans Connections pour charger les données réelles.")+'</small><button onclick="edgeGo(&#039;connections&#039;)">CONNECTIONS</button></div>'+
+      '<div class="account-state '+(connected?"connected":"offline")+'"><span>'+statusText+'</span><small>'+(connected?acct.account+" · live account data":(crypto()?"Connect KCEX in the Crypto environment to load live data.":"Connect Tradovate in Connections to load live account data."))+'</small><button onclick="edgeGo(&#039;connections&#039;)">CONNECTIONS</button></div>'+
       '<div class="kpis">'+
-      kpi("Account Balance",balanceText,connected?"Live Tradovate balance":"No account connected",connected?"positive":"")+
+      kpi(balanceLabel,balanceText,connected?"Live account balance":"No account connected",connected?"positive":"")+
       kpi("Today P&L",pnlText,connected?"Realized P&L":"Waiting for connection",connected?(pnl>=0?"positive":"negative"):"")+
       kpi("Unrealized P&L",connected?signed(acct.unrealized)+money(acct.unrealized):"$0.00",connected?"Open positions":"No live data",connected?(acct.unrealized>=0?"positive":"negative"):"")+
-      kpi("Open Positions",String(acct.positions.length),connected?"Tradovate":"No account connected")+
-      kpi("Live Orders",String(acct.orders.length),connected?"Tradovate":"No account connected")+
-      kpi("Live Fills",String(acct.fills.length),connected?"Tradovate":"No account connected")+
+      kpi(crypto()?"Open Positions":"Open Positions",String(acct.positions.length),connected?broker:"No account connected")+
+      kpi("Live Orders",String(acct.orders.length),connected?broker:"No account connected")+
+      kpi("Live Fills",String(acct.fills.length),connected?broker:"No account connected")+
       '</div>'+
       '<div class="dashboard-grid compact-grid"><div class="dashboard-main">'+
       panel(crypto()?"TOP COINS":"TOP INSTRUMENTS",connected?instrumentCards():instrumentCardsZero())+
-      panel("RECENT LIVE TRADES",tradeRows)+
+      panel(connected?"RECENT LIVE TRADES":"RECENT TRADES",tradeRows)+
       '</div><aside class="dashboard-side">'+
       panel("SESSION CONTEXT",'<div class="session-list">'+sessions.map(x=>'<div><b class="'+(x.live?"is-live":"")+'">● '+x.name+'</b><span>'+(x.live?x.start+"–"+x.end:x.countdown)+'</span></div>').join("")+'</div>')+
-      panel("ACCOUNT STATUS",'<div class="rules"><div><span>Connection</span><b>'+(connected?"ONLINE":"OFFLINE")+'</b></div><div><span>Account</span><b>'+esc(acct.account)+'</b></div><div><span>Positions</span><b>'+acct.positions.length+'</b></div><div><span>Orders</span><b>'+acct.orders.length+'</b></div></div>')+
+      panel(crypto()?"CRYPTO STATUS":"ACCOUNT STATUS",'<div class="rules"><div><span>Connection</span><b>'+(connected?"ONLINE":"OFFLINE")+'</b></div><div><span>Provider</span><b>'+broker+'</b></div><div><span>Positions</span><b>'+acct.positions.length+'</b></div><div><span>Orders</span><b>'+acct.orders.length+'</b></div></div>')+
       '</aside></div></div>';
   }
+
   function instrumentCardsZero(){
     return '<div class="asset-grid">'+d().instruments.slice(0,crypto()?4:3).map(x=>'<div class="instrument-card"><div><b>'+x+'</b><small>WAITING FOR MARKET DATA</small></div><strong>—</strong><i>NO FEED</i></div>').join("")+'</div>';
   }
