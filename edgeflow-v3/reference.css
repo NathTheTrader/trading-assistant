@@ -1103,3 +1103,96 @@ body,.app-page,.app-page button,.app-page input,.app-page select,.app-page texta
 @media(max-width:900px){
  .connection-stack{grid-template-columns:1fr}.connection-live{grid-column:auto}.setup-grid{grid-template-columns:1fr}
 }
+
+/* V40 — FINAL CINEMATIC BACKGROUND + READABILITY + ENVIRONMENT SEPARATION */
+:root{--side:220px;--red:#ff284f;--blue:#1b9fff;--green:#22e1a5;--bg:#02050a;--panel:#071019}
+*{text-rendering:geometricPrecision}
+body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+body.landing-page .landing{
+  background:
+    linear-gradient(90deg,rgba(255,27,62,.20) 0%,rgba(255,27,62,.05) 32%,rgba(0,0,0,.06) 50%,rgba(24,157,255,.05) 68%,rgba(24,157,255,.20) 100%),
+    linear-gradient(180deg,rgba(1,4,8,.04) 0%,rgba(1,4,8,.24) 55%,rgba(1,4,8,.78) 100%),
+    url("https://images.unsplash.com/photo-1683076514774-0c1a3a214589?auto=format&fit=crop&fm=jpg&q=88&w=3840") center/cover no-repeat!important;
+}
+body.landing-page .landing:before{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(ellipse at 16% 58%,rgba(255,25,62,.34),transparent 35%),
+    radial-gradient(ellipse at 84% 58%,rgba(23,155,255,.34),transparent 35%),
+    linear-gradient(90deg,rgba(0,0,0,.20),transparent 45%,transparent 55%,rgba(0,0,0,.20));
+}
+body.landing-page .landing:after{
+  content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.52) 100%),radial-gradient(ellipse at 50% 50%,transparent 34%,rgba(0,0,0,.46) 100%);
+}
+body.landing-page .land{display:none!important}
+body.landing-page .landing-center{z-index:8!important;width:min(1040px,80vw)!important;top:50%!important}
+body.landing-page .hero-logo{width:74px!important;height:74px!important;border-radius:16px!important}
+body.landing-page .hero-name{font-size:46px!important;letter-spacing:12px!important}
+body.landing-page .hero-sub{font-size:9px!important;letter-spacing:4px!important}
+body.landing-page .choose{font-size:15px!important;letter-spacing:4px!important;margin-top:32px!important}
+body.landing-page .tagline{font-size:8px!important;letter-spacing:3px!important}
+body.landing-page .env-cards{gap:18px!important;margin-top:24px!important}
+body.landing-page .env{
+  height:206px!important;padding:23px 25px!important;border-radius:11px!important;
+  background:linear-gradient(145deg,rgba(5,10,17,.80),rgba(2,6,12,.66))!important;
+  backdrop-filter:blur(8px)!important;
+}
+body.landing-page .env.red{border-color:rgba(255,40,79,.74)!important;box-shadow:0 0 80px rgba(255,28,65,.17),inset 0 0 60px rgba(255,28,65,.05)!important}
+body.landing-page .env.blue{border-color:rgba(27,159,255,.74)!important;box-shadow:0 0 80px rgba(25,151,255,.17),inset 0 0 60px rgba(25,151,255,.05)!important}
+body.landing-page .env strong{font-size:24px!important}
+body.landing-page .env>small{font-size:8px!important}
+body.landing-page .env ul{font-size:9px!important;line-height:2.05!important}
+body.landing-page .landing-foot,.landing-corner{z-index:9!important;font-size:8px!important}
+body.app-page{
+  background:#02050a!important;
+  position:relative;
+}
+body.app-page:before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(1,4,8,.94) 0%,rgba(2,5,10,.84) 28%,rgba(2,5,10,.68) 55%,rgba(2,5,10,.88) 100%),
+    url("https://images.unsplash.com/photo-1683076514774-0c1a3a214589?auto=format&fit=crop&fm=jpg&q=88&w=3840") center/cover no-repeat;
+}
+body.app-page.red:before{
+  background:
+    linear-gradient(90deg,rgba(1,4,8,.95),rgba(2,5,10,.86) 32%,rgba(2,5,10,.72) 65%,rgba(2,5,10,.91)),
+    radial-gradient(ellipse at 12% 65%,rgba(255,26,62,.20),transparent 34%),
+    url("https://images.unsplash.com/photo-1683076514774-0c1a3a214589?auto=format&fit=crop&fm=jpg&q=88&w=3840") center/cover no-repeat;
+}
+body.app-page.blue:before{
+  background:
+    linear-gradient(90deg,rgba(1,4,8,.95),rgba(2,5,10,.86) 32%,rgba(2,5,10,.72) 65%,rgba(2,5,10,.91)),
+    radial-gradient(ellipse at 88% 65%,rgba(19,145,255,.20),transparent 34%),
+    url("https://images.unsplash.com/photo-1683076514774-0c1a3a214589?auto=format&fit=crop&fm=jpg&q=88&w=3840") center/cover no-repeat;
+}
+.app-shell,.main,.workspace{position:relative;z-index:1}
+.main{background:transparent!important}
+.sidebar{background:rgba(3,7,12,.94)!important;backdrop-filter:blur(14px)}
+.topbar{background:rgba(3,7,12,.78)!important;backdrop-filter:blur(14px)}
+.workspace{padding:20px!important;max-width:1720px}
+.page-title h1{font-size:34px!important}.page-title p{font-size:9px!important}
+.page-title small{font-size:7px!important}
+.kpi small,.asset small,.session-list>div,.rules>div,.setting{font-size:8px!important}
+.kpi strong{font-size:20px!important}.kpi em{font-size:7px!important}
+.panel-head{font-size:7px!important}
+.row{font-size:8px!important}.row b{font-size:8px!important}.row-head{font-size:6px!important}
+.asset b{font-size:9px!important}.asset strong{font-size:18px!important}
+.account-state>span{font-size:8px!important}.account-state>small{font-size:8px!important}
+.dashboard-empty b{font-size:10px!important}.dashboard-empty span{font-size:9px!important}
+.model-strip{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid #18364a;border-radius:7px;background:#061019}
+.model-strip span{font-size:7px;color:#597386;letter-spacing:.12em}.model-strip b{font-size:11px;color:#dbe7ed}
+.app-page .ai-chat{height:700px!important;min-height:700px!important}
+.app-page .ai-message p{font-size:13px!important;line-height:1.55!important}
+.app-page .ai-message b{font-size:9px!important}
+.app-page .ai-actions button{font-size:9px!important;min-height:38px!important}
+.app-page .ai-composer input{font-size:13px!important}
+.connection h3{font-size:18px!important}.connection small,.connection>b{font-size:8px!important}
+.connection-copy p,.connection-help p{font-size:9px!important}
+.setup-grid small{font-size:6px!important}.setup-grid b{font-size:8px!important}
+.filters input,.filters select,.filters button{font-size:8px!important}
+.journal-jarvis,.journal-main{position:relative;z-index:1}
+@media(max-width:900px){
+  body.landing-page .landing-center{width:90vw!important}
+  .model-strip{align-items:flex-start;flex-direction:column;gap:5px}
+}
