@@ -123,6 +123,23 @@ jobs:
             await page.waitForTimeout(250);
             await noFatal("crypto-ai");
             await page.locator("#aiInput").fill("Smoke test Crypto");
+
+            // Full workspace sweep: both environments must render every page without the fatal screen.
+            for(const mode of ["NQ","CRYPTO"]){
+              for(const view of ["overview","trades","performance","ai","journal","analytics","backtests","connections","settings"]){
+                await page.goto(base+"?mode="+mode+"&view="+view,{waitUntil:"domcontentloaded"});
+                await page.waitForTimeout(100);
+                await noFatal(mode+"-"+view);
+                await assert(await page.locator(".page-title").count()===1,mode+" "+view+" page title missing");
+              }
+              await page.goto(base+"?mode="+mode+"&view=connections",{waitUntil:"domcontentloaded"});
+              await noFatal(mode+"-connections-final");
+              const txt=await page.locator(".workspace").innerText();
+              if(mode==="NQ") await assert(txt.includes("TRADOVATE"),"Futures Connections missing Tradovate");
+              if(mode==="CRYPTO") await assert(txt.includes("KCEX · CRYPTO FUTURES"),"Crypto Connections missing KCEX");
+            }
+
+
             await page.locator("#aiSend").click();
             await page.waitForFunction(()=>document.querySelector("#aiMessages")?.innerText.includes("Smoke JARVIS CRYPTO"),null,{timeout:10000});
             await assert((await page.locator(".ai-messages").innerText()).includes("Smoke JARVIS CRYPTO"),"Crypto JARVIS response missing");
