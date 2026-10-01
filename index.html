@@ -1325,39 +1325,7 @@ async function designJarvisVoice(){
 function clearLocalData(){if(confirm("Effacer toutes les données locales du journal et réinitialiser le modèle ?")){localStorage.removeItem("journal");localStorage.removeItem("activeModel");localStorage.removeItem("botApiUrl");localStorage.removeItem("edgeflowAccessKey");location.reload()}}
 
 function showActiveDashboard(btn){show(activeModel==="CRYPTO"?"cryptoDash":"dash",btn||$("navDash"))}
-function initializeActiveWorkspace(){
-  const params=new URLSearchParams(location.search);
-  const urlMode=String(params.get("mode")||"").toUpperCase();
-  const view=params.get("view");
-  if(!VALID_MODES.has(urlMode) && !view){
-    const sections=[...document.querySelectorAll("main>.workspace")];
-    sections.forEach(s=>{s.classList.add("hidden");s.hidden=true;s.style.setProperty("display","none","important");s.setAttribute("aria-hidden","true");});
-    const gate=$("models");
-    if(gate){gate.classList.remove("hidden");gate.hidden=false;gate.style.setProperty("display","flex","important");gate.setAttribute("aria-hidden","false");}
-    document.querySelectorAll("nav button").forEach(b=>{b.classList.remove("active");b.removeAttribute("aria-current");});
-    return;
-  }
-  const mode=VALID_MODES.has(urlMode)?urlMode:(VALID_MODES.has(siteMode)?siteMode:"NQ");
-  siteMode=mode; activeModel=mode;
-  try{setSiteMode(mode);}catch(e){siteMode=mode;activeModel=mode;}
-  if(view==="bot"&&mode==="NQ")show("bot",$("navBotFutures"));
-  else if(view==="crypto"&&mode==="CRYPTO")show("crypto",$("navBotCrypto"));
-  else if(view==="trades")openView("trades",$("navTrades"));
-  else if(view==="performance")openView("performance",$("navPerformance"));
-  else if(view==="chat")openView("chat",$("navChat"));
-  else if(view==="journal")openView("journal",$("navJournal"));
-  else if(view==="backtests")openView("backtests",$("navBacktests"));
-  else if(view==="connections")openView("connections",$("navConnections"));
-  else if(view==="settings")openView("settings",$("navSettings"));
-  else showActiveDashboard($("navDash"));
-}
-initializeActiveWorkspace();
-window.addEventListener("pageshow",()=>initializeActiveWorkspace());
-if(document.readyState==="loading"){
-  document.addEventListener("DOMContentLoaded",()=>initializeActiveWorkspace(),{once:true});
-}
-setTimeout(()=>{
-  if(!document.querySelector("main>.workspace:not(.hidden)"))
+
 function openView(id,btn){
   if(!document.getElementById(id))return;
   show(id,btn);
@@ -1374,13 +1342,46 @@ function renderTradesWorkspace(){
 }
 function renderPerformanceWorkspace(){
   const arr=getJournal().filter(x=>x.model===activeModel),s=calcDashboardStats(arr);
-  if($("perfTrades"))$("perfTrades").textContent=s.trades;if($("perfWinrate"))$("perfWinrate").textContent=s.winrate===null?"—":s.winrate.toFixed(1)+"%";if($("perfWinLoss"))$("perfWinLoss").textContent=s.wins+" / "+s.losses;if($("perfFactor"))$("perfFactor").textContent=s.profitFactor===Infinity?"∞":s.profitFactor===null?"—":s.profitFactor.toFixed(2);if($("perfAvgR"))$("perfAvgR").textContent=s.avgR===null?"—":(s.avgR>=0?"+":"")+s.avgR.toFixed(2)+"R";if($("perfTotalR"))$("perfTotalR").textContent=s.totalR===null?"—":(s.totalR>=0?"+":"")+s.totalR.toFixed(2)+"R";if($("perfPnl"))$("perfPnl").textContent=s.pnl===null?"—":formatMoneyShort(s.pnl);
+  if($("perfTrades"))$("perfTrades").textContent=s.trades;
+  if($("perfWinrate"))$("perfWinrate").textContent=s.winrate===null?"—":s.winrate.toFixed(1)+"%";
+  if($("perfWinLoss"))$("perfWinLoss").textContent=s.wins+" / "+s.losses;
+  if($("perfFactor"))$("perfFactor").textContent=s.profitFactor===Infinity?"∞":s.profitFactor===null?"—":s.profitFactor.toFixed(2);
+  if($("perfAvgR"))$("perfAvgR").textContent=s.avgR===null?"—":(s.avgR>=0?"+":"")+s.avgR.toFixed(2)+"R";
+  if($("perfTotalR"))$("perfTotalR").textContent=s.totalR===null?"—":(s.totalR>=0?"+":"")+s.totalR.toFixed(2)+"R";
+  if($("perfPnl"))$("perfPnl").textContent=s.pnl===null?"—":formatMoneyShort(s.pnl);
   const denom=s.wins+s.losses,exp=denom&&s.pnl!==null?s.pnl/denom:null;if($("perfExpectancy"))$("perfExpectancy").textContent=exp===null?"—":formatMoneyShort(exp);
   const chart=$("performanceChart");if(chart&&s.series?.length){const pts=s.series,vals=pts.map(p=>p.cumulative),min=Math.min(0,...vals),max=Math.max(0,...vals),span=Math.max(1,max-min);chart.innerHTML='<svg class="pnl-chart" viewBox="0 0 900 220" preserveAspectRatio="none"><path d="'+pts.map((p,i)=>(i?"L":"M")+(35+i/Math.max(1,pts.length-1)*830).toFixed(1)+" "+(185-(p.cumulative-min)/span*150).toFixed(1)).join(" ")+'" class="pnl-line"></path>'+pts.map((p,i)=>'<circle cx="'+(35+i/Math.max(1,pts.length-1)*830).toFixed(1)+'" cy="'+(185-(p.cumulative-min)/span*150).toFixed(1)+'" r="4" class="pnl-dot"></circle>').join("")+'</svg>';}
 }
-
+function initializeActiveWorkspace(){
+  const params=new URLSearchParams(location.search),urlMode=String(params.get("mode")||"").toUpperCase(),view=params.get("view");
+  if(!VALID_MODES.has(urlMode) && !view){
+    const sections=[...document.querySelectorAll("main>.workspace")];
+    sections.forEach(s=>{s.classList.add("hidden");s.hidden=true;s.style.setProperty("display","none","important");s.setAttribute("aria-hidden","true");});
+    const gate=$("models");
+    if(gate){gate.classList.remove("hidden");gate.hidden=false;gate.style.setProperty("display","flex","important");gate.setAttribute("aria-hidden","false");}
+    document.querySelectorAll("nav button").forEach(b=>{b.classList.remove("active");b.removeAttribute("aria-current");});
+    return;
+  }
+  const mode=VALID_MODES.has(urlMode)?urlMode:(VALID_MODES.has(siteMode)?siteMode:"NQ");
+  siteMode=mode;activeModel=mode;
+  try{setSiteMode(mode);}catch(e){siteMode=mode;activeModel=mode;}
+  if(view==="bot"&&mode==="NQ")show("bot",$("navBotFutures"));
+  else if(view==="crypto"&&mode==="CRYPTO")show("crypto",$("navBotCrypto"));
+  else if(view==="trades")openView("trades",$("navTrades"));
+  else if(view==="performance")openView("performance",$("navPerformance"));
+  else if(view==="chat")openView("chat",$("navChat"));
+  else if(view==="journal")openView("journal",$("navJournal"));
+  else if(view==="backtests")openView("backtests",$("navBacktests"));
+  else if(view==="connections")openView("connections",$("navConnections"));
+  else if(view==="settings")openView("settings",$("navSettings"));
+  else showActiveDashboard($("navDash"));
+}
 initializeActiveWorkspace();
-  if(!document.querySelector("#chat.hidden")&&!document.querySelector("#chat").classList.contains("hidden"))setTimeout(()=>$("chatInput")?.focus(),0);
+window.addEventListener("pageshow",()=>initializeActiveWorkspace());
+if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",()=>initializeActiveWorkspace(),{once:true});}
+setTimeout(()=>{
+  if(!document.querySelector("main>.workspace:not(.hidden)"))initializeActiveWorkspace();
+  if(!document.querySelector("#chat.hidden")&&!document.querySelector("#chat").classList.contains("hidden"))setTimeout(()=>$( "chatInput")?.focus(),0);
 },0);
 if($("botApiUrl"))$("botApiUrl").value=BOT_API;
 if($("edgeflowAccessKey"))$("edgeflowAccessKey").value=EDGEFLOW_ACCESS_KEY;
@@ -1389,7 +1390,6 @@ document.querySelectorAll("[data-image-preview]").forEach(input=>input.addEventL
 JOURNAL_DRAFT_FIELDS.forEach(id=>{const el=$(id);if(!el)return;el.addEventListener("input",saveJournalDraft);el.addEventListener("change",saveJournalDraft);});
 window.addEventListener("beforeunload",saveJournalDraft);
 $("jDate")?.addEventListener("change",updateJournalDate);
-
 </script>
 <script src="./voice-coach.js?v=20260930-voice13"></script>
 <script>
