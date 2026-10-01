@@ -61,7 +61,23 @@
     state.journal.unshift({symbol:f("jSymbol").value,side:f("jSide").value,pnl:Number(f("jPnl").value)||0,setup:f("jSetup").value||"R.B",note:f("jNote").value||"Execution reviewed.",date:new Date().toLocaleDateString("en-CA")});
     localStorage.setItem("edgeflow-journal",JSON.stringify(state.journal)); render();
   };
-  const mountain=(color)=>'<svg class="mountain" viewBox="0 0 900 500" preserveAspectRatio="none"><defs><linearGradient id="g'+color+'" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+(color==="r"?"#ff153f":"#149dff")+'" stop-opacity=".9"/><stop offset="1" stop-color="#02060b" stop-opacity=".2"/></linearGradient></defs><path d="M0 420 90 300 145 360 245 190 315 300 395 150 470 330 560 235 650 330 730 110 805 245 900 170 900 500 0 500Z" fill="url(#g'+color+')"/><path d="M0 450 130 360 220 400 310 285 390 365 480 250 575 380 665 290 750 365 830 225 900 350V500H0Z" fill="'+(color==="r"?"#ff173f":"#159dff")+'" opacity=".18"/><path d="M0 460 130 390 230 415 350 335 455 410 560 350 670 415 790 325 900 400" fill="none" stroke="'+(color==="r"?"#ff3157":"#29aaff")+'" stroke-opacity=".55"/></svg>';
+  const mountain=(color)=>{
+    const red=color==="r", c=red?"#ff173f":"#168dff", hi=red?"#ff5a68":"#53c5ff", glow=red?"#ff163f":"#128cff";
+    return '<svg class="mountain" viewBox="0 0 1200 650" preserveAspectRatio="none" aria-hidden="true"><defs>'+
+      '<linearGradient id="sky'+color+'" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#01040a"/><stop offset=".58" stop-color="'+(red?"#10040a":"#03101d")+'"/><stop offset="1" stop-color="#02050a"/></linearGradient>'+
+      '<linearGradient id="peak'+color+'" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+hi+'"/><stop offset=".35" stop-color="'+c+'" stop-opacity=".8"/><stop offset="1" stop-color="#02050a"/></linearGradient>'+
+      '<linearGradient id="ground'+color+'" x1="0" y1="0" x2="0" y2="1"><stop stop-color="'+c+'" stop-opacity=".35"/><stop offset="1" stop-color="#02040a"/></linearGradient>'+
+      '<filter id="glow'+color+'"><feGaussianBlur stdDeviation="9"/></filter></defs>'+
+      '<rect width="1200" height="650" fill="url(#sky'+color+')"/>'+
+      '<g opacity=".55" filter="url(#glow'+color+')"><path d="M0 430L150 260 230 360 370 120 500 330 650 180 790 350 950 95 1200 300V650H0Z" fill="'+glow+'"/></g>'+
+      '<path d="M0 455L120 315 190 360 295 175 370 275 475 105 555 300 660 205 735 330 845 145 930 255 1035 65 1120 235 1200 155V650H0Z" fill="url(#peak'+color+')" opacity=".92"/>'+
+      '<path d="M0 510L145 375 245 425 335 310 445 405 545 270 655 405 755 315 865 410 970 275 1080 390 1200 285V650H0Z" fill="url(#ground'+color+')" opacity=".8"/>'+
+      '<g fill="none" stroke="'+hi+'" stroke-opacity=".35" stroke-width="2"><path d="M295 175L335 310L370 275"/><path d="M475 105L545 270L555 300"/><path d="M845 145L865 410"/><path d="M1035 65L1080 390"/></g>'+
+      '<g stroke="'+hi+'" stroke-opacity=".42" stroke-width="2"><path d="M72 80V360"/><path d="M185 120V330"/><path d="M1010 115V345"/><path d="M1125 75V320"/></g>'+
+      '<path d="M0 560Q260 505 480 555T900 535T1200 560V650H0Z" fill="#02060b"/>'+
+      '<path d="M0 575Q260 520 480 575T900 555T1200 580" fill="none" stroke="'+hi+'" stroke-opacity=".38" stroke-width="3"/>'+
+      '</svg>';
+  };
 
   function landing(){
     document.body.className="landing-page";
