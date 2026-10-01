@@ -278,7 +278,16 @@
       '<div class="engine"><b>EDGEFLOW CORE</b><small>'+d().connections.map(x=>x[0]).join(" · ")+' · ENGINE</small><i></i></div></aside>';
   }
   function topbar(){
-    return '<header class="topbar"><div class="crumb">EDGEFLOW CORE <em>•</em> '+d().label+'</div><div class="top-actions"><span class="live">● LIVE</span><span class="session">LDN <b>'+now()+'</b></span><span class="session">NY PRE <b>08:24:17</b></span><span class="session">NY <b>CLOSED</b></span><span class="avatar">N</span><span class="user">Nath⌄</span></div></header>';
+    const ss=sessionState();
+    const live=ss.find(x=>x.live);
+    const next=ss.find(x=>!x.live);
+    return '<header class="topbar"><div class="crumb">EDGEFLOW CORE <em>•</em> '+d().label+'</div><div class="top-actions">'+
+      '<span class="live '+(live?'session-live':'')+'">● '+(live?live.name+' LIVE':'MARKET CLOSED')+'</span>'+
+      '<span class="session">LDN <b>'+ss[0].label+'</b><i>'+ss[0].countdown+'</i></span>'+
+      '<span class="session">NY PRE <b>'+ss[1].label+'</b><i>'+ss[1].countdown+'</i></span>'+
+      '<span class="session">NY <b>'+ss[2].label+'</b><i>'+ss[2].countdown+'</i></span>'+
+      '<span class="session">ASIA <b>'+ss[3].label+'</b><i>'+ss[3].countdown+'</i></span>'+
+      '<span class="avatar">N</span><span class="user">Nath⌄</span></div></header>';
   }
   function shell(body){
     document.body.className="app-page "+accent();
@@ -696,8 +705,37 @@
       '</div>';
   }
   function connections(){
-    return title("SYSTEM","Connections","Broker and service integrations.")+'<div class="connections">'+d().connections.map(x=>'<article class="connection"><div class="conn-icon '+(x[2]==="K"?"blue":"")+'">'+x[2]+'</div><h3>'+x[0]+'</h3><small>'+x[1]+'</small><b>● Connected</b><button>Manage</button></article>').join("")+'</div>';
+    const tv=state.tradovate.status||{};
+    const tvConnected=Boolean(tv.connected);
+    const tvConfigured=Boolean(tv.configured);
+    const tvStatus=tvConnected?"CONNECTED":(tvConfigured?"READY TO CONNECT":"CREDENTIALS REQUIRED");
+    return title("SYSTEM","Connections","Live broker and service integrations.")+
+      '<div class="connections connection-stack">'+
+      '<article class="connection connection-live '+(tvConnected?"is-connected":"is-offline")+'">'+
+        '<div class="conn-icon">T</div><div class="conn-copy"><h3>Tradovate</h3><small>Futures · Account / positions / orders / fills</small><b class="'+(tvConnected?"ok":"warn")+'">● '+tvStatus+'</b>'+
+        '<p>'+(tvConnected?"Live account data is flowing to the Futures dashboard.":(tvConfigured?"Credentials are configured on Railway. Click connect to start the live session.":"Add the Tradovate credentials to Railway before connecting."))+'</p></div>'+
+        '<button class="primary" onclick="connectTradovateUI()">'+(tvConnected?"REFRESH":"CONNECT")+'</button>'+
+      '</article>'+
+      '<article class="connection '+(crypto()?"is-active":"")+'"><div class="conn-icon blue">K</div><h3>KCEX</h3><small>Crypto · screen observer</small><b class="ok">● READY</b><button onclick="edgeGo(\'overview\')">OPEN CRYPTO</button></article>'+
+      '<article class="connection"><div class="conn-icon">R</div><h3>Rithmic</h3><small>Futures · account feed</small><b class="warn">○ NOT CONFIGURED</b><button onclick="alert(\'Rithmic credentials are not configured on Railway yet.\')">MANAGE</button></article>'+
+      '<article class="connection"><div class="conn-icon blue">J</div><h3>JARVIS AI</h3><small>EdgeFlow intelligence engine</small><b class="ok">● ONLINE</b><button onclick="edgeGo(\'ai\')">OPEN JARVIS</button></article>'+
+      '</div>'+
+      '<section class="panel connection-help"><div class="panel-head"><span>TRADOVATE SETUP</span></div><p>Tradovate credentials stay on the Railway backend. The browser never receives the password or secret.</p><div class="setup-grid"><div><small>BACKEND</small><b>RAILWAY</b></div><div><small>API</small><b>LIVE.TRADOVATEAPI.COM</b></div><div><small>DATA</small><b>ACCOUNT · POSITIONS · ORDERS · FILLS</b></div></div></section>';
   }
+  window.connectTradovateUI=async()=>{
+    const button=document.querySelector(".connection-live .primary");
+    if(button){button.disabled=true;button.textContent="CONNECTING...";}
+    try{
+      const response=await fetch("https://trading-assistant-production.up.railway.app/api/tradovate/connect",{method:"POST",headers:{Accept:"application/json"}});
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||data.ok===false)throw new Error(data.error||"Tradovate connection failed.");
+      state.tradovate.status=data;state.tradovate.error="";state.tradovate.lastFetch=Date.now();render();
+    }catch(e){
+      state.tradovate.error=String(e.message||e);
+      alert(state.tradovate.error);
+      render();
+    }
+  };
   function settings(){
     return title("SYSTEM","Settings","Environment controls and preferences.")+'<div class="settings-grid">'+panel("ENVIRONMENT",'<div class="setting"><span>Active Environment</span><b>'+d().label+'</b></div><div class="setting"><span>Theme</span><b>Dark Mode</b></div><div class="setting"><span>Compact Mode</span><b>ON</b></div>')+panel("TRADING MODEL",'<div class="setting"><span>Entry Type</span><b>LIMIT</b></div><div class="setting"><span>Primary Trigger</span><b>REJECTION BLOCK</b></div><div class="setting"><span>Risk Per Trade</span><b>$100</b></div><div class="setting"><span>Fib Retracements</span><b>0.50 · 0.62 · 0.705 · 0.79</b></div>')+panel("NOTIFICATIONS",'<div class="setting"><span>Trade Alerts</span><b class="on-text">ON</b></div><div class="setting"><span>AI Insights</span><b class="on-text">ON</b></div><div class="setting"><span>News Warnings</span><b class="on-text">ON</b></div>')+panel("DATA & SYNC",'<div class="setting"><span>Last Sync</span><b>'+now()+'</b></div><div class="setting"><span>Journal Storage</span><b>LOCAL</b></div>')+'</div>';
   }
@@ -714,5 +752,8 @@
     }
   }
   render();
-  setInterval(()=>{if(state.mode==="NQ"&&state.view==="overview"&&!state.tradovate.loading)renderDashboardOnly()},10000);
+  setInterval(()=>{
+    if(state.mode==="NQ"&&state.view==="overview"&&!state.tradovate.loading)refreshTradovateDashboard();
+    if(state.mode&&document.querySelector(".topbar")){const t=document.querySelector(".topbar");const ss=sessionState();const live=ss.find(x=>x.live);const nodes=t.querySelectorAll(".session");if(nodes.length>=4){[0,1,2,3].forEach((i)=>{const b=nodes[i].querySelector("b"),em=nodes[i].querySelector("i");if(b)b.textContent=ss[i].label;if(em)em.textContent=ss[i].countdown});}const liveEl=t.querySelector(".live");if(liveEl)liveEl.textContent="● "+(live?live.name+" LIVE":"MARKET CLOSED");}
+  },1000);
 })();
