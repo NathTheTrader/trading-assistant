@@ -75,7 +75,8 @@
     if(!["NQ","CRYPTO"].includes(mode)) return;
     if(!["overview","trades","performance","ai","journal","analytics","backtests","connections","settings"].includes(view)) view="overview";
     state.mode=mode; state.view=view; state.journal=loadJournal(mode);
-    localStorage.setItem("edgeflow-mode",mode); localStorage.setItem("edgeflow-view",view);
+    localStorage.setItem("edgeflow-mode",mode); localStorage.setItem("edgeflow-view",view); localStorage.setItem("activeModel",mode==="CRYPTO"?"CRYPTO":"NQ");
+    try{window.dispatchEvent(new CustomEvent("edgeflow:model-change",{detail:{mode}}))}catch(_){};
     history.replaceState({}, "", "?mode="+mode+"&view="+view); render();
   }
   window.enterMode=m=>go(m,"overview");
@@ -281,7 +282,7 @@
       '<span class="avatar">N</span><span class="user">Nath⌄</span></div></header>';
   }
   function shell(body){
-    document.body.className="app-page "+accent();
+    document.body.className="app-page "+accent()+(crypto()?" crypto-mode":"");
     root.innerHTML='<div class="app-shell">'+sidebar()+'<main class="main">'+topbar()+'<div class="workspace">'+body+'</div></main></div>';
   }
   const kpi=(l,v,s,cl="")=>'<div class="kpi '+cl+'"><small>'+l+'</small><strong>'+v+'</strong><em>'+s+'</em></div>';
