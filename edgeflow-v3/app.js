@@ -1,201 +1,151 @@
-/* EDGEFLOW — complete interface rebuild
-   Reference-driven UI. No legacy renderer is used. */
+/* EDGEFLOW V7 — reference-driven terminal rebuild */
 (() => {
+  "use strict";
   const root = document.getElementById("app");
-  const params = new URLSearchParams(location.search);
+  const q = new URLSearchParams(location.search);
   const savedMode = localStorage.getItem("edgeflow-mode");
   const savedView = localStorage.getItem("edgeflow-view");
   const state = {
-    mode: params.get("mode")==="CRYPTO" ? "CRYPTO" : params.get("mode")==="NQ" ? "NQ" : savedMode || "",
-    view: params.get("view") || savedView || "overview",
-    journal: JSON.parse(localStorage.getItem("edgeflow-journal") || "[]"),
-    aiMessages: []
+    mode: q.get("mode")==="CRYPTO" ? "CRYPTO" : q.get("mode")==="NQ" ? "NQ" : savedMode || "",
+    view: q.get("view") || savedView || "overview",
+    journal: JSON.parse(localStorage.getItem("edgeflow-journal") || "[]")
   };
-
-  const FUTURES = ["MNQ","MES","MGC"];
-  const CRYPTO = ["BTC","ETH","SOL","BNB","XRP","HYPE","FLOKI"];
-  const isCrypto = () => state.mode === "CRYPTO";
-  const accent = () => isCrypto() ? "blue" : "red";
-  const instruments = () => isCrypto() ? CRYPTO : FUTURES;
-
-  const demo = {
-    NQ: [
-      ["09:12:34","MNQ","Short","24,862.75","24,840.25","1","+ $225.00","4.5","R.B + FVG"],
-      ["08:47:12","MES","Long","6,120.50","6,158.00","2","+ $420.00","3.1","Sweep + OB"],
-      ["07:22:18","MGC","Short","3,872.40","3,861.20","1","- $160.00","1.2","News Fade"],
-      ["06:11:05","MNQ","Long","24,910.25","24,926.50","1","+ $160.00","2.8","10H Open"],
-      ["05:38:41","MES","Long","6,029.25","6,031.50","1","+ $120.00","2.1","R.B"],
-      ["Sep 29","MGC","Short","3,845.10","3,838.00","0.5","- $130.00","1.2","Trend"]
-    ],
-    CRYPTO: [
-      ["09:15:27","BTC","Short","63,120.55","63,420.00","0.02","+ $327.00","3.1","Sweep + OB"],
-      ["08:32:11","SOL","Long","148.10","148.90","10","+ $190.00","2.4","R.B"],
-      ["07:48:33","ETH","Short","2,460.50","2,452.30","0.5","- $160.00","2.8","FVG"],
-      ["06:11:05","BNB","Long","560.20","572.10","1.2","+ $240.00","2.8","10H Open"],
-      ["Sep 29","BTC","Long","62,910.00","63,100.00","0.02","+ $185.00","2.2","R.B"],
-      ["Sep 28","ETH","Short","2,480.20","2,468.00","0.8","+ $210.00","2.5","FVG"]
-    ]
+  const DATA = {
+    NQ: {
+      label:"FUTURES", accent:"red", instruments:["MNQ","MES","MGC"],
+      rows:[
+        ["09:12:34","MNQ","Short","24,862.75","24,840.25","1","+ $225.00","4.5","R.B + FVG"],
+        ["08:47:12","MES","Long","6,120.50","6,158.00","2","+ $420.00","3.1","Sweep + OB"],
+        ["07:22:18","MGC","Short","3,872.40","3,861.20","1","- $160.00","1.2","News Fade"],
+        ["06:11:05","MNQ","Long","24,910.25","24,926.50","1","+ $160.00","2.8","10H Open"],
+        ["05:38:41","MES","Long","6,029.25","6,031.50","1","+ $120.00","2.1","R.B"],
+        ["Sep 29","MGC","Short","3,845.10","3,838.00","0.5","- $130.00","1.2","Trend"]
+      ],
+      assets:[["MNQ","24,856.25","48","62%"],["MES","6,021.75","32","59%"],["MGC","3,872.40","18","67%"]],
+      session:["LONDON","NY Open","ASIA"],
+      connections:[["Tradovate","Futures","TV"],["Rithmic","Futures","R"],["AI Assistant","Intelligence","AI"]]
+    },
+    CRYPTO: {
+      label:"CRYPTO", accent:"blue", instruments:["BTC","ETH","SOL","BNB","XRP","HYPE","FLOKI"],
+      rows:[
+        ["09:15:27","BTC","Short","63,120.55","63,420.00","0.02","+ $327.00","3.1","Sweep + OB"],
+        ["08:32:11","SOL","Long","148.10","148.90","10","+ $190.00","2.4","R.B"],
+        ["07:48:33","ETH","Short","2,460.50","2,452.30","0.5","- $160.00","2.8","FVG"],
+        ["06:11:05","BNB","Long","560.20","572.10","1.2","+ $240.00","2.8","10H Open"],
+        ["Sep 29","BTC","Long","62,910.00","63,100.00","0.02","+ $185.00","2.2","R.B"],
+        ["Sep 28","ETH","Short","2,480.20","2,468.00","0.8","+ $210.00","2.5","FVG"]
+      ],
+      assets:[["BTC","63,284.50","56","71%"],["ETH","2,452.18","38","66%"],["SOL","148.32","24","62%"],["BNB","573.21","18","61%"]],
+      session:["ASIA","LONDON","NY"],
+      connections:[["KCEX","Crypto","K"],["AI Assistant","Intelligence","AI"]]
+    }
   };
-
-  function money(v){ return (v < 0 ? "-$" : "+$") + Math.abs(Number(v)).toFixed(2); }
-  function clock(){ return new Date().toLocaleTimeString("en-CA",{hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit"}); }
-  function modeLabel(){ return isCrypto() ? "Crypto" : "Futures"; }
-  function go(mode, view="overview"){
+  const d=()=>DATA[state.mode||"NQ"];
+  const crypto=()=>state.mode==="CRYPTO";
+  const accent=()=>crypto()?"blue":"red";
+  const now=()=>new Date().toLocaleTimeString("en-CA",{hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+  function go(mode,view="overview"){
     state.mode=mode; state.view=view;
     localStorage.setItem("edgeflow-mode",mode); localStorage.setItem("edgeflow-view",view);
-    history.replaceState({}, "", "?mode="+mode+"&view="+view);
-    render();
+    history.replaceState({}, "", "?mode="+mode+"&view="+view); render();
   }
-  window.enterMode=(m)=>go(m,"overview");
-  window.edgeGo=(v)=>go(state.mode,v);
-  window.edgeHome=()=>{state.mode=""; localStorage.removeItem("edgeflow-mode"); history.replaceState({}, "", location.pathname); render();};
-
-  function mountain(color, dark){
-    return '<svg class="mountain-svg" viewBox="0 0 900 500" preserveAspectRatio="none" aria-hidden="true">'+
-      '<defs><linearGradient id="mg'+color.replace("#","")+'" x1="0" y1="0" x2="0" y2="1"><stop stop-color="'+color+'" stop-opacity=".9"/><stop offset="1" stop-color="'+dark+'" stop-opacity=".12"/></linearGradient></defs>'+
-      '<path d="M0 410 L95 330 L155 360 L250 215 L305 300 L380 175 L455 330 L535 250 L610 320 L700 120 L760 270 L835 210 L900 345 L900 500 L0 500Z" fill="url(#mg'+color.replace("#","")+')"/>'+
-      '<path d="M0 440 L115 350 L185 390 L270 275 L350 365 L430 245 L520 375 L610 285 L690 360 L780 205 L900 390 L900 500 L0 500Z" fill="'+color+'" opacity=".22"/>'+
-      '<path d="M0 455 L150 390 L240 410 L350 330 L445 405 L560 345 L665 410 L770 330 L900 425" fill="none" stroke="'+color+'" stroke-opacity=".7" stroke-width="2"/>'+
-      '</svg>';
-  }
+  window.enterMode=m=>go(m,"overview");
+  window.edgeGo=v=>go(state.mode,v);
+  window.edgeHome=()=>{state.mode="";state.view="overview";localStorage.removeItem("edgeflow-mode");history.replaceState({}, "", location.pathname);render()};
+  window.saveJournal=e=>{
+    e.preventDefault();
+    const f=id=>document.getElementById(id);
+    state.journal.unshift({symbol:f("jSymbol").value,side:f("jSide").value,pnl:Number(f("jPnl").value)||0,setup:f("jSetup").value||"R.B",note:f("jNote").value||"Execution reviewed.",date:new Date().toLocaleDateString("en-CA")});
+    localStorage.setItem("edgeflow-journal",JSON.stringify(state.journal)); render();
+  };
+  const mountain=(color)=>'<svg class="mountain" viewBox="0 0 900 500" preserveAspectRatio="none"><defs><linearGradient id="g'+color+'" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+(color==="r"?"#ff153f":"#149dff")+'" stop-opacity=".9"/><stop offset="1" stop-color="#02060b" stop-opacity=".2"/></linearGradient></defs><path d="M0 420 90 300 145 360 245 190 315 300 395 150 470 330 560 235 650 330 730 110 805 245 900 170 900 500 0 500Z" fill="url(#g'+color+')"/><path d="M0 450 130 360 220 400 310 285 390 365 480 250 575 380 665 290 750 365 830 225 900 350V500H0Z" fill="'+(color==="r"?"#ff173f":"#159dff")+'" opacity=".18"/><path d="M0 460 130 390 230 415 350 335 455 410 560 350 670 415 790 325 900 400" fill="none" stroke="'+(color==="r"?"#ff3157":"#29aaff")+'" stroke-opacity=".55"/></svg>';
 
   function landing(){
     document.body.className="landing-page";
-    root.innerHTML =
-      '<div class="landing">'+
-        '<div class="land-half land-red"><div class="land-mountains">'+mountain("#ff173f","#170207")+'</div><div class="land-lines"></div></div>'+
-        '<div class="land-half land-blue"><div class="land-mountains">'+mountain("#159dff","#031327")+'</div><div class="land-lines"></div></div>'+
-        '<div class="land-center">'+
-          '<div class="ef-mark">E</div><div class="ef-name">EDGE<span>FLOW</span></div><div class="ef-sub">TRADING INTELLIGENCE</div>'+
-          '<div class="choose">CHOOSE YOUR ENVIRONMENT</div>'+
-          '<div class="env-grid">'+
-            '<button class="env-card red" onclick="enterMode(\'NQ\')"><div class="env-icon">▮▮▮</div><div class="env-title">FUTURES</div><div class="env-sub">MNQ | MES | MGC | etc.</div><div class="env-list">◉ Tradovate<br>◉ Rithmic<br>✦ AI Assistant<br>▣ Journal<br>◫ Analytics</div><span class="env-arrow">→</span></button>'+
-            '<button class="env-card blue" onclick="enterMode(\'CRYPTO\')"><div class="env-icon">◉</div><div class="env-title">CRYPTO</div><div class="env-sub">BTC | ETH | SOL | BNB | etc.</div><div class="env-list">◉ KCEX<br>✦ AI Assistant<br>▣ Journal<br>◫ Analytics</div><span class="env-arrow">→</span></button>'+
-          '</div>'+
-        '</div>'+
-        '<div class="landing-foot">DISCIPLINE × DATA × EXECUTION</div><div class="landing-right">A HIGHER STANDARD<br>FOR TRADERS</div>'+
-      '</div>';
+    root.innerHTML='<div class="landing">'+
+      '<div class="land land-r">'+mountain("r")+'</div><div class="land land-b">'+mountain("b")+'</div>'+
+      '<div class="landing-center"><div class="hero-logo"><span>E</span></div><div class="hero-name">EDGE<span>FLOW</span></div><div class="hero-sub">TRADING INTELLIGENCE</div><div class="choose">CHOOSE YOUR ENVIRONMENT</div><div class="tagline">SAME EDGE. DIFFERENT MARKETS.</div>'+
+      '<div class="env-cards"><button class="env red" onclick="enterMode(\'NQ\')"><div class="env-head"><b>▥</b><strong>FUTURES</strong></div><small>MNQ | MES | MGC | etc.</small><ul><li>◉ Tradovate</li><li>◉ Rithmic</li><li>✦ AI Assistant</li><li>▣ Journal</li><li>◫ Analytics</li></ul><i>→</i></button>'+
+      '<button class="env blue" onclick="enterMode(\'CRYPTO\')"><div class="env-head"><b>◉</b><strong>CRYPTO</strong></div><small>BTC | ETH | SOL | BNB | XRP | HYPE</small><ul><li>◉ KCEX</li><li>✦ AI Assistant</li><li>▣ Journal</li><li>◫ Analytics</li></ul><i>→</i></button></div></div>'+
+      '<div class="landing-foot">DISCIPLINE × DATA × EXECUTION</div><div class="landing-corner">A HIGHER STANDARD<br>FOR TRADERS</div></div>';
   }
 
-  const nav = [
-    ["overview","⌂","Overview","Core dashboard"],
-    ["trades","▤","Trades","Execution history"],
-    ["performance","◒","Performance","Stats & expectancy"],
-    ["ai","✦","AI Assistant","Edgeflow intelligence"],
-    ["journal","▣","Journal","Trading journal"],
-    ["analytics","◫","Analytics","Deep statistics"],
-    ["backtests","◌","Backtests","Models & samples"],
-    ["connections","⌁","Connections","Broker integrations"],
-    ["settings","⚙","Settings","Environment controls"]
-  ];
-
+  const NAV=[["overview","⌂","Overview","Market command center"],["trades","▤","Trades","Execution history"],["performance","◒","Performance","Metrics & expectancy"],["ai","✦","AI Assistant","Edgeflow intelligence"],["journal","▣","Journal","Trading journal"],["analytics","◫","Analytics","Deep statistics"],["backtests","◌","Backtests","Models & samples"],["connections","⌁","Connections","Broker integrations"],["settings","⚙","Settings","Environment controls"]];
   function sidebar(){
-    return '<aside class="sidebar">'+
-      '<div class="brand" onclick="edgeHome()"><div class="brand-mark">E</div><div><b>EDGE<span>FLOW</span></b><small>TRADING INTELLIGENCE</small></div></div>'+
-      '<div class="mode-switch"><button class="'+(!isCrypto()?'on':'')+'" onclick="enterMode(\'NQ\')">FUTURES</button><button class="'+(isCrypto()?'on blue':'')+'" onclick="enterMode(\'CRYPTO\')">CRYPTO</button></div>'+
-      '<div class="side-label">WORKSPACE</div><nav>'+nav.slice(0,7).map(n=>'<button class="'+(state.view===n[0]?'active':'')+'" onclick="edgeGo(\''+n[0]+'\')"><i>'+n[1]+'</i><span><b>'+n[2]+'</b><small>'+n[3]+'</small></span></button>').join("")+'</nav>'+
-      '<div class="side-label system">SYSTEM</div><nav>'+nav.slice(7).map(n=>'<button class="'+(state.view===n[0]?'active':'')+'" onclick="edgeGo(\''+n[0]+'\')"><i>'+n[1]+'</i><span><b>'+n[2]+'</b><small>'+n[3]+'</small></span></button>').join("")+'</nav>'+
-      '<div class="side-status"><b>EDGEFLOW CORE</b><small>'+ (isCrypto()?"KCEX · CRYPTO ENGINE":"TRADOVATE · RITHMIC · FUTURES ENGINE")+'</small><i></i></div>'+
-    '</aside>';
+    return '<aside class="sidebar"><div class="brand" onclick="edgeHome()"><div class="brand-e">E</div><div><b>EDGE<span>FLOW</span></b><small>TRADING INTELLIGENCE</small></div></div>'+
+      '<div class="mode-switch"><button class="'+(!crypto()?"active":"")+'" onclick="enterMode(\'NQ\')">FUTURES</button><button class="'+(crypto()?"active blue":"")+'" onclick="enterMode(\'CRYPTO\')">CRYPTO</button></div>'+
+      '<div class="side-caption">WORKSPACE</div><nav>'+NAV.slice(0,7).map(n=>'<button class="'+(state.view===n[0]?"selected":"")+'" onclick="edgeGo(\''+n[0]+'\')"><span class="ni">'+n[1]+'</span><span><b>'+n[2]+'</b><small>'+n[3]+'</small></span></button>').join("")+'</nav>'+
+      '<div class="side-caption system">SYSTEM</div><nav>'+NAV.slice(7).map(n=>'<button class="'+(state.view===n[0]?"selected":"")+'" onclick="edgeGo(\''+n[0]+'\')"><span class="ni">'+n[1]+'</span><span><b>'+n[2]+'</b><small>'+n[3]+'</small></span></button>').join("")+'</nav>'+
+      '<div class="engine"><b>EDGEFLOW CORE</b><small>'+d().connections.map(x=>x[0]).join(" · ")+' · ENGINE</small><i></i></div></aside>';
   }
-
   function topbar(){
-    return '<header class="topbar"><div class="crumb">EDGEFLOW CORE <span>•</span> '+modeLabel().toUpperCase()+'</div><div class="top-right"><span class="live-dot">● LIVE</span><span class="session-pill">LDN <b>'+clock()+'</b></span><span class="session-pill">NY <b>'+(isCrypto()?"CLOSED":"OPEN")+'</b></span><span class="avatar">N</span><span class="user">Nath⌄</span></div></header>';
+    return '<header class="topbar"><div class="crumb">EDGEFLOW CORE <em>•</em> '+d().label+'</div><div class="top-actions"><span class="live">● LIVE</span><span class="session">LDN <b>'+now()+'</b></span><span class="session">NY PRE <b>08:24:17</b></span><span class="session">NY <b>CLOSED</b></span><span class="avatar">N</span><span class="user">Nath⌄</span></div></header>';
   }
-
-  function shell(content){
+  function shell(body){
     document.body.className="app-page "+accent();
-    root.innerHTML='<div class="app-shell">'+sidebar()+'<main class="main">'+topbar()+'<section class="workspace">'+content+'</section></main></div>';
+    root.innerHTML='<div class="app-shell">'+sidebar()+'<main class="main">'+topbar()+'<div class="workspace">'+body+'</div></main></div>';
   }
-
-  function kpi(label,value,sub,cls=""){
-    return '<div class="kpi '+cls+'"><small>'+label+'</small><strong>'+value+'</strong><em>'+sub+'</em></div>';
+  const kpi=(l,v,s,cl="")=>'<div class="kpi '+cl+'"><small>'+l+'</small><strong>'+v+'</strong><em>'+s+'</em></div>';
+  function panel(title,body,cl=""){return '<section class="panel '+cl+'"><div class="panel-head"><span>'+title+'</span></div>'+body+'</section>'}
+  function rows(data=d().rows, full=false){
+    return '<div class="rows"><div class="row row-head"><span>TIME</span><span>SYMBOL</span><span>SIDE</span><span>ENTRY</span><span>EXIT</span><span>QTY</span><span>P&L</span><span>RR</span><span>SETUP</span>'+(full?"<span>SHOT</span>":"")+'</div>'+
+      data.map(r=>'<div class="row"><span>'+esc(r[0])+'</span><b>'+r[1]+'</b><span class="'+(r[2]==="Long"?"long":"short")+'">'+r[2]+'</span><span>'+r[3]+'</span><span>'+r[4]+'</span><span>'+r[5]+'</span><strong class="'+(r[6].includes("-")?"loss":"win")+'">'+r[6]+'</strong><span>'+r[7]+'</span><span>'+r[8]+'</span>'+(full?"<button class=\"shot\">⌗</button>":"")+'</div>').join("")+'</div>';
   }
-
-  function tradeTable(rows=demo[state.mode]){
-    return '<div class="trade-table"><div class="tr head"><span>TIME</span><span>SYMBOL</span><span>SIDE</span><span>ENTRY</span><span>EXIT</span><span>QTY</span><span>P&L</span><span>R</span><span>SETUP</span></div>'+
-      rows.map(r=>'<div class="tr"><span>'+r[0]+'</span><b>'+r[1]+'</b><span class="'+(r[2].toLowerCase()==="long"?"long":"short")+'">'+r[2]+'</span><span>'+r[3]+'</span><span>'+r[4]+'</span><span>'+r[5]+'</span><strong class="'+(r[6][0]==="-"?"loss":"win")+'">'+r[6]+'</strong><span>'+r[7]+'</span><span>'+r[8]+'</span></div>').join("")+
-    '</div>';
+  function instrumentCards(){
+    return '<div class="asset-grid">'+d().assets.map(x=>'<article class="asset"><div><b>'+x[0]+'</b><i>◈</i></div><strong>'+x[1]+'</strong><small>'+x[2]+' trades <em>'+x[3]+'</em></small></article>').join("")+'</div>';
   }
-
-  function section(title,body,cls=""){ return '<div class="panel '+cls+'"><div class="panel-title">'+title+'</div>'+body+'</div>'; }
-
   function dashboard(){
-    const crypto=isCrypto();
-    const inst=crypto?[["BTC","63,284.50","63","71%"],["ETH","2,452.18","38","66%"],["SOL","148.32","24","62%"],["BNB","573.21","18","61%"]]:[["MNQ","24,856.25","48","62%"],["MES","6,021.75","32","59%"],["MGC","3,872.40","18","67%"]];
-    const cards=inst.map(x=>'<div class="instrument"><b>'+x[0]+'</b><strong>'+x[1]+'</strong><small>'+x[2]+' trades <em>'+x[3]+'</em></small></div>').join("");
-    return '<div class="dash">'+
-      '<div class="dash-hero"><div><small>EDGEFLOW CORE • '+modeLabel().toUpperCase()+'</small><h1>'+modeLabel().toUpperCase()+'</h1><p>'+(crypto?"BTC | ETH | SOL | BNB | XRP | HYPE | FLOKI":"MNQ | MES | MGC | RITHMIC | TRADOVATE")+'</p></div><div class="hero-sessions"><span class="live-dot">● LIVE</span><span>LDN<br><b>'+clock()+'</b></span><span>NY PRE<br><b>08:24:17</b></span><span>NY<br><b>CLOSED</b></span><span>ASIA<br><b>CLOSED</b></span></div></div>'+
-      '<div class="kpi-grid">'+kpi("Account Balance","$49,300.00","+0.8%","positive")+kpi("Today P&L","-$120.50","Session result","negative")+kpi("Total P&L","+$3,420.00","Last 30 days","positive")+kpi("Win Rate","62%","48 trades")+kpi("Win / Loss","31 / 19","50 recorded")+kpi("Profit Factor","2.4","Gross / loss")+kpi("Avg RR","3.4","Average R")+'</div>'+
-      '<div class="dash-grid"><div class="dash-left">'+
-        section(crypto?"TOP COINS":"TOP INSTRUMENTS",'<div class="instrument-grid">'+cards+'</div>')+
-        section("RECENT TRADES",tradeTable())+
-      '</div><div class="dash-right">'+
-        section("SESSION CONTEXT",'<div class="rule"><span>● '+(crypto?"ASIA":"LONDON")+'</span><b>'+clock()+'</b></div><div class="rule"><span>○ NY Open</span><b>in 05:25:43</b></div><div class="rule"><span>○ NY</span><b>Closed</b></div>')+
-        section("ACCOUNT RULES",'<div class="rule"><span>Daily Risk</span><b>0% / $1,200</b></div><div class="rule"><span>Consistency</span><b>62%</b></div><div class="rule"><span>Max Drawdown</span><b>2.1%</b></div><div class="rule"><span>Trades Today</span><b>1 / 2</b></div>')+
-      '</div></div>'+
-      '<div class="bottom-grid">'+section("ACTIVE MODEL",'<div class="active-model">'+(crypto?"CRYPTO RETRACEMENT MODEL":"REJECTION BLOCK MODEL")+'</div><div class="tags"><span>LIMIT</span><span>0.50</span><span>0.62</span><span>0.705</span><span>0.79</span></div>')+
-      section("MODEL DISCIPLINE",'<div class="discipline"><div>ENTRY<strong>LIMIT ONLY</strong></div><div>TRIGGER<strong>REJECTION BLOCK</strong></div><div>FILTER<strong>HTF → LTF</strong></div></div>')+'</div>'+
-    '</div>';
+    return '<div class="dash"><div class="dash-banner"><div><small>EDGEFLOW CORE • '+d().label+'</small><h1>'+d().label+'</h1><p>'+(crypto()?"BTC | ETH | SOL | BNB | XRP | HYPE | FLOKI":"MNQ | MES | MGC | RITHMIC | TRADOVATE")+'</p></div><div class="dash-sessions"><span class="live">● LIVE</span><span>LDN<br><b>'+now()+'</b></span><span>NY PRE<br><b>08:24:17</b></span><span>NY<br><b>CLOSED</b></span><span>ASIA<br><b>CLOSED</b></span></div></div>'+
+      '<div class="kpis">'+kpi("Account Balance","$49,300.00","+0.8%","positive")+kpi("Today P&L","-$120.50","Session result","negative")+kpi("Total P&L","+$3,420.00","Last 30 days","positive")+kpi("Win Rate","62%","48 trades")+kpi("Win / Loss","31 / 19","50 recorded")+kpi("Profit Factor","2.4","Gross / loss")+kpi("Avg RR","3.4","Average R")+'</div>'+
+      '<div class="dashboard-grid"><div class="dashboard-main">'+panel(crypto()?"TOP COINS":"TOP INSTRUMENTS",instrumentCards())+panel("RECENT TRADES",rows())+'</div><aside class="dashboard-side">'+panel("SESSION CONTEXT",'<div class="session-list"><div><b>● '+d().session[0]+'</b><span>'+now()+'</span></div><div><b>○ '+d().session[1]+'</b><span>in 05:25:43</span></div><div><b>○ '+d().session[2]+'</b><span>Closed</span></div></div>')+panel("ACCOUNT RULES",'<div class="rules"><div><span>Daily Risk</span><b>0% / $1,200</b></div><div><span>Consistency</span><b>62%</b></div><div><span>Max Drawdown</span><b>2.1%</b></div><div><span>Trades Today</span><b>1 / 2</b></div></div>')+'</aside></div>'+
+      '<div class="bottom-panels">'+panel("ACTIVE MODEL",'<div class="model-name">'+(crypto()?"CRYPTO RETRACEMENT MODEL":"REJECTION BLOCK MODEL")+'</div><div class="chips"><i>LIMIT</i><i>0.50</i><i>0.62</i><i>0.705</i><i>0.79</i></div>')+panel("MODEL DISCIPLINE",'<div class="discipline"><div>ENTRY<strong>LIMIT ONLY</strong></div><div>TRIGGER<strong>REJECTION BLOCK</strong></div><div>FILTER<strong>HTF → LTF</strong></div></div>')+'</div></div>';
   }
-
+  function title(k,t,s,button=""){return '<div class="page-title"><div><small>'+k+'</small><h1>'+t+'</h1><p>'+s+'</p></div>'+button+'</div>'}
   function trades(){
-    return '<div class="page-title"><div><small>EXECUTION</small><h1>Trades</h1><p>Full execution history for this environment.</p></div><button class="primary" onclick="edgeGo(\'journal\')">+ NEW JOURNAL ENTRY</button></div>'+
-      '<div class="filters"><input placeholder="Search instrument, setup..."><select><option>All results</option></select><select><option>All instruments</option></select><button>EXPORT</button></div>'+section("TRADES",tradeTable(demo[state.mode]));
+    return title("EXECUTION","Trades","Full execution history for this environment.",'<button class="primary" onclick="edgeGo(\'journal\')">+ NEW JOURNAL ENTRY</button>')+
+      '<div class="filters"><input placeholder="Search instrument, setup..."><select><option>All results</option></select><select><option>All instruments</option></select><select><option>All setups</option></select><select><option>Last 30 days</option></select><button>EXPORT</button></div>'+panel("TRADE HISTORY",rows(d().rows.concat(d().rows.slice(0,2)),true));
   }
-
-  function performance(){
-    return '<div class="page-title"><div><small>PERFORMANCE</small><h1>Performance</h1><p>Risk-adjusted statistics and setup expectancy.</p></div></div>'+
-      '<div class="kpi-grid six">'+kpi("Total Trades","48","Last 30 days")+kpi("Win Rate","62%","30 wins / 18 losses")+kpi("Profit Factor","2.4","Gross / loss")+kpi("Avg RR","3.4","Average R")+kpi("Expectancy","+$89.50","Per trade","positive")+kpi("Max DD","2.1%","Account")+'</div>'+
-      '<div class="two-col">'+section("PERFORMANCE BY SETUP",tableStats())+section("P&L CALENDAR",calendar())+'</div>';
-  }
-
-  function tableStats(){
-    const rows=[["R.B + FVG","18","72%","3.6","4.8"],["Sweep + OB","12","58%","2.1","3.2"],["10H Open","8","75%","2.8","3.9"],["News Fade","6","50%","1.6","2.1"],["Trend","4","50%","1.4","1.8"]];
-    return '<div class="stats-table"><div class="st head"><span>SETUP</span><span>TRADES</span><span>WIN RATE</span><span>PF</span><span>AVG RR</span></div>'+rows.map(r=>'<div class="st"><b>'+r[0]+'</b><span>'+r[1]+'</span><span>'+r[2]+'</span><span>'+r[3]+'</span><span>'+r[4]+'</span></div>').join("")+'</div>';
+  function statsTable(){
+    const a=[["R.B + FVG","18","72%","3.6","4.8"],["Sweep + OB","12","58%","2.1","3.2"],["10H Open","8","75%","2.8","3.9"],["News Fade","6","50%","1.6","2.1"],["Trend","4","50%","1.4","1.8"]];
+    return '<div class="stats"><div class="stat head"><span>SETUP</span><span>TRADES</span><span>WIN RATE</span><span>PF</span><span>AVG RR</span></div>'+a.map(r=>'<div class="stat"><b>'+r[0]+'</b><span>'+r[1]+'</span><span>'+r[2]+'</span><span>'+r[3]+'</span><span>'+r[4]+'</span></div>').join("")+'</div>';
   }
   function calendar(){
-    return '<div class="calendar"><div class="cal-head">September 2026 <span>‹　›</span></div><div class="week">M T W T F S S</div><div class="days">'+Array.from({length:30},(_,i)=>'<i class="'+([8,15,22,29].includes(i+1)?"good":"")+'">'+(i+1)+'</i>').join("")+'</div></div>';
+    return '<div class="calendar"><header>September 2026 <span>‹　›</span></header><div class="week">M　T　W　T　F　S　S</div><div class="days">'+Array.from({length:30},(_,i)=>'<i class="'+([8,15,22,29].includes(i+1)?"good":"")+'">'+(i+1)+'</i>').join("")+'</div></div>';
   }
-
+  function performance(){
+    return title("PERFORMANCE","Performance","Risk-adjusted statistics and setup expectancy.")+
+      '<div class="kpis six">'+kpi("Total Trades","48","Last 30 days")+kpi("Win Rate","62%","30 / 18")+kpi("Profit Factor","2.4","Gross / loss")+kpi("Avg RR","3.4","Average R")+kpi("Expectancy","+$89.50","Per trade","positive")+kpi("Max Drawdown","2.1%","Account")+'</div><div class="two-col">'+panel("PERFORMANCE BY SETUP",statsTable())+panel("P&L CALENDAR",calendar())+'</div>';
+  }
   function ai(){
-    return '<div class="page-title"><div><small>INTELLIGENCE</small><h1>AI Assistant</h1><p>Edgeflow trading intelligence.</p></div><span class="ai-status">● ONLINE</span></div>'+
-      '<div class="ai-layout">'+section("EDGEFLOW AI",'<div class="ai-chat"><div class="ai-bubble"><b>Edgeflow AI</b><br>Your trading intelligence is ready.</div><div class="ai-actions"><button>Analyze my last 5 trades</button><button>Check market context (NQ)</button><button>Find potential setups</button><button>Summarize today’s news</button><button>Review my journal</button></div><div class="ai-input">Ask Edgeflow anything... <b>+</b></div></div>','ai-panel')+
-      section("MODEL CONTEXT",'<div class="context"><div><small>MODEL</small><b>'+(isCrypto()?"CRYPTO":"FUTURES")+'</b></div><div><small>ENTRY</small><b>LIMIT</b></div><div><small>TRIGGER</small><b>REJECTION BLOCK</b></div><div><small>FIB</small><b>0.5 / 0.62 / 0.705 / 0.79</b></div></div>');
+    return title("INTELLIGENCE","AI Assistant","Edgeflow trading intelligence.",'<span class="ai-online">● ONLINE</span>')+
+      '<div class="ai-grid">'+panel("EDGEFLOW AI",'<div class="ai-chat"><div class="ai-welcome"><b>Edgeflow AI</b><small>Your trading intelligence.</small></div><div class="ai-actions">'+["Analyze my last 5 trades","Check market context (NQ)","Find potential setups","Summarize today’s news","Review my journal"].map(x=>'<button>'+x+' <span>›</span></button>').join("")+'</div><div class="ai-input">Ask Edgeflow anything... <b>↗</b></div></div>','ai-panel')+panel("MODEL CONTEXT",'<div class="context-grid"><div><small>ENVIRONMENT</small><b>'+d().label+'</b></div><div><small>ENTRY</small><b>LIMIT</b></div><div><small>TRIGGER</small><b>REJECTION BLOCK</b></div><div><small>RETRACE</small><b>0.50 · 0.62 · 0.705 · 0.79</b></div></div>')+'</div>';
   }
-
   function journal(){
-    return '<div class="page-title"><div><small>JOURNAL</small><h1>Trading Journal</h1><p>Record, review and learn from every execution.</p></div><button class="primary" onclick="newEntry()">+ NEW ENTRY</button></div>'+
-      '<div class="journal-layout">'+section("NEW JOURNAL ENTRY",'<form onsubmit="saveEntry(event)" class="journal-form"><input id="jSymbol" placeholder="Symbol" required><select id="jSide"><option>Long</option><option>Short</option></select><input id="jSetup" placeholder="Setup / model"><input id="jPnl" type="number" placeholder="P&L"><textarea id="jNote" placeholder="What happened?"></textarea><button class="primary">SAVE ENTRY</button></form>')+
-      section("RECENT JOURNAL", (state.journal.length?state.journal:demo[state.mode].slice(0,4).map(r=>({symbol:r[1],side:r[2],pnl:r[6],setup:r[8],note:"Execution followed the plan."}))).map(x=>'<div class="journal-row"><b>'+x.symbol+'</b><span>'+x.side+'</span><strong>'+x.pnl+'</strong><small>'+x.setup+'</small><p>'+x.note+'</p></div>').join(""))+'</div>';
+    const entries=state.journal.length?state.journal:d().rows.slice(0,4).map(r=>({symbol:r[1],side:r[2],pnl:r[6],setup:r[8],note:"Perfect execution. Followed the plan."}));
+    return title("JOURNAL","Trading Journal","Record, review and learn from every execution.",'<button class="primary" onclick="document.getElementById(\'jSymbol\').focus()">+ NEW ENTRY</button>')+
+      '<div class="journal-grid">'+panel("NEW JOURNAL ENTRY",'<form class="journal-form" onsubmit="saveJournal(event)"><input id="jSymbol" placeholder="Symbol" required><select id="jSide"><option>Long</option><option>Short</option></select><input id="jSetup" placeholder="Setup / model"><input id="jPnl" type="number" placeholder="P&L"><textarea id="jNote" placeholder="What happened?"></textarea><button class="primary">SAVE ENTRY</button></form>')+panel("RECENT JOURNAL",'<div class="journal-list">'+entries.map(x=>'<article><div><b>'+x.symbol+' · '+x.side+'</b><strong class="'+(String(x.pnl).includes("-")?"loss":"win")+'">'+esc(x.pnl)+'</strong></div><small>'+esc(x.setup)+'</small><p>'+esc(x.note)+'</p></article>').join("")+'</div>')+'</div>';
   }
-  window.newEntry=()=>document.getElementById("jSymbol")?.focus();
-  window.saveEntry=(e)=>{e.preventDefault();state.journal.unshift({symbol:jSymbol.value,side:jSide.value,pnl:Number(jPnl.value)||0,setup:jSetup.value,note:jNote.value,model:state.mode});localStorage.setItem("edgeflow-journal",JSON.stringify(state.journal));render();};
-
   function analytics(){
-    return '<div class="page-title"><div><small>ANALYTICS</small><h1>Analytics</h1><p>Deep statistics across sessions, instruments and setups.</p></div></div>'+
-      '<div class="analytics-grid">'+section("SESSION BREAKDOWN",'<div class="bars">'+["Asia","London","NY AM","NY PM"].map((x,i)=>'<div><span>'+x+'</span><i><b style="width:'+([42,78,61,34][i])+'%"></b></i><em>'+[42,78,61,34][i]+'%</em></div>').join("")+'</div>')+
-      section("INSTRUMENT PERFORMANCE",tableStats())+section("EXECUTION DISCIPLINE",'<div class="discipline large"><div>RETRACEMENT<strong>0.5 / 0.62 / 0.705 / 0.79</strong></div><div>ENTRY<strong>LIMIT ONLY</strong></div><div>NO IMPULSE<strong>ENFORCED</strong></div><div>RISK<strong>$100 / TRADE</strong></div></div>')+'</div>';
+    const bars=[["Asia",42],["London",78],["NY AM",61],["NY PM",34]];
+    return title("ANALYTICS","Analytics","Deep statistics across sessions, instruments and setups.")+
+      '<div class="analytics-grid">'+panel("SESSION PERFORMANCE",'<div class="bars">'+bars.map(x=>'<div><span>'+x[0]+'</span><i><b style="width:'+x[1]+'%"></b></i><em>'+x[1]+'%</em></div>').join("")+'</div>')+panel("PERFORMANCE BY SETUP",statsTable())+panel("EXECUTION DISCIPLINE",'<div class="discipline large"><div>RETRACEMENT<strong>0.50 / 0.62 / 0.705 / 0.79</strong></div><div>ENTRY<strong>LIMIT ONLY</strong></div><div>IMPULSE<strong>BLOCKED</strong></div><div>RISK<strong>$100 / TRADE</strong></div></div>')+'</div>';
   }
-
   function backtests(){
-    return '<div class="page-title"><div><small>RESEARCH</small><h1>Backtests</h1><p>Models, samples and historical validation.</p></div><button class="primary">+ NEW BACKTEST</button></div>'+section("BACKTEST LIBRARY",'<div class="backtest-table"><div class="bt head"><span>NAME</span><span>INSTRUMENT</span><span>TRADES</span><span>WIN RATE</span><span>PF</span><span>DATE</span></div>'+[["London R.B Model","MNQ","105","68%","3.2","Sep 19, 2026"],["10H Open Study","MES","75","64%","2.8","Sep 10, 2026"],["Asia Retracement","MGC","52","60%","2.1","Sep 05, 2026"]].map(r=>'<div class="bt"><b>'+r[0]+'</b><span>'+r[1]+'</span><span>'+r[2]+'</span><span>'+r[3]+'</span><span>'+r[4]+'</span><span>'+r[5]+'</span></div>').join("")+'</div>');
+    const r=[["London R.B Model","MNQ","105","68%","3.2","Sep 19, 2026"],["10H Open Study","MES","75","64%","2.8","Sep 10, 2026"],["Asia Retracement","MGC","52","60%","2.1","Sep 05, 2026"],["FVG Model","MNQ","120","72%","3.4","Aug 28, 2026"],["Trend Model","MES","85","58%","2.1","Aug 20, 2026"]];
+    return title("RESEARCH","Backtests","Models, samples and historical validation.",'<button class="primary">+ NEW BACKTEST</button>')+panel("BACKTEST LIBRARY",'<div class="bt"><div class="bt-row head"><span>NAME</span><span>INSTRUMENT</span><span>TRADES</span><span>WIN RATE</span><span>PF</span><span>DATE</span></div>'+r.map(x=>'<div class="bt-row"><b>'+x[0]+'</b><span>'+x[1]+'</span><span>'+x[2]+'</span><span>'+x[3]+'</span><span>'+x[4]+'</span><span>'+x[5]+'</span></div>').join("")+'</div>');
   }
-
   function connections(){
-    const con=isCrypto()?[["KCEX","Crypto","blue"],["AI Assistant","Intelligence","green"]]:[["Tradovate","Futures","red"],["Rithmic","Futures","green"],["AI Assistant","Intelligence","green"]];
-    return '<div class="page-title"><div><small>SYSTEM</small><h1>Connections</h1><p>Broker and service integrations.</p></div></div><div class="connection-grid">'+con.map(x=>'<div class="connection-card"><div class="conn-logo '+x[2]+'">'+x[0][0]+'</div><h3>'+x[0]+'</h3><small>'+x[1]+'</small><b class="connected">● Connected</b><button>Manage</button></div>').join("")+'</div>';
+    return title("SYSTEM","Connections","Broker and service integrations.")+'<div class="connections">'+d().connections.map(x=>'<article class="connection"><div class="conn-icon '+(x[2]==="K"?"blue":"")+'">'+x[2]+'</div><h3>'+x[0]+'</h3><small>'+x[1]+'</small><b>● Connected</b><button>Manage</button></article>').join("")+'</div>';
   }
-
   function settings(){
-    return '<div class="page-title"><div><small>SYSTEM</small><h1>Settings</h1><p>Environment controls and preferences.</p></div></div><div class="settings-grid">'+section("ENVIRONMENT",'<div class="setting"><span>Active Environment</span><b>'+modeLabel()+'</b></div><div class="setting"><span>Theme</span><b>Dark Mode</b></div><div class="setting"><span>Risk per Trade</span><b>$100</b></div>')+section("TRADING MODEL",'<div class="setting"><span>Entry Type</span><b>Limit</b></div><div class="setting"><span>Primary Trigger</span><b>Rejection Block</b></div><div class="setting"><span>Fib Retracements</span><b>0.5 · 0.62 · 0.705 · 0.79</b></div>')+'</div>';
+    return title("SYSTEM","Settings","Environment controls and preferences.")+'<div class="settings-grid">'+panel("ENVIRONMENT",'<div class="setting"><span>Active Environment</span><b>'+d().label+'</b></div><div class="setting"><span>Theme</span><b>Dark Mode</b></div><div class="setting"><span>Compact Mode</span><b>ON</b></div>')+panel("TRADING MODEL",'<div class="setting"><span>Entry Type</span><b>LIMIT</b></div><div class="setting"><span>Primary Trigger</span><b>REJECTION BLOCK</b></div><div class="setting"><span>Risk Per Trade</span><b>$100</b></div><div class="setting"><span>Fib Retracements</span><b>0.50 · 0.62 · 0.705 · 0.79</b></div>')+panel("NOTIFICATIONS",'<div class="setting"><span>Trade Alerts</span><b class="on-text">ON</b></div><div class="setting"><span>AI Insights</span><b class="on-text">ON</b></div><div class="setting"><span>News Warnings</span><b class="on-text">ON</b></div>')+panel("DATA & SYNC",'<div class="setting"><span>Last Sync</span><b>'+now()+'</b></div><div class="setting"><span>Journal Storage</span><b>LOCAL</b></div>')+'</div>';
   }
-
   function render(){
-    if(!state.mode){landing();return;}
+    if(!state.mode){landing();return}
     const pages={overview:dashboard,trades,performance,ai,journal,analytics,backtests,connections,settings};
     shell((pages[state.view]||dashboard)());
   }
   render();
-  setInterval(()=>{document.querySelectorAll(".live-dot").forEach(()=>{});},1000);
+  setInterval(()=>{const e=document.querySelectorAll(".session b"); if(e.length)e[0].textContent=now()},1000);
 })();
