@@ -594,3 +594,20 @@ body.landing-page .env-cards{display:flex;justify-content:center;gap:22px;margin
 #jarvisStatus{color:#688293;font-size:7px;font-weight:500}
 @media(max-width:900px){.jarvis-layout{grid-template-columns:1fr}.jarvis-fields{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.jarvis-fields{grid-template-columns:1fr 1fr}.jarvis-actions{flex-direction:column}}
+
+/* JOURNAL JARVIS — vision stays inside the journal workspace */
+.journal-jarvis{margin-top:8px}
+.journal-jarvis-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.journal-jarvis-upload{border-right:1px solid #102738}
+.journal-jarvis .jarvis-drop{min-height:155px;margin:12px}
+.journal-jarvis .jarvis-preview img{max-height:180px}
+.journal-jarvis .jarvis-actions{padding:8px 12px 12px}
+.journal-jarvis .jarvis-actions button{font-size:9px}
+.journal-jarvis-result{min-width:0}
+.journal-jarvis-result .jarvis-fields{padding:12px;grid-template-columns:repeat(4,1fr)}
+.journal-jarvis-result .jarvis-note{font-size:9px;min-height:42px}
+.journal-jarvis-result .jarvis-journal-btn{font-size:9px}
+@media(max-width:900px){
+  .journal-jarvis-grid{grid-template-columns:1fr}
+  .journal-jarvis-upload{border-right:0;border-bottom:1px solid #102738}
+}
