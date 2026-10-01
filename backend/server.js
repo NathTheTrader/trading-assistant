@@ -578,6 +578,7 @@ async function connectTradovate() {
             }
           }
           if(type==="account" && d.eventType!=="Deleted") upsertById(tradovate.accounts,entity);
+          if(type==="cashbalance" && d.eventType!=="Deleted") upsertById(tradovate.cashBalances,entity);
           if(type==="contract") tradovate.contracts.set(Number(entity.id),entity);
           emitLive({type:"entity_event",entityType:d.entityType,eventType:d.eventType});
           if(type==="fill" && d.eventType!=="Deleted"){
@@ -614,7 +615,28 @@ async function renewTradovate() {
   if(!response.ok||!data.accessToken) throw new Error(data.errorText||"Tradovate token renewal failed");
   tradovate.token=data.accessToken;tradovate.expirationTime=data.expirationTime||null;
 }
-function tradovateStatus(){const required=["TRADOVATE_USERNAME","TRADOVATE_PASSWORD","TRADOVATE_APP_ID","TRADOVATE_CID","TRADOVATE_SEC"];const missing=required.filter(k=>!process.env[k]);return {configured:missing.length===0,missing,connected:tradovate.connected,userId:tradovate.userId,accounts:tradovate.accounts.map(a=>({id:a.id,name:a.name,active:a.active,balance:a.balance??a.netLiq??a.cashBalance??null,realizedPnL:a.realizedPnL??null,unrealizedPnL:a.unrealizedPnL??null})),cashBalances:tradovate.cashBalances,positions:tradovate.positions.map(p=>({...p,instrument:contractName(p.contractId)})),orders:tradovate.orders.slice(-100),recentFills:tradovate.fills.slice(-100).map(f=>({...f,instrument:contractName(f.contractId)})),expirationTime:tradovate.expirationTime,lastMessageAt:tradovate.lastMessageAt};}
+function tradovateStatus(){
+  const required=["TRADOVATE_USERNAME","TRADOVATE_PASSWORD","TRADOVATE_APP_ID","TRADOVATE_CID","TRADOVATE_SEC"];
+  const missing=required.filter(k=>!process.env[k]);
+  const cash=tradovate.cashBalances.map(c=>({
+    id:c.id,accountId:c.accountId,totalCashValue:c.totalCashValue??c.cashBalance??null,
+    netLiq:c.netLiq??c.netLiqValue??null,realizedPnL:c.realizedPnL??null,unrealizedPnL:c.unrealizedPnL??null,
+    marginUsed:c.marginUsed??null
+  }));
+  return {
+    configured:missing.length===0,missing,connected:tradovate.connected,userId:tradovate.userId,
+    accounts:tradovate.accounts.map(a=>({
+      id:a.id,name:a.name,active:a.active,
+      balance:a.balance??a.netLiq??a.totalCashValue??a.cashBalance??null,
+      realizedPnL:a.realizedPnL??null,unrealizedPnL:a.unrealizedPnL??null
+    })),
+    cashBalances:cash,
+    positions:tradovate.positions.map(p=>({...p,instrument:contractName(p.contractId)})),
+    orders:tradovate.orders.slice(-100),
+    recentFills:tradovate.fills.slice(-100).map(f=>({...f,instrument:contractName(f.contractId)})),
+    expirationTime:tradovate.expirationTime,lastMessageAt:tradovate.lastMessageAt
+  };
+}
 
 function normalizeObsidianPath(rel) {
   const markers=["CRYPTO/","FUNDED NEW EDGE/","BACKTEST/","Journal/","WEEKLY RECAP/"];
