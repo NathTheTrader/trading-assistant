@@ -13,7 +13,12 @@
   const loadJournal=mode=>{
     if(!mode) return [];
     try{
-      const raw=localStorage.getItem(journalKey(mode));
+      let raw=localStorage.getItem(journalKey(mode));
+      // Migrate the previous single-journal key once into Futures, then keep environments isolated.
+      if(!raw && mode==="NQ"){
+        const legacy=localStorage.getItem("edgeflow-journal");
+        if(legacy){ raw=legacy; localStorage.setItem(journalKey(mode),legacy); localStorage.removeItem("edgeflow-journal"); }
+      }
       const parsed=raw?JSON.parse(raw):[];
       return Array.isArray(parsed)?parsed:[];
     }catch(_){
@@ -75,6 +80,8 @@
     localStorage.removeItem("edgeflow-mode");
     localStorage.removeItem("edgeflow-view");
     localStorage.removeItem("edgeflow-journal");
+    localStorage.removeItem("edgeflow-journal:NQ");
+    localStorage.removeItem("edgeflow-journal:CRYPTO");
     location.href=location.pathname;
   };
   window.setFilter=(key,value)=>{state.filters[key]=value;render()};
