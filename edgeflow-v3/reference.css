@@ -269,3 +269,101 @@ body.landing-page .landing-corner{bottom:22px;font-size:6px;letter-spacing:1.7px
   body.landing-page .env-cards{grid-template-columns:1fr}
   body.landing-page .env{height:150px}
 }
+
+
+/* V13 — STRUCTURAL REBUILD OF THE DASHBOARD TO MATCH THE SUPPLIED BOARD */
+body.app-page{min-height:100vh;overflow-x:hidden}
+.app-page .workspace{width:100%;max-width:none;padding:10px 12px 14px}
+.app-page .dash{min-height:calc(100vh - 55px);grid-template-rows:auto auto auto minmax(0,1fr) auto}
+.app-page .dash .pulse-strip,
+.app-page .dash .bottom-panels{display:none!important}
+.app-page .dash-banner{
+  min-height:92px;
+  padding:12px 14px;
+  border-radius:7px;
+  background:
+    linear-gradient(90deg,rgba(255,22,55,.22),rgba(4,12,19,.84) 48%,rgba(3,9,15,.92)),
+    radial-gradient(ellipse at 86% 120%,rgba(255,25,55,.28),transparent 45%);
+}
+.app-page.blue .dash-banner{
+  background:
+    linear-gradient(90deg,rgba(12,132,239,.22),rgba(4,12,19,.84) 48%,rgba(3,9,15,.92)),
+    radial-gradient(ellipse at 86% 120%,rgba(16,143,255,.28),transparent 45%);
+}
+.app-page .dash-banner:before{
+  content:"E  EDGEFLOW";
+  position:absolute;left:13px;top:10px;
+  font:700 7px Rajdhani;letter-spacing:1.5px;color:#eef5f8;
+  text-shadow:0 0 12px rgba(255,255,255,.15);
+  opacity:.95;
+}
+.app-page .dash-banner>div:first-child{padding-top:17px}
+.app-page .dash-banner h1{font-size:31px;line-height:1;margin:2px 0 4px;letter-spacing:2.5px}
+.app-page .dash-banner p{font-size:5.5px;letter-spacing:1.4px}
+.app-page .dash-sessions{align-self:flex-start;margin-top:2px}
+.app-page .dash-sessions>span:not(.live){min-width:62px;height:48px;padding:7px 6px;font-size:4.5px}
+.app-page .dash-sessions b{font-size:6px}
+.app-page .kpis{gap:5px}
+.app-page .kpi{min-height:68px;padding:9px 10px}
+.app-page .kpi small{font-size:4.8px}
+.app-page .kpi strong{font-size:17px;margin-top:6px}
+.app-page .kpi em{font-size:4.8px}
+.app-page .dashboard-grid{
+  min-height:0;
+  grid-template-columns:minmax(0,3.15fr) minmax(245px,.82fr);
+  gap:7px;
+}
+.app-page .dashboard-main,.app-page .dashboard-side{min-height:0}
+.app-page .dashboard-main .panel:first-child{
+  min-height:124px;
+  flex:0 0 124px;
+}
+.app-page .dashboard-main .panel:nth-child(2){
+  min-height:0;
+  flex:1 1 auto;
+}
+.app-page .dashboard-side .panel:first-child{min-height:124px}
+.app-page .dashboard-side .panel:nth-child(2){min-height:0;flex:1 1 auto}
+.app-page .dashboard-main,.app-page .dashboard-side{grid-template-rows:auto minmax(0,1fr)}
+.app-page .dashboard-main .panel:nth-child(2) .rows{max-height:none}
+.app-page .asset-grid{gap:5px}
+.app-page .asset{min-height:92px;padding:9px}
+.app-page .asset strong{font-size:16px}
+.app-page .asset b{font-size:7px}
+.app-page .asset small{font-size:5px}
+.app-page .row{padding:8px 5px;font-size:5.2px}
+.app-page .row b{font-size:6px}
+.app-page .row-head{font-size:4.2px}
+.app-page .panel{padding:9px}
+.app-page .panel-head{height:17px;font-size:5px}
+.app-page .session-list>div,.app-page .rules>div{padding:10px 0;font-size:5.8px}
+.app-page .session-list b,.app-page .rules b{font-size:6px}
+.app-page .main{background:
+  radial-gradient(ellipse at 100% 42%,rgba(255,20,55,.08),transparent 34%),
+  radial-gradient(ellipse at 12% 88%,rgba(13,136,240,.06),transparent 35%);
+}
+.app-page.red .workspace:after,.app-page.blue .workspace:after{
+  content:"";position:fixed;pointer-events:none;z-index:-1;
+  width:420px;height:260px;bottom:-50px;opacity:.28;
+  background:linear-gradient(145deg,transparent 24%,currentColor 25% 27%,transparent 28% 38%,currentColor 39% 41%,transparent 42% 100%);
+  filter:blur(2px);
+}
+.app-page.red .workspace:after{right:-90px;color:rgba(255,25,58,.24)}
+.app-page.blue .workspace:after{right:-90px;color:rgba(15,145,255,.22)}
+/* reference-style compact utility chrome */
+.app-page .topbar{height:43px}
+.app-page .sidebar{width:205px}
+.app-page .main{margin-left:205px}
+.app-page .brand{padding-bottom:12px}
+.app-page nav button{min-height:34px}
+.app-page .engine{padding:7px}
+@media(max-height:820px){
+  .app-page .dash-banner{min-height:78px}
+  .app-page .kpi{min-height:58px}
+  .app-page .dashboard-main .panel:first-child,.app-page .dashboard-side .panel:first-child{min-height:105px}
+  .app-page .asset{min-height:76px}
+}
+@media(max-width:1100px){
+  .app-page .dashboard-grid{grid-template-columns:1fr}
+  .app-page .dashboard-side{grid-template-columns:1fr 1fr}
+}
