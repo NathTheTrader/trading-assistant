@@ -14,3 +14,70 @@ body.landing-page{overflow:hidden}.landing{height:100vh;min-height:620px;positio
 .analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.analytics-grid .panel:last-child{grid-column:1/-1}.bars{display:grid;gap:11px}.bars>div{display:grid;grid-template-columns:50px 1fr 25px;gap:8px;align-items:center;color:#748a9a;font-size:6px}.bars i{height:6px;background:#0c1a24;border-radius:3px;overflow:hidden}.bars i b{display:block;height:100%;background:var(--red);border-radius:3px}.blue .bars i b{background:var(--blue)}.bars em{font-style:normal;color:#dce7ec}.bt{display:grid}.bt-row{display:grid;grid-template-columns:1.6fr .8fr .7fr .8fr .6fr 1fr;gap:7px;padding:9px 4px;border-bottom:1px solid #102738;color:#8295a4;font-size:6px}.bt-row.head{font-size:4.5px;color:#496276}.bt-row b{color:#e4edf2}.connections{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.connection{border:1px solid #17364a;border-radius:6px;padding:16px;background:#061019}.conn-icon{width:38px;height:38px;border-radius:7px;display:grid;place-items:center;font:700 15px Rajdhani;background:#0b1b28;color:var(--green)}.conn-icon.blue{color:var(--blue)}.connection h3{font:600 14px Rajdhani;margin:10px 0 2px}.connection small{font-size:6px;color:#657c8d}.connection>b{display:block;color:var(--green);font-size:6px;margin:13px 0}.connection button{padding:6px 10px;border:1px solid #17364a;background:#07131d;color:#91a4b0;border-radius:4px;font-size:6px}.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.setting b{color:#dce6eb;font-size:7px}.on-text{color:var(--green)!important}
 @media(max-width:1050px){:root{--side:180px}.kpis{grid-template-columns:repeat(4,1fr)}.dashboard-grid,.two-col,.ai-grid,.journal-grid,.analytics-grid,.settings-grid{grid-template-columns:1fr}.connections{grid-template-columns:1fr 1fr}.bottom-panels{grid-template-columns:1fr}.dash-sessions{display:none}}
 @media(max-width:680px){:root{--side:0px}.sidebar{display:none}.main{margin:0}.workspace{padding:11px}.kpis{grid-template-columns:1fr 1fr}.asset-grid{grid-template-columns:1fr 1fr}.env-cards{grid-template-columns:1fr}.env{height:150px}.landing-center{width:91vw}.hero-logo{width:48px;height:48px;font-size:45px}.hero-name{font-size:21px}.choose{margin-top:14px}.landing-foot,.landing-corner{display:none}.top-actions .session:nth-child(n+3),.user{display:none}}
+
+
+/* V8 reference pass: composition, density and terminal hierarchy */
+.red-text{color:var(--red)!important}.blue-text{color:var(--blue)!important}
+.pulse-strip{display:grid;grid-template-columns:1.15fr 1fr 1fr 1.35fr 1fr;gap:5px}
+.pulse-strip>div{min-height:42px;border:1px solid #17364a;border-radius:5px;background:linear-gradient(90deg,#061019,#07131d);padding:7px 9px;position:relative;overflow:hidden}
+.pulse-strip>div:after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,32,72,.8),transparent);opacity:.65}
+.blue .pulse-strip>div:after{background:linear-gradient(90deg,transparent,rgba(21,157,255,.8),transparent)}
+.pulse-strip span{display:block;font-size:4.5px;letter-spacing:1.3px;color:#4f6879}
+.pulse-strip b{display:block;margin-top:4px;font:600 8px Rajdhani;letter-spacing:.7px;color:#dbe7ed}
+.pulse-strip>div:first-child b:before{content:"● ";color:var(--green)}
+.dashboard-grid{grid-template-columns:minmax(0,2.5fr) minmax(250px,.72fr)}
+.dashboard-main .panel:first-child{min-height:116px}
+.dashboard-main .panel:nth-child(2){min-height:208px}
+.dashboard-side .panel{min-height:112px}
+.asset-grid{grid-template-columns:repeat(3,1fr)}
+.asset{min-height:86px;position:relative}
+.asset:after{content:"";position:absolute;left:8px;right:8px;bottom:7px;height:12px;border-bottom:1px solid rgba(255,32,72,.38);border-radius:50%;transform:skewX(-25deg)}
+.blue .asset:after{border-color:rgba(21,157,255,.38)}
+.row{padding:8px 6px}
+.row:not(.row-head){background:linear-gradient(90deg,rgba(255,255,255,.012),transparent)}
+.row:not(.row-head):hover{background:rgba(21,157,255,.035)}
+.filters{padding:8px;border:1px solid #123047;border-radius:6px;background:#040c12}
+.filters input,.filters select,.filters button{background:#07131c}
+.filters button{color:#a5b5bf;font-weight:700;letter-spacing:.4px}
+.filters button:hover{border-color:var(--blue);color:#fff}
+.panel-head{position:relative}
+.panel-head:after{content:"";position:absolute;right:0;top:2px;width:42%;height:1px;background:linear-gradient(90deg,transparent,#15364a)}
+.page-title{padding:2px 2px 7px}
+.page-title h1{font-size:31px}
+.page-title p{font-size:7px}
+.kpis{grid-template-columns:repeat(7,minmax(88px,1fr))}
+.kpi{position:relative;overflow:hidden}
+.kpi:after{content:"";position:absolute;right:6px;bottom:7px;width:28px;height:7px;border-bottom:1px solid rgba(21,157,255,.6);border-radius:50%;transform:skewX(-30deg)}
+.kpi.negative:after{border-color:rgba(255,32,72,.7)}
+.kpi strong{font-size:16px}
+.topbar{box-shadow:0 8px 22px rgba(0,0,0,.2)}
+.top-actions .session{min-width:57px;text-align:center}
+.connections{grid-template-columns:repeat(3,minmax(220px,1fr))}
+.connection{min-height:185px}
+.connection:hover{border-color:#2c5b74;transform:translateY(-1px)}
+.settings-grid .panel{min-height:160px}
+.ai-grid{grid-template-columns:minmax(420px,1.35fr) minmax(280px,.8fr)}
+.ai-chat{min-height:390px}
+.journal-grid{grid-template-columns:minmax(290px,.75fr) minmax(430px,1.35fr)}
+.analytics-grid{grid-template-columns:1fr 1.3fr}
+.bt-row{min-width:760px}
+.workspace>.panel{min-height:300px}
+@media(max-width:1180px){
+  .pulse-strip{grid-template-columns:repeat(3,1fr)}
+  .pulse-strip>div:nth-child(n+4){display:none}
+  .dashboard-grid{grid-template-columns:1fr}
+  .dashboard-side{grid-template-columns:1fr 1fr}
+}
+@media(max-width:900px){
+  .kpis{grid-template-columns:repeat(3,1fr)}
+  .connections{grid-template-columns:1fr 1fr}
+  .asset-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:620px){
+  .pulse-strip{grid-template-columns:1fr 1fr}
+  .pulse-strip>div:nth-child(n+3){display:none}
+  .kpis{grid-template-columns:1fr 1fr}
+  .dashboard-side{grid-template-columns:1fr}
+  .asset-grid{grid-template-columns:1fr}
+  .connections{grid-template-columns:1fr}
+}
