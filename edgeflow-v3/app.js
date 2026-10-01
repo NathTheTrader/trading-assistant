@@ -352,10 +352,51 @@
   }
 
   function instrumentCardsZero(){
-    return '<div class="asset-grid">'+d().instruments.slice(0,crypto()?4:3).map(x=>'<div class="instrument-card"><div><b>'+x+'</b><small>WAITING FOR MARKET DATA</small></div><strong>—</strong><i>NO FEED</i></div>').join("")+'</div>';
+    return '<div class="asset-grid">'+d().instruments.slice(0,crypto()?4:3).map(x=>'<div class="instrument-card"><div><b>'+esc(x)+'</b><small>WAITING FOR LIVE DATA</small></div><strong>—</strong><i>NO FEED</i></div>').join("")+'</div>';
   }
 
   function title(k,t,s,button=""){return '<div class="page-title"><div><small>'+k+'</small><h1>'+t+'</h1><p>'+s+'</p></div>'+button+'</div>'}
+  function dashboard(){
+    const sessions=sessionState();
+    const acct=crypto()?{connected:state.kcex.running,balance:null,realized:null,unrealized:null,account:"KCEX",positions:[],orders:state.kcex.events,fills:[]}:liveAccount();
+    const connected=Boolean(acct.connected);
+    const js=statsFromJournal();
+    const recent=currentRows();
+    const provider=crypto()?"KCEX PERPETUALS":"TRADOVATE";
+    const statusText=connected?"● "+provider+" ACTIVE":"○ "+provider+" OFFLINE";
+    const liveNote=crypto()?(state.kcex.running?"KCEX screen observer active · read-only visual detection.":"KCEX observer offline · start it from Connections."):(acct.connected?"Tradovate live feed active.":"Tradovate is not connected.");
+    const instrumentData=crypto()
+      ? (state.kcex.events.length?state.kcex.events.reduce((a,x)=>{const k=String(x.instrument||"").toUpperCase();if(k)a[k]=(a[k]||0)+1;return a},{})
+          : null)
+      : (acct.connected&&acct.fills.length?acct.fills.reduce((a,x)=>{const k=String(x.instrument||"").toUpperCase();if(k)a[k]=(a[k]||0)+1;return a},{}) : null);
+    const cards=instrumentData
+      ? Object.entries(instrumentData).slice(0,6).map(([k,n])=>'<article class="asset"><div><b>'+esc(k)+'</b><i>'+esc(provider)+'</i></div><strong>—</strong><small>'+n+' observed events</small></article>').join("")
+      : instrumentCardsZero();
+    const tradeRows=recent.length?rows(recent,true):'<div class="dashboard-empty"><b>NO TRADE DATA</b><span>'+esc(liveNote)+'</span></div>';
+    const sessionCards=sessions.map(x=>'<span class="'+(x.live?"session-live":"session-closed")+'"><b>'+x.name+'</b><small>'+x.label+'</small><em>'+(x.live?x.start+"–"+x.end:x.countdown)+'</em></span>').join("");
+    const total=crypto()?null:(acct.connected?acct.realized:null);
+    return '<div class="dash premium-dashboard">'+
+      '<div class="dash-banner"><div class="dash-brand"><div class="mini-mark">E</div><div><small>EDGEFLOW CORE • '+d().label+'</small><h1>'+d().label+'</h1><p>'+(crypto()?"BTC · ETH · SOL · BNB · XRP · HYPE · FLOKI · KCEX PERPETUALS":"MNQ · MES · MGC · TRADOVATE · RITHMIC")+'</p></div></div>'+
+      '<div class="dash-sessions"><span class="live '+(connected?"":"offline")+'">'+statusText+'</span>'+sessionCards+'</div></div>'+
+      '<div class="account-state '+(connected?"connected":"offline")+'"><span>'+statusText+'</span><small>'+esc(liveNote)+'</small><button onclick="edgeGo(&#039;connections&#039;)">CONNECTIONS</button></div>'+
+      '<div class="kpis">'+
+      kpi(crypto()?"KCEX Portfolio":"Account Balance",crypto()?"—":(acct.connected?"$"+Math.abs(Number(acct.balance)||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"—"),crypto()?"Observer does not expose balance":"Live broker balance")+
+      kpi("Today P&L",crypto()?(js.count?money(js.todayPnl):"—"):(acct.connected?money(acct.realized):(js.count?money(js.todayPnl):"—")),crypto()?"Journal P&L":"Live realized / journal")+
+      kpi("Total P&L",crypto()?(js.count?money(js.total):"—"):(total!=null?money(total):(js.count?money(js.total):"—")),js.count?"Recorded history":"Waiting for data")+
+      kpi("Win Rate",pct(js.winRate),js.count?js.wins+"W / "+js.losses+"L":"No journal data")+
+      kpi("Profit Factor",rrText(js.pf),"Recorded journal")+
+      kpi("Avg RR",rrText(js.avgRR),crypto()?"Recorded journal":"Recorded journal")+
+      kpi(crypto()?"Detected Orders":"Open Positions",crypto()?(state.kcex.events.length||"—"):(acct.connected?acct.positions.length:"—"),crypto()?"KCEX observer":(acct.connected?"Tradovate live":"No live account"))+
+      '</div>'+
+      '<div class="dashboard-grid compact-grid"><div class="dashboard-main">'+
+      panel(crypto()?"TOP CRYPTO ACTIVITY":"TOP FUTURES INSTRUMENTS",cards)+
+      panel(crypto()?"RECENT KCEX ACTIVITY":(connected?"RECENT TRADOVATE FILLS":"RECENT TRADES"),tradeRows)+
+      panel("ACTIVE MODEL",crypto()?'<div class="model-strip"><span>CRYPTO MODEL</span><b>MARKET DIRECTION → KEY OPEN MANIPULATION / SWEEP → HTF POI → ENTRY → HIGH RR</b></div>':'<div class="model-strip"><span>FUTURES / NQ MODEL</span><b>HTF BIAS → POI → LIQUIDITY / MANIPULATION → RETRACEMENT → REJECTION BLOCK → LIMIT</b></div>')+
+      '</div><aside class="dashboard-side">'+
+      panel("SESSION CONTEXT",'<div class="session-list">'+sessions.map(x=>'<div><b class="'+(x.live?"is-live":"")+'">● '+x.name+'</b><span>'+(x.live?x.start+"–"+x.end:x.countdown)+'</span></div>').join("")+'</div>')+
+      panel(crypto()?"KCEX STATUS":"ACCOUNT STATUS",'<div class="rules"><div><span>Provider</span><b>'+provider+'</b></div><div><span>Connection</span><b>'+(connected?"ONLINE":"OFFLINE")+'</b></div><div><span>Orders</span><b>'+ (crypto()?(state.kcex.events.length||"—"):(acct.connected?acct.orders.length:"—"))+'</b></div><div><span>Positions</span><b>'+(crypto()?"Observer only":(acct.connected?acct.positions.length:"—"))+'</b></div></div>')+
+      '</aside></div></div>';
+  }
   function trades(){
     return title("EXECUTION","Trades","Full execution history for this environment.",'<button class="primary" onclick="edgeGo(\'journal\')">+ NEW JOURNAL ENTRY</button>')+
       '<div class="filters"><input value="'+esc(state.filters.query)+'" oninput="setFilter(\'query\',this.value)" placeholder="Search instrument, setup..."><select onchange="setFilter(\'side\',this.value)"><option value="ALL">All sides</option><option value="Long">Long</option><option value="Short">Short</option></select><select onchange="setFilter(\'instrument\',this.value)"><option value="ALL">All instruments</option>'+d().instruments.map(x=>'<option '+(state.filters.instrument===x?"selected":"")+'>'+x+'</option>').join("")+'</select><select onchange="setFilter(\'setup\',this.value)"><option value="ALL">All setups</option><option>R.B</option><option>R.B + FVG</option><option>Sweep + OB</option><option>10H Open</option><option>FVG</option></select><select><option>Last 30 days</option></select><button onclick="exportTrades()">EXPORT</button></div>'+panel("TRADE HISTORY",rows(d().rows.concat(d().rows.slice(0,2)).filter(r=>(state.filters.side==="ALL"||r[2]===state.filters.side)&&(state.filters.instrument==="ALL"||r[1]===state.filters.instrument)&&(state.filters.setup==="ALL"||r[8]===state.filters.setup)&&(!state.filters.query||r.join(" ").toLowerCase().includes(state.filters.query.toLowerCase())),true)));
