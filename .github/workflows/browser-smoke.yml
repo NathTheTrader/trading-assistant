@@ -24,7 +24,7 @@ jobs:
           url="https://naththetrader.github.io/trading-assistant/"
           for i in $(seq 1 24); do
             html="$(curl -fsSL --retry 2 --retry-delay 2 "$url" || true)"
-            if printf '%s' "$html" | grep -q 'edgeflow-build.*edgeflow-v40'; then
+            if printf '%s' "$html" | grep -q 'edgeflow-build.*edgeflow-v41'; then
               echo "GitHub Pages is serving EdgeFlow V40."
               exit 0
             fi
