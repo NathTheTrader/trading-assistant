@@ -569,3 +569,13 @@ body.landing-page .env-cards{display:flex;justify-content:center;gap:22px;margin
 @media(max-width:560px){
   .modal-journal-form .journal-form-grid{grid-template-columns:1fr}
 }
+
+/* V22 — TRADE ENTRY TEXT SCALE ONLY */
+.modal-journal-form label{font-size:11px}
+.modal-journal-form input,.modal-journal-form select,.modal-journal-form textarea{font-size:14px;line-height:1.35}
+.modal-journal-form input,.modal-journal-form select{min-height:50px}
+.modal-journal-form textarea{min-height:155px}
+.journal-modal-head small{font-size:10px}
+.journal-modal-head h2{font-size:31px}
+.journal-modal-actions span{font-size:9px}
+.journal-modal-actions button{font-size:11px}
