@@ -362,8 +362,55 @@
   }
   function ai(){
     return title("INTELLIGENCE","AI Assistant","Edgeflow trading intelligence.",'<span class="ai-online">● ONLINE</span>')+
-      '<div class="ai-grid">'+panel("EDGEFLOW AI",'<div class="ai-chat"><div class="ai-welcome"><b>Edgeflow AI</b><small>Your trading intelligence.</small></div><div class="ai-actions">'+["Analyze my last 5 trades","Check market context (NQ)","Find potential setups","Summarize today’s news","Review my journal"].map(x=>'<button>'+x+' <span>›</span></button>').join("")+'</div><div class="ai-input">Ask Edgeflow anything... <b>↗</b></div></div>','ai-panel')+panel("MODEL CONTEXT",'<div class="context-grid"><div><small>ENVIRONMENT</small><b>'+d().label+'</b></div><div><small>ENTRY</small><b>LIMIT</b></div><div><small>TRIGGER</small><b>REJECTION BLOCK</b></div><div><small>RETRACE</small><b>0.50 · 0.62 · 0.705 · 0.79</b></div></div>')+'</div>';
+      '<div class="ai-grid">'+
+      panel("EDGEFLOW JARVIS",
+        '<div class="ai-chat">'+
+          '<div class="ai-welcome"><b>JARVIS</b><small>Trading intelligence · '+(crypto()?"Crypto model":"Futures / NQ model")+'</small></div>'+
+          '<div id="aiMessages" class="ai-messages"><div class="ai-message jarvis"><b>JARVIS</b><p>Je suis prêt. Pose-moi une question sur ton trading, ton modèle, tes trades ou le contexte actuel.</p></div></div>'+
+          '<div class="ai-actions">'+
+            '<button onclick="aiQuick(this.textContent)">Analyze my last 5 trades <span>›</span></button>'+
+            '<button onclick="aiQuick(this.textContent)">Check market context (NQ) <span>›</span></button>'+
+            '<button onclick="aiQuick(this.textContent)">Find potential setups <span>›</span></button>'+
+            '<button onclick="aiQuick(this.textContent)">Review my journal <span>›</span></button>'+
+          '</div>'+
+          '<div class="ai-composer"><input id="aiInput" type="text" autocomplete="off" placeholder="Ask Jarvis anything..." onkeydown="if(event.key===\'Enter\')aiAsk()"><button onclick="aiAsk()">↗</button></div>'+
+        '</div>','ai-panel')+
+      panel("MODEL CONTEXT",
+        '<div class="context-grid"><div><small>ENVIRONMENT</small><b>'+d().label+'</b></div><div><small>ENTRY</small><b>LIMIT</b></div><div><small>TRIGGER</small><b>REJECTION BLOCK</b></div><div><small>RETRACE</small><b>0.50 · 0.62 · 0.705 · 0.79</b></div></div>')+
+      '</div>';
   }
+  window.aiAsk=async function(){
+    const input=document.getElementById("aiInput");
+    const box=document.getElementById("aiMessages");
+    if(!input||!box)return;
+    const question=String(input.value||"").trim();
+    if(!question)return;
+    input.value="";
+    box.insertAdjacentHTML("beforeend",'<div class="ai-message user"><b>YOU</b><p>'+esc(question)+'</p></div>');
+    const loading=document.createElement("div");
+    loading.className="ai-message jarvis loading";
+    loading.innerHTML="<b>JARVIS</b><p>Analyse en cours...</p>";
+    box.appendChild(loading);
+    box.scrollTop=box.scrollHeight;
+    try{
+      const response=await fetch("https://trading-assistant-production.up.railway.app/api/ai/chat",{
+        method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body:JSON.stringify({model:state.mode,question,history:state.journal.slice(0,30)})
+      });
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||!data.ok)throw new Error(data.error||"Jarvis API error.");
+      loading.classList.remove("loading");
+      loading.innerHTML="<b>JARVIS</b><p>"+esc(data.text||"Aucune réponse.")+"</p>";
+    }catch(e){
+      loading.classList.remove("loading");
+      loading.innerHTML="<b>JARVIS · ERROR</b><p>"+esc(String(e.message||e))+"</p>";
+    }
+    box.scrollTop=box.scrollHeight;
+  };
+  window.aiQuick=function(text){
+    const input=document.getElementById("aiInput");
+    if(input){input.value=String(text||"").trim();aiAsk();}
+  };
   function journal(){
     const entries=state.journal;
     const month=new Date().toLocaleString("en-US",{month:"long",year:"numeric"});
