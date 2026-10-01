@@ -740,23 +740,76 @@
       '</div>';
   }
   function connections(){
-    const tv=state.tradovate.status||{};
-    const tvConnected=Boolean(tv.connected);
-    const tvConfigured=Boolean(tv.configured);
+    if(crypto()){
+      return title("SYSTEM","Crypto Connections","KCEX is exclusive to Crypto. No Tradovate or Rithmic controls are shown here.")+
+        '<div class="connections connection-stack">'+
+        '<article class="connection connection-live '+(state.kcex.running?"is-connected":"is-offline")+'">'+
+          '<div class="conn-icon blue">K</div><div class="conn-copy"><h3>KCEX PERPETUALS</h3><small>CRYPTO ONLY · READ-ONLY SCREEN OBSERVER</small><b class="'+(state.kcex.running?"ok":"warn")+'">● '+(state.kcex.running?"OBSERVING":"OFFLINE")+'</b>'+
+          '<p>'+(state.kcex.running?"The shared KCEX window is being sampled. Only visible order/position changes are logged.":"Share only the KCEX trading window to start visual order detection.")+'</p></div>'+
+          '<button class="primary" onclick="'+(state.kcex.running?"stopKcexObserver()":"startKcexObserver()")+'">'+(state.kcex.running?"STOP OBSERVER":"START OBSERVER")+'</button>'+
+        '</article>'+
+        '<article class="connection"><div class="conn-icon blue">J</div><h3>JARVIS AI</h3><small>CRYPTO MODEL · ISOLATED CONTEXT</small><b class="ok">● ONLINE</b><button onclick="edgeGo(\'ai\')">OPEN JARVIS</button></article>'+
+        '</div>'+
+        '<section class="panel connection-help"><div class="panel-head"><span>CRYPTO PIPELINE</span></div><p>KCEX belongs to the Crypto environment in EdgeFlow. Futures broker integrations never appear in this workspace.</p><div class="setup-grid"><div><small>PROVIDER</small><b>KCEX PERPETUALS</b></div><div><small>MODEL</small><b>CRYPTO</b></div><div><small>READ MODE</small><b>SCREEN OBSERVER</b></div></div></section>';
+    }
+    const tv=state.tradovate.status||{},tvConnected=Boolean(tv.connected),tvConfigured=Boolean(tv.configured);
     const tvStatus=tvConnected?"CONNECTED":(tvConfigured?"READY TO CONNECT":"CREDENTIALS REQUIRED");
-    return title("SYSTEM","Connections","Live broker and service integrations.")+
+    return title("SYSTEM","Futures Connections","Tradovate and Rithmic are exclusive to Futures. KCEX is not shown in this workspace.")+
       '<div class="connections connection-stack">'+
       '<article class="connection connection-live '+(tvConnected?"is-connected":"is-offline")+'">'+
-        '<div class="conn-icon">T</div><div class="conn-copy"><h3>Tradovate</h3><small>Futures · Account / positions / orders / fills</small><b class="'+(tvConnected?"ok":"warn")+'">● '+tvStatus+'</b>'+
-        '<p>'+(tvConnected?"Live account data is flowing to the Futures dashboard.":(tvConfigured?"Credentials are configured on Railway. Click connect to start the live session.":"Add the Tradovate credentials to Railway before connecting."))+'</p></div>'+
+        '<div class="conn-icon">T</div><div class="conn-copy"><h3>TRADOVATE</h3><small>FUTURES ONLY · ACCOUNT / POSITIONS / ORDERS / FILLS</small><b class="'+(tvConnected?"ok":"warn")+'">● '+tvStatus+'</b>'+
+        '<p>'+(tvConnected?"Live Tradovate account data is flowing to Futures.":(tvConfigured?"Credentials are configured. Click connect to start the live feed.":"Add the five Tradovate server variables in Railway."))+'</p></div>'+
         '<button class="primary" onclick="connectTradovateUI()">'+(tvConnected?"REFRESH":"CONNECT")+'</button>'+
       '</article>'+
-      '<article class="connection '+(crypto()?"is-active":"")+'"><div class="conn-icon blue">K</div><h3>KCEX</h3><small>Crypto · screen observer</small><b class="ok">● READY</b><button onclick="edgeGo(\'overview\')">OPEN CRYPTO</button></article>'+
-      '<article class="connection"><div class="conn-icon">R</div><h3>Rithmic</h3><small>Futures · account feed</small><b class="warn">○ NOT CONFIGURED</b><button onclick="alert(\'Rithmic credentials are not configured on Railway yet.\')">MANAGE</button></article>'+
-      '<article class="connection"><div class="conn-icon blue">J</div><h3>JARVIS AI</h3><small>EdgeFlow intelligence engine</small><b class="ok">● ONLINE</b><button onclick="edgeGo(\'ai\')">OPEN JARVIS</button></article>'+
+      '<article class="connection"><div class="conn-icon">R</div><h3>RITHMIC</h3><small>FUTURES ONLY · ACCOUNT FEED</small><b class="warn">○ NOT CONFIGURED</b><button onclick="alert(\'Rithmic credentials are not configured on Railway yet.\')">MANAGE</button></article>'+
+      '<article class="connection"><div class="conn-icon">J</div><h3>JARVIS AI</h3><small>FUTURES MODEL · ISOLATED CONTEXT</small><b class="ok">● ONLINE</b><button onclick="edgeGo(\'ai\')">OPEN JARVIS</button></article>'+
       '</div>'+
-      '<section class="panel connection-help"><div class="panel-head"><span>TRADOVATE SETUP</span></div><p>Tradovate credentials stay on the Railway backend. The browser never receives the password or secret.</p><div class="setup-grid"><div><small>BACKEND</small><b>RAILWAY</b></div><div><small>API</small><b>LIVE.TRADOVATEAPI.COM</b></div><div><small>DATA</small><b>ACCOUNT · POSITIONS · ORDERS · FILLS</b></div></div></section>';
+      '<section class="panel connection-help"><div class="panel-head"><span>FUTURES PIPELINE</span></div><p>Tradovate credentials stay on Railway. EdgeFlow receives read-only account state for the Futures dashboard.</p><div class="setup-grid"><div><small>PROVIDER</small><b>TRADOVATE / RITHMIC</b></div><div><small>MODEL</small><b>FUTURES / NQ</b></div><div><small>ENTRY</small><b>LIMIT / REJECTION BLOCK</b></div></div></section>';
   }
+  async function detectKcexFrame(){
+    if(!state.kcex.running||state.kcex.processing||!state.kcex.video||state.kcex.video.readyState<2)return;
+    state.kcex.processing=true;
+    try{
+      const v=state.kcex.video,cv=state.kcex.canvas,ctx=cv.getContext("2d");
+      const scale=Math.min(1,1280/(v.videoWidth||1280));
+      cv.width=Math.max(640,Math.round((v.videoWidth||1280)*scale));
+      cv.height=Math.max(360,Math.round((v.videoHeight||720)*scale));
+      ctx.drawImage(v,0,0,cv.width,cv.height);
+      const current=cv.toDataURL("image/jpeg",.55);
+      const r=await fetch(API_BASE+"/api/detect-screen-trade",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({broker:"KCEX",model:"CRYPTO",imageDataUrl:current,previousImageDataUrl:state.kcex.previousImage})});
+      const data=await r.json().catch(()=>({}));
+      if(!r.ok||!data.ok)throw new Error(data.error||("KCEX observer HTTP "+r.status));
+      if(data.detected){
+        const event={id:"kcex-"+Date.now(),time:new Date().toLocaleTimeString("en-CA",{hour12:false}),instrument:data.instrument||"—",direction:data.direction||"—",orderType:data.orderType||"ORDER",price:data.price??null,quantity:data.quantity??null,confidence:Number(data.confidence||0),context:data.context||""};
+        state.kcex.events.push(event);if(state.kcex.events.length>100)state.kcex.events.shift();state.kcex.lastDetected=event;
+        if(state.view==="overview"||state.view==="trades"||state.view==="connections")render();
+      }
+      state.kcex.previousImage=current;state.kcex.error="";
+    }catch(err){state.kcex.error=String(err?.message||err);}
+    finally{state.kcex.processing=false;}
+  }
+  window.startKcexObserver=async()=>{
+    if(state.kcex.running)return;
+    if(!navigator.mediaDevices?.getDisplayMedia){alert("Partage d’écran non supporté par ce navigateur.");return;}
+    try{
+      state.kcex.error="";
+      const stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:{ideal:2,max:5}},audio:false});
+      const video=document.createElement("video");video.muted=true;video.playsInline=true;video.srcObject=stream;
+      const canvas=document.createElement("canvas");canvas.width=1280;canvas.height=720;
+      video.style.cssText="position:fixed;left:-99999px;width:1px;height:1px;opacity:0;pointer-events:none";
+      document.body.appendChild(video);await video.play();
+      state.kcex={...state.kcex,running:true,processing:false,stream,video,canvas,previousImage:"",events:state.kcex.events,lastDetected:state.kcex.lastDetected,error:"",timer:null};
+      const track=stream.getVideoTracks()[0];track.addEventListener("ended",()=>stopKcexObserver());
+      render();state.kcex.timer=setInterval(()=>detectKcexFrame(),3000);
+    }catch(err){state.kcex.error=String(err?.message||err);alert("KCEX observer: "+state.kcex.error);render();}
+  };
+  window.stopKcexObserver=()=>{
+    try{if(state.kcex.timer)clearInterval(state.kcex.timer);}catch{}
+    try{state.kcex.stream?.getTracks().forEach(t=>t.stop());}catch{}
+    try{state.kcex.video?.remove();}catch{}
+    state.kcex={...state.kcex,running:false,processing:false,stream:null,video:null,canvas:null,previousImage:"",timer:null};
+    render();
+  };
   window.connectTradovateUI=async()=>{
     const button=document.querySelector(".connection-live .primary");
     if(button){button.disabled=true;button.textContent="CONNECTING...";}
