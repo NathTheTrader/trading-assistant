@@ -24,7 +24,7 @@ jobs:
           const app=fs.readFileSync("edgeflow-v3/app.js","utf8");
           new Function(app);
           const html=fs.readFileSync("index.html","utf8");
-          for(const ref of ["./edgeflow-v3/styles.css?v=43","./edgeflow-v3/reference.css?v=43","./edgeflow-v3/app.js?v=43"]){
+          for(const ref of ["./edgeflow-v3/styles.css?v=44","./edgeflow-v3/reference.css?v=44","./edgeflow-v3/app.js?v=44"]){
             if(!html.includes(ref)) throw new Error("Missing frontend asset reference: "+ref);
           }
           console.log("Frontend JavaScript and asset references OK");
