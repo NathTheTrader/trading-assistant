@@ -2,8 +2,9 @@
 (function(){
   const css=document.createElement("style");
   css.textContent=`
+  body.landing-page .ta-voice-fab,body.landing-page .ta-auto-voice,body.landing-page .ta-voice-panel{display:none!important}
   .ta-voice-fab{
-    position:fixed;right:20px;bottom:20px;z-index:9999;
+    position:fixed;right:24px;bottom:18px;z-index:9999;
     display:flex;align-items:center;gap:9px;
     border:1px solid rgba(255,43,43,.34);
     background:linear-gradient(145deg,#11161d,#090d12);
@@ -14,7 +15,7 @@
   }
   .ta-voice-fab:hover{transform:translateY(-2px);border-color:rgba(255,43,43,.55);box-shadow:0 18px 42px rgba(0,0,0,.5),0 0 30px rgba(255,43,43,.11)}
   .ta-auto-voice{
-    position:fixed;right:20px;bottom:56px;z-index:10001;
+    position:fixed;right:24px;bottom:52px;z-index:10001;
     display:flex;align-items:center;gap:5px;
     border:1px solid rgba(255,255,255,.09);background:rgba(8,11,16,.94);
     color:#6f7a89;border-radius:7px;padding:5px 7px;
@@ -36,8 +37,8 @@
   body.crypto-mode .ta-voice-fab{border-color:rgba(47,140,255,.38)}
   body.crypto-mode .ta-voice-fab .ta-fab-orb{background:#2f8cff;box-shadow:0 0 14px rgba(47,140,255,.75)}
   .ta-voice-panel{
-    position:fixed;right:20px;bottom:74px;width:430px;max-width:calc(100vw - 24px);
-    z-index:9998;overflow:hidden;
+    position:fixed;right:24px;bottom:68px;width:400px;max-width:calc(100vw - 24px);max-height:70vh;
+    z-index:9998;overflow:auto;
     background:linear-gradient(160deg,rgba(12,16,22,.985),rgba(7,10,14,.985));
     border:1px solid rgba(255,255,255,.10);border-radius:16px;
     color:#fff;box-shadow:0 28px 90px rgba(0,0,0,.68),0 0 0 1px rgba(255,255,255,.015);
