@@ -1450,3 +1450,62 @@ body.app-page.red .main,
 body.app-page.blue .main{
   background:linear-gradient(180deg,rgba(2,5,10,.04),rgba(2,5,10,.13))!important;
 }
+
+/* V45 — LEGIBILITY + TRADOVATE MODAL */
+body.app-page .sidebar nav b{font-size:9px!important}
+body.app-page .sidebar nav small{font-size:6.5px!important}
+body.app-page .sidebar .brand b{font-size:16px!important}
+body.app-page .sidebar .brand small{font-size:5.5px!important}
+body.app-page .topbar .crumb{font-size:7px!important}
+body.app-page .top-actions .live{font-size:6.5px!important}
+body.app-page .top-actions .session b{font-size:7px!important}
+body.app-page .top-actions .session i{font-size:6px!important}
+body.app-page .page-title h1{font-size:30px!important}
+body.app-page .page-title p{font-size:8.5px!important}
+body.app-page .panel-head{font-size:7px!important}
+body.app-page .kpi small{font-size:7.5px!important}
+body.app-page .kpi strong{font-size:19px!important}
+body.app-page .kpi em{font-size:6.5px!important}
+body.app-page .asset b{font-size:8.5px!important}
+body.app-page .asset strong{font-size:17px!important}
+body.app-page .asset small{font-size:6.5px!important}
+body.app-page .row{font-size:7px!important}
+body.app-page .row b{font-size:7.5px!important}
+body.app-page .row-head{font-size:5.5px!important}
+body.app-page .session-list>div,body.app-page .rules>div,body.app-page .setting{font-size:7px!important}
+body.app-page .session-list span,body.app-page .rules b,body.app-page .setting b{font-size:7.5px!important}
+body.app-page .connection h3{font-size:16px!important}
+body.app-page .connection small{font-size:6.5px!important}
+body.app-page .connection>b{font-size:6.5px!important}
+body.app-page .connection-copy p{font-size:7.5px!important}
+body.app-page .setup-grid small{font-size:6px!important}
+body.app-page .setup-grid b{font-size:7.5px!important}
+body.app-page .filters input,body.app-page .filters select,body.app-page .filters button{font-size:8px!important}
+body.app-page .model-strip b{font-size:10px!important}
+body.app-page .ai-message p{font-size:12px!important}
+body.app-page .ai-actions button{font-size:8.5px!important}
+body.app-page .ai-composer input{font-size:12.5px!important}
+
+/* Tradovate modal */
+.tradovate-modal[hidden]{display:none!important}
+.tradovate-modal{position:fixed;inset:0;z-index:10050;display:grid;place-items:center;padding:20px}
+.tradovate-modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(8px)}
+.tradovate-modal-card{position:relative;width:min(700px,calc(100vw - 30px));background:#071019;border:1px solid #29485c;border-radius:10px;padding:18px;box-shadow:0 30px 100px rgba(0,0,0,.62);z-index:1}
+.tradovate-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;border-bottom:1px solid #17364a;padding-bottom:12px;margin-bottom:12px}
+.tradovate-modal-head small{font-size:6px;color:#72899a;letter-spacing:1.5px}
+.tradovate-modal-head h2{margin:4px 0 0;font:700 23px Rajdhani;color:#edf5f8}
+.tradovate-modal-head button{border:0;background:transparent;color:#6c8291;font-size:24px;cursor:pointer}
+.tradovate-modal-note{font-size:8px;line-height:1.5;color:#7890a0;margin:0 0 13px}
+.tradovate-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.tradovate-form label{display:grid;gap:5px;color:#7f97a7;font-size:7px;letter-spacing:.8px}
+.tradovate-form input,.tradovate-form select{height:36px;border:1px solid #17364a;border-radius:5px;background:#040c12;color:#e5eef2;padding:0 10px;font-size:10px;outline:none}
+.tradovate-form input:focus,.tradovate-form select:focus{border-color:#ff3155;box-shadow:0 0 0 1px rgba(255,49,85,.14)}
+.tradovate-form-error{min-height:16px;margin-top:9px;color:#ff667f;font-size:8px;line-height:1.4}
+.tradovate-modal-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:4px}
+.tradovate-modal-actions button{border:1px solid #17364a;border-radius:5px;background:#061019;color:#9cb0bb;font-size:8px;padding:8px 12px}
+.tradovate-modal-actions .primary{border:0;background:linear-gradient(#ff294f,#d20e36);color:#fff}
+body.blue .tradovate-form input:focus,body.blue .tradovate-form select:focus{border-color:#1b9fff;box-shadow:0 0 0 1px rgba(27,159,255,.14)}
+@media(max-width:700px){
+  .tradovate-form-grid{grid-template-columns:1fr}
+  .tradovate-modal-card{padding:14px}
+}
