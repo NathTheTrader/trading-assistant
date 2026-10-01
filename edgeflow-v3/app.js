@@ -26,43 +26,21 @@
       return [];
     }
   };
-  const state = { filters:{query:"",side:"ALL",instrument:"ALL",setup:"ALL"},
+  const state = {
+    filters:{query:"",side:"ALL",instrument:"ALL",setup:"ALL"},
     mode: requestedMode,
     view: validViews.includes(requestedView) ? requestedView : "overview",
     journal: loadJournal(requestedMode),
     activeBacktest: null,
-    tradovate:{status:null,loading:false,lastFetch:0,error:""}
+    tradovate:{status:null,loading:false,lastFetch:0,error:""},
+    kcex:{running:false,processing:false,stream:null,video:null,canvas:null,previousImage:"",events:[],lastDetected:null,error:"",timer:null},
+    aiTurns:[]
   };
   const DATA = {
-    NQ: {
-      label:"FUTURES", accent:"red", instruments:["MNQ","MES","MGC"],
-      rows:[
-        ["09:12:34","MNQ","Short","24,862.75","24,840.25","1","+ $225.00","4.5","R.B + FVG"],
-        ["08:47:12","MES","Long","6,120.50","6,158.00","2","+ $420.00","3.1","Sweep + OB"],
-        ["07:22:18","MGC","Short","3,872.40","3,861.20","1","- $160.00","1.2","News Fade"],
-        ["06:11:05","MNQ","Long","24,910.25","24,926.50","1","+ $160.00","2.8","10H Open"],
-        ["05:38:41","MES","Long","6,029.25","6,031.50","1","+ $120.00","2.1","R.B"],
-        ["Sep 29","MGC","Short","3,845.10","3,838.00","0.5","- $130.00","1.2","Trend"]
-      ],
-      assets:[["MNQ","24,856.25","48","62%"],["MES","6,021.75","32","59%"],["MGC","3,872.40","18","67%"]],
-      session:["LONDON","NY Open","ASIA"],
-      connections:[["Tradovate","Futures","TV"],["Rithmic","Futures","R"],["AI Assistant","Intelligence","AI"]]
-    },
-    CRYPTO: {
-      label:"CRYPTO", accent:"blue", instruments:["BTC","ETH","SOL","BNB","XRP","HYPE","FLOKI"],
-      rows:[
-        ["09:15:27","BTC","Short","63,120.55","63,420.00","0.02","+ $327.00","3.1","Sweep + OB"],
-        ["08:32:11","SOL","Long","148.10","148.90","10","+ $190.00","2.4","R.B"],
-        ["07:48:33","ETH","Short","2,460.50","2,452.30","0.5","- $160.00","2.8","FVG"],
-        ["06:11:05","BNB","Long","560.20","572.10","1.2","+ $240.00","2.8","10H Open"],
-        ["Sep 29","BTC","Long","62,910.00","63,100.00","0.02","+ $185.00","2.2","R.B"],
-        ["Sep 28","ETH","Short","2,480.20","2,468.00","0.8","+ $210.00","2.5","FVG"]
-      ],
-      assets:[["BTC","63,284.50","56","71%"],["ETH","2,452.18","38","66%"],["SOL","148.32","24","62%"],["BNB","573.21","18","61%"]],
-      session:["ASIA","LONDON","NY"],
-      connections:[["KCEX","Crypto","K"],["AI Assistant","Intelligence","AI"]]
-    }
+    NQ:{label:"FUTURES",accent:"red",instruments:["MNQ","MES","MGC"],connections:["Tradovate","Rithmic"]},
+    CRYPTO:{label:"CRYPTO",accent:"blue",instruments:["BTC","ETH","SOL","BNB","XRP","HYPE","FLOKI"],connections:["KCEX"]}
   };
+  const API_BASE="https://trading-assistant-production.up.railway.app";
   const d=()=>DATA[state.mode||"NQ"];
   const crypto=()=>state.mode==="CRYPTO";
   const accent=()=>crypto()?"blue":"red";
