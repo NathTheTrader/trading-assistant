@@ -130,7 +130,11 @@ jobs:
                 await page.goto(base+"?mode="+mode+"&view="+view,{waitUntil:"domcontentloaded"});
                 await page.waitForTimeout(100);
                 await noFatal(mode+"-"+view);
-                await assert(await page.locator(".page-title").count()===1,mode+" "+view+" page title missing");
+                if(view==="overview"){
+                  await assert(await page.locator(".dash").count()===1,mode+" overview dashboard missing");
+                }else{
+                  await assert(await page.locator(".page-title").count()===1,mode+" "+view+" page title missing");
+                }
               }
               await page.goto(base+"?mode="+mode+"&view=connections",{waitUntil:"domcontentloaded"});
               await noFatal(mode+"-connections-final");
