@@ -26,12 +26,14 @@ const FRONTEND_DIR = path.resolve(BACKEND_DIR, "..");
 app.get("/", (req,res) => res.sendFile(path.join(FRONTEND_DIR, "index.html")));
 app.get("/voice-coach.js", (req,res) => res.sendFile(path.join(FRONTEND_DIR, "voice-coach.js")));
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "https://naththetrader.github.io";
+const EDGEFLOW_RAILWAY_ORIGIN = "https://trading-assistant-production.up.railway.app";
+const ALLOWED_EDGEFLOW_ORIGINS = new Set([FRONTEND_ORIGIN,"https://naththetrader.github.io",EDGEFLOW_RAILWAY_ORIGIN]);
 function requirePrivateRequest(req,res,next){
   const accessKey=process.env.EDGEFLOW_ACCESS_KEY || "";
   const provided=String(req.get("x-edgeflow-access")||"");
   const origin=String(req.get("origin")||"");
   if(accessKey && provided===accessKey) return next();
-  if(origin===FRONTEND_ORIGIN) return next();
+  if(ALLOWED_EDGEFLOW_ORIGINS.has(origin)) return next();
   return res.status(403).json({ok:false,error:"EDGEFLOW private endpoint."});
 }
 const EDGEFLOW_STORAGE_ROOT = process.env.EDGEFLOW_STORAGE_ROOT || path.join(process.cwd(),"data");
