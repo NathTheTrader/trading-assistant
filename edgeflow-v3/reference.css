@@ -367,3 +367,61 @@ body.app-page{min-height:100vh;overflow-x:hidden}
   .app-page .dashboard-grid{grid-template-columns:1fr}
   .app-page .dashboard-side{grid-template-columns:1fr 1fr}
 }
+
+
+/* V14 — DENSE REFERENCE SYSTEM ACROSS ALL VIEWS */
+.app-page .page-title{
+  min-height:55px;
+  padding:4px 3px 8px;
+  border-bottom:1px solid #102a3b;
+  margin-bottom:7px;
+}
+.app-page .page-title h1{font-size:25px;letter-spacing:1.6px}
+.app-page .page-title p{font-size:5.5px}
+.app-page .page-title small{font-size:5px}
+.app-page .filters{min-height:38px;margin-bottom:6px}
+.app-page .filters input,.app-page .filters select,.app-page .filters button{height:27px}
+.app-page .workspace>.panel{min-height:0}
+.app-page .two-col{grid-template-columns:minmax(0,1.7fr) minmax(230px,.65fr)}
+.app-page .stats .stat{padding:8px 4px}
+.app-page .calendar{min-height:250px}
+.app-page .ai-grid{grid-template-columns:minmax(0,1.55fr) minmax(250px,.75fr);height:calc(100vh - 145px)}
+.app-page .ai-chat{min-height:0;height:100%}
+.app-page .ai-panel{min-height:0}
+.app-page .journal-grid{grid-template-columns:minmax(260px,.75fr) minmax(420px,1.5fr);height:calc(100vh - 145px)}
+.app-page .journal-grid>.panel{min-height:0}
+.app-page .journal-list{max-height:100%;overflow:auto}
+.app-page .analytics-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:6px}
+.app-page .analytics-grid .panel:last-child{min-height:115px}
+.app-page .bars{gap:12px}
+.app-page .bars>div{grid-template-columns:55px 1fr 28px}
+.app-page .connections{grid-template-columns:repeat(3,minmax(0,1fr));height:calc(100vh - 145px)}
+.app-page .connection{min-height:0;height:100%;padding:13px}
+.app-page .connection h3{font-size:13px}
+.app-page .settings-grid{grid-template-columns:1fr 1fr;height:calc(100vh - 145px);grid-auto-rows:1fr}
+.app-page .settings-grid .panel{min-height:0}
+.app-page .bt{max-height:calc(100vh - 175px);overflow:auto}
+.app-page .bt-row{padding:8px 4px;font-size:5.5px}
+.app-page .performance .kpis{grid-template-columns:repeat(6,1fr)}
+/* visual micro-elements */
+.app-page .kpi:nth-child(4):before{
+  content:"";position:absolute;right:8px;top:12px;width:25px;height:25px;border-radius:50%;
+  border:3px solid #123446;border-top-color:var(--blue);border-right-color:var(--blue);
+  transform:rotate(-28deg);
+}
+.app-page .asset{background:linear-gradient(160deg,rgba(10,24,35,.96),rgba(4,10,16,.94))}
+.app-page .asset:before{
+  content:"";position:absolute;left:8px;right:8px;bottom:17px;height:8px;
+  border-bottom:1px solid currentColor;opacity:.32;transform:skewX(-30deg);
+}
+.app-page.red .asset:before{color:var(--red)}
+.app-page.blue .asset:before{color:var(--blue)}
+.app-page .panel-head span:before{
+  content:"";display:inline-block;width:4px;height:4px;margin:0 5px 1px 0;
+  border-radius:1px;background:var(--red);box-shadow:0 0 8px currentColor;
+}
+.app-page.blue .panel-head span:before{background:var(--blue)}
+@media(max-width:1200px){
+  .app-page .ai-grid,.app-page .journal-grid{height:auto}
+  .app-page .connections,.app-page .settings-grid{height:auto}
+}
