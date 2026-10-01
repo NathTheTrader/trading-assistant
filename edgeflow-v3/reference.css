@@ -1018,3 +1018,24 @@ body.landing-page .landing-corner{
 .app-page .context-grid b{
   font-size:13px;
 }
+
+/* V34 — FUNCTIONAL JARVIS CHAT */
+.app-page .ai-chat{height:430px;min-height:430px;display:flex;flex-direction:column}
+.app-page .ai-welcome{flex:0 0 auto}
+.app-page .ai-messages{flex:1 1 auto;min-height:150px;overflow-y:auto;padding:8px 10px;border:1px solid #102b3d;border-radius:5px;background:rgba(2,9,15,.58);scroll-behavior:smooth}
+.app-page .ai-message{margin:0 0 7px;padding:8px 10px;border:1px solid #153449;border-radius:5px;background:#07131c}
+.app-page .ai-message.jarvis{border-left:2px solid #19a7ff}
+.app-page .ai-message.user{border-left:2px solid #ff3155}
+.app-page .ai-message.loading{opacity:.75}
+.app-page .ai-message b{display:block;font-size:8px;letter-spacing:.12em;margin-bottom:4px;color:#6f9ab0}
+.app-page .ai-message.jarvis b{color:#19a7ff}
+.app-page .ai-message.user b{color:#ff5270}
+.app-page .ai-message p{margin:0;white-space:pre-wrap;line-height:1.45;font-size:10px;color:#c4d3db}
+.app-page .ai-actions{flex:0 0 auto}
+.app-page .ai-composer{display:flex;gap:6px;margin-top:7px}
+.app-page .ai-composer input{flex:1;min-width:0;height:40px;padding:0 12px;border:1px solid #17405a;border-radius:5px;background:#050d14;color:#e7f2f7;font-size:11px;outline:none}
+.app-page .ai-composer input:focus{border-color:#19a7ff;box-shadow:0 0 0 1px rgba(25,167,255,.16)}
+.app-page .ai-composer input::placeholder{color:#617785}
+.app-page .ai-composer button{width:44px;border:1px solid #19a7ff;border-radius:5px;background:#071723;color:#19a7ff;font-size:17px;cursor:pointer}
+.app-page .ai-composer button:hover{background:#0b2332}
+@media(max-width:900px){.app-page .ai-chat{height:390px;min-height:390px}}
