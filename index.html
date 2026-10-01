@@ -88,7 +88,7 @@ input,textarea,select{width:100%;padding:8px;border:1px solid #223244;border-rad
 </section>
 
 <section id="cryptoDash" class="workspace hidden" data-model="CRYPTO">
-<div class="workspace-header"><div><div class="eyebrow">CRYPTO · PERFORMANCE</div><h1>Overview</h1><div class="sub">A separate crypto command center with independent data and intelligence.</div></div><div class="status green">● CRYPTO LIVE</div></div>
+<div class="workspace-header"><div><div id="cryptoDashMarketEyebrow" class="eyebrow">CRYPTO · PERFORMANCE</div><h1>Overview</h1><div class="sub">A separate crypto command center with independent data and intelligence.</div></div><div class="status green">● CRYPTO LIVE</div></div>
 <div class="dashboard-period-bar"><div><span class="dashboard-period-kicker">PERIOD</span><strong id="cryptoDashPeriodTitle">—</strong></div><div class="dashboard-period-actions"><button class="secondary" onclick="changeDashboardMonth('CRYPTO',-1)">‹</button><select id="cryptoDashMonthSelect" onchange="setDashboardMonth('CRYPTO',this.value)"></select><button class="secondary" onclick="changeDashboardMonth('CRYPTO',1)">›</button><button class="secondary" onclick="setDashboardMonth('CRYPTO',localDateISO().slice(0,7))">CURRENT</button></div></div>
 <div class="grid dashboard-kpis">
 <div class="card"><div class="label">Account Balance</div><div id="cryptoDashAccountBalance" class="value">—</div><div class="sub">Connected crypto account</div><div class="sparkline blue"><svg viewBox="0 0 180 20" preserveAspectRatio="none"><path d="M0 15 L22 16 L44 11 L66 13 L88 8 L110 10 L132 4 L154 6 L180 2"/></svg></div></div>
