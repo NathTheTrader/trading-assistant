@@ -1420,3 +1420,33 @@ body.app-page.blue:before{
   .app-page .connections.connection-stack .connection-live{grid-column:auto!important}
   .app-page .ai-chat{height:455px!important;min-height:455px!important}
 }
+
+/* V44 — SHOW THE WORKSPACE SCENE WITHOUT THE LEGACY BLACK CANVAS */
+html,body,#app{
+  background:transparent!important;
+}
+body.app-page{
+  background:#02050a!important;
+  isolation:isolate!important;
+}
+body.app-page:before{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  z-index:-1!important;
+}
+body.app-page .app-shell,
+body.app-page .main,
+body.app-page .workspace{
+  background:transparent!important;
+}
+body.app-page .sidebar{
+  background:rgba(3,7,12,.93)!important;
+}
+body.app-page .topbar{
+  background:rgba(3,7,12,.72)!important;
+}
+body.app-page.red .main,
+body.app-page.blue .main{
+  background:linear-gradient(180deg,rgba(2,5,10,.04),rgba(2,5,10,.13))!important;
+}
