@@ -684,30 +684,37 @@
   }
   function connections(){
     if(crypto()){
-      return title("SYSTEM","Crypto Connections","KCEX is exclusive to Crypto. No Tradovate or Rithmic controls are shown here.")+
+      return title("SYSTEM","Crypto Connections","KCEX is exclusive to Crypto. Tradovate and Rithmic stay hidden in this workspace.")+
         '<div class="connections connection-stack">'+
         '<article class="connection connection-live '+(state.kcex.running?"is-connected":"is-offline")+'">'+
           '<div class="conn-icon blue">K</div><div class="conn-copy"><h3>KCEX · CRYPTO FUTURES</h3><small>CRYPTO ONLY · READ-ONLY SCREEN OBSERVER</small><b class="'+(state.kcex.running?"ok":"warn")+'">● '+(state.kcex.running?"OBSERVING":"OFFLINE")+'</b>'+
-          '<p>'+(state.kcex.running?"The shared KCEX window is being sampled. Only visible order/position changes are logged.":"Share only the KCEX trading window to start visual order detection.")+'</p></div>'+
+          '<p>'+(state.kcex.running?"KCEX window is being sampled.":"Share the KCEX trading window to detect visible order changes.")+'</p>'+
+          (state.kcex.error?'<div class="conn-error">'+esc(state.kcex.error)+'</div>':"")+
+          (state.kcex.lastDetected?'<div class="conn-last">LAST: '+esc(state.kcex.lastDetected.instrument)+" · "+esc(state.kcex.lastDetected.direction)+" · "+esc(state.kcex.lastDetected.time)+'</div>':"")+
+          '</div>'+
           '<button class="primary" onclick="'+(state.kcex.running?"stopKcexObserver()":"startKcexObserver()")+'">'+(state.kcex.running?"STOP OBSERVER":"START OBSERVER")+'</button>'+
         '</article>'+
-        '<article class="connection"><div class="conn-icon blue">J</div><h3>JARVIS AI</h3><small>CRYPTO MODEL · ISOLATED CONTEXT</small><b class="ok">● ONLINE</b><button onclick="edgeGo(\'ai\')">OPEN JARVIS</button></article>'+
+        '<article class="connection"><div class="conn-icon blue">J</div><div class="conn-copy"><h3>JARVIS AI</h3><small>CRYPTO MODEL · ISOLATED CONTEXT</small><b class="ok">● ONLINE</b><p>Crypto-only reasoning context.</p></div><button onclick="edgeGo(\'ai\')">OPEN JARVIS</button></article>'+
         '</div>'+
-        '<section class="panel connection-help"><div class="panel-head"><span>CRYPTO PIPELINE</span></div><p>KCEX belongs to the Crypto environment in EdgeFlow. Futures broker integrations never appear in this workspace.</p><div class="setup-grid"><div><small>PROVIDER</small><b>KCEX · CRYPTO FUTURES</b></div><div><small>MODEL</small><b>CRYPTO</b></div><div><small>READ MODE</small><b>SCREEN OBSERVER</b></div></div></section>';
+        '<section class="panel connection-help"><div class="panel-head"><span>CRYPTO PIPELINE</span></div><p>KCEX is the only broker connection in the Crypto workspace. Futures broker integrations are intentionally isolated.</p><div class="setup-grid"><div><small>PROVIDER</small><b>KCEX · CRYPTO FUTURES</b></div><div><small>MODEL</small><b>CRYPTO</b></div><div><small>MODE</small><b>READ-ONLY OBSERVER</b></div></div></section>';
     }
     const tv=state.tradovate.status||{},tvConnected=Boolean(tv.connected),tvConfigured=Boolean(tv.configured);
     const tvStatus=tvConnected?"CONNECTED":(tvConfigured?"READY TO CONNECT":"CREDENTIALS REQUIRED");
-    return title("SYSTEM","Futures Connections","Tradovate and Rithmic are exclusive to Futures. KCEX is not shown in this workspace.")+
+    const tvMissing=Array.isArray(tv.missing)?tv.missing:[];
+    return title("SYSTEM","Futures Connections","Tradovate and Rithmic are exclusive to Futures. KCEX stays in Crypto.")+
       '<div class="connections connection-stack">'+
       '<article class="connection connection-live '+(tvConnected?"is-connected":"is-offline")+'">'+
         '<div class="conn-icon">T</div><div class="conn-copy"><h3>TRADOVATE</h3><small>FUTURES ONLY · ACCOUNT / POSITIONS / ORDERS / FILLS</small><b class="'+(tvConnected?"ok":"warn")+'">● '+tvStatus+'</b>'+
-        '<p>'+(tvConnected?"Live Tradovate account data is flowing to Futures.":(tvConfigured?"Credentials are configured. Click connect to start the live feed.":"Add the five Tradovate server variables in Railway."))+'</p></div>'+
+        '<p>'+(tvConnected?"Live Tradovate account data is flowing.":(tvConfigured?"Credentials are configured. Click connect.":"Railway server credentials are missing."))+'</p>'+
+        (tvMissing.length?'<div class="conn-missing">MISSING: '+tvMissing.map(x=>esc(x)).join(" · ")+'</div>':"")+
+        (state.tradovate.error?'<div class="conn-error">'+esc(state.tradovate.error)+'</div>':"")+
+        '</div>'+
         '<button class="primary" onclick="connectTradovateUI()">'+(tvConnected?"REFRESH":"CONNECT")+'</button>'+
       '</article>'+
-      '<article class="connection"><div class="conn-icon">R</div><h3>RITHMIC</h3><small>FUTURES ONLY · ACCOUNT FEED</small><b class="warn">○ NOT CONFIGURED</b><button onclick="alert(\'Rithmic credentials are not configured on Railway yet.\')">MANAGE</button></article>'+
-      '<article class="connection"><div class="conn-icon">J</div><h3>JARVIS AI</h3><small>FUTURES MODEL · ISOLATED CONTEXT</small><b class="ok">● ONLINE</b><button onclick="edgeGo(\'ai\')">OPEN JARVIS</button></article>'+
+      '<article class="connection"><div class="conn-icon">R</div><div class="conn-copy"><h3>RITHMIC</h3><small>FUTURES ONLY · ACCOUNT FEED</small><b class="warn">○ NOT CONFIGURED</b><p>Rithmic credentials are not configured on Railway.</p></div><button onclick="alert(\'Rithmic credentials are not configured on Railway yet.\')">MANAGE</button></article>'+
+      '<article class="connection"><div class="conn-icon">J</div><div class="conn-copy"><h3>JARVIS AI</h3><small>FUTURES MODEL · ISOLATED CONTEXT</small><b class="ok">● ONLINE</b><p>Futures/NQ-only reasoning context.</p></div><button onclick="edgeGo(\'ai\')">OPEN JARVIS</button></article>'+
       '</div>'+
-      '<section class="panel connection-help"><div class="panel-head"><span>FUTURES PIPELINE</span></div><p>Tradovate credentials stay on Railway. EdgeFlow receives read-only account state for the Futures dashboard.</p><div class="setup-grid"><div><small>PROVIDER</small><b>TRADOVATE / RITHMIC</b></div><div><small>MODEL</small><b>FUTURES / NQ</b></div><div><small>ENTRY</small><b>LIMIT / REJECTION BLOCK</b></div></div></section>';
+      '<section class="panel connection-help"><div class="panel-head"><span>FUTURES PIPELINE</span></div><p>Tradovate credentials stay on Railway. EdgeFlow reads account, position, order and fill state for Futures only.</p><div class="setup-grid"><div><small>PROVIDER</small><b>TRADOVATE / RITHMIC</b></div><div><small>MODEL</small><b>FUTURES / NQ</b></div><div><small>ENTRY</small><b>R.B · LIMIT</b></div></div></section>';
   }
   async function detectKcexFrame(){
     if(!state.kcex.running||state.kcex.processing||!state.kcex.video||state.kcex.video.readyState<2)return;
@@ -756,14 +763,18 @@
   window.connectTradovateUI=async()=>{
     const button=document.querySelector(".connection-live .primary");
     if(button){button.disabled=true;button.textContent="CONNECTING...";}
+    state.tradovate.error="";
     try{
-      const response=await fetch("https://trading-assistant-production.up.railway.app/api/tradovate/connect",{method:"POST",headers:{Accept:"application/json"}});
+      const response=await fetch(API_BASE+"/api/tradovate/connect",{method:"POST",headers:{Accept:"application/json","Content-Type":"application/json"},body:"{}"});
       const data=await response.json().catch(()=>({}));
+      state.tradovate.status=data.status||data;
       if(!response.ok||data.ok===false)throw new Error(data.error||"Tradovate connection failed.");
-      state.tradovate.status=data;state.tradovate.error="";state.tradovate.lastFetch=Date.now();render();
+      state.tradovate.lastFetch=Date.now();
     }catch(e){
-      state.tradovate.error=String(e.message||e);
-      alert(state.tradovate.error);
+      state.tradovate.error=String(e?.message||e);
+      if(!state.tradovate.status)state.tradovate.status={connected:false,configured:false,missing:["TRADOVATE_USERNAME","TRADOVATE_PASSWORD","TRADOVATE_APP_ID","TRADOVATE_CID","TRADOVATE_SEC"]};
+    }finally{
+      if(button)button.disabled=false;
       render();
     }
   };
