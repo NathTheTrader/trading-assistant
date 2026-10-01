@@ -960,3 +960,18 @@ body.landing-page .landing-corner{
   .dash-sessions{display:none!important}
   .account-state{flex-wrap:wrap}
 }
+
+/* V32 — COMPACT AI ASSISTANT */
+.app-page .ai-grid{grid-template-columns:minmax(0,1.55fr) minmax(300px,.8fr);gap:8px;align-items:start}
+.app-page .ai-grid .panel{min-height:0}
+.app-page .ai-chat{min-height:300px;height:300px}
+.app-page .ai-welcome{padding:10px}
+.app-page .ai-actions{gap:4px;margin-top:7px}
+.app-page .ai-actions button{padding:8px;font-size:7px}
+.app-page .ai-input{padding:9px}
+.app-page .context-grid{gap:4px}
+.app-page .context-grid div{padding:7px 4px}
+@media(max-width:900px){
+  .app-page .ai-grid{grid-template-columns:1fr}
+  .app-page .ai-chat{height:260px;min-height:260px}
+}
