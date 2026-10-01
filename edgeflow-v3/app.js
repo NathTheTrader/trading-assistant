@@ -398,20 +398,33 @@
       '</aside></div></div>';
   }
   function trades(){
-    return title("EXECUTION","Trades","Full execution history for this environment.",'<button class="primary" onclick="edgeGo(\'journal\')">+ NEW JOURNAL ENTRY</button>')+
-      '<div class="filters"><input value="'+esc(state.filters.query)+'" oninput="setFilter(\'query\',this.value)" placeholder="Search instrument, setup..."><select onchange="setFilter(\'side\',this.value)"><option value="ALL">All sides</option><option value="Long">Long</option><option value="Short">Short</option></select><select onchange="setFilter(\'instrument\',this.value)"><option value="ALL">All instruments</option>'+d().instruments.map(x=>'<option '+(state.filters.instrument===x?"selected":"")+'>'+x+'</option>').join("")+'</select><select onchange="setFilter(\'setup\',this.value)"><option value="ALL">All setups</option><option>R.B</option><option>R.B + FVG</option><option>Sweep + OB</option><option>10H Open</option><option>FVG</option></select><select><option>Last 30 days</option></select><button onclick="exportTrades()">EXPORT</button></div>'+panel("TRADE HISTORY",rows(d().rows.concat(d().rows.slice(0,2)).filter(r=>(state.filters.side==="ALL"||r[2]===state.filters.side)&&(state.filters.instrument==="ALL"||r[1]===state.filters.instrument)&&(state.filters.setup==="ALL"||r[8]===state.filters.setup)&&(!state.filters.query||r.join(" ").toLowerCase().includes(state.filters.query.toLowerCase())),true)));
+    const data=currentRows();
+    const empty='<div class="dashboard-empty"><b>NO EXECUTION DATA</b><span>'+esc(crypto()?"KCEX observer has not detected a visible order change yet.":"Tradovate is not connected and there are no recorded journal trades.")+'</span></div>';
+    const filtered=data.filter(r=>(state.filters.side==="ALL"||r[2]===state.filters.side)&&(state.filters.instrument==="ALL"||r[1]===state.filters.instrument)&&(!state.filters.query||r.join(" ").toLowerCase().includes(state.filters.query.toLowerCase())));
+    return title("EXECUTION","Trades",crypto()?"KCEX activity plus Crypto journal records.":"Tradovate fills plus Futures journal records.",'<button class="primary" onclick="edgeGo(\'journal\')">+ NEW JOURNAL ENTRY</button>')+
+      '<div class="filters"><input value="'+esc(state.filters.query)+'" oninput="setFilter(\'query\',this.value)" placeholder="Search '+(crypto()?"coin, provider, note...":"instrument, setup...")+'"><select onchange="setFilter(\'side\',this.value)"><option value="ALL">All sides</option><option value="Long">Long</option><option value="Short">Short</option></select><select onchange="setFilter(\'instrument\',this.value)"><option value="ALL">All instruments</option>'+d().instruments.map(x=>'<option value="'+esc(x)+'" '+(state.filters.instrument===x?"selected":"")+'>'+esc(x)+'</option>').join("")+'</select><button onclick="exportTrades()">EXPORT</button></div>'+
+      panel(crypto()?"KCEX / CRYPTO HISTORY":"TRADOVATE / FUTURES HISTORY",filtered.length?rows(filtered,true):empty);
   }
+
   function statsTable(){
-    const a=[["R.B + FVG","18","72%","3.6","4.8"],["Sweep + OB","12","58%","2.1","3.2"],["10H Open","8","75%","2.8","3.9"],["News Fade","6","50%","1.6","2.1"],["Trend","4","50%","1.4","1.8"]];
-    return '<div class="stats"><div class="stat head"><span>SETUP</span><span>TRADES</span><span>WIN RATE</span><span>PF</span><span>AVG RR</span></div>'+a.map(r=>'<div class="stat"><b>'+r[0]+'</b><span>'+r[1]+'</span><span>'+r[2]+'</span><span>'+r[3]+'</span><span>'+r[4]+'</span></div>').join("")+'</div>';
+    const groups={};
+    state.journal.forEach(x=>{const k=String(x.setup||"Other");(groups[k]||=[]).push(x)});
+    const items=Object.entries(groups).map(([setup,xs])=>{const st=statsFromJournal(xs);return '<div class="stat"><b>'+esc(setup)+'</b><span>'+st.count+'</span><span>'+pct(st.winRate)+'</span><span>'+rrText(st.pf)+'</span><span>'+rrText(st.avgRR)+'</span></div>'}).join("");
+    return '<div class="stats"><div class="stat head"><span>SETUP</span><span>TRADES</span><span>WIN RATE</span><span>PF</span><span>AVG RR</span></div>'+(items||'<div class="analytics-empty">No recorded trades in this environment.</div>')+'</div>';
   }
   function calendar(){
-    return '<div class="calendar"><header>September 2026 <span>‹　›</span></header><div class="week">M　T　W　T　F　S　S</div><div class="days">'+Array.from({length:30},(_,i)=>'<i class="'+([8,15,22,29].includes(i+1)?"good":"")+'">'+(i+1)+'</i>').join("")+'</div></div>';
+    const nowDate=new Date(),year=nowDate.getFullYear(),month=nowDate.getMonth(),first=new Date(year,month,1),days=new Date(year,month+1,0).getDate(),offset=(first.getDay()+6)%7;
+    const cells=[];for(let i=0;i<offset;i++)cells.push('<i class="empty"></i>');
+    for(let n=1;n<=days;n++){const iso=year+"-"+String(month+1).padStart(2,"0")+"-"+String(n).padStart(2,"0"),count=state.journal.filter(x=>String(x.date||"").slice(0,10)===iso).length;cells.push('<i class="'+(count?"good":"")+'">'+n+(count?"<b>"+count+"</b>":"")+"</i>")}
+    return '<div class="calendar"><header>'+nowDate.toLocaleString("en-US",{month:"long",year:"numeric"})+' <span>LIVE LOCAL DATA</span></header><div class="week">M T W T F S S</div><div class="days">'+cells.join("")+'</div></div>';
   }
   function performance(){
-    return title("PERFORMANCE","Performance","Risk-adjusted statistics and setup expectancy.")+
-      '<div class="kpis six">'+kpi("Total Trades","48","Last 30 days")+kpi("Win Rate","62%","30 / 18")+kpi("Profit Factor","2.4","Gross / loss")+kpi("Avg RR","3.4","Average R")+kpi("Expectancy","+$89.50","Per trade","positive")+kpi("Max Drawdown","2.1%","Account")+'</div><div class="two-col">'+panel("PERFORMANCE BY SETUP",statsTable())+panel("P&L CALENDAR",calendar())+'</div>';
+    const st=statsFromJournal();
+    return title("PERFORMANCE","Performance",crypto()?"Crypto-only recorded performance.":"Futures-only recorded performance.")+
+      '<div class="kpis six">'+kpi("Total Trades",st.count||"—","Recorded journal")+kpi("Win Rate",pct(st.winRate),st.count?st.wins+"W / "+st.losses+"L":"No data")+kpi("Profit Factor",rrText(st.pf),"Recorded journal")+kpi("Avg RR",rrText(st.avgRR),"Recorded RR")+kpi("Expectancy",st.count?money(st.total/st.count):"—","Per recorded trade",st.count&&st.total>=0?"positive":"")+kpi("Max Drawdown",st.count?"$"+st.maxDD.toFixed(2):"—","Recorded P&L sequence")+'</div>'+
+      '<div class="two-col">'+panel("PERFORMANCE BY SETUP",statsTable())+panel("P&L CALENDAR",calendar())+'</div>';
   }
+
   function ai(){
     return title("INTELLIGENCE","AI Assistant","Edgeflow trading intelligence.",'<span class="ai-online">● ONLINE</span>')+
       '<div class="ai-grid">'+
@@ -555,9 +568,13 @@
     }).join(""):'<div class="journal-empty"><b>No trades on '+iso+'.</b><span>Choose another day or create a new entry.</span></div>';
   };
   function analytics(){
-    const bars=[["Asia",42],["London",78],["NY AM",61],["NY PM",34]];
-    return title("ANALYTICS","Analytics","Deep statistics across sessions, instruments and setups.")+
-      '<div class="analytics-grid">'+panel("SESSION PERFORMANCE",'<div class="bars">'+bars.map(x=>'<div><span>'+x[0]+'</span><i><b style="width:'+x[1]+'%"></b></i><em>'+x[1]+'%</em></div>').join("")+'</div>')+panel("PERFORMANCE BY SETUP",statsTable())+panel("EXECUTION DISCIPLINE",'<div class="discipline large"><div>RETRACEMENT<strong>0.50 / 0.62 / 0.705 / 0.79</strong></div><div>ENTRY<strong>LIMIT ONLY</strong></div><div>IMPULSE<strong>BLOCKED</strong></div><div>RISK<strong>$100 / TRADE</strong></div></div>')+'</div>';
+    const groups={};state.journal.forEach(x=>{const k=String(x.session||"Unknown");(groups[k]||=[]).push(x)});
+    const bars=Object.entries(groups).map(([name,xs])=>{const st=statsFromJournal(xs);return '<div><span>'+esc(name)+'</span><i><b style="width:'+(st.winRate==null?0:Math.round(st.winRate*100))+'%"></b></i><em>'+pct(st.winRate)+'</em></div>'}).join("");
+    const modelBlock=crypto()
+      ? '<div class="discipline large"><div>DIRECTION<strong>MARKET DIRECTION FIRST</strong></div><div>KEY OPEN<strong>MANIPULATION / SWEEP</strong></div><div>HTF<strong>POI ALIGNMENT</strong></div><div>ENTRY<strong>HIGH-RR LOCATION</strong></div></div>'
+      : '<div class="discipline large"><div>RETRACEMENT<strong>0.50 · 0.62 · 0.705 · 0.79</strong></div><div>ENTRY<strong>LIMIT ONLY</strong></div><div>TRIGGER<strong>REJECTION BLOCK</strong></div><div>RISK<strong>$100 / TRADE</strong></div></div>';
+    return title("ANALYTICS","Analytics","Evidence from the selected environment only.")+
+      '<div class="analytics-grid">'+panel("SESSION PERFORMANCE",bars||'<div class="analytics-empty">No session data recorded.</div>')+panel("PERFORMANCE BY SETUP",statsTable())+panel("ACTIVE MODEL",modelBlock)+'</div>';
   }
 
   const backtestKey=mode=>"edgeflow-backtests:"+mode;
