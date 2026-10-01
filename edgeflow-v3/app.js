@@ -1,11 +1,11 @@
-/* EDGEFLOW V7 — reference-driven terminal rebuild */
+/* EDGEFLOW V8 — reference-driven terminal rebuild */
 (() => {
   "use strict";
   const root = document.getElementById("app");
   const q = new URLSearchParams(location.search);
   const savedMode = localStorage.getItem("edgeflow-mode");
   const savedView = localStorage.getItem("edgeflow-view");
-  const state = {
+  const state = { filters:{query:"",side:"ALL",instrument:"ALL",setup:"ALL"},
     mode: q.get("mode")==="CRYPTO" ? "CRYPTO" : q.get("mode")==="NQ" ? "NQ" : savedMode || "",
     view: q.get("view") || savedView || "overview",
     journal: JSON.parse(localStorage.getItem("edgeflow-journal") || "[]")
@@ -53,6 +53,8 @@
   window.enterMode=m=>go(m,"overview");
   window.edgeGo=v=>go(state.mode,v);
   window.edgeHome=()=>{state.mode="";state.view="overview";localStorage.removeItem("edgeflow-mode");history.replaceState({}, "", location.pathname);render()};
+  window.setFilter=(key,value)=>{state.filters[key]=value;render()};
+  window.exportTrades=()=>{const blob=new Blob([JSON.stringify(d().rows,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="edgeflow-trades.json";a.click();URL.revokeObjectURL(a.href)};
   window.saveJournal=e=>{
     e.preventDefault();
     const f=id=>document.getElementById(id);
@@ -98,13 +100,13 @@
   function dashboard(){
     return '<div class="dash"><div class="dash-banner"><div><small>EDGEFLOW CORE • '+d().label+'</small><h1>'+d().label+'</h1><p>'+(crypto()?"BTC | ETH | SOL | BNB | XRP | HYPE | FLOKI":"MNQ | MES | MGC | RITHMIC | TRADOVATE")+'</p></div><div class="dash-sessions"><span class="live">● LIVE</span><span>LDN<br><b>'+now()+'</b></span><span>NY PRE<br><b>08:24:17</b></span><span>NY<br><b>CLOSED</b></span><span>ASIA<br><b>CLOSED</b></span></div></div>'+
       '<div class="kpis">'+kpi("Account Balance","$49,300.00","+0.8%","positive")+kpi("Today P&L","-$120.50","Session result","negative")+kpi("Total P&L","+$3,420.00","Last 30 days","positive")+kpi("Win Rate","62%","48 trades")+kpi("Win / Loss","31 / 19","50 recorded")+kpi("Profit Factor","2.4","Gross / loss")+kpi("Avg RR","3.4","Average R")+'</div>'+
-      '<div class="dashboard-grid"><div class="dashboard-main">'+panel(crypto()?"TOP COINS":"TOP INSTRUMENTS",instrumentCards())+panel("RECENT TRADES",rows())+'</div><aside class="dashboard-side">'+panel("SESSION CONTEXT",'<div class="session-list"><div><b>● '+d().session[0]+'</b><span>'+now()+'</span></div><div><b>○ '+d().session[1]+'</b><span>in 05:25:43</span></div><div><b>○ '+d().session[2]+'</b><span>Closed</span></div></div>')+panel("ACCOUNT RULES",'<div class="rules"><div><span>Daily Risk</span><b>0% / $1,200</b></div><div><span>Consistency</span><b>62%</b></div><div><span>Max Drawdown</span><b>2.1%</b></div><div><span>Trades Today</span><b>1 / 2</b></div></div>')+'</aside></div>'+
+      '<div class="pulse-strip"><div><span>MARKET STATE</span><b>RETRACE MODE</b></div><div><span>BIAS</span><b class="'+(crypto()?"blue-text":"red-text")+'">'+(crypto()?"RISK / LIQUIDITY":"HTF BEARISH")+'</b></div><div><span>ENTRY</span><b>LIMIT ONLY</b></div><div><span>TRIGGER</span><b>REJECTION BLOCK</b></div><div><span>SESSION</span><b>'+d().session[0]+'</b></div></div><div class="dashboard-grid"><div class="dashboard-main">'+panel(crypto()?"TOP COINS":"TOP INSTRUMENTS",instrumentCards())+panel("RECENT TRADES",rows())+'</div><aside class="dashboard-side">'+panel("SESSION CONTEXT",'<div class="session-list"><div><b>● '+d().session[0]+'</b><span>'+now()+'</span></div><div><b>○ '+d().session[1]+'</b><span>in 05:25:43</span></div><div><b>○ '+d().session[2]+'</b><span>Closed</span></div></div>')+panel("ACCOUNT RULES",'<div class="rules"><div><span>Daily Risk</span><b>0% / $1,200</b></div><div><span>Consistency</span><b>62%</b></div><div><span>Max Drawdown</span><b>2.1%</b></div><div><span>Trades Today</span><b>1 / 2</b></div></div>')+'</aside></div>'+
       '<div class="bottom-panels">'+panel("ACTIVE MODEL",'<div class="model-name">'+(crypto()?"CRYPTO RETRACEMENT MODEL":"REJECTION BLOCK MODEL")+'</div><div class="chips"><i>LIMIT</i><i>0.50</i><i>0.62</i><i>0.705</i><i>0.79</i></div>')+panel("MODEL DISCIPLINE",'<div class="discipline"><div>ENTRY<strong>LIMIT ONLY</strong></div><div>TRIGGER<strong>REJECTION BLOCK</strong></div><div>FILTER<strong>HTF → LTF</strong></div></div>')+'</div></div>';
   }
   function title(k,t,s,button=""){return '<div class="page-title"><div><small>'+k+'</small><h1>'+t+'</h1><p>'+s+'</p></div>'+button+'</div>'}
   function trades(){
     return title("EXECUTION","Trades","Full execution history for this environment.",'<button class="primary" onclick="edgeGo(\'journal\')">+ NEW JOURNAL ENTRY</button>')+
-      '<div class="filters"><input placeholder="Search instrument, setup..."><select><option>All results</option></select><select><option>All instruments</option></select><select><option>All setups</option></select><select><option>Last 30 days</option></select><button>EXPORT</button></div>'+panel("TRADE HISTORY",rows(d().rows.concat(d().rows.slice(0,2)),true));
+      '<div class="filters"><input value="'+esc(state.filters.query)+'" oninput="setFilter(\'query\',this.value)" placeholder="Search instrument, setup..."><select onchange="setFilter(\'side\',this.value)"><option value="ALL">All sides</option><option value="Long">Long</option><option value="Short">Short</option></select><select onchange="setFilter(\'instrument\',this.value)"><option value="ALL">All instruments</option>'+d().instruments.map(x=>'<option '+(state.filters.instrument===x?"selected":"")+'>'+x+'</option>').join("")+'</select><select onchange="setFilter(\'setup\',this.value)"><option value="ALL">All setups</option><option>R.B</option><option>R.B + FVG</option><option>Sweep + OB</option><option>10H Open</option><option>FVG</option></select><select><option>Last 30 days</option></select><button onclick="exportTrades()">EXPORT</button></div>'+panel("TRADE HISTORY",rows(d().rows.concat(d().rows.slice(0,2)).filter(r=>(state.filters.side==="ALL"||r[2]===state.filters.side)&&(state.filters.instrument==="ALL"||r[1]===state.filters.instrument)&&(state.filters.setup==="ALL"||r[8]===state.filters.setup)&&(!state.filters.query||r.join(" ").toLowerCase().includes(state.filters.query.toLowerCase())),true));
   }
   function statsTable(){
     const a=[["R.B + FVG","18","72%","3.6","4.8"],["Sweep + OB","12","58%","2.1","3.2"],["10H Open","8","75%","2.8","3.9"],["News Fade","6","50%","1.6","2.1"],["Trend","4","50%","1.4","1.8"]];
