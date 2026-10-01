@@ -316,7 +316,7 @@ const openai = (GEMINI_API_KEY || openrouter) ? {
     create: async ({model,input,reasoning}) => {
       let geminiLastError=null;
       if(GEMINI_API_KEY){
-        const candidates=[GEMINI_MODEL,...GEMINI_FALLBACK_MODELS].filter((x,i,a)=>a.indexOf(x)===i);
+        const candidates=[GEMINI_IMAGE_MODEL,GEMINI_MODEL,...GEMINI_FALLBACK_MODELS].filter((x,i,a)=>a.indexOf(x)===i);
         for(const candidate of candidates){
           try{
             return await callGemini({model:candidate,input,reasoning});
