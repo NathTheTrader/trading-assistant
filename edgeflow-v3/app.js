@@ -87,11 +87,12 @@
   function landing(){
     document.body.className="landing-page";
     root.innerHTML='<div class="landing">'+
-      '<div class="land land-r">'+mountain("r")+'</div><div class="land land-b">'+mountain("b")+'</div>'+
+      '<div class="land land-r"></div><div class="land land-b"></div>'+
       '<div class="landing-center"><div class="hero-logo"><span>E</span></div><div class="hero-name">EDGE<span>FLOW</span></div><div class="hero-sub">TRADING INTELLIGENCE</div><div class="choose">CHOOSE YOUR ENVIRONMENT</div><div class="tagline">SAME EDGE. DIFFERENT MARKETS.</div>'+
-      '<div class="env-cards"><button class="env red" onclick="enterMode(\'NQ\')"><div class="env-head"><b>▥</b><strong>FUTURES</strong></div><small>MNQ | MES | MGC | etc.</small><ul><li>◉ Tradovate</li><li>◉ Rithmic</li><li>✦ AI Assistant</li><li>▣ Journal</li><li>◫ Analytics</li></ul><i>→</i></button>'+
-      '<button class="env blue" onclick="enterMode(\'CRYPTO\')"><div class="env-head"><b>◉</b><strong>CRYPTO</strong></div><small>BTC | ETH | SOL | BNB | XRP | HYPE</small><ul><li>◉ KCEX</li><li>✦ AI Assistant</li><li>▣ Journal</li><li>◫ Analytics</li></ul><i>→</i></button></div></div>'+
-      '<div class="landing-foot">DISCIPLINE × DATA × EXECUTION</div><div class="landing-corner">A HIGHER STANDARD<br>FOR TRADERS</div></div>';
+      '<div class="env-cards">'+
+      '<button class="env red" onclick="enterMode(\'NQ\')"><div class="env-head"><b>▥</b><strong>FUTURES</strong></div><small>MNQ | MES | MGC | etc.</small><ul><li>◉ Tradovate</li><li>◉ Rithmic</li><li>✦ AI Assistant</li><li>▣ Journal</li><li>◫ Analytics</li></ul><i>→</i></button>'+
+      '<button class="env blue" onclick="enterMode(\'CRYPTO\')"><div class="env-head"><b>◉</b><strong>CRYPTO</strong></div><small>BTC | ETH | SOL | BNB | XRP | HYPE</small><ul><li>◉ KCEX</li><li>✦ AI Assistant</li><li>▣ Journal</li><li>◫ Analytics</li></ul><i>→</i></button>'+
+      '</div></div><div class="landing-foot">DISCIPLINE × DATA × EXECUTION</div><div class="landing-corner">A HIGHER STANDARD<br>FOR TRADERS</div></div>';
   }
 
   const NAV=[["overview","⌂","Overview","Market command center"],["trades","▤","Trades","Execution history"],["performance","◒","Performance","Metrics & expectancy"],["ai","✦","AI Assistant","Edgeflow intelligence"],["journal","▣","Journal","Trading journal"],["analytics","◫","Analytics","Deep statistics"],["backtests","◌","Backtests","Models & samples"],["connections","⌁","Connections","Broker integrations"],["settings","⚙","Settings","Environment controls"]];
@@ -119,11 +120,22 @@
     return '<div class="asset-grid">'+d().assets.map(x=>'<article class="asset"><div><b>'+x[0]+'</b><i>◈</i></div><strong>'+x[1]+'</strong><small>'+x[2]+' trades <em>'+x[3]+'</em></small></article>').join("")+'</div>';
   }
   function dashboard(){
-    return '<div class="dash"><div class="dash-banner"><div><small>EDGEFLOW CORE • '+d().label+'</small><h1>'+d().label+'</h1><p>'+(crypto()?"BTC | ETH | SOL | BNB | XRP | HYPE | FLOKI":"MNQ | MES | MGC | RITHMIC | TRADOVATE")+'</p></div><div class="dash-sessions"><span class="live">● LIVE</span><span>LDN<br><b>'+now()+'</b></span><span>NY PRE<br><b>08:24:17</b></span><span>NY<br><b>CLOSED</b></span><span>ASIA<br><b>CLOSED</b></span></div></div>'+
-      '<div class="kpis">'+kpi("Account Balance","$49,300.00","+0.8%","positive")+kpi("Today P&L","-$120.50","Session result","negative")+kpi("Total P&L","+$3,420.00","Last 30 days","positive")+kpi("Win Rate","62%","48 trades")+kpi("Win / Loss","31 / 19","50 recorded")+kpi("Profit Factor","2.4","Gross / loss")+kpi("Avg RR","3.4","Average R")+'</div>'+
-      '<div class="pulse-strip"><div><span>MARKET STATE</span><b>RETRACE MODE</b></div><div><span>BIAS</span><b class="'+(crypto()?"blue-text":"red-text")+'">'+(crypto()?"RISK / LIQUIDITY":"HTF BEARISH")+'</b></div><div><span>ENTRY</span><b>LIMIT ONLY</b></div><div><span>TRIGGER</span><b>REJECTION BLOCK</b></div><div><span>SESSION</span><b>'+d().session[0]+'</b></div></div><div class="dashboard-grid"><div class="dashboard-main">'+panel(crypto()?"TOP COINS":"TOP INSTRUMENTS",instrumentCards())+panel("RECENT TRADES",rows())+'</div><aside class="dashboard-side">'+panel("SESSION CONTEXT",'<div class="session-list"><div><b>● '+d().session[0]+'</b><span>'+now()+'</span></div><div><b>○ '+d().session[1]+'</b><span>in 05:25:43</span></div><div><b>○ '+d().session[2]+'</b><span>Closed</span></div></div>')+panel("ACCOUNT RULES",'<div class="rules"><div><span>Daily Risk</span><b>0% / $1,200</b></div><div><span>Consistency</span><b>62%</b></div><div><span>Max Drawdown</span><b>2.1%</b></div><div><span>Trades Today</span><b>1 / 2</b></div></div>')+'</aside></div>'+
-      '<div class="bottom-panels">'+panel("ACTIVE MODEL",'<div class="model-name">'+(crypto()?"CRYPTO RETRACEMENT MODEL":"REJECTION BLOCK MODEL")+'</div><div class="chips"><i>LIMIT</i><i>0.50</i><i>0.62</i><i>0.705</i><i>0.79</i></div>')+panel("MODEL DISCIPLINE",'<div class="discipline"><div>ENTRY<strong>LIMIT ONLY</strong></div><div>TRIGGER<strong>REJECTION BLOCK</strong></div><div>FILTER<strong>HTF → LTF</strong></div></div>')+'</div></div>';
+    const label=d().label;
+    return '<div class="dash premium-dashboard">'+
+      '<div class="dash-banner"><div class="dash-brand"><div class="mini-mark">E</div><div><small>EDGEFLOW CORE • '+label+'</small><h1>'+label+'</h1><p>'+(crypto()?"BTC | ETH | SOL | BNB | XRP | HYPE":"MNQ | MES | MGC | RITHMIC | TRADOVATE")+'</p></div></div>'+
+      '<div class="dash-sessions"><span class="live">● LIVE</span><span>LDN<br><b>'+now()+'</b></span><span>NY PRE<br><b>08:24:17</b></span><span>NY<br><b>CLOSED</b></span><span>ASIA<br><b>CLOSED</b></span></div></div>'+
+      '<div class="kpis">'+
+      kpi("Account Balance","$49,300.00","+0.8%","positive")+kpi("Today P&L","-$120.50","Session result","negative")+kpi("Total P&L","+$3,420.00","Last 30 days","positive")+kpi("Win Rate","62%","48 trades")+kpi("Win / Loss","31 / 19","50 recorded")+kpi("Profit Factor","2.4","Gross / loss")+kpi("Avg RR","3.4","Average R")+
+      '</div>'+
+      '<div class="dashboard-grid compact-grid"><div class="dashboard-main">'+
+      panel(crypto()?"TOP COINS":"TOP INSTRUMENTS",instrumentCards())+
+      panel("RECENT TRADES",rows())+
+      '</div><aside class="dashboard-side">'+
+      panel("SESSION CONTEXT",'<div class="session-list"><div><b>● '+d().session[0]+'</b><span>'+now()+'</span></div><div><b>○ '+d().session[1]+'</b><span>in 05:25:43</span></div><div><b>○ '+d().session[2]+'</b><span>Closed</span></div></div>')+
+      panel("ACCOUNT RULES",'<div class="rules"><div><span>Daily Risk</span><b>0% / $1,200</b></div><div><span>Consistency</span><b>62%</b></div><div><span>Max Drawdown</span><b>2.1%</b></div><div><span>Trades Today</span><b>1 / 2</b></div></div>')+
+      '</aside></div></div>';
   }
+
   function title(k,t,s,button=""){return '<div class="page-title"><div><small>'+k+'</small><h1>'+t+'</h1><p>'+s+'</p></div>'+button+'</div>'}
   function trades(){
     return title("EXECUTION","Trades","Full execution history for this environment.",'<button class="primary" onclick="edgeGo(\'journal\')">+ NEW JOURNAL ENTRY</button>')+
