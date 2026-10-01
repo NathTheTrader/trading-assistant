@@ -189,7 +189,7 @@
         body:JSON.stringify({model:state.mode,imageDataUrl:dataUrl})
       });
       const data=await response.json().catch(()=>({}));
-      if(!response.ok||!data.ok)throw new Error(data.error||"Jarvis API error.");
+      if(!response.ok||!data.ok)throw new Error(data.error||("Jarvis API error · HTTP "+response.status));
       window.__jarvisPending={...data.result,screenshot:dataUrl};
       if(st)st.textContent="ANALYSIS COMPLETE · "+Number(data.result.confidence||0)+"% CONFIDENCE";
       const r=data.result||{};
