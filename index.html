@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><meta name="edgeflow-build" content="2026-09-30-2025-voice-read-fix-v41"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1925 --><title>EDGEFLOW — Trading Intelligence</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b10"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><meta name="edgeflow-build" content="2026-10-01-edgeflow-master-ui-v1"><!-- EDGEFLOW-PAGES-REBUILD-2026-09-30-1925 --><title>EDGEFLOW — Trading Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><script>
@@ -1193,7 +1193,38 @@ html body:before,html body:after{display:none !important;content:none !important
   display:none!important;
 }
 </style>
-</head><body>
+<style id="edgeflow-master-redesign">
+:root{--ef-bg:#030508;--ef-border:rgba(255,255,255,.075);--ef-muted:#7d8797;--ef-red:#ff244f;--ef-blue:#3d9bff}
+html,body{background:var(--ef-bg)!important}body{font-family:Inter,Manrope,system-ui,sans-serif;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-4;background:radial-gradient(ellipse at 8% 5%,rgba(255,36,79,.13),transparent 34%),radial-gradient(ellipse at 92% 8%,rgba(61,155,255,.13),transparent 34%),linear-gradient(180deg,#030508,#060a10 60%,#030508)}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:-3;opacity:.22;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:80px 80px;mask-image:linear-gradient(to bottom,black,transparent 90%)}
+.app{position:relative;background:transparent!important}.side{backdrop-filter:blur(24px);background:rgba(3,6,10,.82)!important;border-right:1px solid rgba(255,255,255,.065)!important;box-shadow:18px 0 70px rgba(0,0,0,.35)!important}
+.brand-mark{background:linear-gradient(135deg,var(--accent),#151b26)!important;box-shadow:0 0 35px color-mix(in srgb,var(--accent) 25%,transparent)!important}
+.main{max-width:1680px;padding:26px 28px 48px}.workspace-header h1{font-size:30px;letter-spacing:-1.2px}
+.card,.section,.model-card{background:linear-gradient(145deg,rgba(13,18,27,.82),rgba(6,10,16,.88))!important;border:1px solid var(--ef-border)!important;box-shadow:0 20px 70px rgba(0,0,0,.22)!important;backdrop-filter:blur(18px)}
+.card:hover,.section:hover{border-color:color-mix(in srgb,var(--accent) 18%,transparent)!important}
+.dashboard-kpis{grid-template-columns:repeat(6,1fr)!important}.edgeflow-kpi-grid .card{min-height:118px;display:flex;flex-direction:column;justify-content:center}.edgeflow-kpi-grid .value{font-size:27px}
+.dashboard-feature-grid{display:grid;grid-template-columns:1.55fr .85fr;gap:12px;margin-top:12px}.dashboard-recent-panel,.dashboard-context-panel{min-height:390px}
+.dashboard-context-title{font-size:19px;font-weight:900;letter-spacing:-.4px;margin:12px 0 8px}.dashboard-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.dashboard-tags .tag{margin:0}
+.dashboard-footer-metrics{display:grid;grid-template-columns:repeat(4,1fr);margin-top:12px;border:1px solid var(--ef-border);border-radius:13px;background:rgba(8,12,18,.65);overflow:hidden}.dashboard-footer-metrics>div{padding:13px 15px;border-right:1px solid var(--ef-border)}.dashboard-footer-metrics>div:last-child{border-right:0}.dashboard-footer-metrics span{display:block;color:#667182;font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:850}.dashboard-footer-metrics strong{display:block;margin-top:5px;font-size:13px}
+.dashboard-period-bar{background:rgba(9,13,20,.62)!important;border:1px solid var(--ef-border)!important;backdrop-filter:blur(16px)}
+.status,.pill{border-color:color-mix(in srgb,var(--accent) 25%,transparent)!important;background:color-mix(in srgb,var(--accent) 9%,transparent)!important;color:color-mix(in srgb,var(--accent) 72%,white)!important}
+button.primary{background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 65%,#111))!important;box-shadow:0 10px 35px color-mix(in srgb,var(--accent) 18%,transparent)!important}button.secondary{background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.09)!important}
+nav button.active{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 13%,transparent),transparent)!important;border-color:color-mix(in srgb,var(--accent) 24%,transparent)!important;box-shadow:inset 3px 0 0 var(--accent),0 8px 25px rgba(0,0,0,.12)}
+/* premium environment gateway */
+.edgeflow-gateway{position:fixed!important;inset:0!important;z-index:500;display:flex!important;flex-direction:column;justify-content:space-between;align-items:center;width:100vw!important;min-height:100vh;padding:28px 38px!important;overflow:hidden;background:#020407!important}.edgeflow-gateway[hidden]{display:none!important}
+.gateway-grid{position:absolute;inset:0;opacity:.17;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:72px 72px;mask-image:linear-gradient(to bottom,black,transparent 85%)}
+.gateway-noise{position:absolute;inset:0;opacity:.16;background:radial-gradient(circle at 50% 42%,rgba(255,255,255,.05),transparent 25%),linear-gradient(115deg,transparent 25%,rgba(255,36,79,.08) 48%,transparent 51%,rgba(61,155,255,.08) 74%,transparent 78%)}
+.gateway-world{position:absolute;bottom:-12vh;width:58vw;height:55vh;filter:blur(.2px);opacity:.75;pointer-events:none}.gateway-world-red{left:-12vw;background:radial-gradient(ellipse at 52% 65%,rgba(255,36,79,.32),transparent 36%),conic-gradient(from 220deg at 55% 90%,transparent 0 23%,rgba(255,36,79,.28) 24%,transparent 27% 36%,rgba(255,36,79,.2) 37%,transparent 41% 100%);transform:skewY(-7deg)}.gateway-world-blue{right:-12vw;background:radial-gradient(ellipse at 48% 65%,rgba(61,155,255,.3),transparent 36%),conic-gradient(from 220deg at 45% 90%,transparent 0 23%,rgba(61,155,255,.28) 24%,transparent 27% 36%,rgba(61,155,255,.2) 37%,transparent 41% 100%);transform:skewY(7deg)}
+.gateway-topline,.gateway-footer{position:relative;z-index:2;width:min(1500px,100%);display:flex;justify-content:space-between;gap:20px;color:#697586;font-size:8px;letter-spacing:2.2px;font-weight:850}.gateway-topline span:first-child{color:#dfe5ee}
+.gateway-center{position:relative;z-index:3;text-align:center;margin-top:2vh}.gateway-mark{width:70px;height:70px;margin:0 auto 13px;color:#e8edf6;filter:drop-shadow(0 0 25px rgba(255,255,255,.1))}.gateway-mark svg{width:100%;height:100%}.gateway-kicker{font-size:9px;letter-spacing:4px;color:#7e8999;font-weight:850}.gateway-center h1{font-size:54px;letter-spacing:10px;margin:9px 0 8px;font-weight:900;color:#f6f8fb}.gateway-center h1 span{color:#55a8ff}.gateway-center p{font-size:20px;letter-spacing:1px;margin:0;font-weight:700}.gateway-sub{margin-top:7px;color:#6e7989;font-size:10px;letter-spacing:2.5px;text-transform:uppercase}
+.gateway-choice-grid{position:relative;z-index:3;width:min(1050px,100%);display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:1vh auto 2vh}.gateway-choice{position:relative;text-align:left;min-height:190px;padding:28px 30px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(145deg,rgba(11,15,22,.82),rgba(5,8,13,.72));color:#fff;overflow:hidden;transition:.25s;box-shadow:0 30px 100px rgba(0,0,0,.42);backdrop-filter:blur(20px)}.gateway-choice:hover{transform:translateY(-5px) scale(1.008)}
+.gateway-futures{border-color:rgba(255,36,79,.28)}.gateway-futures:hover{box-shadow:0 30px 100px rgba(255,36,79,.16),inset 0 0 70px rgba(255,36,79,.05)}.gateway-crypto{border-color:rgba(61,155,255,.28)}.gateway-crypto:hover{box-shadow:0 30px 100px rgba(61,155,255,.16),inset 0 0 70px rgba(61,155,255,.05)}
+.gateway-choice-glow{position:absolute;inset:auto -20% -70%;height:170px;background:radial-gradient(ellipse,var(--accent),transparent 66%);opacity:.08}.gateway-futures .gateway-choice-glow{--accent:var(--ef-red)}.gateway-crypto .gateway-choice-glow{--accent:var(--ef-blue)}
+.gateway-icon{position:absolute;right:27px;top:24px;width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-weight:950;font-size:19px;background:rgba(255,255,255,.035);border:1px solid currentColor}.gateway-futures .gateway-icon{color:var(--ef-red);box-shadow:0 0 28px rgba(255,36,79,.13)}.gateway-crypto .gateway-icon{color:var(--ef-blue);box-shadow:0 0 28px rgba(61,155,255,.13)}
+.gateway-choice-kicker{display:block;font-size:8px;letter-spacing:2px;color:#707b8b;font-weight:850;margin-bottom:8px}.gateway-choice strong{display:block;font-size:30px;letter-spacing:1.8px}.gateway-futures strong{color:#ff5474}.gateway-crypto strong{color:#67b6ff}.gateway-desc{display:block;margin-top:6px;font-size:10px;color:#9ba5b3;letter-spacing:.7px}.gateway-rule{display:block;width:100%;height:1px;background:rgba(255,255,255,.08);margin:23px 0 12px}.gateway-meta{font-size:8px;letter-spacing:1.3px;color:#697586;font-weight:850}.gateway-arrow{position:absolute;right:31px;bottom:24px;font-size:21px}.gateway-footer{color:#4e5868}
+@media(max-width:1050px){.dashboard-kpis{grid-template-columns:repeat(3,1fr)!important}.dashboard-feature-grid{grid-template-columns:1fr}.gateway-center h1{font-size:44px}.gateway-choice-grid{width:90%}}@media(max-width:760px){.main{padding:14px}.dashboard-kpis{grid-template-columns:repeat(2,1fr)!important}.dashboard-footer-metrics{grid-template-columns:repeat(2,1fr)}.gateway-choice-grid{grid-template-columns:1fr;width:min(500px,100%)}.edgeflow-gateway{padding:18px}.gateway-topline span:nth-child(2),.gateway-footer span:nth-child(2){display:none}.gateway-center h1{font-size:35px;letter-spacing:6px}.gateway-choice{min-height:150px;padding:22px}.gateway-choice strong{font-size:24px}}
+</style></head><body>
 <div class="app">
 <aside class="side">
   <div class="brand">
@@ -1223,112 +1254,54 @@ html body:before,html body:after{display:none !important;content:none !important
 </aside>
 <main class="main">
 
-<section id="models" class="workspace hidden" hidden>
-  <div class="workspace-header"><div><div class="eyebrow">EDGEFLOW</div><h1>Choisis ton modèle</h1><div class="sub">Deux environnements distincts. Le contexte, le journal, le bot et les règles restent séparés.</div></div><div class="status green">● SYSTÈME PRÊT</div></div>
-  <div class="model-select">
-    <div class="model-card" onclick="selectModel('NQ')"><div class="tag">FUTURES</div><h2>Modèle Futures</h2><p>HTF bias · POI · liquidité/manipulation · retracement Fibonacci · Rejection Block · entrée limite.</p><div class="sub">Ouvrir Futures →</div></div>
-    <div class="model-card" onclick="selectModel('CRYPTO')"><div class="tag">CRYPTO</div><h2>Modèle Crypto</h2><p>Direction · Key Open manipulé/sweep · POI HTF aligné · entrée · high RR. OTE/Fib secondaire.</p><div class="sub">Ouvrir Crypto →</div></div>
+<section id="models" class="workspace edgeflow-gateway" hidden aria-hidden="true">
+  <div class="gateway-noise"></div><div class="gateway-grid"></div><div class="gateway-world gateway-world-red"></div><div class="gateway-world gateway-world-blue"></div>
+  <div class="gateway-topline"><span>EDGEFLOW</span><span>TRADING INTELLIGENCE · 2026</span><span>DISCIPLINE × DATA × EXECUTION</span></div>
+  <div class="gateway-center">
+    <div class="gateway-mark"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M25 14h48l14 14v58H25z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M67 28H39v44h29M39 50h22" fill="none" stroke="currentColor" stroke-width="4"/></svg></div>
+    <div class="gateway-kicker">THE TRADING INTELLIGENCE PLATFORM</div><h1>EDGE<span>FLOW</span></h1><p>Choose your environment.</p><div class="gateway-sub">Same edge. Different markets.</div>
   </div>
+  <div class="gateway-choice-grid">
+    <button class="gateway-choice gateway-futures" type="button" onclick="selectModel('NQ')"><span class="gateway-choice-glow"></span><span class="gateway-icon">F</span><span class="gateway-choice-kicker">01 · FUTURES</span><strong>FUTURES</strong><span class="gateway-desc">NQ · MNQ · MES · MGC</span><span class="gateway-rule"></span><span class="gateway-meta">TRADOVATE · RITHMIC · JARVIS</span><span class="gateway-arrow">↗</span></button>
+    <button class="gateway-choice gateway-crypto" type="button" onclick="selectModel('CRYPTO')"><span class="gateway-choice-glow"></span><span class="gateway-icon">C</span><span class="gateway-choice-kicker">02 · CRYPTO</span><strong>CRYPTO</strong><span class="gateway-desc">BTC · ETH · SOL · BNB · XRP</span><span class="gateway-rule"></span><span class="gateway-meta">KCEX · JARVIS · ANALYTICS</span><span class="gateway-arrow">↗</span></button>
+  </div>
+  <div class="gateway-footer"><span>READ ONLY · NO AUTO EXECUTION</span><span>SELECT AN ENVIRONMENT TO ENTER</span><span>EDGEFLOW v2</span></div>
 </section>
 
 <section id="dash" class="workspace" data-model="NQ">
-  <div class="workspace-header">
-    <div><div class="eyebrow" id="dashMarketEyebrow">FUTURES</div><h1>Dashboard Futures</h1><div class="sub">Performance du mois actif · <strong id="dashMonthLabel">—</strong> · les mois précédents restent accessibles.</div></div>
-    <div class="status green">● FUTURES ACTIF</div>
+  <div class="workspace-header"><div><div class="eyebrow">FUTURES · PERFORMANCE</div><h1>Futures Dashboard</h1><div class="sub">NQ / MNQ / MES / MGC · données et statistiques du modèle Futures uniquement.</div></div><div class="status green">● FUTURES ACTIF</div></div>
+  <div class="dashboard-period-bar"><div><span class="dashboard-period-kicker">PÉRIODE</span><strong id="dashPeriodTitle">—</strong></div><div class="dashboard-period-actions"><button class="secondary dashboard-month-btn" type="button" onclick="changeDashboardMonth('NQ',-1)">‹</button><select id="dashMonthSelect" class="dashboard-month-select" onchange="setDashboardMonth('NQ',this.value)" aria-label="Mois Futures"></select><button class="secondary dashboard-month-btn" type="button" onclick="changeDashboardMonth('NQ',1)">›</button><button class="secondary" type="button" onclick="setDashboardMonth('NQ',localDateISO().slice(0,7))">MOIS ACTUEL</button></div></div>
+  <div class="grid dashboard-kpis edgeflow-kpi-grid">
+    <div class="card"><div class="label">Total trades</div><div class="value" id="dashTrades">0</div><div class="sub">Futures uniquement</div></div>
+    <div class="card kpi-win"><div class="label">Win rate</div><div class="value" id="dashWinrate">—</div><div class="sub">WIN / (WIN + LOSS)</div></div>
+    <div class="card"><div class="label">Win / Loss</div><div class="value small" id="dashWinLoss">—</div><div class="sub">Trades gagnants / perdants</div></div>
+    <div class="card"><div class="label">Profit Factor</div><div class="value" id="dashProfitFactor">—</div><div class="sub">Gross profit / gross loss</div></div>
+    <div class="card"><div class="label">Avg RR</div><div class="value blue" id="dashAvgR">—</div><div class="sub">R réalisé moyen</div></div>
+    <div class="card"><div class="label">P&L cumulé</div><div class="value" id="dashPnl">—</div><div class="sub" id="dashPnlMeta">P&L renseigné dans le Journal</div></div>
   </div>
-  <div class="dashboard-period-bar">
-    <div><span class="dashboard-period-kicker">PÉRIODE</span><strong id="dashPeriodTitle">Septembre 2026</strong></div>
-    <div class="dashboard-period-actions">
-      <button class="secondary dashboard-month-btn" type="button" onclick="changeDashboardMonth('NQ',-1)">‹</button>
-      <select id="dashMonthSelect" class="dashboard-month-select" onchange="setDashboardMonth('NQ',this.value)" aria-label="Mois Futures"></select>
-      <button class="secondary dashboard-month-btn" type="button" onclick="changeDashboardMonth('NQ',1)">›</button>
-      <button class="secondary" type="button" onclick="setDashboardMonth('NQ',localDateISO().slice(0,7))">MOIS ACTUEL</button>
-    </div>
+  <div class="dashboard-feature-grid">
+    <div class="section dashboard-recent-panel"><div class="section-head-inline"><div><div class="eyebrow">ACTIVITÉ</div><h2>Recent trades</h2><div class="sub">Dernières exécutions du modèle Futures</div></div><span id="dashDataStatus" class="status">● LOCAL</span></div><div id="dashLatest" class="dashboard-activity-list"><div class="empty">Aucune activité enregistrée.</div></div></div>
+    <div class="section dashboard-context-panel"><div class="eyebrow">FUTURES ENGINE</div><h2>Modèle actif</h2><div class="dashboard-context-title">Rejection Block · Fibonacci</div><div id="modelDescription" class="sub">HTF bias · POI · liquidité/manipulation · retracement Fibonacci · Rejection Block · entrée limite.</div><div class="dashboard-tags"><span class="tag">R.B.</span><span class="tag">0.5</span><span class="tag">0.62</span><span class="tag">0.705</span><span class="tag">0.79</span><span class="tag">LIMIT</span></div><div class="divider"></div><div class="rows"><div class="row"><span>Marché</span><strong>NQ / MNQ / MES / MGC</strong></div><div class="row"><span>Connexions</span><strong>Tradovate · Rithmic</strong></div><div class="row"><span>Exécution</span><strong>READ ONLY</strong></div></div><div class="actions"><button class="primary" onclick="show('bot',this)">ANALYSER UN SETUP</button><button class="secondary" onclick="show('journal',this)">OUVRIR LE JOURNAL</button></div></div>
   </div>
-  <div class="grid dashboard-kpis">
-    <div class="card"><div class="label">Trades</div><div class="value" id="dashTrades">0</div><div class="sub">Journal Futures</div></div>
-    <div class="card"><div class="label">Winrate</div><div class="value green" id="dashWinrate">—</div><div class="sub">WIN / (WIN + LOSS)</div></div>
-    <div class="card"><div class="label">RR moyen</div><div class="value blue" id="dashAvgR">—</div><div class="sub">R réalisé moyen</div></div>
-    <div class="card"><div class="label">RR total</div><div class="value" id="dashTotalR">—</div><div class="sub">Somme des R</div></div>
-    <div class="card"><div class="label">P&L cumulé</div><div class="value" id="dashPnl">—</div><div class="sub" id="dashPnlMeta">P&L renseigné dans le journal</div></div>
-  </div>
-
-  <div class="dashboard-grid-main">
-    <div class="section pnl-chart-card">
-      <div class="pnl-chart-head">
-        <div><h2>Courbe P&L</h2><div id="dashPnlCaption" class="sub">En attente de données P&L.</div></div>
-        <div id="dashPnlBadge" class="pnl-net neutral">—</div>
-      </div>
-      <div id="dashPnlChart" class="pnl-chart"><div class="empty">Ajoute ton P&L dans le Journal pour construire la courbe.</div></div>
-    </div>
-    <div class="section dashboard-side-card">
-      <div class="section-head-inline"><div><h2>Activité récente</h2><div class="sub">Derniers trades du modèle actif</div></div><span id="dashDataStatus" class="status">● LOCAL</span></div>
-      <div id="dashLatest" class="dashboard-activity-list"><div class="empty">Aucune activité enregistrée.</div></div>
-      <div class="divider"></div>
-      <div class="dashboard-side-meta">
-        <div class="row"><span>Source</span><span id="dashSourceLabel">Journal</span></div>
-        <div class="row"><span>Trades P&L</span><span id="dashPnlCount">0</span></div>
-        <div class="row"><span>Meilleur cumul</span><span id="dashPeakPnl">—</span></div>
-        <div class="row"><span>Drawdown max</span><span id="dashMaxDD">—</span></div>
-      </div>
-      <div class="actions"><button class="primary" onclick="show('bot',this)">ANALYSER UN SETUP</button><button class="secondary" onclick="show('journal',this)">OUVRIR LE JOURNAL</button></div>
-    </div>
-  </div>
-
-  <div class="section dashboard-model-strip">
-    <div><div class="eyebrow">MODÈLE</div><div class="dashboard-model-title">Futures / NQ</div><div id="modelDescription" class="sub">HTF bias · POI · liquidité/manipulation · retracement Fibonacci · Rejection Block · entrée limite.</div></div>
-    <div class="dashboard-model-tags"><span class="tag">R.B.</span><span class="tag">FIB 0.5 / 0.62 / 0.705 / 0.79</span><span class="tag">LIMIT</span><span class="tag">READ ONLY</span></div>
-  </div>
+  <div class="dashboard-footer-metrics"><div><span>Trades P&L</span><strong id="dashPnlCount">0</strong></div><div><span>Peak P&L</span><strong id="dashPeakPnl">—</strong></div><div><span>Max Drawdown</span><strong id="dashMaxDD">—</strong></div><div><span>Source</span><strong id="dashSourceLabel">Journal</strong></div></div>
 </section>
 
-<section id="cryptoDash" class="workspace hidden">
-  <div class="workspace-header">
-    <div><div class="eyebrow" id="cryptoDashMarketEyebrow">CRYPTO</div><h1>Dashboard Crypto</h1><div class="sub">Performance du mois actif · <strong id="cryptoDashMonthLabel">—</strong> · les mois précédents restent accessibles.</div></div>
-    <div class="status green">● CRYPTO ACTIF</div>
+<section id="cryptoDash" class="workspace hidden" data-model="CRYPTO">
+  <div class="workspace-header"><div><div class="eyebrow">CRYPTO · PERFORMANCE</div><h1>Crypto Dashboard</h1><div class="sub">BTC / ETH / SOL / BNB / XRP / HYPE / FLOKI · données et statistiques Crypto uniquement.</div></div><div class="status green">● CRYPTO ACTIF</div></div>
+  <div class="dashboard-period-bar"><div><span class="dashboard-period-kicker">PÉRIODE</span><strong id="cryptoDashPeriodTitle">—</strong></div><div class="dashboard-period-actions"><button class="secondary dashboard-month-btn" type="button" onclick="changeDashboardMonth('CRYPTO',-1)">‹</button><select id="cryptoDashMonthSelect" class="dashboard-month-select" onchange="setDashboardMonth('CRYPTO',this.value)" aria-label="Mois Crypto"></select><button class="secondary dashboard-month-btn" type="button" onclick="changeDashboardMonth('CRYPTO',1)">›</button><button class="secondary" type="button" onclick="setDashboardMonth('CRYPTO',localDateISO().slice(0,7))">MOIS ACTUEL</button></div></div>
+  <div class="grid dashboard-kpis edgeflow-kpi-grid">
+    <div class="card"><div class="label">Total trades</div><div class="value" id="cryptoDashTrades">0</div><div class="sub">Crypto uniquement</div></div>
+    <div class="card kpi-win"><div class="label">Win rate</div><div class="value" id="cryptoDashWinrate">—</div><div class="sub">WIN / (WIN + LOSS)</div></div>
+    <div class="card"><div class="label">Win / Loss</div><div class="value small" id="cryptoDashWinLoss">—</div><div class="sub">Trades gagnants / perdants</div></div>
+    <div class="card"><div class="label">Profit Factor</div><div class="value" id="cryptoDashProfitFactor">—</div><div class="sub">Gross profit / gross loss</div></div>
+    <div class="card"><div class="label">Avg RR</div><div class="value blue" id="cryptoDashAvgR">—</div><div class="sub">R réalisé moyen</div></div>
+    <div class="card"><div class="label">P&L cumulé</div><div class="value" id="cryptoDashPnl">—</div><div class="sub" id="cryptoDashPnlMeta">P&L renseigné dans le Journal</div></div>
   </div>
-  <div class="dashboard-period-bar">
-    <div><span class="dashboard-period-kicker">PÉRIODE</span><strong id="cryptoDashPeriodTitle">Septembre 2026</strong></div>
-    <div class="dashboard-period-actions">
-      <button class="secondary dashboard-month-btn" type="button" onclick="changeDashboardMonth('CRYPTO',-1)">‹</button>
-      <select id="cryptoDashMonthSelect" class="dashboard-month-select" onchange="setDashboardMonth('CRYPTO',this.value)" aria-label="Mois Crypto"></select>
-      <button class="secondary dashboard-month-btn" type="button" onclick="changeDashboardMonth('CRYPTO',1)">›</button>
-      <button class="secondary" type="button" onclick="setDashboardMonth('CRYPTO',localDateISO().slice(0,7))">MOIS ACTUEL</button>
-    </div>
+  <div class="dashboard-feature-grid">
+    <div class="section dashboard-recent-panel"><div class="section-head-inline"><div><div class="eyebrow">ACTIVITÉ</div><h2>Recent trades</h2><div class="sub">Dernières exécutions du modèle Crypto</div></div><span id="cryptoDashDataStatus" class="status">● LOCAL</span></div><div id="cryptoDashLatest" class="dashboard-activity-list"><div class="empty">Aucune activité enregistrée.</div></div></div>
+    <div class="section dashboard-context-panel"><div class="eyebrow">CRYPTO ENGINE</div><h2>Modèle actif</h2><div class="dashboard-context-title">Key Open · HTF POI · High RR</div><div id="cryptoModelDescription" class="sub">Direction du marché · Key Open manipulé/sweep · POI HTF aligné · entrée · high RR.</div><div class="dashboard-tags"><span class="tag">KEY OPEN</span><span class="tag">HTF POI</span><span class="tag">HIGH RR</span><span class="tag">KCEX</span></div><div class="divider"></div><div class="rows"><div class="row"><span>Marché</span><strong>BTC / ETH / SOL / BNB / XRP</strong></div><div class="row"><span>Connexion</span><strong>KCEX</strong></div><div class="row"><span>Exécution</span><strong>READ ONLY</strong></div></div><div class="actions"><button class="primary" onclick="show('crypto',this)">ANALYSER UN SETUP</button><button class="secondary" onclick="show('journal',this)">OUVRIR LE JOURNAL</button></div></div>
   </div>
-  <div class="grid dashboard-kpis">
-    <div class="card"><div class="label">Trades</div><div class="value" id="cryptoDashTrades">0</div><div class="sub">Journal Crypto</div></div>
-    <div class="card"><div class="label">Winrate</div><div class="value green" id="cryptoDashWinrate">—</div><div class="sub">WIN / (WIN + LOSS)</div></div>
-    <div class="card"><div class="label">RR moyen</div><div class="value blue" id="cryptoDashAvgR">—</div><div class="sub">R réalisé moyen</div></div>
-    <div class="card"><div class="label">RR total</div><div class="value" id="cryptoDashTotalR">—</div><div class="sub">Somme des R</div></div>
-    <div class="card"><div class="label">P&L cumulé</div><div class="value" id="cryptoDashPnl">—</div><div class="sub" id="cryptoDashPnlMeta">P&L renseigné dans le journal</div></div>
-  </div>
-
-  <div class="dashboard-grid-main">
-    <div class="section pnl-chart-card">
-      <div class="pnl-chart-head">
-        <div><h2>Courbe P&L</h2><div id="cryptoDashPnlCaption" class="sub">En attente de données P&L.</div></div>
-        <div id="cryptoDashPnlBadge" class="pnl-net neutral">—</div>
-      </div>
-      <div id="cryptoDashPnlChart" class="pnl-chart"><div class="empty">Ajoute ton P&L dans le Journal pour construire la courbe.</div></div>
-    </div>
-    <div class="section dashboard-side-card">
-      <div class="section-head-inline"><div><h2>Activité récente</h2><div class="sub">Derniers trades du modèle actif</div></div><span id="cryptoDashDataStatus" class="status">● LOCAL</span></div>
-      <div id="cryptoDashLatest" class="dashboard-activity-list"><div class="empty">Aucune activité enregistrée.</div></div>
-      <div class="divider"></div>
-      <div class="dashboard-side-meta">
-        <div class="row"><span>Source</span><span id="cryptoDashSourceLabel">Journal</span></div>
-        <div class="row"><span>Trades P&L</span><span id="cryptoDashPnlCount">0</span></div>
-        <div class="row"><span>Meilleur cumul</span><span id="cryptoDashPeakPnl">—</span></div>
-        <div class="row"><span>Drawdown max</span><span id="cryptoDashMaxDD">—</span></div>
-      </div>
-      <div class="actions"><button class="primary" onclick="show('crypto',this)">ANALYSER UN SETUP</button><button class="secondary" onclick="show('journal',this)">OUVRIR LE JOURNAL</button></div>
-    </div>
-  </div>
-
-  <div class="section dashboard-model-strip">
-    <div><div class="eyebrow">MODÈLE</div><div class="dashboard-model-title">Crypto</div><div id="cryptoModelDescription" class="sub">Direction du marché · Key Open manipulé/sweep · POI HTF aligné · entrée · high RR.</div></div>
-    <div class="dashboard-model-tags"><span class="tag">KEY OPEN</span><span class="tag">HTF POI</span><span class="tag">HIGH RR</span><span class="tag">READ ONLY</span></div>
-  </div>
+  <div class="dashboard-footer-metrics"><div><span>Trades P&L</span><strong id="cryptoDashPnlCount">0</strong></div><div><span>Peak P&L</span><strong id="cryptoDashPeakPnl">—</strong></div><div><span>Max Drawdown</span><strong id="cryptoDashMaxDD">—</strong></div><div><span>Source</span><strong id="cryptoDashSourceLabel">Journal</strong></div></div>
 </section>
 
 <section id="bot" class="workspace hidden" data-model="NQ">
@@ -1495,11 +1468,11 @@ html body:before,html body:after{display:none !important;content:none !important
 <section id="settings" class="workspace hidden">
   <div class="workspace-header"><div><div class="eyebrow">CONFIGURATION</div><h1>Paramètres</h1><div class="sub">Backend, connexions, mémoire et sécurité. Rien ici n'envoie automatiquement d'ordre.</div></div><div class="status">● LECTURE SEULE</div></div>
   <div class="section"><h2>Serveur EDGEFLOW</h2><div class="rows"><div class="row"><span>Backend</span><span id="backendStatus" class="neutral">NON CONFIGURÉ</span></div></div><div class="actions"><input id="botApiUrl" placeholder="https://ton-backend.example.com" style="flex:1"><input id="edgeflowAccessKey" type="password" placeholder="Clé d’accès privée" autocomplete="off" style="flex:1"><button class="secondary" onclick="saveBotUrl()">ENREGISTRER</button><button class="secondary" onclick="testBotConnection()">TESTER</button></div></div>
-  <div class="section connection-center" style="margin-top:12px"><div class="workspace-header" style="margin-bottom:10px"><div><h2>Connexions Futures</h2><div class="sub">Lecture seule : JARVIS observe les ordres et fills, sans jamais exécuter.</div></div><span class="tag">FUTURES</span></div><div class="connection-grid">
+  <div class="section connection-center" data-model="NQ" style="margin-top:12px"><div class="workspace-header" style="margin-bottom:10px"><div><h2>Connexions Futures</h2><div class="sub">Lecture seule : JARVIS observe les ordres et fills, sans jamais exécuter.</div></div><span class="tag">FUTURES</span></div><div class="connection-grid">
     <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">TV</div><div><div class="connection-name">Tradovate</div><div class="connection-type">API directe · événements temps réel</div></div></div><span id="connTradovate" class="connection-status">—</span></div><p>Synchronisation du compte, positions, ordres et fills via API + WebSocket.</p><div class="connection-actions"><button class="primary" onclick="connectTradovateUI()">CONNECTER</button><button class="secondary" onclick="refreshTradovateUI()">ACTUALISER</button></div></div>
     <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">R</div><div><div class="connection-name">Rithmic</div><div class="connection-type">Observateur live · R|Trader</div></div></div><span id="connRithmic" class="connection-status warn">ÉCRAN</span></div><p>Le mode actuel surveille uniquement les actions visibles dans R|Trader. L’API R|Protocol nécessite un accès développeur Rithmic.</p><div class="connection-actions"><button class="primary" onclick="setSiteMode('NQ');show('bot',this);startRithmicScreenShare()">PARTAGER</button><button class="secondary" onclick="setSiteMode('NQ');show('bot',this);toggleRithmicObserver()">ARMER</button></div></div>
   </div></div>
-  <div class="section connection-center" style="margin-top:12px"><div class="workspace-header" style="margin-bottom:10px"><div><h2>Connexion Crypto</h2><div class="sub">KCEX est traité comme une source d’écran en lecture seule pour voir tes ordres au moment où tu les places.</div></div><span class="tag">CRYPTO</span></div><div class="connection-grid">
+  <div class="section connection-center" data-model="CRYPTO" style="margin-top:12px"><div class="workspace-header" style="margin-bottom:10px"><div><h2>Connexion Crypto</h2><div class="sub">KCEX est traité comme une source d’écran en lecture seule pour voir tes ordres au moment où tu les places.</div></div><span class="tag">CRYPTO</span></div><div class="connection-grid">
     <div class="connection-card"><div class="connection-head"><div class="connection-brand"><div class="connection-logo">K</div><div><div class="connection-name">KCEX</div><div class="connection-type">Order Watch · onglet KCEX</div></div></div><span id="connKcex" class="connection-status warn">ÉCRAN</span></div><p>Partage uniquement l’onglet KCEX. Edgeflow compare les captures et alerte lorsqu’un nouvel ordre/position devient visible.</p><div class="actions"><button class="primary" onclick="setSiteMode('CRYPTO');show('crypto',this);startKCEXScreenShare().then(()=>{if(kcexScreenStream)toggleKCEXAuto()})">SURVEILLER MES ORDRES</button><button class="secondary" onclick="window.open('https://www.kcex.com','_blank','noopener,noreferrer')">OUVRIR KCEX</button></div></div>
   </div></div>
   <div class="section" style="margin-top:12px"><h2>Obsidian · mémoire historique</h2><div id="obsidianStatusBox" class="ai-box">Aucun journal Obsidian importé sur le backend.</div><div class="actions"><input id="obsidianZip" type="file" accept=".zip,application/zip" style="flex:1"><button type="button" class="primary" onclick="importObsidianJournal()">IMPORTER</button><button type="button" class="secondary" onclick="analyzeObsidianImages()">ANALYSER LES IMAGES</button></div><div id="obsidianProgress" class="sub" style="margin-top:8px">Analyse visuelle en lecture seule.</div></div>
@@ -1587,7 +1560,14 @@ async function syncTradeToBot(trade){
   catch(e){ return false; }
 }
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
-function selectModel(m){setSiteMode(m);showActiveDashboard();}
+function selectModel(m){
+  m=String(m||"NQ").toUpperCase();
+  if(!VALID_MODES.has(m))m="NQ";
+  const target=new URL(location.href);
+  target.searchParams.set("mode",m);target.searchParams.delete("view");target.hash="";
+  localStorage.setItem("siteMode",m);localStorage.setItem("activeModel",m);
+  window.location.replace(target.href);
+}
 function chooseModel(){show("models");}
 function updateModelUI(){
  if(!activeModel)return;
@@ -1621,6 +1601,10 @@ function updateBotMode(){
 function applyModeVisibility(){
  document.querySelectorAll("[data-mode]").forEach(el=>{
    const m=el.getAttribute("data-mode");
+   el.classList.toggle("hidden",m!=="ALL"&&m!==siteMode);
+ });
+ document.querySelectorAll("[data-model]").forEach(el=>{
+   const m=el.getAttribute("data-model");
    el.classList.toggle("hidden",m!=="ALL"&&m!==siteMode);
  });
 }
@@ -2286,7 +2270,10 @@ function calcDashboardStats(arr){
    return{...x,cumulative};
  });
  const totalR=rr.reduce((a,b)=>a+b,0);
- return{wins,losses,trades:arr.length,winrate:wins+losses?wins/(wins+losses)*100:null,avgR:rr.length?totalR/rr.length:null,totalR:rr.length?totalR:null,pnl:pnlTrades.length?series[series.length-1].cumulative:null,pnlCount:pnlTrades.length,series,peak,drawdown:Math.abs(maxDD)};
+ const grossProfit=arr.map(x=>parseNumericAmount(x.pnl)).filter(Number.isFinite).filter(v=>v>0).reduce((a,b)=>a+b,0);
+ const grossLoss=Math.abs(arr.map(x=>parseNumericAmount(x.pnl)).filter(Number.isFinite).filter(v=>v<0).reduce((a,b)=>a+b,0));
+ const profitFactor=grossLoss>0?grossProfit/grossLoss:(grossProfit>0?Infinity:null);
+ return{wins,losses,trades:arr.length,winrate:wins+losses?wins/(wins+losses)*100:null,profitFactor,avgR:rr.length?totalR/rr.length:null,totalR:rr.length?totalR:null,pnl:pnlTrades.length?series[series.length-1].cumulative:null,pnlCount:pnlTrades.length,series,peak,drawdown:Math.abs(maxDD)};
 }
 function pnlTooltipPoint(point){
  const t=point.trade||{};
@@ -2372,6 +2359,8 @@ function renderStats(){
    const s=calcDashboardStats(data.trades);s.month=data.month;
    if($(prefix+"Trades"))$(prefix+"Trades").textContent=String(s.trades);
    if($(prefix+"Winrate"))$(prefix+"Winrate").textContent=s.winrate!==null?s.winrate.toFixed(1)+"%":"—";
+   if($(prefix+"WinLoss"))$(prefix+"WinLoss").textContent=String(s.wins)+" / "+String(s.losses);
+   if($(prefix+"ProfitFactor"))$(prefix+"ProfitFactor").textContent=s.profitFactor===Infinity?"∞":(s.profitFactor!==null?s.profitFactor.toFixed(2):"—");
    if($(prefix+"AvgR"))$(prefix+"AvgR").textContent=s.avgR!==null?((s.avgR>=0?"+":"")+s.avgR.toFixed(2)+"R"):"—";
    if($(prefix+"TotalR"))$(prefix+"TotalR").textContent=s.totalR!==null?((s.totalR>=0?"+":"")+s.totalR.toFixed(2)+"R"):"—";
    if($(prefix+"Pnl"))$(prefix+"Pnl").textContent=s.pnl!==null?formatMoneyShort(s.pnl):"—";
@@ -2677,10 +2666,17 @@ function showActiveDashboard(btn){show(activeModel==="CRYPTO"?"cryptoDash":"dash
 function initializeActiveWorkspace(){
   const params=new URLSearchParams(location.search);
   const urlMode=String(params.get("mode")||"").toUpperCase();
-  const mode=VALID_MODES.has(urlMode)?urlMode:(VALID_MODES.has(siteMode)?siteMode:"NQ");
   const view=params.get("view");
-  siteMode=mode;
-  activeModel=mode;
+  if(!VALID_MODES.has(urlMode) && !view){
+    const sections=[...document.querySelectorAll("main>.workspace")];
+    sections.forEach(s=>{s.classList.add("hidden");s.hidden=true;s.style.setProperty("display","none","important");s.setAttribute("aria-hidden","true");});
+    const gate=$("models");
+    if(gate){gate.classList.remove("hidden");gate.hidden=false;gate.style.setProperty("display","flex","important");gate.setAttribute("aria-hidden","false");}
+    document.querySelectorAll("nav button").forEach(b=>{b.classList.remove("active");b.removeAttribute("aria-current");});
+    return;
+  }
+  const mode=VALID_MODES.has(urlMode)?urlMode:(VALID_MODES.has(siteMode)?siteMode:"NQ");
+  siteMode=mode; activeModel=mode;
   try{setSiteMode(mode);}catch(e){siteMode=mode;activeModel=mode;}
   if(view==="bot"&&mode==="NQ")show("bot",$("navBotFutures"));
   else if(view==="crypto"&&mode==="CRYPTO")show("crypto",$("navBotCrypto"));
