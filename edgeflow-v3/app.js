@@ -278,7 +278,7 @@
       '<div class="mode-switch"><button class="'+(!crypto()?"active":"")+'" onclick="enterMode(\'NQ\')">FUTURES</button><button class="'+(crypto()?"active blue":"")+'" onclick="enterMode(\'CRYPTO\')">CRYPTO</button></div>'+
       '<div class="side-caption">WORKSPACE</div><nav>'+NAV.slice(0,7).map(n=>'<button class="'+(state.view===n[0]?"selected":"")+'" onclick="edgeGo(\''+n[0]+'\')"><span class="ni">'+n[1]+'</span><span><b>'+n[2]+'</b><small>'+n[3]+'</small></span></button>').join("")+'</nav>'+
       '<div class="side-caption system">SYSTEM</div><nav>'+NAV.slice(7).map(n=>'<button class="'+(state.view===n[0]?"selected":"")+'" onclick="edgeGo(\''+n[0]+'\')"><span class="ni">'+n[1]+'</span><span><b>'+n[2]+'</b><small>'+n[3]+'</small></span></button>').join("")+'</nav>'+
-      '<div class="engine"><b>EDGEFLOW CORE</b><small>'+d().connections.map(x=>x[0]).join(" · ")+' · ENGINE</small><i></i></div></aside>';
+      '<div class="engine"><b>EDGEFLOW CORE</b><small>'+d().connections.join(" · ")+' · ENGINE</small><i></i></div></aside>';
   }
   function topbar(){
     const ss=sessionState();
@@ -825,7 +825,14 @@
     }
   };
   function settings(){
-    return title("SYSTEM","Settings","Environment controls and preferences.")+'<div class="settings-grid">'+panel("ENVIRONMENT",'<div class="setting"><span>Active Environment</span><b>'+d().label+'</b></div><div class="setting"><span>Theme</span><b>Dark Mode</b></div><div class="setting"><span>Compact Mode</span><b>ON</b></div>')+panel("TRADING MODEL",'<div class="setting"><span>Entry Type</span><b>LIMIT</b></div><div class="setting"><span>Primary Trigger</span><b>REJECTION BLOCK</b></div><div class="setting"><span>Risk Per Trade</span><b>$100</b></div><div class="setting"><span>Fib Retracements</span><b>0.50 · 0.62 · 0.705 · 0.79</b></div>')+panel("NOTIFICATIONS",'<div class="setting"><span>Trade Alerts</span><b class="on-text">ON</b></div><div class="setting"><span>AI Insights</span><b class="on-text">ON</b></div><div class="setting"><span>News Warnings</span><b class="on-text">ON</b></div>')+panel("DATA & SYNC",'<div class="setting"><span>Last Sync</span><b>'+now()+'</b></div><div class="setting"><span>Journal Storage</span><b>LOCAL</b></div>')+'</div>';
+    return title("SYSTEM","Settings","Controls for the selected environment only.")+
+      '<div class="settings-grid">'+
+      panel("ENVIRONMENT",'<div class="setting"><span>Active Environment</span><b>'+d().label+'</b></div><div class="setting"><span>Provider</span><b>'+(crypto()?"KCEX PERPETUALS":"TRADOVATE / RITHMIC")+'</b></div><div class="setting"><span>Storage</span><b>LOCAL JOURNAL</b></div>')+
+      (crypto()
+        ? panel("CRYPTO MODEL",'<div class="setting"><span>Primary sequence</span><b>DIRECTION → KEY OPEN MANIPULATION / SWEEP → HTF POI → ENTRY → HIGH RR</b></div><div class="setting"><span>OTE / Fibonacci</span><b>SECONDARY ONLY</b></div><div class="setting"><span>Screen observer</span><b>'+(state.kcex.running?"ACTIVE":"OFFLINE")+'</b></div>')
+        : panel("FUTURES MODEL",'<div class="setting"><span>Primary sequence</span><b>HTF BIAS → POI → LIQUIDITY → RETRACEMENT → REJECTION BLOCK → LIMIT</b></div><div class="setting"><span>Fibonacci</span><b>0.50 · 0.62 · 0.705 · 0.79</b></div><div class="setting"><span>Risk</span><b>$100 / TRADE</b></div>'))+
+      panel("JARVIS",'<div class="setting"><span>AI engine</span><b class="on-text">ONLINE</b></div><div class="setting"><span>Model isolation</span><b>'+(crypto()?"CRYPTO ONLY":"FUTURES / NQ ONLY")+'</b></div><div class="setting"><span>Local time</span><b>'+now()+'</b></div>')+
+      '</div>';
   }
   function render(){
     try{
