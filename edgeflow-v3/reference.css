@@ -579,3 +579,18 @@ body.landing-page .env-cards{display:flex;justify-content:center;gap:22px;margin
 .journal-modal-head h2{font-size:31px}
 .journal-modal-actions span{font-size:9px}
 .journal-modal-actions button{font-size:11px}
+
+/* V23 — JARVIS VISUAL JOURNAL WORKFLOW */
+.jarvis-layout{display:grid;grid-template-columns:1.05fr .95fr;gap:8px}
+.jarvis-hero{grid-column:1/-1;display:flex;align-items:center;gap:16px;padding:18px}
+.jarvis-orb{width:48px;height:48px;border:1px solid rgba(255,36,77,.65);border-radius:50%;display:grid;place-items:center;color:#fff;font:600 25px Rajdhani;background:radial-gradient(circle,rgba(255,36,77,.28),#050b11 65%);box-shadow:0 0 28px rgba(255,20,60,.16)}
+.jarvis-hero small{color:#ff3155;font-size:8px;letter-spacing:.16em}.jarvis-hero h2{margin:4px 0;font:600 22px Rajdhani;color:#edf4f7}.jarvis-hero p{margin:0;color:#708898;font-size:8px}
+.jarvis-upload,.jarvis-result{min-height:350px}.jarvis-drop{margin:14px;border:1px dashed #24465b;border-radius:7px;min-height:190px;display:grid;place-items:center;align-content:center;text-align:center;background:rgba(3,12,19,.75);position:relative;overflow:hidden}
+.jarvis-drop:hover{border-color:#ff3155}.jarvis-upload-icon{font-size:30px;color:#ff3155}.jarvis-drop strong{font:600 14px Rajdhani;color:#dce8ed;margin-top:7px}.jarvis-drop small{color:#61798a;font-size:7px;margin-top:4px}.jarvis-drop input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.jarvis-preview{padding:0 14px}.jarvis-preview img{display:block;max-width:100%;max-height:220px;margin:auto;border:1px solid #17364a;border-radius:5px}.jarvis-preview span{display:block;margin-top:5px;color:#627a8b;font-size:7px}
+.jarvis-actions{display:flex;gap:7px;padding:14px}.jarvis-actions button,.jarvis-journal-btn{padding:10px 14px;border:1px solid #17364a;border-radius:5px;background:#07131d;color:#a9bbc6;font-size:8px}.jarvis-actions .primary,.jarvis-journal-btn{background:#ff1746;border-color:#ff1746;color:white}
+.jarvis-result{position:relative}.jarvis-fields{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:14px}.jarvis-fields>div{border:1px solid #153247;background:#061019;border-radius:5px;padding:10px}.jarvis-fields small{display:block;color:#536d7f;font-size:6px}.jarvis-fields b{display:block;color:#e7f0f4;font:600 13px Rajdhani;margin-top:5px}
+.jarvis-note{margin:0 14px 12px;padding:12px;border-left:2px solid #ff3155;background:#07131c;color:#77909f;font-size:8px;line-height:1.5}.jarvis-journal-btn{margin:0 14px 14px}
+#jarvisStatus{color:#688293;font-size:7px;font-weight:500}
+@media(max-width:900px){.jarvis-layout{grid-template-columns:1fr}.jarvis-fields{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.jarvis-fields{grid-template-columns:1fr 1fr}.jarvis-actions{flex-direction:column}}
