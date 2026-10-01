@@ -1217,6 +1217,37 @@ If sample size is insufficient, say so.`,
   res.json({...result,model,snapshot,learning:(await loadLearning()).entries.filter(x=>x.model===model).slice(-40)});
 });
 
+app.post("/api/ai/chat",requirePrivateRequest, async (req,res) => {
+  try{
+    const model=normalizeModel(req.body.model);
+    const question=String(req.body.question||"").trim();
+    if(!question)return res.status(400).json({ok:false,error:"Question vide."});
+    if(question.length>4000)return res.status(413).json({ok:false,error:"Question trop longue."});
+    const history=Array.isArray(req.body.history)?req.body.history.slice(-30).map(t=>({
+      model:normalizeModel(t?.model||model),
+      instrument:t?.symbol||t?.instrument||"",
+      direction:t?.side||t?.direction||"",
+      pnl:t?.pnl??null,
+      R:t?.rr??null,
+      session:t?.session||"",
+      setupPattern:t?.setup||t?.setupPattern||"",
+      notes:t?.note||t?.notes||""
+    })): [];
+    const chatHistory=Array.isArray(req.body.chatHistory)?req.body.chatHistory.slice(-12):[];
+    const result=await askAI({
+      task:"Réponds directement à la question du trader en français. Utilise le contexte EdgeFlow et son modèle actif. Si la question concerne le marché en direct mais qu'aucune donnée live n'est fournie, dis clairement que tu n'as pas de flux de marché live dans cette conversation. Ne fabrique aucun prix, setup ou résultat. Question: "+question,
+      trade:null,
+      history,
+      chatHistory
+    });
+    if(!result.ok)return res.status(503).json(result);
+    res.json(result);
+  }catch(e){
+    console.error("[EDGEFLOW][AI_CHAT]",e);
+    res.status(502).json({ok:false,error:e?.message||"Jarvis est indisponible."});
+  }
+});
+
 app.post("/api/coach/question",requirePrivateRequest,  async (req,res) => {
   if(!openai) return res.status(503).json({ok:false,error:"Aucun fournisseur IA configuré."});
   const model=normalizeModel(req.body.model);
