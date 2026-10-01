@@ -208,18 +208,6 @@
       if(note)note.textContent=String(e.message||e);
     }
   };
-  window.jarvisSendToJournal=()=>{
-    const pending=window.__jarvisPending;
-    if(!pending){if(window.__jarvisImageFile)jarvisAnalyze();else alert("Analyse une capture avec Jarvis d'abord.");return}
-    edgeGo("journal");
-    setTimeout(()=>{
-      openJournalForm();
-      const set=(id,value)=>{const el=document.getElementById(id);if(el&&value!=null)el.value=String(value)};
-      set("jSymbol",pending.symbol);set("jSide",pending.side);set("jEntry",pending.entry);set("jExit",pending.exit);
-      set("jQty",pending.qty);set("jPnl",pending.pnl);set("jRR",pending.rr);set("jSetup",pending.setup);set("jGrade",pending.grade);set("jSession",pending.session);set("jNote",pending.note);
-      const st=document.querySelector(".journal-modal-actions span");if(st)st.textContent="Jarvis prefilled this entry · screenshot attached";
-    },120);
-  };
   window.jarvisSaveToJournal=()=>{
     const p=window.__jarvisPending;
     if(!p){if(window.__jarvisImageFile)jarvisAnalyze();else alert("Analyse une capture avec Jarvis d'abord.");return}
