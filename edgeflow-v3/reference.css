@@ -878,3 +878,57 @@ body.landing-page .landing-corner{
   body.landing-page .env{height:175px!important}
   body.landing-page .env strong{font-size:21px!important}
 }
+
+/* V30 — LANDING GEOMETRY FIX */
+body.landing-page .landing{
+  position:relative!important;
+  width:100vw!important;
+  min-width:100%!important;
+  left:0!important;
+  right:auto!important;
+  overflow:hidden!important;
+}
+body.landing-page .landing-center{
+  position:absolute!important;
+  left:50%!important;
+  right:auto!important;
+  top:48%!important;
+  width:min(1040px,72vw)!important;
+  margin:0!important;
+  transform:translate(-50%,-50%)!important;
+}
+body.landing-page .env-cards{
+  width:100%!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:20px!important;
+}
+body.landing-page .env{
+  width:auto!important;
+  box-sizing:border-box!important;
+}
+body.landing-page .hero-name{
+  white-space:nowrap!important;
+}
+body.landing-page .landing-foot{
+  left:50%!important;
+  right:auto!important;
+  transform:translateX(-50%)!important;
+  white-space:nowrap!important;
+}
+body.landing-page .landing-corner{
+  right:30px!important;
+}
+@media(max-width:900px){
+  body.landing-page .landing-center{
+    width:min(900px,90vw)!important;
+  }
+}
+@media(max-width:680px){
+  body.landing-page .landing-center{
+    width:90vw!important;
+  }
+  body.landing-page .env-cards{
+    grid-template-columns:1fr!important;
+  }
+}
