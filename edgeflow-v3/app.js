@@ -57,17 +57,11 @@
   window.exportTrades=()=>{const blob=new Blob([JSON.stringify(d().rows,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="edgeflow-trades.json";a.click();URL.revokeObjectURL(a.href)};
   window.saveJournal=async e=>{
     e.preventDefault();
-    const f=id=>document.getElementById(id), file=f("jScreenshot")&&f("jScreenshot").files[0];
+    const f=id=>document.getElementById(id),file=f("jScreenshot")&&f("jScreenshot").files[0];
     let screenshot="";
-    if(file) screenshot=await new Promise(resolve=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.readAsDataURL(file)});
-    state.journal.unshift({
-      id:"j-"+Date.now(),symbol:f("jSymbol").value.trim().toUpperCase(),side:f("jSide").value,
-      pnl:Number(f("jPnl").value)||0,setup:f("jSetup").value||"R.B",grade:f("jGrade").value,
-      note:f("jNote").value||"Execution reviewed.",date:f("jDate").value,time:f("jTime").value,
-      entry:f("jEntry").value,exit:f("jExit").value,qty:f("jQty").value,rr:f("jRR").value,
-      session:f("jSession").value,screenshot
-    });
-    localStorage.setItem("edgeflow-journal",JSON.stringify(state.journal)); render();
+    if(file)screenshot=await new Promise(resolve=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.readAsDataURL(file)});
+    state.journal.unshift({id:"j-"+Date.now(),symbol:f("jSymbol").value.trim().toUpperCase(),side:f("jSide").value,pnl:Number(f("jPnl").value)||0,setup:f("jSetup").value||"R.B",grade:f("jGrade").value,note:f("jNote").value||"Execution reviewed.",date:f("jDate").value,time:f("jTime").value,entry:f("jEntry").value,exit:f("jExit").value,qty:f("jQty").value,rr:f("jRR").value,session:f("jSession").value,screenshot});
+    localStorage.setItem("edgeflow-journal",JSON.stringify(state.journal));render();
   };
   window.exportJournal=window.exportTrades;
   window.clearJournal=()=>{if(confirm("Clear the locally stored journal?")){state.journal=[];localStorage.setItem("edgeflow-journal","[]");render()}};
@@ -155,55 +149,14 @@
     const wins=entries.filter(x=>!String(x.pnl).includes("-")).length;
     const total=entries.reduce((sum,x)=>sum+(Number(String(x.pnl).replace(/[^0-9.-]/g,""))||0),0);
     return title("JOURNAL","Trading Journal","A real execution journal: setup, fill, risk, result, screenshot and lesson.",'<div class="journal-actions"><button onclick="exportJournal()">EXPORT</button><button class="primary" onclick="document.getElementById(\'jSymbol\').focus()">+ NEW ENTRY</button></div>')+
-      '<div class="journal-dashboard">'+
-        '<section class="journal-compose">'+
-          panel("NEW JOURNAL ENTRY",'<form class="journal-form premium-journal-form" onsubmit="saveJournal(event)">'+
-            '<div class="journal-form-grid">'+
-              '<label>SYMBOL<input id="jSymbol" required placeholder="'+(crypto()?"BTC":"MNQ")+'"></label>'+
-              '<label>DATE<input id="jDate" type="date" value="'+new Date().toISOString().slice(0,10)+'" required></label>'+
-              '<label>TIME<input id="jTime" type="time" value="'+now()+'"></label>'+
-              '<label>SIDE<select id="jSide"><option>Long</option><option>Short</option></select></label>'+
-              '<label>SETUP / MODEL<select id="jSetup"><option>R.B + FVG</option><option>Rejection Block</option><option>Sweep + OB</option><option>10H Open</option><option>FVG</option><option>Trend</option></select></label>'+
-              '<label>GRADE<select id="jGrade"><option>A+</option><option>A</option><option>A-</option><option>B+</option><option>B</option><option>B-</option><option>C+</option><option>C</option></select></label>'+
-              '<label>ENTRY<input id="jEntry" placeholder="24,862.75"></label>'+
-              '<label>EXIT<input id="jExit" placeholder="24,840.25"></label>'+
-              '<label>QTY<input id="jQty" placeholder="1"></label>'+
-              '<label>P&L<input id="jPnl" type="number" step="0.01" placeholder="225"></label>'+
-              '<label>RR<input id="jRR" placeholder="4.5"></label>'+
-              '<label>SESSION<select id="jSession"><option>London</option><option>Asia</option><option>NY AM</option><option>NY PM</option></select></label>'+
-            '</div>'+
-            '<label class="journal-wide">EXECUTION NOTES<textarea id="jNote" rows="6" placeholder="Why did you take the trade? Sweep, retracement, R.B, FVG, entry quality, management and lesson."></textarea></label>'+
-            '<label class="journal-wide">TRADE SCREENSHOT<input id="jScreenshot" type="file" accept="image/*"></label>'+
-            '<div class="journal-submit"><span>Stored locally in this browser</span><button class="primary" type="submit">SAVE TRADE</button></div>'+
-          '</form>')+
-          panel("JOURNAL STATS",'<div class="journal-stats"><div><small>ENTRIES</small><b>'+entries.length+'</b></div><div><small>WIN RATE</small><b>'+ (entries.length?Math.round(wins/entries.length*100):0)+'%</b></div><div><small>NET P&L</small><b class="'+(total>=0?"win":"loss")+'">(){
-    const bars=[["Asia",42],["London",78],["NY AM",61],["NY PM",34]];
-    return title("ANALYTICS","Analytics","Deep statistics across sessions, instruments and setups.")+
-      '<div class="analytics-grid">'+panel("SESSION PERFORMANCE",'<div class="bars">'+bars.map(x=>'<div><span>'+x[0]+'</span><i><b style="width:'+x[1]+'%"></b></i><em>'+x[1]+'%</em></div>').join("")+'</div>')+panel("PERFORMANCE BY SETUP",statsTable())+panel("EXECUTION DISCIPLINE",'<div class="discipline large"><div>RETRACEMENT<strong>0.50 / 0.62 / 0.705 / 0.79</strong></div><div>ENTRY<strong>LIMIT ONLY</strong></div><div>IMPULSE<strong>BLOCKED</strong></div><div>RISK<strong>$100 / TRADE</strong></div></div>')+'</div>';
-  }
-  function backtests(){
-    const r=[["London R.B Model","MNQ","105","68%","3.2","Sep 19, 2026"],["10H Open Study","MES","75","64%","2.8","Sep 10, 2026"],["Asia Retracement","MGC","52","60%","2.1","Sep 05, 2026"],["FVG Model","MNQ","120","72%","3.4","Aug 28, 2026"],["Trend Model","MES","85","58%","2.1","Aug 20, 2026"]];
-    return title("RESEARCH","Backtests","Models, samples and historical validation.",'<button class="primary">+ NEW BACKTEST</button>')+panel("BACKTEST LIBRARY",'<div class="bt"><div class="bt-row head"><span>NAME</span><span>INSTRUMENT</span><span>TRADES</span><span>WIN RATE</span><span>PF</span><span>DATE</span></div>'+r.map(x=>'<div class="bt-row"><b>'+x[0]+'</b><span>'+x[1]+'</span><span>'+x[2]+'</span><span>'+x[3]+'</span><span>'+x[4]+'</span><span>'+x[5]+'</span></div>').join("")+'</div>');
-  }
-  function connections(){
-    return title("SYSTEM","Connections","Broker and service integrations.")+'<div class="connections">'+d().connections.map(x=>'<article class="connection"><div class="conn-icon '+(x[2]==="K"?"blue":"")+'">'+x[2]+'</div><h3>'+x[0]+'</h3><small>'+x[1]+'</small><b>● Connected</b><button>Manage</button></article>').join("")+'</div>';
-  }
-  function settings(){
-    return title("SYSTEM","Settings","Environment controls and preferences.")+'<div class="settings-grid">'+panel("ENVIRONMENT",'<div class="setting"><span>Active Environment</span><b>'+d().label+'</b></div><div class="setting"><span>Theme</span><b>Dark Mode</b></div><div class="setting"><span>Compact Mode</span><b>ON</b></div>')+panel("TRADING MODEL",'<div class="setting"><span>Entry Type</span><b>LIMIT</b></div><div class="setting"><span>Primary Trigger</span><b>REJECTION BLOCK</b></div><div class="setting"><span>Risk Per Trade</span><b>$100</b></div><div class="setting"><span>Fib Retracements</span><b>0.50 · 0.62 · 0.705 · 0.79</b></div>')+panel("NOTIFICATIONS",'<div class="setting"><span>Trade Alerts</span><b class="on-text">ON</b></div><div class="setting"><span>AI Insights</span><b class="on-text">ON</b></div><div class="setting"><span>News Warnings</span><b class="on-text">ON</b></div>')+panel("DATA & SYNC",'<div class="setting"><span>Last Sync</span><b>'+now()+'</b></div><div class="setting"><span>Journal Storage</span><b>LOCAL</b></div>')+'</div>';
-  }
-  function render(){
-    if(!state.mode){landing();return}
-    const pages={overview:dashboard,trades,performance,ai,journal,analytics,backtests,connections,settings};
-    shell((pages[state.view]||dashboard)());
-  }
-  render();
-  setInterval(()=>{const e=document.querySelectorAll(".session b"); if(e.length)e[0].textContent=now()},1000);
-})();+Math.abs(total).toFixed(2)+'</b></div><div><small>MODEL</small><b>R.B / FIB</b></div></div>')+
-        '</section>'+
-        '<section class="journal-history-panel">'+
-          panel("RECENT ENTRIES",'<div class="journal-toolbar"><span>'+entries.length+' records</span><button onclick="clearJournal()">CLEAR</button></div><div class="journal-cards">'+entries.map(x=>'<article class="journal-card"><div class="journal-card-top"><div><b>'+esc(x.symbol||"—")+' <i class="'+(String(x.side).toLowerCase())+'">'+esc(x.side||"")+'</i></b><small>'+esc(x.date||"")+' · '+esc(x.time||"")+'</small></div><strong class="'+(String(x.pnl).includes("-")?"loss":"win")+'">'+esc(x.pnl)+'</strong></div><div class="journal-tags"><span>'+esc(x.setup||"R.B")+'</span><span>RR '+esc(x.rr||"—")+'</span><span>'+esc(x.grade||"—")+'</span><span>'+esc(x.session||"—")+'</span></div><p>'+esc(x.note||"No note added.")+'</p>'+(x.screenshot?'<img src="'+x.screenshot+'" alt="Trade screenshot">':"")+'<button class="journal-delete" onclick="deleteJournalEntry(this.dataset.id)" data-id="'+esc(x.id||"")+'">DELETE</button></article>').join("")+'</div>')+
-        '</section>'+
-      '</div>';
+      '<div class="journal-dashboard"><section class="journal-compose">'+
+      panel("NEW JOURNAL ENTRY",'<form class="journal-form premium-journal-form" onsubmit="saveJournal(event)"><div class="journal-form-grid">'+
+      '<label>SYMBOL<input id="jSymbol" required placeholder="'+(crypto()?"BTC":"MNQ")+'"></label><label>DATE<input id="jDate" type="date" value="'+new Date().toISOString().slice(0,10)+'" required></label><label>TIME<input id="jTime" type="time" value="'+now()+'"></label>'+
+      '<label>SIDE<select id="jSide"><option>Long</option><option>Short</option></select></label><label>SETUP / MODEL<select id="jSetup"><option>R.B + FVG</option><option>Rejection Block</option><option>Sweep + OB</option><option>10H Open</option><option>FVG</option><option>Trend</option></select></label><label>GRADE<select id="jGrade"><option>A+</option><option>A</option><option>A-</option><option>B+</option><option>B</option><option>B-</option><option>C+</option><option>C</option></select></label>'+
+      '<label>ENTRY<input id="jEntry" placeholder="24,862.75"></label><label>EXIT<input id="jExit" placeholder="24,840.25"></label><label>QTY<input id="jQty" placeholder="1"></label><label>P&L<input id="jPnl" type="number" step="0.01" placeholder="225"></label><label>RR<input id="jRR" placeholder="4.5"></label><label>SESSION<select id="jSession"><option>London</option><option>Asia</option><option>NY AM</option><option>NY PM</option></select></label>'+
+      '</div><label class="journal-wide">EXECUTION NOTES<textarea id="jNote" rows="6" placeholder="Why did you take the trade? Sweep, retracement, R.B, FVG, entry quality, management and lesson."></textarea></label><label class="journal-wide">TRADE SCREENSHOT<input id="jScreenshot" type="file" accept="image/*"></label><div class="journal-submit"><span>Stored locally in this browser</span><button class="primary" type="submit">SAVE TRADE</button></div></form>')+
+      panel("JOURNAL STATS",'<div class="journal-stats"><div><small>ENTRIES</small><b>'+entries.length+'</b></div><div><small>WIN RATE</small><b>'+(entries.length?Math.round(wins/entries.length*100):0)+'%</b></div><div><small>NET P&L</small><b class="'+(total>=0?"win":"loss")+'">'+(total>=0?"+":"-")+"$"+Math.abs(total).toFixed(2)+'</b></div><div><small>MODEL</small><b>R.B / FIB</b></div></div>')+
+      '</section><section class="journal-history-panel">'+panel("RECENT ENTRIES",'<div class="journal-toolbar"><span>'+entries.length+' records</span><button onclick="clearJournal()">CLEAR</button></div><div class="journal-cards">'+entries.map(x=>'<article class="journal-card"><div class="journal-card-top"><div><b>'+esc(x.symbol||"—")+' <i class="'+String(x.side||"").toLowerCase()+'">'+esc(x.side||"")+'</i></b><small>'+esc(x.date||"")+' · '+esc(x.time||"")+'</small></div><strong class="'+(String(x.pnl).includes("-")?"loss":"win")+'">'+esc(x.pnl)+'</strong></div><div class="journal-tags"><span>'+esc(x.setup||"R.B")+'</span><span>RR '+esc(x.rr||"—")+'</span><span>'+esc(x.grade||"—")+'</span><span>'+esc(x.session||"—")+'</span></div><p>'+esc(x.note||"No note added.")+'</p>'+(x.screenshot?'<img src="'+x.screenshot+'" alt="Trade screenshot">':"")+'<button class="journal-delete" onclick="deleteJournalEntry(this.dataset.id)" data-id="'+esc(x.id||"")+'">DELETE</button></article>').join("")+'</div>')+'</section></div>';
   }
   function analytics(){
     const bars=[["Asia",42],["London",78],["NY AM",61],["NY PM",34]];
