@@ -1344,12 +1344,9 @@ async function synthesizeAudioWithElevenLabs(text){
 async function synthesizeAudioWithGemini(text){
   if(!GEMINI_API_KEY)return "";
   const model=process.env.GEMINI_TTS_MODEL||"gemini-3.8-flash-tts";
-  const voiceConfig=await loadVoiceConfig();
-  const configuredProvider=String(voiceConfig.provider||"").toLowerCase();
-  // An ElevenLabs voice ID is NOT a Gemini voice ID. Never pass one to Gemini.
-  const voice=(configuredProvider==="gemini" && voiceConfig.voiceId)
-    ? voiceConfig.voiceId
-    : (process.env.GEMINI_TTS_VOICE||JARVIS_GEMINI_FALLBACK_VOICE);
+  // Keep the Gemini fallback fixed to the original JARVIS-era voice.
+  // Never reuse an ElevenLabs/custom profile ID on the Gemini engine.
+  const voice=process.env.GEMINI_TTS_VOICE||JARVIS_GEMINI_FALLBACK_VOICE;
   const response=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{
     method:"POST",
     headers:{"Content-Type":"application/json","x-goog-api-key":GEMINI_API_KEY},
@@ -1419,7 +1416,7 @@ app.get("/api/voice/status",requirePrivateRequest,async(req,res)=>{
   const eleven=Boolean(process.env.ELEVENLABS_API_KEY),gemini=Boolean(GEMINI_API_KEY);
   const provider=eleven?"ElevenLabs":gemini?"Gemini":"none";
   const voiceName=eleven?(cfg.voiceName||"JARVIS Original")
-    :(String(cfg.provider||"").toLowerCase()==="gemini"?(cfg.voiceName||"JARVIS Original"):"JARVIS Algenib");
+    :(process.env.GEMINI_TTS_VOICE||"Algenib");
   const profileProvider=String(cfg.provider||"").toLowerCase()||null;
   res.json({
     ok:true,
