@@ -1320,3 +1320,103 @@ body.app-page.blue:before{
   .app-page .connections .connection-live{grid-column:auto!important}
   .app-page .ai-chat{height:470px!important;min-height:470px!important}
 }
+
+/* V43 — FINAL DENSITY PASS + SEPARATE FUTURES/CRYPTO WORKSPACE SCENES */
+html,body,#app{overflow-x:hidden!important}
+body.app-page .main:before,
+body.app-page .main:after,
+body.app-page .workspace:before,
+body.app-page .workspace:after{
+  content:none!important;
+  display:none!important;
+  background:none!important;
+}
+body.app-page:before{
+  opacity:1!important;
+  z-index:0!important;
+  background-color:#02050a!important;
+}
+body.app-page.red:before{
+  background-image:
+    linear-gradient(90deg,rgba(1,4,8,.90) 0%,rgba(1,4,8,.72) 38%,rgba(1,4,8,.63) 68%,rgba(1,4,8,.90) 100%),
+    linear-gradient(180deg,rgba(255,35,70,.08),rgba(1,4,8,.20) 48%,rgba(1,4,8,.72) 100%),
+    url("https://images.unsplash.com/photo-1674690017732-63c3c5f8088c?auto=format&fit=crop&fm=jpg&q=85&w=3840")!important;
+}
+body.app-page.blue:before{
+  background-image:
+    linear-gradient(90deg,rgba(1,4,8,.91) 0%,rgba(1,4,8,.72) 34%,rgba(1,4,8,.62) 66%,rgba(1,4,8,.90) 100%),
+    linear-gradient(180deg,rgba(20,145,255,.08),rgba(1,4,8,.18) 48%,rgba(1,4,8,.70) 100%),
+    url("https://images.unsplash.com/photo-1558009624-d1449e45e8b6?auto=format&fit=crop&fm=jpg&q=85&w=3840")!important;
+}
+.workspace{padding:13px 17px!important}
+.page-title{margin-bottom:7px!important}
+.page-title h1{font-size:28px!important}
+.page-title p{font-size:7.5px!important}
+
+/* Keep system cards content-sized, not viewport-sized. */
+.app-page .connections.connection-stack{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:8px!important;
+  height:auto!important;
+}
+.app-page .connections.connection-stack .connection{
+  height:auto!important;
+  min-height:132px!important;
+  padding:13px!important;
+}
+.app-page .connections.connection-stack .connection-live{
+  min-height:132px!important;
+  grid-column:auto!important;
+  grid-template-columns:40px minmax(0,1fr) auto!important;
+  gap:10px!important;
+}
+.app-page .connection .conn-icon{width:40px!important;height:40px!important}
+.app-page .connection h3{font-size:15px!important;margin:0 0 3px!important}
+.app-page .connection small{font-size:6px!important;line-height:1.3!important}
+.app-page .connection>b{font-size:6px!important;margin:7px 0!important}
+.app-page .connection-copy p{font-size:7px!important;margin:6px 0 0!important;line-height:1.35!important}
+.app-page .connection button{font-size:6.5px!important;padding:6px 8px!important;white-space:nowrap!important}
+.app-page .conn-missing,.app-page .conn-error,.app-page .conn-last{
+  margin-top:6px!important;font-size:6px!important;line-height:1.3!important;word-break:break-word!important;
+}
+.app-page .conn-missing{color:#ffb25c!important}
+.app-page .conn-error{color:#ff5b78!important}
+.app-page .conn-last{color:#6fd8ff!important}
+.app-page .connection-help{margin-top:8px!important}
+.app-page .connection-help p{font-size:7px!important;line-height:1.35!important;margin-bottom:8px!important}
+.app-page .setup-grid{gap:6px!important}
+.app-page .setup-grid div{padding:7px 8px!important}
+
+/* AI page: target one viewport instead of a giant vertical panel. */
+.app-page .ai-grid{
+  grid-template-columns:minmax(0,1.55fr) minmax(260px,.85fr)!important;
+  gap:8px!important;
+  align-items:start!important;
+}
+.app-page .ai-chat{
+  height:485px!important;
+  min-height:485px!important;
+}
+.app-page .ai-messages{min-height:205px!important}
+.app-page .ai-actions button{min-height:32px!important;padding:8px 10px!important}
+.app-page .context-grid div{padding:7px 4px!important}
+.app-page .context-grid b{font-size:9px!important}
+
+/* Shared compactness across non-Journal screens. */
+.app-page .kpis{gap:5px!important}
+.app-page .dashboard-grid{gap:7px!important}
+.app-page .panel{box-shadow:0 8px 24px rgba(0,0,0,.15)!important}
+.app-page .settings-grid{gap:8px!important}
+.app-page .filters{margin-bottom:8px!important}
+@media(max-width:1050px){
+  .app-page .connections.connection-stack{grid-template-columns:1fr 1fr!important}
+  .app-page .connections.connection-stack .connection-live{grid-column:1/-1!important}
+  .app-page .ai-grid{grid-template-columns:1fr!important}
+}
+@media(max-width:700px){
+  .workspace{padding:10px!important}
+  .app-page .connections.connection-stack{grid-template-columns:1fr!important}
+  .app-page .connections.connection-stack .connection-live{grid-column:auto!important}
+  .app-page .ai-chat{height:455px!important;min-height:455px!important}
+}
