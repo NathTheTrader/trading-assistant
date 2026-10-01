@@ -52,6 +52,6 @@ jobs:
           if(!app.includes('state.mode==="NQ"')||!app.includes('state.mode==="CRYPTO"')) fail("Mode isolation checks missing");
           if(!app.includes('function instrumentCardsZero')) fail("Disconnected dashboard empty state missing");
           if(css.includes("filter:blur") && css.includes(".app-page:before")) console.log("Note: scoped visual blur rules remain elsewhere; production background override is V40.");
-          if(!html.includes('edgeflow-build')||!html.includes('edgeflow-v43')) fail("Current build marker missing");
+          if(!html.includes('edgeflow-build')||!html.includes('edgeflow-v44')) fail("Current build marker missing");
           console.log("EdgeFlow invariants OK");
           NODE
