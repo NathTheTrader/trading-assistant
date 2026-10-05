@@ -178,3 +178,32 @@ body.landing-page .env{opacity:0!important;background:transparent!important;bord
 body.landing-page .env:before{display:none!important;}
 body.landing-page .env *{visibility:hidden!important;}
 body.landing-page .land{display:none!important;}
+
+
+/* V50 — Cleaner landing: reduce visual noise without moving the reference composition */
+body.landing-page .landing{
+  position:relative!important;
+  background:#02060b!important;
+  isolation:isolate!important;
+}
+body.landing-page .landing::before{
+  content:""!important;
+  position:absolute!important;
+  inset:-1%!important;
+  z-index:0!important;
+  background:url("./assets/edgeflow-bg.webp") center center / cover no-repeat!important;
+  filter:saturate(.78) brightness(.72)!important;
+  transform:scale(1.015)!important;
+}
+body.landing-page .landing::after{
+  content:""!important;
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:1!important;
+  pointer-events:none!important;
+  background:
+    radial-gradient(ellipse at 50% 48%,rgba(2,7,13,.08) 0%,rgba(2,7,13,.28) 54%,rgba(1,4,8,.58) 100%),
+    linear-gradient(90deg,rgba(100,0,18,.08),transparent 38%,transparent 62%,rgba(0,65,130,.08))!important;
+}
+body.landing-page .landing-center{z-index:5!important;}
