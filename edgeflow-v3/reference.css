@@ -1541,3 +1541,14 @@ body.landing-page .landing{background:#02060b url("./assets/edgeflow-bg.jpg") ce
 body.landing-page .landing-center{left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;}
 body.landing-page .hero-logo{margin-left:auto!important;margin-right:auto!important;}
 body.landing-page .landing:after{display:none!important;}
+
+
+/* V49 — exact Edgeflow reference image */
+body.landing-page .landing{background:#02060b url("./assets/edgeflow-bg.webp") center center / cover no-repeat fixed!important;}
+body.landing-page .landing-center{left:50%!important;top:49%!important;transform:translate(-50%,-50%)!important;}
+body.landing-page .hero-logo,body.landing-page .hero-name,body.landing-page .hero-sub,body.landing-page .choose,body.landing-page .tagline,body.landing-page .landing-foot,body.landing-page .landing-corner{visibility:hidden!important;}
+body.landing-page .env-cards{position:relative;z-index:30!important;}
+body.landing-page .env{opacity:0!important;background:transparent!important;border-color:transparent!important;box-shadow:none!important;color:transparent!important;}
+body.landing-page .env:before{display:none!important;}
+body.landing-page .env *{visibility:hidden!important;}
+body.landing-page .land{display:none!important;}
