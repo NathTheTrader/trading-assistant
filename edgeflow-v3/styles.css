@@ -151,3 +151,12 @@ body.landing-page .landing{background:#010308!important}.landing-vignette{z-inde
 @media(max-width:1250px){.app-page .sidebar{width:205px!important}.app-page .main{margin-left:205px!important}.app-page .workspace{padding:14px!important}.app-page .kpis{grid-template-columns:repeat(4,1fr)!important}.app-page .dashboard-grid{grid-template-columns:1fr!important}.app-page .dashboard-side{grid-template-columns:1fr 1fr!important;grid-template-rows:auto!important}.app-page .journal-dashboard{grid-template-columns:1fr!important;min-height:0!important}.app-page .journal-history-panel{min-height:520px!important}}
 @media(max-width:900px){.app-page .sidebar{display:none!important}.app-page .main{margin-left:0!important}.app-page .topbar{height:50px!important}.app-page .workspace{padding:12px!important}.app-page .page-title{min-height:75px!important}.app-page .page-title h1{font-size:28px!important}.app-page .kpis,.app-page .performance .kpis{grid-template-columns:repeat(2,1fr)!important}.app-page .dashboard-main{grid-template-rows:auto auto!important}.app-page .dashboard-side{grid-template-columns:1fr!important}.app-page .asset-grid{grid-template-columns:1fr!important}.app-page .two-col,.app-page .ai-grid,.app-page .analytics-grid,.app-page .settings-grid{grid-template-columns:1fr!important}.app-page .connections{grid-template-columns:1fr!important;height:auto!important}.app-page .journal-dashboard{grid-template-columns:1fr!important}.premium-journal-form .journal-form-grid{grid-template-columns:1fr 1fr!important}.journal-stats{grid-template-columns:1fr 1fr!important}}
 @media(max-width:560px){.app-page .kpis,.app-page .performance .kpis,.premium-journal-form .journal-form-grid,.journal-stats{grid-template-columns:1fr!important}.app-page .page-title{align-items:flex-start!important;flex-direction:column!important}.app-page .filters{flex-wrap:wrap!important}.app-page .filters>*{flex:1 1 45%!important}.app-page .filters input{flex-basis:100%!important}}
+
+
+/* V10 — Edgeflow cinematic landing environment */
+body.landing-page{background:#02060b url("./assets/edgeflow-bg.svg") center center / cover fixed no-repeat!important}
+body.landing-page .landing{background:transparent!important}
+body.landing-page .land{display:none!important}
+body.landing-page .landing:after{display:none!important}
+body.landing-page .landing-center{z-index:5}
+body.landing-page .env{background:rgba(3,8,13,.78);backdrop-filter:blur(12px)}
