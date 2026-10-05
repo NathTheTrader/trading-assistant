@@ -1509,3 +1509,28 @@ body.blue .tradovate-form input:focus,body.blue .tradovate-form select:focus{bor
   .tradovate-form-grid{grid-template-columns:1fr}
   .tradovate-modal-card{padding:14px}
 }
+
+
+/* V46 — FORCE NEW EDGEFLOW LANDING BACKGROUND */
+body.landing-page .landing{
+  background:#02060b url("./assets/edgeflow-bg.svg") center center / cover no-repeat fixed!important;
+}
+body.landing-page .landing:before,
+body.landing-page .landing:after{
+  display:none!important;
+  content:none!important;
+}
+body.landing-page .landing .land,
+body.landing-page .landing .land-r,
+body.landing-page .landing .land-b,
+body.landing-page .landing .mountain{
+  display:none!important;
+  background:none!important;
+}
+body.landing-page .landing-center{
+  z-index:20!important;
+}
+body.landing-page .env{
+  background:rgba(3,8,14,.82)!important;
+  backdrop-filter:blur(14px)!important;
+}
