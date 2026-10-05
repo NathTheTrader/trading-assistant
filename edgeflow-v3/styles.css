@@ -86,7 +86,7 @@ body.landing-page{overflow:hidden}.landing{height:100vh;min-height:620px;positio
 /* V9 — REFERENCE BACKGROUND: red/blue mountain environment */
 html,body,#app{background:#02060b}
 body.app-page{background:#02060b url("./assets/edgeflow-bg.svg") center top / cover fixed no-repeat}
-body.landing-page{background:#02060b}
+body.landing-page{overflow:hidden}
 .app-page .app-shell{background:linear-gradient(90deg,rgba(2,6,11,.22),rgba(2,6,11,.10),rgba(2,6,11,.22))}
 .app-page .main{background:linear-gradient(90deg,rgba(2,6,11,.30),rgba(2,6,11,.10) 48%,rgba(2,6,11,.28))}
 .app-page .topbar{background:rgba(3,10,16,.82);backdrop-filter:blur(14px)}
@@ -154,9 +154,16 @@ body.landing-page .landing{background:#010308!important}.landing-vignette{z-inde
 
 
 /* V10 — Edgeflow cinematic landing environment */
-body.landing-page{background:#02060b url("./assets/edgeflow-bg.svg") center center / cover fixed no-repeat!important}
+body.landing-page{overflow:hidden}
 body.landing-page .landing{background:transparent!important}
 body.landing-page .land{display:none!important}
 body.landing-page .landing:after{display:none!important}
 body.landing-page .landing-center{z-index:5}
 body.landing-page .env{background:rgba(3,8,13,.78);backdrop-filter:blur(12px)}
+
+
+/* V48 — Clean cinematic photo background + centered hero */
+body.landing-page .landing{background:#02060b url("./assets/edgeflow-bg.jpg") center center / cover no-repeat fixed!important;}
+body.landing-page .landing-center{left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;}
+body.landing-page .hero-logo{margin-left:auto!important;margin-right:auto!important;}
+body.landing-page .landing:after{display:none!important;}
