@@ -1534,3 +1534,10 @@ body.landing-page .env{
   background:rgba(3,8,14,.82)!important;
   backdrop-filter:blur(14px)!important;
 }
+
+
+/* V48 — Use clean red/blue mountain photo */
+body.landing-page .landing{background:#02060b url("./assets/edgeflow-bg.jpg") center center / cover no-repeat fixed!important;}
+body.landing-page .landing-center{left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;}
+body.landing-page .hero-logo{margin-left:auto!important;margin-right:auto!important;}
+body.landing-page .landing:after{display:none!important;}
