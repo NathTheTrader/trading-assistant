@@ -370,7 +370,7 @@
   }
 
   function ai(){
-    const q=crypto()?["Review my crypto journal","Check crypto market context","Review my last 5 crypto trades"]:["Analyze my last 5 trades","Check market context (NQ)","Review my Futures journal"];
+    const q=crypto()?["Review my full crypto journal","Check crypto market context","Find recurring crypto patterns"]:["Review my full Futures journal","Check market context (NQ)","Find recurring Futures patterns"];
     const ctx=crypto()?"Crypto only · KCEX · Direction → Key Open sweep → HTF POI → entry → high RR":"Futures only · Tradovate/Rithmic · HTF bias → POI → liquidity → retracement → R.B → limit";
     return title("INTELLIGENCE","AI Assistant","JARVIS · "+ctx,'<span class="ai-online">● ONLINE</span>')+
       '<div class="ai-grid">'+panel("EDGEFLOW JARVIS",'<div class="ai-chat"><div class="ai-welcome"><b>JARVIS</b><small>'+esc(ctx)+'</small></div><div id="aiMessages" class="ai-messages"><div class="ai-message jarvis"><b>JARVIS</b><p>Je suis prêt. Le contexte '+(crypto()?"Crypto":"Futures/NQ")+' est verrouillé pour cette conversation.</p></div></div><div class="ai-actions">'+q.map(x=>'<button onclick="aiQuick(this.dataset.q)" data-q="'+esc(x)+'">'+esc(x)+' <span>›</span></button>').join("")+'</div><div class="ai-composer"><input id="aiInput" type="text" autocomplete="off" placeholder="Ask Jarvis anything..." onkeydown="if(event.key===\'Enter\')aiAsk()"><button id="aiSend" onclick="aiAsk()">↗</button></div></div>','ai-panel')+
@@ -386,7 +386,7 @@
     const loading=document.createElement("div");loading.className="ai-message jarvis loading";loading.innerHTML="<b>JARVIS</b><p>Analyse en cours...</p>";box.appendChild(loading);box.scrollTop=box.scrollHeight;
     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),35000);
     try{
-      const r=await fetch(API_BASE+"/api/ai/chat",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},signal:controller.signal,body:JSON.stringify({model:state.mode,question,history:state.journal.slice(0,30),chatHistory:state.aiTurns.slice(-12)})});
+      const r=await fetch(API_BASE+"/api/ai/chat",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},signal:controller.signal,body:JSON.stringify({model:state.mode,question:"Analyze the FULL journal sample. Do not judge my character or call me bad. Identify recurring execution patterns using the complete journal and sample sizes. My current question is: "+question,history:state.journal.slice(0,100),chatHistory:state.aiTurns.slice(-12)})});
       const data=await r.json().catch(()=>({}));if(!r.ok||!data.ok)throw new Error(data.error||("Jarvis API error · HTTP "+r.status));
       const answer=String(data.text||"Aucune réponse.").trim();state.aiTurns.push({role:"assistant",content:answer});
       loading.classList.remove("loading");loading.innerHTML="<b>JARVIS</b><p>"+esc(answer)+"</p>";
