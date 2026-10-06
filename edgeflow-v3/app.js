@@ -57,9 +57,10 @@
     const rr=xs.map(x=>Number(x.rr)).filter(Number.isFinite);
     let run=0,peak=0,maxDD=0;
     for(const p of pnls){run+=p;peak=Math.max(peak,run);maxDD=Math.max(maxDD,peak-run);}
-    const today=new Date().toISOString().slice(0,10);
+    const localNow=new Date();
+    const today=localNow.getFullYear()+"-"+String(localNow.getMonth()+1).padStart(2,"0")+"-"+String(localNow.getDate()).padStart(2,"0");
     const todayPnl=xs.filter(x=>String(x.date||"").slice(0,10)===today).reduce((a,x)=>a+(Number(x.pnl)||0),0);
-    return {count:xs.length,wins:wins.length,losses:losses.length,winRate:xs.length?wins.length/xs.length:null,pf:grossLoss?grossWin/grossLoss:(grossWin?Infinity:null),avgRR:rr.length?rr.reduce((a,b)=>a+b,0)/rr.length:null,total:pnls.reduce((a,b)=>a+b,0),todayPnl,maxDD};
+    return {count:xs.length,wins:wins.length,losses:losses.length,winRate:xs.length?wins.length/xs.length:null,pf:grossLoss?grossWin/grossLoss:(grossWin?Infinity:null),avgRR:rr.length?rr.reduce((a,b)=>a+b,0)/rr.length:null,rrCount:rr.length,total:pnls.reduce((a,b)=>a+b,0),todayPnl,maxDD};
   };
   const pct=n=>Number.isFinite(Number(n))?Math.round(Number(n)*100)+"%":"—";
   const rrText=n=>Number.isFinite(Number(n))?Number(n).toFixed(2):"—";
@@ -323,14 +324,13 @@
       '<div class="dash-banner"><div class="dash-brand"><div class="mini-mark">E</div><div><small>EDGEFLOW CORE • '+d().label+'</small><h1>'+d().label+'</h1><p>'+(crypto()?"BTC · ETH · SOL · BNB · XRP · HYPE · FLOKI · KCEX · CRYPTO FUTURES":"MNQ · MES · MGC · TRADOVATE · RITHMIC")+'</p></div></div>'+
       '<div class="dash-sessions"><span class="live '+(connected?"":"offline")+'">'+statusText+'</span>'+sessionCards+'</div></div>'+
       '<div class="account-state '+(connected?"connected":"offline")+'"><span>'+statusText+'</span><small>'+esc(liveNote)+'</small><button onclick="edgeGo(&#039;connections&#039;)">CONNECTIONS</button></div>'+
-      '<div class="kpis">'+
-      kpi(crypto()?"KCEX Portfolio":"Account Balance",crypto()?"—":(acct.connected?"$"+Math.abs(Number(acct.balance)||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"—"),crypto()?"Observer does not expose balance":"Live broker balance")+
-      kpi("Today P&L",crypto()?(js.count?money(js.todayPnl):"—"):(acct.connected?money(acct.realized):(js.count?money(js.todayPnl):"—")),crypto()?"Journal P&L":"Live realized / journal")+
-      kpi("Total P&L",crypto()?(js.count?money(js.total):"—"):(total!=null?money(total):(js.count?money(js.total):"—")),js.count?"Recorded history":"Waiting for data")+
-      kpi("Win Rate",pct(js.winRate),js.count?js.wins+"W / "+js.losses+"L":"No journal data")+
-      kpi("Profit Factor",rrText(js.pf),"Recorded journal")+
-      kpi("Avg RR",rrText(js.avgRR),crypto()?"Recorded journal":"Recorded journal")+
-      kpi(crypto()?"Detected Orders":"Open Positions",crypto()?(state.kcex.events.length||"—"):(acct.connected?acct.positions.length:"—"),crypto()?"KCEX crypto-futures observer":(acct.connected?"Tradovate live":"No live account"))+
+      '<div class="kpis journal-kpis">'+
+      kpi("Daily P&L",js.count?money(js.todayPnl):"—","Current local trading day")+
+      kpi("Total P&L",js.count?money(js.total):"—",js.count?js.count+" journal trades":"No journal data")+
+      kpi("Win / Lose",js.count?(js.wins+" / "+js.losses):"—",js.count?(pct(js.winRate)+" win rate"):"No journal data")+
+      kpi("Profit Factor",js.count?rrText(js.pf):"—","Journal history")+
+      kpi("Avg RR",js.count?rrText(js.avgRR):"—","Recorded RR")+
+      kpi("RR Trades",js.rrCount||0,js.rrCount?"Trades with RR recorded":"No RR recorded")+
       '</div>'+
       '<div class="dashboard-grid compact-grid"><div class="dashboard-main">'+
       panel(crypto()?"TOP CRYPTO ACTIVITY":"TOP FUTURES INSTRUMENTS",cards)+
@@ -799,6 +799,12 @@
     }
   }
   render();
+  window.addEventListener("storage",e=>{
+    if(e.key===journalKey("NQ")||e.key===journalKey("CRYPTO")||e.key==="edgeflow-journal"){
+      state.journal=loadJournal(state.mode);
+      render();
+    }
+  });
   setInterval(()=>{
     if(state.mode==="NQ"&&state.view==="overview"&&!state.tradovate.loading&&(Date.now()-state.tradovate.lastFetch>5000))refreshTradovateDashboard();
     if(state.mode&&document.querySelector(".topbar")){
