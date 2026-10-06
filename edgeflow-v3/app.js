@@ -327,10 +327,10 @@
       '<div class="kpis journal-kpis">'+
       kpi("Daily P&L",js.count?money(js.todayPnl):"—","Current local trading day")+
       kpi("Total P&L",js.count?money(js.total):"—",js.count?js.count+" journal trades":"No journal data")+
-      kpi("Win / Lose",js.count?(js.wins+" / "+js.losses):"—",js.count?(pct(js.winRate)+" win rate"):"No journal data")+
+      kpi("Avg RR",js.count?rrText(js.avgRR):"—",js.rrCount?js.rrCount+" trades with RR":"No RR recorded")+
+      kpi("Wins",js.wins||0,"Journal winning trades")+
+      kpi("Losses",js.losses||0,"Journal losing trades")+
       kpi("Profit Factor",js.count?rrText(js.pf):"—","Journal history")+
-      kpi("Avg RR",js.count?rrText(js.avgRR):"—","Recorded RR")+
-      kpi("RR Trades",js.rrCount||0,js.rrCount?"Trades with RR recorded":"No RR recorded")+
       '</div>'+
       '<div class="dashboard-grid compact-grid"><div class="dashboard-main">'+
       panel(crypto()?"TOP CRYPTO ACTIVITY":"TOP FUTURES INSTRUMENTS",cards)+
