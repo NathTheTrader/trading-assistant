@@ -398,10 +398,38 @@
     input.value="";if(send)send.disabled=true;
     box.insertAdjacentHTML("beforeend",'<div class="ai-message user"><b>YOU</b><p>'+esc(question)+'</p></div>');
     state.aiTurns.push({role:"user",content:question});
-    const loading=document.createElement("div");loading.className="ai-message jarvis loading";loading.innerHTML="<b>JARVIS</b><p>Analyse en cours...</p>";box.appendChild(loading);box.scrollTop=box.scrollHeight;
+    const loading=document.createElement("div");loading.className="ai-message jarvis loading";loading.innerHTML="<b>JARVIS</b><p>Analyse du journal en cours...</p>";box.appendChild(loading);box.scrollTop=box.scrollHeight;
+
+    const entries=Array.isArray(state.journal)?state.journal:[];
+    const st=statsFromJournal(entries);
+    const outcomeCount={WIN:0,LOSS:0,BE:0};
+    entries.forEach(x=>{const o=normalizeOutcome(x);if(outcomeCount[o]!==undefined)outcomeCount[o]++;});
+    const bySetup={};
+    entries.forEach(x=>{const k=String(x.setup||"Unknown");bySetup[k]||={trades:0,wins:0,losses:0,pnl:0};bySetup[k].trades++;bySetup[k].pnl+=Number(x.pnl)||0;const o=normalizeOutcome(x);if(o==="WIN")bySetup[k].wins++;if(o==="LOSS")bySetup[k].losses++;});
+    const setupSummary=Object.entries(bySetup).sort((a,b)=>b[1].trades-a[1].trades).slice(0,15).map(([k,v])=>k+":"+JSON.stringify(v)).join(" | ");
+    const journalRows=entries.slice(0,50).map((x,i)=>({
+      n:i+1,date:x.date||"",time:x.time||"",symbol:x.symbol||"",side:x.side||"",outcome:normalizeOutcome(x),
+      pnl:Number.isFinite(Number(x.pnl))?Number(x.pnl):null,rr:x.rr||"",setup:x.setup||"",grade:x.grade||"",session:x.session||""
+    }));
+    const contextText=[
+      "EDGEFLOW JOURNAL CONTEXT — USE THE FULL SAMPLE, NOT ONE TRADE.",
+      "The user is asking about their trading journal. Analyze the trader's process and recurring patterns, not the user's character.",
+      "Do not say the trader is 'bad' or make a personal judgment. Be direct about execution errors, but tie conclusions to recorded evidence.",
+      "Use the whole available journal sample first. When discussing a pattern, state the sample size. Do not let the most recent trade dominate unless the user explicitly asks about that trade.",
+      "Deterministic journal stats: "+JSON.stringify({trades:st.count,wins:outcomeCount.WIN,losses:outcomeCount.LOSS,breakeven:outcomeCount.BE,winRate:st.winRate,profitFactor:st.pf,avgRR:st.avgRR,totalPnL:st.total,dailyPnL:st.todayPnl}),
+      "By setup: "+setupSummary,
+      "Recent journal records (up to 50): "+JSON.stringify(journalRows),
+      "Current user question: "+question
+    ].join("\n");
+
     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),35000);
     try{
-      const r=await fetch(API_BASE+"/api/ai/chat",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},signal:controller.signal,body:JSON.stringify({model:state.mode,question,history:state.journal.slice(0,30),chatHistory:state.aiTurns.slice(-12)})});
+      const r=await fetch(API_BASE+"/api/ai/chat",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},signal:controller.signal,body:JSON.stringify({
+        model:state.mode,
+        question:contextText,
+        history:entries.slice(0,100),
+        chatHistory:state.aiTurns.slice(-12)
+      })});
       const data=await r.json().catch(()=>({}));if(!r.ok||!data.ok)throw new Error(data.error||("Jarvis API error · HTTP "+r.status));
       const answer=String(data.text||"Aucune réponse.").trim();state.aiTurns.push({role:"assistant",content:answer});
       loading.classList.remove("loading");loading.innerHTML="<b>JARVIS</b><p>"+esc(answer)+"</p>";
