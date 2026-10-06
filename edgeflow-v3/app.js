@@ -433,7 +433,7 @@
       if(count)classes.push("has-trades");
       if(iso===today)classes.push("today");
       if(selected)classes.push("selected");
-      dayCells.push('<button type="button" class="'+classes.join(" ")+'" onclick="journalDay(\\''+iso+'\\')"><span>'+dnum+'</span>'+(count?'<i>'+count+'</i>':'')+'</button>');
+      dayCells.push('<button type="button" class="'+classes.join(" ")+'" onclick="journalDay(\''+iso+'\')"><span>'+dnum+'</span>'+(count?'<i>'+count+'</i>':'')+'</button>');
     }
     const cards=(selectedEntries.length?selectedEntries:[]).map(x=>{
       const pnl=Number(x.pnl)||0, outcome=normalizeOutcome(x);
