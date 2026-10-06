@@ -385,7 +385,7 @@
   }
 
   function ai(){
-    const q=crypto()?["Review my crypto journal","Check crypto market context","Review my last 5 crypto trades"]:["Analyze my last 5 trades","Check market context (NQ)","Review my Futures journal"];
+    const q=crypto()?["Review my full crypto journal","Check crypto market context","Find recurring crypto patterns"]:["Review my full Futures journal","Check market context (NQ)","Find recurring Futures patterns"];
     const ctx=crypto()?"Crypto only · KCEX · Direction → Key Open sweep → HTF POI → entry → high RR":"Futures only · Tradovate/Rithmic · HTF bias → POI → liquidity → retracement → R.B → limit";
     return title("INTELLIGENCE","AI Assistant","JARVIS · "+ctx,'<span class="ai-online">● ONLINE</span>')+
       '<div class="ai-grid">'+panel("EDGEFLOW JARVIS",'<div class="ai-chat"><div class="ai-welcome"><b>JARVIS</b><small>'+esc(ctx)+'</small></div><div id="aiMessages" class="ai-messages"><div class="ai-message jarvis"><b>JARVIS</b><p>Je suis prêt. Le contexte '+(crypto()?"Crypto":"Futures/NQ")+' est verrouillé pour cette conversation.</p></div></div><div class="ai-actions">'+q.map(x=>'<button onclick="aiQuick(this.dataset.q)" data-q="'+esc(x)+'">'+esc(x)+' <span>›</span></button>').join("")+'</div><div class="ai-composer"><input id="aiInput" type="text" autocomplete="off" placeholder="Ask Jarvis anything..." onkeydown="if(event.key===\'Enter\')aiAsk()"><button id="aiSend" onclick="aiAsk()">↗</button></div></div>','ai-panel')+
