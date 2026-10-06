@@ -34,7 +34,8 @@
     activeBacktest: null,
     tradovate:{status:null,loading:false,lastFetch:0,error:""},
     kcex:{running:false,processing:false,stream:null,video:null,canvas:null,previousImage:"",events:[],lastDetected:null,error:"",timer:null},
-    aiTurns:[]
+    aiTurns:[],
+    journalDate: localStorage.getItem("edgeflow-journal-date:"+(requestedMode||"NQ")) || (new Date().getFullYear()+"-"+String(new Date().getMonth()+1).padStart(2,"0")+"-"+String(new Date().getDate()).padStart(2,"0"))
   };
   const DATA = {
     NQ:{label:"FUTURES",accent:"red",instruments:["MNQ","MES","MGC"],connections:["Tradovate","Rithmic"]},
@@ -49,6 +50,13 @@
   const setupOptions=()=>crypto()?["Key Open Sweep","HTF POI","Liquidity Sweep","Entry Location","High-RR","Other"]:["R.B + FVG","Rejection Block","Sweep + OB","10H Open","FVG","Trend"];
   const sessionOptions=()=>crypto()?["24/7","Asia","London","NY AM","NY PM"]:["London","Asia","NY AM","NY PM"];
   const modelLabel=()=>crypto()?"Crypto":"Futures / NQ";
+  const localISODate=(date=new Date())=>date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0");
+  const normalizeOutcome=x=>{
+    const raw=String(x?.outcome||"").trim().toUpperCase();
+    if(raw==="WIN"||raw==="LOSS"||raw==="BE") return raw;
+    const pnl=Number(x?.pnl);
+    return Number.isFinite(pnl)?(pnl>0?"WIN":pnl<0?"LOSS":"BE"):"";
+  };
   const statsFromJournal=(entries=state.journal)=>{
     const xs=Array.isArray(entries)?entries:[];
     const pnls=xs.map(x=>Number(x.pnl)).filter(Number.isFinite);
@@ -164,7 +172,10 @@
       reader.onerror=()=>resolve("");
       reader.readAsDataURL(file);
     });
-    state.journal.unshift({id:"j-"+Date.now(),symbol:f("jSymbol").value.trim().toUpperCase(),side:f("jSide").value,pnl:Number(f("jPnl").value)||0,setup:f("jSetup").value||"R.B",grade:f("jGrade").value,note:f("jNote").value||"Execution reviewed.",date:f("jDate").value,time:f("jTime").value,entry:f("jEntry").value,exit:f("jExit").value,qty:f("jQty").value,rr:f("jRR").value,session:f("jSession").value,screenshot});
+    const pnl=Number(f("jPnl").value);
+    const outcome=f("jOutcome").value||(!Number.isFinite(pnl)?"BE":pnl>0?"WIN":pnl<0?"LOSS":"BE");
+    const date=f("jDate").value||state.journalDate||localISODate();
+    state.journal.unshift({id:"j-"+Date.now(),symbol:f("jSymbol").value.trim().toUpperCase(),side:f("jSide").value,outcome,pnl:Number.isFinite(pnl)?pnl:0,setup:f("jSetup").value||"R.B",grade:f("jGrade").value,note:f("jNote").value||"Execution reviewed.",date,time:f("jTime").value,entry:f("jEntry").value,exit:f("jExit").value,qty:f("jQty").value,rr:f("jRR").value,session:f("jSession").value,screenshot});
     localStorage.setItem(journalKey(state.mode),JSON.stringify(state.journal));render();
   };
   window.jarvisPreview=e=>{
@@ -199,8 +210,8 @@
       if(st)st.textContent="ANALYSIS COMPLETE · "+Number(data.result.confidence||0)+"% CONFIDENCE";
       const r=data.result||{};
       const fields=[
-        ["SYMBOL",r.symbol],["SIDE",r.side],["ENTRY",r.entry],["EXIT / TP",r.exit],
-        ["RR",r.rr],["SETUP",r.setup],["GRADE",r.grade],["SESSION",r.session]
+        ["SYMBOL",r.symbol],["OUTCOME",r.outcome],["SIDE",r.side],["ENTRY",r.entry],["EXIT / TP",r.exit],
+        ["P&L",r.pnl],["RR",r.rr],["SETUP",r.setup],["GRADE",r.grade],["SESSION",r.session]
       ];
       const box=document.getElementById("jarvisFields");
       if(box)box.innerHTML=fields.map(x=>'<div><small>'+esc(x[0])+'</small><b>'+esc(x[1]??"UNKNOWN")+'</b></div>').join("");
@@ -215,8 +226,12 @@
     if(!p){if(window.__jarvisImageFile)jarvisAnalyze();else alert("Analyse une capture avec Jarvis d'abord.");return}
     const nowLocal=new Date();
     const date=nowLocal.getFullYear()+"-"+String(nowLocal.getMonth()+1).padStart(2,"0")+"-"+String(nowLocal.getDate()).padStart(2,"0");
+    state.journalDate=state.journalDate||date;
     const time=String(nowLocal.getHours()).padStart(2,"0")+":"+String(nowLocal.getMinutes()).padStart(2,"0");
-    const entry={id:"j-"+Date.now(),symbol:String(p.symbol||"").trim().toUpperCase(),side:p.side||"Long",pnl:Number(p.pnl)||0,setup:p.setup||"Rejection Block",grade:p.grade||"C",note:p.note||"Jarvis vision review.",date,time,entry:p.entry||"",exit:p.exit||"",qty:p.qty||"",rr:p.rr||"",session:p.session||"London",screenshot:p.screenshot||""};
+    const parsedPnl=Number(p.pnl);
+    const inferredOutcome=String(p.outcome||"").toUpperCase();
+    const outcome=["WIN","LOSS","BE"].includes(inferredOutcome)?inferredOutcome:(Number.isFinite(parsedPnl)?(parsedPnl>0?"WIN":parsedPnl<0?"LOSS":"BE"):"");
+    const entry={id:"j-"+Date.now(),symbol:String(p.symbol||"").trim().toUpperCase(),side:p.side||"Long",outcome,pnl:Number.isFinite(parsedPnl)?parsedPnl:0,setup:p.setup||"Rejection Block",grade:p.grade||"C",note:p.note||"Jarvis vision review.",date:state.journalDate||date,time,entry:p.entry||"",exit:p.exit||"",qty:p.qty||"",rr:p.rr||"",session:p.session||"London",screenshot:p.screenshot||""};
     if(!entry.symbol){const note=document.getElementById("jarvisNote");if(note)note.textContent="Jarvis n'a pas détecté de symbole lisible. Vérifie la capture avant de sauvegarder.";return}
     state.journal.unshift(entry);
     localStorage.setItem(journalKey(state.mode),JSON.stringify(state.journal));
@@ -396,42 +411,56 @@
   window.aiQuick=function(text){const input=document.getElementById("aiInput");if(input){input.value=String(text||"");aiAsk();}};
 
   function journal(){
-    const entries=state.journal;
-    const month=new Date().toLocaleString("en-US",{month:"long",year:"numeric"});
     const nowDate=new Date();
-    const today=nowDate.toISOString().slice(0,10);
-    const todays=entries.filter(x=>x.date===today);
-    const wins=entries.filter(x=>Number(x.pnl)>0).length;
+    const year=nowDate.getFullYear(), monthIndex=nowDate.getMonth();
+    const month=nowDate.toLocaleString("en-US",{month:"long",year:"numeric"});
+    const today=localISODate(nowDate);
+    const selectedDate=state.journalDate||today;
+    const entries=state.journal;
+    const selectedEntries=entries.filter(x=>String(x.date||"").slice(0,10)===selectedDate);
+    const wins=entries.filter(x=>normalizeOutcome(x)==="WIN").length;
     const total=entries.reduce((sum,x)=>sum+(Number(x.pnl)||0),0);
-    const dayCells=Array.from({length:30},(_,i)=>{
-      const dnum=i+1, iso="2026-09-"+String(dnum).padStart(2,"0");
-      const count=entries.filter(x=>x.date===iso).length;
-      return '<button class="journal-day '+(count?'has-trades ':'')+(iso===today?'today':'')+'" onclick="journalDay(\''+iso+'\')"><span>'+dnum+'</span>'+(count?'<i>'+count+'</i>':'')+'</button>';
-    }).join("");
-    const cards=(todays.length?todays:entries.slice(0,6)).map(x=>{
-      const pnl=Number(x.pnl)||0;
+    const daysInMonth=new Date(year,monthIndex+1,0).getDate();
+    const firstDay=new Date(year,monthIndex,1);
+    const offset=(firstDay.getDay()+6)%7;
+    const dayCells=[];
+    for(let i=0;i<offset;i++)dayCells.push('<i class="empty"></i>');
+    for(let dnum=1;dnum<=daysInMonth;dnum++){
+      const iso=year+"-"+String(monthIndex+1).padStart(2,"0")+"-"+String(dnum).padStart(2,"0");
+      const count=entries.filter(x=>String(x.date||"").slice(0,10)===iso).length;
+      const selected=iso===selectedDate;
+      const classes=["journal-day"];
+      if(count)classes.push("has-trades");
+      if(iso===today)classes.push("today");
+      if(selected)classes.push("selected");
+      dayCells.push('<button type="button" class="'+classes.join(" ")+'" onclick="journalDay(\\''+iso+'\\')"><span>'+dnum+'</span>'+(count?'<i>'+count+'</i>':'')+'</button>');
+    }
+    const cards=(selectedEntries.length?selectedEntries:[]).map(x=>{
+      const pnl=Number(x.pnl)||0, outcome=normalizeOutcome(x);
       return '<article class="journal-entry-card">'+
         '<div class="jec-top"><div><b>'+esc(x.symbol||"—")+' <span class="'+(String(x.side||"").toLowerCase()==="long"?"long":"short")+'">'+esc(x.side||"")+'</span></b><small>'+esc(x.date||"")+' · '+esc(x.time||"")+'</small></div>'+
-        '<strong class="'+(pnl>=0?"win":"loss")+'">'+(pnl>=0?"+":"-")+"$"+Math.abs(pnl).toFixed(2)+'</strong></div>'+
-        '<div class="jec-tags"><span>'+esc(x.setup||"R.B")+'</span><span>RR '+esc(x.rr||"—")+'</span><span>'+esc(x.grade||"—")+'</span><span>'+esc(x.session||"—")+'</span></div>'+
+        '<strong class="'+(outcome==="WIN"?"win":outcome==="LOSS"?"loss":"")+"">'+(outcome||"BE")+(Number.isFinite(pnl)&&pnl!==0?" · "+(pnl>=0?"+":"-")+"$"+Math.abs(pnl).toFixed(2):"")+'</strong></div>'+
+        '<div class="jec-tags"><span>'+esc(x.setup||"R.B")+'</span><span>'+esc(outcome||"BE")+'</span><span>RR '+esc(x.rr||"—")+'</span><span>'+esc(x.grade||"—")+'</span><span>'+esc(x.session||"—")+'</span></div>'+
         '<p>'+esc(x.note||"No execution note.")+'</p>'+
         (x.screenshot?'<img src="'+x.screenshot+'" alt="Trade screenshot">':"")+
         '<button class="jec-delete" data-id="'+esc(x.id||"")+'" onclick="deleteJournalEntry(this.dataset.id)">DELETE</button>'+
       '</article>';
     }).join("");
+    const selectedStats=statsFromJournal(selectedEntries);
     return title("RECORDS","Journal","Structured trade review and daily execution record.",
       '<div class="journal-actions"><button onclick="exportJournal()">EXPORT</button><button class="primary" onclick="openJournalForm()">+ NEW ENTRY</button></div>')+
       '<div class="journal-main">'+
         '<section class="panel journal-calendar-panel">'+
           '<div class="panel-head"><span>TRADING CALENDAR</span><b>'+month.toUpperCase()+'</b></div>'+
           '<div class="journal-calendar-week"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div>'+
-          '<div class="journal-calendar-days">'+dayCells+'</div>'+
-          '<div class="journal-summary"><div><small>ENTRIES</small><b>'+entries.length+'</b></div><div><small>WIN RATE</small><b>'+((entries.length?Math.round(wins/entries.length*100):0))+'%</b></div><div><small>NET P&L</small><b class="'+(total>=0?"win":"loss")+'">'+(total>=0?"+":"-")+"$"+Math.abs(total).toFixed(2)+'</b></div></div>'+
-          '<div class="journal-storage">● LOCAL STORAGE · FUTURES / CRYPTO ISOLATED</div>'+
+          '<div class="journal-calendar-days">'+dayCells.join("")+'</div>'+
+          '<div class="journal-summary"><div><small>SELECTED DAY</small><b>'+esc(selectedDate)+'</b></div><div><small>TRADES</small><b>'+selectedEntries.length+'</b></div><div><small>WIN RATE</small><b>'+((selectedEntries.length?Math.round(selectedStats.winRate*100):0))+'%</b></div><div><small>DAY P&L</small><b class="'+(selectedStats.todayPnl>=0?"win":"loss")+'">'+(selectedStats.todayPnl>=0?"+":"-")+"$"+Math.abs(selectedStats.todayPnl).toFixed(2)+'</b></div></div>'+
+          '<div class="journal-summary monthly"><div><small>MONTH ENTRIES</small><b>'+entries.filter(x=>String(x.date||"").slice(0,7)===year+"-"+String(monthIndex+1).padStart(2,"0")).length+'</b></div><div><small>TOTAL WINS</small><b>'+wins+'</b></div><div><small>TOTAL P&L</small><b class="'+(total>=0?"win":"loss")+'">'+(total>=0?"+":"-")+"$"+Math.abs(total).toFixed(2)+'</b></div></div>'+
+          '<div class="journal-storage">● LOCAL STORAGE · FUTURES / CRYPTO ISOLATED · SELECTED DAY '+esc(selectedDate)+'</div>'+
         '</section>'+
         '<section class="panel journal-history-panel">'+
-          '<div class="panel-head"><span>'+((todays.length)?"TODAY'S ENTRIES":"RECENT ENTRIES")+'</span><b>'+entries.length+' RECORDS</b></div>'+
-          '<div class="journal-history">'+(cards||'<div class="journal-empty"><b>No journal entries yet.</b><span>Click + NEW ENTRY to record your first trade.</span></div>')+'</div>'+
+          '<div class="panel-head"><span>'+selectedDate+' · ENTRIES</span><b>'+selectedEntries.length+' RECORDS</b></div>'+
+          '<div class="journal-history">'+(cards||'<div class="journal-empty"><b>No trades on '+esc(selectedDate)+'.</b><span>Click + NEW ENTRY. The form will open on the selected calendar day.</span></div>')+'</div>'+
         '</section>'+
       '</div>'+
       '<section class="panel journal-jarvis">'+
@@ -439,15 +468,15 @@
         '<div class="journal-jarvis-grid">'+
           '<div class="journal-jarvis-upload">'+
             '<div class="jarvis-drop" id="jarvisDrop">'+
-              '<div class="jarvis-upload-icon">⌁</div><strong>DROP YOUR TRADE SCREENSHOT</strong><small>Jarvis reads the chart, RR, entry, exit, setup and execution.</small>'+
+              '<div class="jarvis-upload-icon">⌁</div><strong>DROP YOUR TRADE SCREENSHOT</strong><small>Jarvis reads WIN/LOSS, P&L, RR, entry, exit, setup, grade and execution.</small>'+
               '<input id="jarvisImage" type="file" accept="image/*" onchange="jarvisPreview(event)">'+
             '</div>'+
             '<div id="jarvis-preview" class="jarvis-preview"></div>'+
             '<div class="jarvis-actions"><button class="primary" onclick="jarvisAnalyze()">ANALYZE WITH JARVIS</button></div>'+
           '</div>'+
           '<div class="journal-jarvis-result">'+
-            '<div id="jarvisFields" class="jarvis-fields"><div><small>SYMBOL</small><b>—</b></div><div><small>SIDE</small><b>—</b></div><div><small>ENTRY</small><b>—</b></div><div><small>EXIT / TP</small><b>—</b></div><div><small>RR</small><b>—</b></div><div><small>SETUP</small><b>—</b></div><div><small>GRADE</small><b>—</b></div><div><small>SESSION</small><b>—</b></div></div>'+
-            '<div id="jarvisNote" class="jarvis-note">Envoie une capture. Jarvis l’analyse avec le modèle '+d().label+' puis prépare l’entrée du journal.</div>'+
+            '<div id="jarvisFields" class="jarvis-fields"><div><small>SYMBOL</small><b>—</b></div><div><small>OUTCOME</small><b>—</b></div><div><small>SIDE</small><b>—</b></div><div><small>ENTRY</small><b>—</b></div><div><small>EXIT / TP</small><b>—</b></div><div><small>P&L</small><b>—</b></div><div><small>RR</small><b>—</b></div><div><small>SETUP</small><b>—</b></div><div><small>GRADE</small><b>—</b></div><div><small>SESSION</small><b>—</b></div></div>'+
+            '<div id="jarvisNote" class="jarvis-note">Envoie une capture. Jarvis l’analyse avec le modèle '+d().label+' puis prépare une entrée complète du journal.</div>'+
             '<button class="primary jarvis-journal-btn" onclick="jarvisSaveToJournal()">SAVE TO JOURNAL</button>'+
           '</div>'+
         '</div>'+
@@ -459,32 +488,36 @@
           '<form class="journal-form modal-journal-form" onsubmit="saveJournal(event)">'+
             '<div class="journal-form-grid">'+
               '<label>SYMBOL<input id="jSymbol" required placeholder="'+(crypto()?"BTC":"MNQ")+'"></label>'+
-              '<label>DATE<input id="jDate" type="date" value="'+today+'" required></label>'+
+              '<label>DATE<input id="jDate" type="date" value="'+selectedDate+'" required></label>'+
               '<label>TIME<input id="jTime" type="time" value="'+now().slice(0,5)+'"></label>'+
               '<label>SIDE<select id="jSide"><option>Long</option><option>Short</option></select></label>'+
+              '<label>OUTCOME<select id="jOutcome"><option>WIN</option><option>LOSS</option><option>BE</option></select></label>'+
               '<label>SETUP / MODEL<select id="jSetup">'+setupOptionsHtml()+'</select></label>'+
               '<label>GRADE<select id="jGrade"><option>A+</option><option>A</option><option>A-</option><option>B+</option><option>B</option><option>B-</option><option>C+</option><option>C</option></select></label>'+
               '<label>ENTRY<input id="jEntry" placeholder="24,862.75"></label><label>EXIT<input id="jExit" placeholder="24,840.25"></label><label>QTY<input id="jQty" placeholder="1"></label>'+
               '<label>P&L<input id="jPnl" type="number" step="0.01" placeholder="225"></label><label>RR<input id="jRR" placeholder="4.5"></label>'+
-              '<label>SESSION<select id="jSession"><option>London</option><option>Asia</option><option>NY AM</option><option>NY PM</option></select></label>'+
+              '<label>SESSION<select id="jSession">'+sessionOptionsHtml()+'</select></label>'+
             '</div>'+
             '<label class="journal-wide">EXECUTION NOTES<textarea id="jNote" rows="5" placeholder="Context, sweep, retracement, R.B, FVG, execution, management and lesson."></textarea></label>'+
             '<label class="journal-wide">TRADE SCREENSHOT<input id="jScreenshot" type="file" accept="image/*"></label>'+
-            '<div class="journal-modal-actions"><span>Saved locally in this browser</span><button type="button" onclick="closeJournalForm()">CANCEL</button><button class="primary" type="submit">SAVE TRADE</button></div>'+
+            '<div class="journal-modal-actions"><span>Saved locally in this browser · '+esc(selectedDate)+'</span><button type="button" onclick="closeJournalForm()">CANCEL</button><button class="primary" type="submit">SAVE TRADE</button></div>'+
           '</form>'+
         '</section>'+
       '</div>';
   }
-  window.openJournalForm=()=>{const m=document.getElementById("journal-modal");if(m)m.hidden=false};
+  window.openJournalForm=()=>{
+    const m=document.getElementById("journal-modal");
+    if(m){
+      m.hidden=false;
+      const date=document.getElementById("jDate");
+      if(date)date.value=state.journalDate||localISODate();
+    }
+  };
   window.closeJournalForm=()=>{const m=document.getElementById("journal-modal");if(m)m.hidden=true};
   window.journalDay=iso=>{
-    const e=state.journal.filter(x=>x.date===iso);
-    const box=document.querySelector(".journal-history");
-    if(!box)return;
-    box.innerHTML=e.length?e.map(x=>{
-      const pnl=Number(x.pnl)||0;
-      return '<article class="journal-entry-card"><div class="jec-top"><div><b>'+esc(x.symbol||"—")+' <span class="'+(String(x.side||"").toLowerCase()==="long"?"long":"short")+'">'+esc(x.side||"")+'</span></b><small>'+esc(x.date||"")+' · '+esc(x.time||"")+'</small></div><strong class="'+(pnl>=0?"win":"loss")+'">'+(pnl>=0?"+":"-")+"$"+Math.abs(pnl).toFixed(2)+'</strong></div><div class="jec-tags"><span>'+esc(x.setup||"R.B")+'</span><span>RR '+esc(x.rr||"—")+'</span><span>'+esc(x.grade||"—")+'</span><span>'+esc(x.session||"—")+'</span></div><p>'+esc(x.note||"No execution note.")+'</p>'+(x.screenshot?'<img src="'+x.screenshot+'" alt="Trade screenshot">':"")+'<button class="jec-delete" data-id="'+esc(x.id||"")+'" onclick="deleteJournalEntry(this.dataset.id)">DELETE</button></article>';
-    }).join(""):'<div class="journal-empty"><b>No trades on '+iso+'.</b><span>Choose another day or create a new entry.</span></div>';
+    state.journalDate=String(iso);
+    localStorage.setItem("edgeflow-journal-date:"+state.mode,state.journalDate);
+    render();
   };
   function analytics(){
     const groups={};state.journal.forEach(x=>{const k=String(x.session||"Unknown");(groups[k]||=[]).push(x)});
